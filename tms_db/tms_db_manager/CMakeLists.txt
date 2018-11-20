@@ -1,0 +1,38 @@
+cmake_minimum_required(VERSION 3.5)
+project(tms_db_manager)
+
+
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+
+find_package(ament_cmake REQUIRED COMPONENTS
+  rclcpp
+  rclpy
+  std_msgs
+  geometry_msgs
+  tms_msg_db
+)
+
+ament_package(
+  #INCLUDE_DIRS include
+  #LIBRARIES tms_db_manager
+  #DEPENDS system_lib
+  #AMENT_DEPENDS rclcpp rclpy std_msgs geometry_msgs tms_msg_db
+)
+
+
+#catkin_python_setup()
+
+###########
+## Build ##
+###########
+include_directories(
+  ${rclcpp_INCLUDE_DIRS}
+  ${rclpy_INCLUDE_DIRS}
+  ${std_msgs_INCLUDE_DIRS}
+  ${geometry_msgs_INCLUDE_DIRS}
+  ${tms_msg_db_INCLUDE_DIRS}
+)
+#catkin_INCLUDE_DIRS
