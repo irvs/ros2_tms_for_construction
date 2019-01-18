@@ -1,22 +1,17 @@
-//------------------------------------------------------------------------------
-// @file   : vicon_stream.cpp
-// @brief  : data stream using ViconSDK v1.3 / simple version
-// @author : Yoonseok Pyo
-// @version: Ver0.2.0 (since 2014.05.02)
-// @date   : 2015.08.26
-//------------------------------------------------------------------------------
-// #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "std_msgs/msg/string.hpp"
+#include "rclcpp/clock.hpp"
+#include "rclcpp/time.hpp"
 
 #include <vicon_stream/client.h>
 
-#include <tms_msg_db/msg/tmsdb_stamped.h>
-#include <tms_msg_db/msg/tmsdb.h>
-#include <tms_msg_ss/msg/vicon_data.h>
+#include <tms_msg_db/msg/tmsdb_stamped.hpp>
+#include <tms_msg_db/msg/tmsdb.hpp>
+#include <tms_msg_ss/msg/vicon_data.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
-#include <visualization_msgs/msg/marker.h>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -24,18 +19,17 @@
 #include <ctime>
 #include <time.h>
 #include <string>
+#include <chrono>
 
-
-
-
-// #define rad2deg(x) ((x)*(180.0)/M_PI)
-// #define deg2rad(x)  ((x)*M_PI/180.0)
-//------------------------------------------------------------------------------
 using std::string;
+// using namespace ViconDataStreamSDK;
 using namespace ViconDataStreamSDK::CPP;
 using namespace boost;
+using namespace std;
+using namespace std::chrono_literals;
 
-//------------------------------------------------------------------------------
+// export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib/x86_64-linux-gnu/"
+
 string Adapt(const Direction::Enum i_Direction)
 {
   switch (i_Direction)
@@ -63,91 +57,85 @@ std::string Adapt(const bool i_Value)
   return i_Value ? "True" : "False";
 }
 
-//------------------------------------------------------------------------------
-class ViconStream
+class ViconStream : public rclcpp::Node
 {
-  //------------------------------------------------------------------------------
+
+public:
+  //ViconStream(idSensor, idPlace, stream_mode, host_name, frame_id, update_time, isDebug)
+  ViconStream()
+  : Node("Vicon")
+  , count_(0)
+  , idPlace(5001)
+  , stream_mode("ClientPull")
+  , frame_id("/world")
+  , update_time(0.01)
+  , host_name("192.168.4.151:801")
+
+    {
+      // auto node = std::make_shared<rclcpp::Node>("debug");
+      // node->get_parameter_or("debug", isDebug, isDebug);
+    //nh_priv.param("debug", isDebug, isDebug);
+    // Publishers
+      // auto db_pub = std::make_shared<ViconStream>("tms_db_data");
+    //  dbpub = this->create_publisher<std_msgs::msg::String>("~/tms_db_data");
+    //db_pub = nh.advertise< tms_msg_db::TmsdbStamped >("tms_db_data", 1);
+
+    // TimerEvent
+      init_vicon();
+  
+      // auto node = std::make_shared<rclcpp::Node>("debug");
+
+      // node->get_parameter_or("debug", isDebug, isDebug);
+    //nh_priv.param("debug", isDebug, isDebug);
+    // Publishers
+      // auto db_pub = std::make_shared<ViconStream>("tms_db_data");
+      posepub = this->create_publisher<tms_msg_ss::msg::ViconData>("~/output");
+      dbpub = this->create_publisher<tms_msg_db::msg::TmsdbStamped>("~/tms_db_data");
+      checkerpub = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/checker_box");
+
+    //db_pub = nh.advertise< tms_msg_db::TmsdbStamped >("tms_db_data", 1);
+
+
+    // TimerEvent
+      updatetimer = this->create_wall_timer(100ms, std::bind(&ViconStream::updateCallback, this));
+    }
 private:
   // Sensor ID
   int32_t idSensor;
   // Place ID
   int32_t idPlace;
-  // NodeHandle 
-  rclcpp::NodeHandle nh;
-  rclcpp::NodeHandle nh_priv;
-  // Publisher
-  rclcpp::Publisher db_pub;
-  rclcpp::Publisher pose_pub;
-  rclcpp::Publisher marker_pub;
-  rclcpp::Publisher box_pub;
-  // Timer
-  rclcpp::Timer update_timer;
   // Parameters:
   string stream_mode;
   string host_name;
-  string frame_id;
+
+  // string frame_id;
+
   double update_time;
-  bool isDebug;
+  // bool isDebug;
   // Access client for ViconSDK
-  ViconDataStreamSDK::CPP::Client MyClient;
+  // ViconDataStreamSDK::CPP::Client MyClient;
+  // Output_IsConnected Output = MyClient.IsConnected();
 
-  //------------------------------------------------------------------------------
-public:
-  ViconStream()
-    : nh_priv("~")
-    , idSensor(3001)
-    ,  // vicon sensor
-    idPlace(5001)
-    ,  // 988 room
-    stream_mode("ClientPull")
-    , host_name("192.168.4.151:801")
-    , frame_id("/world")
-    , update_time(0.01)
-    ,  // sec
-    isDebug(false)
-  {
-    // Init parameter
-    nh_priv.param("stream_mode", stream_mode, stream_mode);
-    nh_priv.param("host_name", host_name, host_name);
-    nh_priv.param("frame_id", frame_id, frame_id);
-    nh_priv.param("update_time_sec", update_time, update_time);
-    nh_priv.param("debug", isDebug, isDebug);
-    // Init Vicon Stream
-    ROS_ASSERT(init_vicon());
-    // Publishers
-    db_pub = nh.advertise< tms_msg_db::TmsdbStamped >("tms_db_data", 1);
-    pose_pub = nh_priv.advertise< tms_msg_ss::vicon_data >("output", 1);
-    box_pub = nh.advertise< visualization_msgs::Marker>("checker_box",1);
-    // TimerEvent
-    update_timer = nh.createTimer(ros::Duration(update_time), &ViconStream::updateCallback, this);
-  }
+ViconDataStreamSDK::CPP::Client MyClient;
+// Output_IsConnected Output = MyClient.IsConnected()
+// // Output.Connected == false
+// MyClient.Connect( "localhost" );
+// Output_IsConnected Output = MyClient.IsConnected()
+// // Output.Connected == true
+// // (assuming localhost is serving)
 
-  //----------------------------------------------------------------------------
-  ~ViconStream()
+bool init_vicon()
   {
-    ROS_ASSERT(shutdown_vicon());
-  }
-
-  //------------------------------------------------------------------------------
-private:
-  bool init_vicon()
-  {
-    ROS_INFO_STREAM("Connecting to Vicon DataStream SDK at " << host_name << " ...");
+    std::cout << "Connecting to Vicon DataStream SDK at " << host_name << " ..." << std::endl;
 
     while (!MyClient.IsConnected().Connected)
     {
       MyClient.Connect(host_name);
-      ROS_INFO(".");
       sleep(1);
-      ros::spinOnce();
-      if (!ros::ok())
-        return false;
     }
-    ROS_ASSERT(MyClient.IsConnected().Connected);
-    ROS_INFO_STREAM("... connected!");
-    ROS_INFO_STREAM("Setting Stream Mode to "
-                    << "ClientPull");
-
+    if(MyClient.IsConnected().Connected){
+      std::cout << "Connected" << std::endl;
+    }
     Output_SetStreamMode result;
 
     if (stream_mode == "ClientPull")
@@ -156,48 +144,68 @@ private:
     }
     else
     {
-      ROS_INFO_STREAM("stream_mode error");
       return false;
     }
 
     if (result.Result != Result::Success)
     {
-      ROS_FATAL("Set stream mode call failed -- shutting down");
-      ros::shutdown();
+      std::cout << "Set stream mode call failed -- shutting down" <<std::endl;
     }
 
     MyClient.SetAxisMapping(Direction::Forward, Direction::Left, Direction::Up);  // 'Z-up'
 
     Output_GetAxisMapping _Output_GetAxisMapping = MyClient.GetAxisMapping();
-    ROS_INFO_STREAM("Axis Mapping: X-" << Adapt(_Output_GetAxisMapping.XAxis) << " Y-"
+    std::cout <<"Axis Mapping: X-" << Adapt(_Output_GetAxisMapping.XAxis) << " Y-"
                                        << Adapt(_Output_GetAxisMapping.YAxis) << " Z-"
-                                       << Adapt(_Output_GetAxisMapping.ZAxis));
+                                       << Adapt(_Output_GetAxisMapping.ZAxis) <<std::endl;
     Output_GetVersion _Output_GetVersion = MyClient.GetVersion();
-    ROS_INFO_STREAM("Version: " << _Output_GetVersion.Major << "." << _Output_GetVersion.Minor << "."
-                                << _Output_GetVersion.Point);
+    std::cout << "Version: " << _Output_GetVersion.Major << "." << _Output_GetVersion.Minor << "."
+                                << _Output_GetVersion.Point << std::endl;
     return true;
   }
 
-  //----------------------------------------------------------------------------
-  bool shutdown_vicon()
-  {
-    ROS_INFO_STREAM("Disconnecting from Vicon DataStream SDK");
-    MyClient.Disconnect();
-    ROS_ASSERT(!MyClient.IsConnected().Connected);
-    ROS_INFO_STREAM("... disconnected.");
-    return true;
-  }
+   void updateCallback()
+   //void updateCallback(const tms_msg_db::msg::TmsdbStamped::SharedPtr& detect)
+ //void updateCallback(const ros::TimerEvent& e)
 
-  //----------------------------------------------------------------------------
-  void updateCallback(const ros::TimerEvent& e)
   {
+    //auto gettms(const std::string & message_type)
+    //tms_msg_db::msg::TmsdbStamped::SharedPtr& detect
+    //auto stamp = detect->header.stamp;
+    //std::string frame_id = detect->header.frame_id;
+    //std::string frame_id = detect->frame_id;
+
+    auto posemsg = tms_msg_ss::msg::ViconData();
+    auto tmsdbstamped = tms_msg_db::msg::TmsdbStamped();
+    auto tmsdb = tms_msg_db::msg::Tmsdb();
+    auto now = rclcpp::Clock().now();
+
+    tmsdb.type = "Hello";
+    // message.data = "Hello, world! " + std::to_string(count_++);
+    // RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
+    // posepub->publish(message);
+    tmsdbstamped.header.frame_id = "frame_id";
+ 	  tmsdbstamped.header.stamp = rclcpp::Clock().now();
+    // tmsdb.tmsdb.header.stamp = now;
+    tmsdbstamped.tmsdb.push_back(tmsdb);
+
+    dbpub->publish(tmsdbstamped);
+
     // Enable some different data types
     MyClient.EnableSegmentData();
     MyClient.EnableMarkerData();
     MyClient.EnableUnlabeledMarkerData();
     MyClient.EnableDeviceData();
 
-    if (isDebug)
+      while (MyClient.GetFrame().Result != Result::Success)
+    {
+      std::cout << "." << std::endl;
+    }
+  
+
+    Output_GetFrameNumber _Output_GetFrameNumber = MyClient.GetFrameNumber();
+    bool isDebug = true;
+      if (isDebug)
     {
       std::cout << "Segment Data Enabled: " << Adapt(MyClient.IsSegmentDataEnabled().Enabled) << std::endl;
       std::cout << "Marker Data Enabled: " << Adapt(MyClient.IsMarkerDataEnabled().Enabled) << std::endl;
@@ -212,23 +220,9 @@ private:
     {
       std::cout << "." << std::endl;
     }
-
-    // Get the frame number
-    Output_GetFrameNumber _Output_GetFrameNumber = MyClient.GetFrameNumber();
-    if (isDebug)
-      std::cout << "Frame Number: " << _Output_GetFrameNumber.FrameNumber << std::endl;
-
-    // Count the number of subjects
-    unsigned int SubjectCount = MyClient.GetSubjectCount().SubjectCount;
-    if (isDebug)
+        unsigned int SubjectCount = MyClient.GetSubjectCount().SubjectCount;
+     if (isDebug)
       std::cout << "Subjects (" << SubjectCount << "):" << std::endl;
-
-    ros::Time now = ros::Time::now() + ros::Duration(9 * 60 * 60);  // GMT +9
-    tms_msg_db::TmsdbStamped db_msg;
-    db_msg.header.frame_id = frame_id;
-    db_msg.header.stamp = now;
-
-    ///////////////////////////////////////////////////////////////////
     for (unsigned int SubjectIndex = 0; SubjectIndex < SubjectCount; ++SubjectIndex)
     {
       if (isDebug)
@@ -258,8 +252,7 @@ private:
         std::string SegmentName = MyClient.GetSegmentName(SubjectName, SegmentIndex).SegmentName;
         if (isDebug)
           std::cout << "        Name: " << SegmentName << std::endl;
-
-        // Get the global segment translation
+// Get the global segment translation
         Output_GetSegmentGlobalTranslation _Output_GetSegmentGlobalTranslation =
             MyClient.GetSegmentGlobalTranslation(SubjectName, SegmentName);
         if (isDebug)
@@ -286,55 +279,67 @@ private:
                     << ", " << _Output_GetSegmentGlobalRotationEulerXYZ.Rotation[1] << ", "
                     << _Output_GetSegmentGlobalRotationEulerXYZ.Rotation[2] << ") "
                     << Adapt(_Output_GetSegmentGlobalRotationEulerXYZ.Occluded) << std::endl;
+       
+    posemsg.header.frame_id = "frame_id";
+    posemsg.header.stamp = rclcpp::Clock().now();
+    // posemsg.measuredtime = rclcpp::Clock().now();
+    // posemsg.measuredtime = now;
+    posemsg.subjectname = "SubjectName";
+    posemsg.segmentname = "SegmentName";
+    posemsg.translation.x = _Output_GetSegmentGlobalTranslation.Translation[0];
+    posemsg.translation.y = _Output_GetSegmentGlobalTranslation.Translation[1];
+    posemsg.translation.z = _Output_GetSegmentGlobalTranslation.Translation[2];
+    posemsg.rotation.x = _Output_GetSegmentGlobalRotationQuaternion.Rotation[0];
+    posemsg.rotation.y = _Output_GetSegmentGlobalRotationQuaternion.Rotation[1];
+    posemsg.rotation.z = _Output_GetSegmentGlobalRotationQuaternion.Rotation[2];
+    posemsg.rotation.w = _Output_GetSegmentGlobalRotationQuaternion.Rotation[3];
+    posemsg.eulerxyz[0] = _Output_GetSegmentGlobalRotationEulerXYZ.Rotation[0];
+    posemsg.eulerxyz[1] = _Output_GetSegmentGlobalRotationEulerXYZ.Rotation[1];
+    posemsg.eulerxyz[2] = _Output_GetSegmentGlobalRotationEulerXYZ.Rotation[2];
+    posepub->publish(posemsg);
+    
+    if(SubjectName == "checker_box"){
+         
+            auto markerarray = visualization_msgs::msg::MarkerArray();
+            auto marker = visualization_msgs::msg::Marker();
 
-        tms_msg_ss::vicon_data pose_msg;
-        now = ros::Time::now() + ros::Duration(9 * 60 * 60);  // GMT +9
-
-        pose_msg.header.frame_id = frame_id;
-        pose_msg.header.stamp = now;
-        pose_msg.measuredTime = now;
-        pose_msg.subjectName = SubjectName;
-        pose_msg.segmentName = SegmentName;
-        pose_msg.translation.x = _Output_GetSegmentGlobalTranslation.Translation[0];
-        pose_msg.translation.y = _Output_GetSegmentGlobalTranslation.Translation[1];
-        pose_msg.translation.z = _Output_GetSegmentGlobalTranslation.Translation[2];
-        pose_msg.rotation.x = _Output_GetSegmentGlobalRotationQuaternion.Rotation[0];
-        pose_msg.rotation.y = _Output_GetSegmentGlobalRotationQuaternion.Rotation[1];
-        pose_msg.rotation.z = _Output_GetSegmentGlobalRotationQuaternion.Rotation[2];
-        pose_msg.rotation.w = _Output_GetSegmentGlobalRotationQuaternion.Rotation[3];
-        pose_msg.eulerXYZ[0] = _Output_GetSegmentGlobalRotationEulerXYZ.Rotation[0];
-        pose_msg.eulerXYZ[1] = _Output_GetSegmentGlobalRotationEulerXYZ.Rotation[1];
-        pose_msg.eulerXYZ[2] = _Output_GetSegmentGlobalRotationEulerXYZ.Rotation[2];
-
-        pose_pub.publish(pose_msg);
-
-        std::cout << _Output_GetFrameNumber.FrameNumber << "::" << SegmentName << std::endl;
-
-        if(SubjectName == "checker_box"){
-            visualization_msgs::Marker marker;
+            marker.text = "Hello";
             marker.header.frame_id = "world_link";
-            marker.header.stamp = ros::Time();
-            marker.type = visualization_msgs::Marker::SPHERE;
-            marker.pose.position.x = pose_msg.translation.x * 0.001;
-            marker.pose.position.y = pose_msg.translation.y * 0.001;
-            marker.pose.position.z = pose_msg.translation.z * 0.001;
-            marker.pose.orientation.x = pose_msg.rotation.x;
-            marker.pose.orientation.y = pose_msg.rotation.y;
-            marker.pose.orientation.z = pose_msg.rotation.z;
-            marker.pose.orientation.w = pose_msg.rotation.w;
+            marker.header.stamp = rclcpp::Clock().now();
+            marker.type = marker.SPHERE;
+            marker.pose.position.x = posemsg.translation.x * 0.001;
+            marker.pose.position.y = posemsg.translation.y * 0.001;
+            marker.pose.position.z = posemsg.translation.z * 0.001;
+            marker.pose.orientation.x = posemsg.rotation.x;
+            marker.pose.orientation.y = posemsg.rotation.y;
+            marker.pose.orientation.z = posemsg.rotation.z;
+            marker.pose.orientation.w = posemsg.rotation.w;
             marker.scale.x = 0.5;
             marker.scale.y = 0.5;
             marker.scale.z = 0.5;
             marker.color.a = 0.5;
             marker.color.r = 1.0;
             marker.color.g = 1.0;
-            box_pub.publish(marker);
+            
+            markerarray.markers.push_back(marker);
+            checkerpub->publish(markerarray);
+          
         }
 
-        //----------------------------------------------------------------------
-        // publish to tms_db_writer
-        int32_t id = 0;
-        tms_msg_db::Tmsdb tmpData;
+    // unsigned int segments = sdk->GetSegmentCount(name).SegmentCount;
+		// 	for (unsigned int j = 0 ; j < segments ; j++) {
+		// 		std::string segment = sdk->GetSegmentName(name, j).SegmentName;
+		// 		std::cout << "Writing global translation " << segment
+		// 				<< " for " << name << std::endl;}
+
+    // Output_GetSegmentGlobalTranslation _Output_GetSegmentGlobalTranslation = MyClient.GetSegmentGlobalTranslation(SubjectName, SegmentName);
+    
+    // Output_GetSegmentGlobalRotationQuaternion _Output_GetSegmentGlobalRotationQuaternion = MyClient.GetSegmentGlobalRotationQuaternion(SubjectName, SegmentName);
+
+    // Output_GetSegmentGlobalRotationEulerXYZ _Output_GetSegmentGlobalRotationEulerXYZ = MyClient.GetSegmentGlobalRotationEulerXYZ(SubjectName, SegmentName);
+// publish to tms_db_writer
+         int32_t id = 0;
+        
 
         std::string name;
         std::vector< std::string > v_name;
@@ -351,86 +356,84 @@ private:
 
         if (id == 2009)
         {
-          now = ros::Time::now() + ros::Duration(9 * 60 * 60);  // GMT +9
+          
+          rclcpp::Clock ros_clock;
+          auto start = ros_clock.now();
 
-          tmpData.time = boost::posix_time::to_iso_extended_string(now.toBoost());
-          tmpData.id = id;
-          tmpData.name = name;
-          tmpData.x = pose_msg.translation.x / 1000;
-          tmpData.y = pose_msg.translation.y / 1000;
-          tmpData.z = pose_msg.translation.z / 1000;
+          // tmsdb.time = ros_clock.now();
+          tmsdb.id = id;
+          tmsdb.name = name;
+          tmsdb.x = posemsg.translation.x / 1000;
+          tmsdb.y = posemsg.translation.y / 1000;
+          tmsdb.z = posemsg.translation.z / 1000;
           // Vicon DataStream SDK: Rotations are expressed in radians.
-          tmpData.rr = pose_msg.eulerXYZ[0];
-          tmpData.rp = pose_msg.eulerXYZ[1];
-          tmpData.ry = pose_msg.eulerXYZ[2];
-          tmpData.place = idPlace;
-          tmpData.sensor = idSensor;
-          tmpData.state = 1;
+          tmsdb.rr = posemsg.eulerxyz[0];
+          tmsdb.rp = posemsg.eulerxyz[1];
+          tmsdb.ry = posemsg.eulerxyz[2];
+          tmsdb.place = idPlace;
+          tmsdb.sensor = idSensor;
+          tmsdb.state = 1;
 
           std::stringstream ss;
           ss.clear();
-          ss << pose_msg.eulerXYZ[2];
-          tmpData.joint = ss.str();
+          ss << posemsg.eulerxyz[2];
+          tmsdb.joint = ss.str();
 
-          db_msg.tmsdb.push_back(tmpData);
+          tmsdbstamped.tmsdb.push_back(tmsdb);
         }
-        else if (id != 0 && pose_msg.translation.x != 0 && pose_msg.translation.y != 0)
+        else if (id != 0 && posemsg.translation.x != 0 && posemsg.translation.y != 0)
         {
-          now = ros::Time::now() + ros::Duration(9 * 60 * 60);  // GMT +9
+          
 
-          tmpData.time = boost::posix_time::to_iso_extended_string(now.toBoost());
-          tmpData.id = id;
-          tmpData.name = name;
+          // tmsdb.time = boost::posix_time::to_iso_extended_string(rclcpp::Clock().now().toBoost());
+          tmsdb.id = id;
+          tmsdb.name = name;
           // Vicon DataStream SDK: Positions are expressed in millimeters.
-          tmpData.x = pose_msg.translation.x / 1000;
-          tmpData.y = pose_msg.translation.y / 1000;
-          tmpData.z = pose_msg.translation.z / 1000;
+          tmsdb.x = posemsg.translation.x / 1000;
+          tmsdb.y = posemsg.translation.y / 1000;
+          tmsdb.z = posemsg.translation.z / 1000;
           // Vicon DataStream SDK: Rotations are expressed in radians.
-          tmpData.rr = pose_msg.eulerXYZ[0];
-          tmpData.rp = pose_msg.eulerXYZ[1];
-          tmpData.ry = pose_msg.eulerXYZ[2];
-          tmpData.place = idPlace;
-          tmpData.sensor = idSensor;
-          tmpData.state = 1;
+          tmsdb.rr = posemsg.eulerxyz[0];
+          tmsdb.rp = posemsg.eulerxyz[1];
+          tmsdb.ry = posemsg.eulerxyz[2];
+          tmsdb.place = idPlace;
+          tmsdb.sensor = idSensor;
+          tmsdb.state = 1;
 
-          db_msg.tmsdb.push_back(tmpData);
+          tmsdbstamped.tmsdb.push_back(tmsdb);
         }
+    //   }
+    
+    
+
+    // dbpub->publish(tmsdbstamped);
+  
+
       }
-
-      // unsigned int MarkerCount = MyClient.GetMarkerCount( SubjectName ).MarkerCount;
-      // std::cout << "    Markers (" << MarkerCount << "):" << std::endl;
-      // for( unsigned int MarkerIndex = 0 ; MarkerIndex < MarkerCount ; ++MarkerIndex )
-      // {
-      //   // Get the marker name
-      //   std::string MarkerName = MyClient.GetMarkerName( SubjectName, MarkerIndex ).MarkerName;
-
-      //   // Get the marker parent
-      //   std::string MarkerParentName = MyClient.GetMarkerParentName( SubjectName, MarkerName ).SegmentName;
-
-      //   // Get the global marker translation
-      //   Output_GetMarkerGlobalTranslation _Output_GetMarkerGlobalTranslation =
-      //     MyClient.GetMarkerGlobalTranslation( SubjectName, MarkerName );
-
-      //   std::cout << "      Marker #" << MarkerIndex            << ": "
-      //                                 << MarkerName             << " ("
-      //                                 << _Output_GetMarkerGlobalTranslation.Translation[ 0 ]  << ", "
-      //                                 << _Output_GetMarkerGlobalTranslation.Translation[ 1 ]  << ", "
-      //                                 << _Output_GetMarkerGlobalTranslation.Translation[ 2 ]  << ") "
-      //                                 << std::endl;
-      // }
     }
-    db_pub.publish(db_msg);
+    
   }
+
+
+  // Publisher
+  rclcpp::Publisher<tms_msg_db::msg::TmsdbStamped>::SharedPtr dbpub;
+  rclcpp::Publisher<tms_msg_ss::msg::ViconData>::SharedPtr posepub;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr checkerpub;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr markerpub;
+  // Timer
+  rclcpp::TimerBase::SharedPtr updatetimer;
+  // Parameters:
+  string frame_id;
+  size_t count_;  
 };
 
-//------------------------------------------------------------------------------
-int main(int argc, char** argv)
+int main(int argc, char * argv[])
 {
-  ros::init(argc, argv, "vicon_stream");
-  ViconStream vs;
-  ros::spin();
+  
+  rclcpp::init(argc, argv);
+  // ViconStream vs;
+  rclcpp::spin(std::make_shared<ViconStream>());
+  rclcpp::shutdown();
+
   return 0;
 }
-
-//------------------------------------------------------------------------------
-// EOF

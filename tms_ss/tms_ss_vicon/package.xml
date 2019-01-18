@@ -24,6 +24,7 @@
 
 
   <build_export_depend>viconSDK</build_export_depend>
+  <build_export_depend>ViconDataStreamSDK_CPP</build_export_depend>
   <build_export_depend>vicon_stream</build_export_depend>
   <build_export_depend>tms_msg_ss_generate_messages_cpp</build_export_depend>
   <build_export_depend>tms_msg_db_generate_messages_cpp</build_export_depend>
