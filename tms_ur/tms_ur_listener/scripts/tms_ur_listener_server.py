@@ -14,7 +14,7 @@ from tms_msg_db.msg import Tmsdb
 from tms_msg_db.srv import TmsdbGetData
 from tms_msg_ts.srv import TsReq
 from tms_msg_nw.srv import TmsNwReq
-from tms_rc_double.srv import skype_srv
+from tms_rc_double.srv import SkypeSrv
 import rclpy
 import requests
 import time
@@ -35,7 +35,7 @@ error_msg2 = "エラーが発生したため、処理を中断します"
 sid = 100000
 
 
-class TmsUrListener():
+class TmsUrListener(Node):
     def __init__(self):
         super().__init__('tms_ur_listener')
         rclpy.on_shutdown(self.shutdown)
@@ -99,33 +99,39 @@ class TmsUrListener():
         speak.data = data
         self.speaker_pub.publish(speak)
 
-########################
-#### ここから開発！！！！ #
-########################
     def announce(self,data):
         print(data)
         #rospy.wait_for_service('speaker_srv', timeout=1.0)
         tim = 0.0
-        try:
-            speak = rclpy.create_client('speaker_srv',speaker_srv)
-            tim = speak(data)
-        except rospy.ServiceException, e:
-            try:
-                #rospy.wait_for_service('slack_srv', timeout=1.0)
-                send_slack = rospy.ServiceProxy('slack_srv', slack_srv)
-                tim = send_slack(data)
-            except rospy.ServiceException, e:
-                print "Service call failed: %s" % e
+
+        speak = self.create_client(SpeakerSrv, 'speaker_srv')
+        furure = speak.call_async(data)
+        rclpy.spin_until_future_complete(self, future)        
+
+        if furure.result() is not None:
+            tim = future.result()
+        else:
+            send_slack = self.create_client(SlackSrv,'slack_srv')
+            furure = send_slack.call_async(data)
+            if furure.result() is not None:
+                tim = future.result()
+            else:
+                self.get_logger().info('Service call failed %r' % (future.exception(),))
         return tim
 
     def db_reader(self,data):
-        rospy.wait_for_service('tms_db_reader')
-        try:
-            tms_db_reader = rospy.ServiceProxy('tms_db_reader', TmsdbGetData)
-            res = tms_db_reader(data)
+        tms_db_reader = self.create_client(TmsdbGetData, 'tms_db_reader')
+        
+        while not tms_db_reader.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('tms_db_reader not available, waiting again...')
+        
+        furure  = tms_db_reader.call_async(data)
+        rclpy.spin_until_future_complete(self,future)
+        if future.result() is not None:
+            res = future.result()
             return res
-        except rospy.ServiceException as e:
-            print "Service call failed: %s" % e
+        else:
+            self.get_logger().info('Service call failed %r' % (future.exception(),))
             return None
 
     def tag_reader(self,data):
@@ -142,7 +148,7 @@ class TmsUrListener():
         tms_master = "192.168.4.80"
         ret = requests.post("http://" + tms_master + ":4000/rms_svr",json = payload)
         remote_tms = ret.json()
-        print remote_tms
+        print(remote_tms)
         if remote_tms["message"] == "OK":
             payload = {
                 "url": remote_tms["hostname"],
@@ -161,12 +167,12 @@ class TmsUrListener():
                         skype_client = rospy.ServiceProxy('skype_server',skype_srv)
                         res = skype_client(remote_tms["skype_id"])
                     except:
-                        print res
+                        print(res)
                 tim = self.announce(ret_dict["announce"])
                 self.julius_power(True,tim.sec)
                 return True
             else:
-                print ret_dict["message"]
+                print(ret_dict["message"])
                 tim = self.announce(error_msg1)
                 self.julius_power(True,tim.sec)
                 return False
@@ -203,7 +209,7 @@ class TmsUrListener():
         #     except rospy.ServiceException as e:
         #         print "Service call failed: %s" % e
 
-            print ret.json()
+            print(ret.json())
 
             return True
 
@@ -669,3 +675,17 @@ class TmsUrListener():
                 tim = self.announce(announce)
                 self.julius_power(True,tim.sec)
                 return
+
+
+def main():
+    rclpy.init(args=args)
+
+    tms_ur_listener =TmsUrListener()
+
+    rclpy.spin(tms_ur_listener)
+
+    minimal_client.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()

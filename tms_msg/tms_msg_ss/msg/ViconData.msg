@@ -1,3 +1,4 @@
+std_msgs/Header header
 string measuredtime
 string subjectname
 string segmentname
