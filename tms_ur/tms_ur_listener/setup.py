@@ -31,6 +31,7 @@ setup(
     entry_points={
         'console_scripts': [
             'tms_ur_listener_server = scripts.tms_ur_listener_server:main',
+            'tms_ur_listener_client = scripts.tms_ur_listener_client:main',
         ],
     },
 )

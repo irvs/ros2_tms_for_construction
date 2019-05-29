@@ -38,27 +38,31 @@ sid = 100000
 class TmsUrListener(Node):
     def __init__(self):
         super().__init__('tms_ur_listener')
-        rclpy.on_shutdown(self.shutdown)
-        rclpy.create_subscription(JuliusMsg,"/pi0/julius_msg", lambda msg: self.callback(msg,0))
-        rclpy.create_subscription(JuliusMsg,"/pi1/julius_msg", lambda msg: self.callback(msg,1))
-        rclpy.create_subscription(JuliusMsg,"/pi2/julius_msg", lambda msg: self.callback(msg,2))
-        rclpy.create_subscription(JuliusMsg,"/pi3/julius_msg", lambda msg: self.callback(msg,3))
-        rclpy.create_subscription(JuliusMsg,"/pi4/julius_msg", lambda msg: self.callback(msg,4))
-        rclpy.create_subscription(JuliusMsg,"/pi5/julius_msg", lambda msg: self.callback(msg,5))
-        rclpy.create_subscription(String,"/watch_msg", lambda msg: self.callback(msg,100))
-        rclpy.create_subscription(String,"/line_msg", lambda msg: self.callback(msg,200))
-        rclpy.create_subscription(String,"/slack_msg", lambda msg: self.callback(msg,201))
+        self.create_subscription(JuliusMsg,"/pi0/julius_msg", lambda msg: self.callback(msg,0))
+        self.create_subscription(JuliusMsg,"/pi1/julius_msg", lambda msg: self.callback(msg,1))
+        self.create_subscription(JuliusMsg,"/pi2/julius_msg", lambda msg: self.callback(msg,2))
+        self.create_subscription(JuliusMsg,"/pi3/julius_msg", lambda msg: self.callback(msg,3))
+        self.create_subscription(JuliusMsg,"/pi4/julius_msg", lambda msg: self.callback(msg,4))
+        self.create_subscription(JuliusMsg,"/pi5/julius_msg", lambda msg: self.callback(msg,5))
+        self.create_subscription(String,"/watch_msg", lambda msg: self.callback(msg,100))
+        self.create_subscription(String,"/line_msg", lambda msg: self.callback(msg,200))
+        self.create_subscription(String,"/slack_msg", lambda msg: self.callback(msg,201))
         self.gSpeech_launched = False
         self.julius_flag = True
         self.timer = threading.Timer(1,self.alarm)
 
-        self.power_pub = rclpy.create_publisher(Bool, "julius_power", 10)
-        self.speaker_pub = rclpy.create_publisher(String, "speaker", 10)
-        self.bed_pub = rclpy.create_publisher(Int32, "rc_bed", 10)
+        self.power_pub = self.create_publisher(Bool, "julius_power", 10)
+        self.speaker_pub = self.create_publisher(String, "speaker", 10)
+        self.bed_pub = self.create_publisher(Int32, "rc_bed", 10)
         self.tok = Tokenizer()
 
         print('tms_ur_listener_server ready...')
-        
+    
+
+    def destroy_node(self):
+        self.get_logger().info("Stopping the node")
+        super().destroy_node()
+
     def alarm(self):
         while True:
             print("alarm")
@@ -88,11 +92,19 @@ class TmsUrListener(Node):
     
     def launch_gSpeech(self, id):
         servicename = '/pi' + str(id) + '/gSpeech'
+        gspeech = self.create_client(GspeechMsg, servicename)
         
-        rclpy.wait_for_service(servicename)
-        try:
-            gspeech = rclpy.ServiceProxy(servicename, GSpeechMsg)
-            response = gspeech()
+        while not gspeech.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('tms_db_reader not available, waiting again...')
+        
+        furure  = gspeech.call_async(data)
+        rclpy.spin_until_future_complete(self,future)
+        if future.result() is not None:
+            response = future.result()
+            print(response)
+            return response
+        else:
+            self.get_logger().info('Service call failed %r' % (future.exception(),))
 
     def speaker(self,data):
         speak = String()
@@ -677,7 +689,7 @@ class TmsUrListener(Node):
                 return
 
 
-def main():
+def main(args=None):
     rclpy.init(args=args)
 
     tms_ur_listener =TmsUrListener()
