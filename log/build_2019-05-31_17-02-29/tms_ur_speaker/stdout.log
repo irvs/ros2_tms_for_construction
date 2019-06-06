@@ -1,0 +1,19 @@
+running develop
+running egg_info
+creating tms_ur_speaker.egg-info
+writing tms_ur_speaker.egg-info/PKG-INFO
+writing dependency_links to tms_ur_speaker.egg-info/dependency_links.txt
+writing entry points to tms_ur_speaker.egg-info/entry_points.txt
+writing requirements to tms_ur_speaker.egg-info/requires.txt
+writing top-level names to tms_ur_speaker.egg-info/top_level.txt
+writing manifest file 'tms_ur_speaker.egg-info/SOURCES.txt'
+reading manifest file 'tms_ur_speaker.egg-info/SOURCES.txt'
+writing manifest file 'tms_ur_speaker.egg-info/SOURCES.txt'
+running build_ext
+Creating /home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/tms_ur_speaker/lib/python3.6/site-packages/site.py
+Creating /home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/tms_ur_speaker/lib/python3.6/site-packages/tms-ur-speaker.egg-link (link to .)
+Adding tms-ur-speaker 0.1.0 to easy-install.pth file
+Installing tms_ur_speaker_node script to /home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/tms_ur_speaker/lib/tms_ur_speaker
+
+Installed /home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/build/tms_ur_speaker
+running install_data

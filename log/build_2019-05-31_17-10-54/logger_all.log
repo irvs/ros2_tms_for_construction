@@ -1,0 +1,262 @@
+[0.237s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--symlink-install', '--packages-select', 'tms_ur_speaker']
+[0.237s] DEBUG:colcon:Parsed command line arguments: Namespace(ament_cmake_args=None, base_paths='.', build_base='build', catkin_cmake_args=None, catkin_skip_building_tests=False, cmake_args=None, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, cmake_target=None, cmake_target_skip_unavailable=False, continue_on_error=False, event_handlers=None, executor='parallel', ignore_user_meta=False, install_base='install', log_base='log', log_level=None, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x7fa84a34bf28>>, merge_install=False, metas='./colcon.meta', packages_above=None, packages_above_depth=None, packages_end=None, packages_ignore=None, packages_ignore_regex=None, packages_select=['tms_ur_speaker'], packages_select_build_failed=False, packages_select_by_dep=None, packages_select_regex=None, packages_select_test_failures=False, packages_skip=None, packages_skip_build_finished=False, packages_skip_by_dep=None, packages_skip_regex=None, packages_skip_test_passed=False, packages_skip_up_to=None, packages_start=None, packages_up_to=None, parallel_workers=12, paths=None, symlink_install=True, test_result_base=None, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x7fa84a34bf28>, verb_name='build', verb_parser=<colcon_defaults.argument_parser.defaults.DefaultArgumentsDecorator object at 0x7fa84a3593c8>)
+[0.297s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.297s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.297s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.297s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.297s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.297s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon'
+[0.297s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon) by extensions ['ignore', 'ignore_ament_install']
+[0.298s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon) by extension 'ignore'
+[0.298s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon) by extension 'ignore_ament_install'
+[0.298s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon) by extensions ['colcon_pkg']
+[0.298s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon) by extension 'colcon_pkg'
+[0.298s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon) by extensions ['colcon_meta']
+[0.298s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon) by extension 'colcon_meta'
+[0.298s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon) by extensions ['ros']
+[0.298s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon) by extension 'ros'
+[0.309s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon) by extensions ['cmake', 'python']
+[0.309s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon) by extension 'cmake'
+[0.309s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon) by extension 'python'
+[0.310s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon) by extensions ['python_setup_py']
+[0.310s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon) by extension 'python_setup_py'
+[0.310s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/build) by extensions ['ignore', 'ignore_ament_install']
+[0.310s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/build) by extension 'ignore'
+[0.310s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/build) ignored
+[0.310s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install) by extensions ['ignore', 'ignore_ament_install']
+[0.310s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install) by extension 'ignore'
+[0.310s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install) ignored
+[0.311s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/log) by extensions ['ignore', 'ignore_ament_install']
+[0.311s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/log) by extension 'ignore'
+[0.311s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/log) ignored
+[0.311s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db) by extensions ['ignore', 'ignore_ament_install']
+[0.311s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db) by extension 'ignore'
+[0.311s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db) by extension 'ignore_ament_install'
+[0.311s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db) by extensions ['colcon_pkg']
+[0.311s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db) by extension 'colcon_pkg'
+[0.311s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db) by extensions ['colcon_meta']
+[0.311s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db) by extension 'colcon_meta'
+[0.311s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db) by extensions ['ros']
+[0.311s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db) by extension 'ros'
+[0.312s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db) by extensions ['cmake', 'python']
+[0.312s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db) by extension 'cmake'
+[0.312s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db) by extension 'python'
+[0.312s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db) by extensions ['python_setup_py']
+[0.312s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db) by extension 'python_setup_py'
+[0.312s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db/tms_db_manager) by extensions ['ignore', 'ignore_ament_install']
+[0.312s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db/tms_db_manager) by extension 'ignore'
+[0.312s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db/tms_db_manager) by extension 'ignore_ament_install'
+[0.312s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db/tms_db_manager) by extensions ['colcon_pkg']
+[0.312s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db/tms_db_manager) by extension 'colcon_pkg'
+[0.312s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db/tms_db_manager) by extensions ['colcon_meta']
+[0.313s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db/tms_db_manager) by extension 'colcon_meta'
+[0.313s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db/tms_db_manager) by extensions ['ros']
+[0.313s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db/tms_db_manager) by extension 'ros'
+[0.318s] DEBUG:colcon.colcon_core.package_identification:Package '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db/tms_db_manager' with type 'ros.ament_python' and name 'tms_db_manager'
+[0.318s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg) by extensions ['ignore', 'ignore_ament_install']
+[0.318s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg) by extension 'ignore'
+[0.318s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg) by extension 'ignore_ament_install'
+[0.318s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg) by extensions ['colcon_pkg']
+[0.318s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg) by extension 'colcon_pkg'
+[0.319s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg) by extensions ['colcon_meta']
+[0.319s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg) by extension 'colcon_meta'
+[0.319s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg) by extensions ['ros']
+[0.319s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg) by extension 'ros'
+[0.319s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg) by extensions ['cmake', 'python']
+[0.319s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg) by extension 'cmake'
+[0.319s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg) by extension 'python'
+[0.319s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg) by extensions ['python_setup_py']
+[0.319s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg) by extension 'python_setup_py'
+[0.319s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_db) by extensions ['ignore', 'ignore_ament_install']
+[0.319s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_db) by extension 'ignore'
+[0.320s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_db) by extension 'ignore_ament_install'
+[0.320s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_db) by extensions ['colcon_pkg']
+[0.320s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_db) by extension 'colcon_pkg'
+[0.320s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_db) by extensions ['colcon_meta']
+[0.320s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_db) by extension 'colcon_meta'
+[0.320s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_db) by extensions ['ros']
+[0.320s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_db) by extension 'ros'
+[0.321s] DEBUG:colcon.colcon_core.package_identification:Package '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_db' with type 'ros.ament_cmake' and name 'tms_msg_db'
+[0.322s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ss) by extensions ['ignore', 'ignore_ament_install']
+[0.322s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ss) by extension 'ignore'
+[0.322s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ss) by extension 'ignore_ament_install'
+[0.322s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ss) by extensions ['colcon_pkg']
+[0.322s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ss) by extension 'colcon_pkg'
+[0.322s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ss) by extensions ['colcon_meta']
+[0.322s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ss) by extension 'colcon_meta'
+[0.322s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ss) by extensions ['ros']
+[0.322s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ss) by extension 'ros'
+[0.323s] DEBUG:colcon.colcon_core.package_identification:Package '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ss' with type 'ros.ament_cmake' and name 'tms_msg_ss'
+[0.323s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ts) by extensions ['ignore', 'ignore_ament_install']
+[0.323s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ts) by extension 'ignore'
+[0.323s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ts) by extension 'ignore_ament_install'
+[0.323s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ts) by extensions ['colcon_pkg']
+[0.324s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ts) by extension 'colcon_pkg'
+[0.324s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ts) by extensions ['colcon_meta']
+[0.324s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ts) by extension 'colcon_meta'
+[0.324s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ts) by extensions ['ros']
+[0.324s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ts) by extension 'ros'
+[0.324s] DEBUG:colcon.colcon_core.package_identification:Package '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ts' with type 'ros.ament_cmake' and name 'tms_msg_ts'
+[0.324s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw) by extensions ['ignore', 'ignore_ament_install']
+[0.325s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw) by extension 'ignore'
+[0.325s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw) by extension 'ignore_ament_install'
+[0.325s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw) by extensions ['colcon_pkg']
+[0.325s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw) by extension 'colcon_pkg'
+[0.325s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw) by extensions ['colcon_meta']
+[0.325s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw) by extension 'colcon_meta'
+[0.325s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw) by extensions ['ros']
+[0.325s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw) by extension 'ros'
+[0.325s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw) by extensions ['cmake', 'python']
+[0.325s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw) by extension 'cmake'
+[0.325s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw) by extension 'python'
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw) by extensions ['python_setup_py']
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw) by extension 'python_setup_py'
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw/tms_nw_rp) by extensions ['ignore', 'ignore_ament_install']
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw/tms_nw_rp) by extension 'ignore'
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw/tms_nw_rp) by extension 'ignore_ament_install'
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw/tms_nw_rp) by extensions ['colcon_pkg']
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw/tms_nw_rp) by extension 'colcon_pkg'
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw/tms_nw_rp) by extensions ['colcon_meta']
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw/tms_nw_rp) by extension 'colcon_meta'
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw/tms_nw_rp) by extensions ['ros']
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw/tms_nw_rp) by extension 'ros'
+[0.327s] DEBUG:colcon.colcon_core.package_identification:Package '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw/tms_nw_rp' with type 'ros.ament_cmake' and name 'tms_nw_rp'
+[0.327s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc) by extensions ['ignore', 'ignore_ament_install']
+[0.327s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc) by extension 'ignore'
+[0.327s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc) by extension 'ignore_ament_install'
+[0.327s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc) by extensions ['colcon_pkg']
+[0.327s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc) by extension 'colcon_pkg'
+[0.327s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc) by extensions ['colcon_meta']
+[0.328s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc) by extension 'colcon_meta'
+[0.328s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc) by extensions ['ros']
+[0.328s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc) by extension 'ros'
+[0.328s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc) by extensions ['cmake', 'python']
+[0.328s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc) by extension 'cmake'
+[0.328s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc) by extension 'python'
+[0.328s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc) by extensions ['python_setup_py']
+[0.328s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc) by extension 'python_setup_py'
+[0.328s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc/tms_rc_double) by extensions ['ignore', 'ignore_ament_install']
+[0.328s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc/tms_rc_double) by extension 'ignore'
+[0.328s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc/tms_rc_double) by extension 'ignore_ament_install'
+[0.329s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc/tms_rc_double) by extensions ['colcon_pkg']
+[0.329s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc/tms_rc_double) by extension 'colcon_pkg'
+[0.329s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc/tms_rc_double) by extensions ['colcon_meta']
+[0.329s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc/tms_rc_double) by extension 'colcon_meta'
+[0.329s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc/tms_rc_double) by extensions ['ros']
+[0.329s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc/tms_rc_double) by extension 'ros'
+[0.337s] DEBUG:colcon.colcon_core.package_identification:Package '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc/tms_rc_double' with type 'ros.ament_cmake' and name 'tms_rc_double'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss) by extensions ['ignore', 'ignore_ament_install']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss) by extension 'ignore'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss) by extension 'ignore_ament_install'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss) by extensions ['colcon_pkg']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss) by extension 'colcon_pkg'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss) by extensions ['colcon_meta']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss) by extension 'colcon_meta'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss) by extensions ['ros']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss) by extension 'ros'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss) by extensions ['cmake', 'python']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss) by extension 'cmake'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss) by extension 'python'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss) by extensions ['python_setup_py']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss) by extension 'python_setup_py'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss/tms_ss_vicon) by extensions ['ignore', 'ignore_ament_install']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss/tms_ss_vicon) by extension 'ignore'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss/tms_ss_vicon) by extension 'ignore_ament_install'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss/tms_ss_vicon) by extensions ['colcon_pkg']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss/tms_ss_vicon) by extension 'colcon_pkg'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss/tms_ss_vicon) by extensions ['colcon_meta']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss/tms_ss_vicon) by extension 'colcon_meta'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss/tms_ss_vicon) by extensions ['ros']
+[0.340s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss/tms_ss_vicon) by extension 'ros'
+[0.340s] DEBUG:colcon.colcon_core.package_identification:Package '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss/tms_ss_vicon' with type 'ros.ament_cmake' and name 'tms_ss_vicon'
+[0.340s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur) by extensions ['ignore', 'ignore_ament_install']
+[0.340s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur) by extension 'ignore'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur) by extension 'ignore_ament_install'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur) by extensions ['colcon_pkg']
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur) by extension 'colcon_pkg'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur) by extensions ['colcon_meta']
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur) by extension 'colcon_meta'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur) by extensions ['ros']
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur) by extension 'ros'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur) by extensions ['cmake', 'python']
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur) by extension 'cmake'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur) by extension 'python'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur) by extensions ['python_setup_py']
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur) by extension 'python_setup_py'
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_listener) by extensions ['ignore', 'ignore_ament_install']
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_listener) by extension 'ignore'
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_listener) by extension 'ignore_ament_install'
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_listener) by extensions ['colcon_pkg']
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_listener) by extension 'colcon_pkg'
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_listener) by extensions ['colcon_meta']
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_listener) by extension 'colcon_meta'
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_listener) by extensions ['ros']
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_listener) by extension 'ros'
+[0.344s] DEBUG:colcon.colcon_core.package_identification:Package '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_listener' with type 'ros.ament_python' and name 'tms_ur_listener'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_slack) by extensions ['ignore', 'ignore_ament_install']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_slack) by extension 'ignore'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_slack) by extension 'ignore_ament_install'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_slack) by extensions ['colcon_pkg']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_slack) by extension 'colcon_pkg'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_slack) by extensions ['colcon_meta']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_slack) by extension 'colcon_meta'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_slack) by extensions ['ros']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_slack) by extension 'ros'
+[0.345s] DEBUG:colcon.colcon_core.package_identification:Package '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_slack' with type 'ros.ament_cmake' and name 'tms_ur_slack'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_speaker) by extensions ['ignore', 'ignore_ament_install']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_speaker) by extension 'ignore'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_speaker) by extension 'ignore_ament_install'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_speaker) by extensions ['colcon_pkg']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_speaker) by extension 'colcon_pkg'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_speaker) by extensions ['colcon_meta']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_speaker) by extension 'colcon_meta'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_speaker) by extensions ['ros']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_speaker) by extension 'ros'
+[0.347s] DEBUG:colcon.colcon_core.package_identification:Package '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_speaker' with type 'ros.ament_python' and name 'tms_ur_speaker'
+[0.347s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.350s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'tms_msg_db' in '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_db'
+[0.350s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'tms_msg_ss' in '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ss'
+[0.350s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'tms_msg_ts' in '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_msg/tms_msg_ts'
+[0.350s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'tms_nw_rp' in '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_nw/tms_nw_rp'
+[0.350s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'tms_rc_double' in '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_rc/tms_rc_double'
+[0.350s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'tms_ur_listener' in '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_listener'
+[0.350s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'tms_ur_slack' in '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_slack'
+[0.350s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'tms_db_manager' in '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_db/tms_db_manager'
+[0.350s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'tms_ss_vicon' in '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ss/tms_ss_vicon'
+[0.354s] Level 5:colcon.colcon_core.verb:set package 'tms_ur_speaker' build argument 'cmake_args' from command line to 'None'
+[0.354s] Level 5:colcon.colcon_core.verb:set package 'tms_ur_speaker' build argument 'cmake_target' from command line to 'None'
+[0.354s] Level 5:colcon.colcon_core.verb:set package 'tms_ur_speaker' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.354s] Level 5:colcon.colcon_core.verb:set package 'tms_ur_speaker' build argument 'cmake_clean_cache' from command line to 'False'
+[0.354s] Level 5:colcon.colcon_core.verb:set package 'tms_ur_speaker' build argument 'cmake_clean_first' from command line to 'False'
+[0.354s] Level 5:colcon.colcon_core.verb:set package 'tms_ur_speaker' build argument 'cmake_force_configure' from command line to 'False'
+[0.354s] Level 5:colcon.colcon_core.verb:set package 'tms_ur_speaker' build argument 'ament_cmake_args' from command line to 'None'
+[0.355s] Level 5:colcon.colcon_core.verb:set package 'tms_ur_speaker' build argument 'catkin_cmake_args' from command line to 'None'
+[0.355s] Level 5:colcon.colcon_core.verb:set package 'tms_ur_speaker' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.355s] DEBUG:colcon.colcon_core.verb:Building package 'tms_ur_speaker' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/build/tms_ur_speaker', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/tms_ur_speaker', 'merge_install': False, 'path': '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_speaker', 'symlink_install': True, 'test_result_base': None}
+[0.356s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[0.357s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[0.357s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_speaker' with build type 'ament_python'
+[0.357s] Level 1:colcon.colcon_core.shell:create_environment_hook('tms_ur_speaker', 'ament_prefix_path')
+[0.364s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.365s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/tms_ur_speaker/share/tms_ur_speaker/hook/ament_prefix_path.ps1'
+[0.365s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/tms_ur_speaker/share/tms_ur_speaker/hook/ament_prefix_path.sh'
+[0.366s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/tms_ur/tms_ur_speaker'
+[0.366s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.186s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/build/tms_ur_speaker': PYTHONPATH=/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/tms_ur_speaker/lib/python3.6/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --prefix /home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/tms_ur_speaker --no-deps install_data --install-dir /home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/tms_ur_speaker
+[2.144s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/build/tms_ur_speaker' returned '1': PYTHONPATH=/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/tms_ur_speaker/lib/python3.6/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --prefix /home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/tms_ur_speaker --no-deps install_data --install-dir /home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/tms_ur_speaker
+[2.152s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[2.153s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[2.153s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '1'
+[2.153s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[2.174s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[2.174s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[2.174s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[2.179s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[2.181s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/local_setup.ps1'
+[2.185s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/setup.ps1'
+[2.203s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/local_setup.sh'
+[2.204s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/setup.sh'
+[2.221s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/local_setup.bash'
+[2.221s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/setup.bash'
+[2.237s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/local_setup.zsh'
+[2.238s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/itsuka/ros2_ws/src/backup_ros2_tms-feature_vicon/install/setup.zsh'

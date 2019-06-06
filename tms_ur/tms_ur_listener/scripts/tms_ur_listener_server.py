@@ -13,7 +13,6 @@ from janome.tokenizer import Tokenizer
 from tms_msg_db.msg import Tmsdb
 from tms_msg_db.srv import TmsdbGetData
 from tms_msg_ts.srv import TsReq
-from tms_msg_nw.srv import TmsNwReq
 from tms_rc_double.srv import SkypeSrv
 import rclpy
 import requests
@@ -193,33 +192,6 @@ class TmsUrListener(Node):
             tim = self.announce(error_msg1)
             self.julius_power(True,tim.sec)
             return False
-
-        # if ret_dict["message"] != "OK":
-        #     print ret_dict["message"]
-        #     tim = self.announce(error_msg1)
-        #     self.julius_power(True,tim.sec)
-        #     return False
-        # else:
-        #     print 'send command'
-        #     hostname = str(ret_dict["hostname"])
-        #     task_id =  ret_dict["service_id"]["task_id"]
-        #     robot_id =  ret_dict["service_id"]["robot_id"]
-        #     object_id =  ret_dict["service_id"]["object_id"]
-        #     user_id =  ret_dict["service_id"]["user_id"]
-        #     place_id =  ret_dict["service_id"]["place_id"]
-
-            
-        #     try:
-        #         rospy.wait_for_service('tms_nw_req', timeout=1.0)
-        #     except rospy.ROSException:
-        #         print "tms_nw_req is not work"
-
-        #     try:
-        #         nw_req = rospy.ServiceProxy('tms_nw_req',tms_nw_req)
-        #         res = nw_req(hostname,"tms_ts_master","tms_nw_rp/tms_nw_req" ,task_id,robot_id,object_id,user_id,place_id,0)
-        #         print res
-        #     except rospy.ServiceException as e:
-        #         print "Service call failed: %s" % e
 
             print(ret.json())
 
