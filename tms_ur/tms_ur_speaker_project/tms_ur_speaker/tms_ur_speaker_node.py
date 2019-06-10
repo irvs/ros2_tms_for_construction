@@ -4,7 +4,7 @@ from std_msgs.msg import String
 import subprocess
 import os
 
-base = os.path.dirname(os.path.abspath(__file__))
+base = '/home/ubuntu/ros2_ws/src/ros2_tms/tms_ur/tms_ur_speaker_project/wav'
 
 def jtalk(t):
     open_jtalk=['open_jtalk']
@@ -25,16 +25,16 @@ def speak(data):
     if data == '':
         return 0
     elif data[0]=='\\':
-        aplay = ['aplay','-q',os.path.join(base, '../wav/'+data[1:]+'.wav')]
+        aplay = ['aplay','-q',os.path.join(base, data[1:]+'.wav')]
         wr = subprocess.Popen(aplay)
-        soxi = ['soxi','-D',os.path.join(base, '../wav/'+data[1:]+'.wav')]
+        soxi = ['soxi','-D',os.path.join(base, data[1:]+'.wav')]
         ret = subprocess.check_output(soxi)
         print(ret)
         return ret
     else:
         talk = data.replace(',','')
         jtalk(talk)
-        soxi = ['soxi','-D',os.path.join(base, '../wav/open_jtalk.wav')]
+        soxi = ['soxi','-D',os.path.join(base, 'open_jtalk.wav')]
         ret = subprocess.check_output(soxi)
         print(ret)
         return ret
