@@ -2,6 +2,9 @@ import rclpy
 # from tms_ur_speaker.srv import SpeakerSrv
 from std_msgs.msg import String
 import subprocess
+import os
+
+base = os.path.dirname(os.path.abspath(__file__))
 
 def jtalk(t):
     open_jtalk=['open_jtalk']
@@ -22,16 +25,16 @@ def speak(data):
     if data == '':
         return 0
     elif data[0]=='\\':
-        aplay = ['aplay','-q','/home/pi/catkin_ws/src/tms_ur_speaker/script/'+data[1:]+'.wav']
+        aplay = ['aplay','-q',os.path.join(base, '../wav/'+data[1:]+'.wav')]
         wr = subprocess.Popen(aplay)
-        soxi = ['soxi','-D','/home/pi/catkin_ws/src/tms_ur_speaker/script/'+data[1:]+'.wav']
+        soxi = ['soxi','-D',os.path.join(base, '../wav/'+data[1:]+'.wav')]
         ret = subprocess.check_output(soxi)
         print(ret)
         return ret
     else:
         talk = data.replace(',','')
         jtalk(talk)
-        soxi = ['soxi','-D','open_jtalk.wav']
+        soxi = ['soxi','-D',os.path.join(base, '../wav/open_jtalk.wav')]
         ret = subprocess.check_output(soxi)
         print(ret)
         return ret
@@ -49,6 +52,7 @@ def main(args=None):
     rclpy.init(args=args)
 
     g_node = rclpy.create_node('tms_ur_speaker')
+    print('tms_ur_speaker : '+base)
 
     subscription = g_node.create_subscription(String, 'speaker', subscription_callback, 10)
     subscription  # prevent unused variable warning

@@ -1,8 +1,0 @@
-running develop
-running egg_info
-writing tms_ur_speaker.egg-info/PKG-INFO
-writing dependency_links to tms_ur_speaker.egg-info/dependency_links.txt
-writing entry points to tms_ur_speaker.egg-info/entry_points.txt
-writing requirements to tms_ur_speaker.egg-info/requires.txt
-writing top-level names to tms_ur_speaker.egg-info/top_level.txt
-error: package directory 'tms_ur_speaker' does not exist
