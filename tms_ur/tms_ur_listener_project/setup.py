@@ -30,8 +30,8 @@ setup(
     test_suite='pytest',
     entry_points={
         'console_scripts': [
-            'tms_ur_listener_server = scripts.tms_ur_listener_server:main',
-            'tms_ur_listener_client = scripts.tms_ur_listener_client:main',
+            'tms_ur_listener_server = tms_ur_listener.tms_ur_listener_server:main',
+            'tms_ur_listener_client = tms_ur_listener.tms_ur_listener_client:main',
         ],
     },
 )
