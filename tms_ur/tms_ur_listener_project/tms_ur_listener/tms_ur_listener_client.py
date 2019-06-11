@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import rclpy
-from tms_ur_listener.msg import JuliusMsg
-from tms_ur_listener.srv import GSpeechSrv
+from tms_msg_ur.msg import JuliusMsg
+from tms_msg_ur.srv import GSpeechSrv
 from std_msgs.msg import Bool
 from std_msgs.msg import String
 from std_msgs.msg import Empty
@@ -20,11 +20,11 @@ import threading
 
 
 julius_path = '/usr/local/bin/julius'
-jconf_path = '/home/pi/dictation-kit-v4.3.1-linux/tms.jconf'
+jconf_path = '/home/ubuntu/ros2_ws/src/ros2_tms/tms_ur/tms_ur_listener_project/julius_dictation_kit/tms.jconf'
 julius = None
 julius_socket = None
 adinrec_path = '/usr/local/bin/adinrec'
-wav_file = '/home/pi/catkin_ws/src/tms_ur_listener/script/rec.wav'
+wav_file = '/home/ubuntu/ros2_ws/src/ros2_tms/tms_ur/tms_ur_listener_project/wav/rec.wav'
 gs_filename = 'gs://ros-tms/rec.wav'
 
 def invoke_julius():
