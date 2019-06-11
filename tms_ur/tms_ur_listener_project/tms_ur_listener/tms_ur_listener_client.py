@@ -152,7 +152,7 @@ def main(args=None):
 
     global speaker_pub, pub
     speaker_pub = node.create_publisher(String, "/speaker", 10)
-    pub = node.create_publisher(String, "julius_msg", 10)
+    pub = node.create_publisher(JuliusMsg, "julius_msg", 10)
 
     node.create_subscription(Bool, "/julius_power", power_callback)
     node.create_service(GSpeechSrv, "gSpeech", gSpeech_callback)
