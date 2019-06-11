@@ -92,7 +92,7 @@ class TmsUrListener(Node):
     
     def launch_gSpeech(self, id):
         servicename = '/pi' + str(id) + '/gSpeech'
-        gspeech = self.create_client(GspeechSrv, servicename)
+        gspeech = self.create_client(GSpeechSrv, servicename)
         
         while not gspeech.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('tms_db_reader not available, waiting again...')
