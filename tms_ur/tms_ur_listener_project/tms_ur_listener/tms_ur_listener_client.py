@@ -84,7 +84,7 @@ def invoke_julius_set():
 
 
 def power_callback(data):
-    node.get_logger().info(data)
+    node.get_logger().info(data.data)
     global julius,julius_socket,sf
     if data.data == True:
         node.get_logger().info("invoke julius")

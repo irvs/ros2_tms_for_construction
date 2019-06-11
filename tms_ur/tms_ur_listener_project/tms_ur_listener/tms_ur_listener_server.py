@@ -37,7 +37,7 @@ sid = 100000
 class TmsUrListener(Node):
     def __init__(self):
         super().__init__('tms_ur_listener')
-        self.create_subscription(JuliusMsg,"/pi0/julius_msg", lambda msg: self.callback(msg,0))
+        self.create_subscription(JuliusMsg,"/julius_msg", lambda msg: self.callback(msg,0))
         self.create_subscription(JuliusMsg,"/pi1/julius_msg", lambda msg: self.callback(msg,1))
         self.create_subscription(JuliusMsg,"/pi2/julius_msg", lambda msg: self.callback(msg,2))
         self.create_subscription(JuliusMsg,"/pi3/julius_msg", lambda msg: self.callback(msg,3))
@@ -55,6 +55,7 @@ class TmsUrListener(Node):
         self.bed_pub = self.create_publisher(Int32, "rc_bed", 10)
         self.tok = Tokenizer()
 
+        self.get_logger().info('tms_ur_listener_server ready...')
         print('tms_ur_listener_server ready...')
     
 
@@ -91,7 +92,7 @@ class TmsUrListener(Node):
     
     def launch_gSpeech(self, id):
         servicename = '/pi' + str(id) + '/gSpeech'
-        gspeech = self.create_client(GspeechMsg, servicename)
+        gspeech = self.create_client(GspeechSrv, servicename)
         
         while not gspeech.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('tms_db_reader not available, waiting again...')
@@ -111,7 +112,7 @@ class TmsUrListener(Node):
         self.speaker_pub.publish(speak)
 
     def announce(self,data):
-        print(data)
+        print(data.data)
         #rospy.wait_for_service('speaker_srv', timeout=1.0)
         tim = 0.0
 
@@ -199,7 +200,9 @@ class TmsUrListener(Node):
 
     def callback(self,data,id):
         self.get_logger().info(str(id))
-        self.get_logger().info(data)
+        self.get_logger().info(data.data)
+        print(str(id))
+        print(data.data)
         if id < 100:
             if data.data not in trigger:
                 return
