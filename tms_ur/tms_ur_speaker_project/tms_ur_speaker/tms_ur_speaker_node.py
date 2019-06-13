@@ -48,7 +48,7 @@ def subscription_callback(msg):
     g_node.get_logger().info(
         'Speaker: "%s"' % msg.data
     )
-    jtalk(msg.data)
+    speak(msg.data)
 
 
 def service_callback(request, response):
