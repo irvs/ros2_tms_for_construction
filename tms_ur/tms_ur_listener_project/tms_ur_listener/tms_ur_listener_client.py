@@ -116,7 +116,7 @@ def gSpeech_callback(request, response):
     print(args)
     ret = subprocess.check_output(shlex.split(args))
     print(ret)
-    json_dict = json.loads(ret,"utf-8")
+    json_dict = json.loads(ret)
     if "results" in json_dict:
         script = json_dict["results"][0]["alternatives"][0]["transcript"]
         val = float(json_dict["results"][0]["alternatives"][0]["confidence"])
