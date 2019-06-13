@@ -107,7 +107,7 @@ def gSpeech_callback(request, response):
     print("enc success")
 
     data = "{'config':{'encoding':'LINEAR16','sampleRateHertz':16000,'languageCode':'ja-JP'},'audio':{'content':'" + enc.decode('utf-8') + "'}}"
-    json_file = open('/home/pi/catkin_ws/src/tms_ur_listener/script/sync-request.json','w')
+    json_file = open('/home/ubuntu/ros2_ws/src/ros2_tms/tms_ur/tms_ur_listener_project/json/sync-request.json','w')
     json_file.write(data)
     json_file.close()
     print("write json_file")
