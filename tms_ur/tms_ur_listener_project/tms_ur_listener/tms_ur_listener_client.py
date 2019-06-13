@@ -102,7 +102,7 @@ def gSpeech_callback(request, response):
     speaker_pub.publish(speak)
     print("recording succeed")
 
-    file = open(wav_file,'rt').read()
+    file = open(wav_file,'rb').read()
     enc = base64.b64encode(file)
     print("enc success")
 

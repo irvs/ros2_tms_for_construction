@@ -91,20 +91,24 @@ class TmsUrListener(Node):
                 self.speaker('\sound3')
     
     def launch_gSpeech(self, id):
-        servicename = '/pi' + str(id) + '/gSpeech'
+        # servicename = '/pi' + str(id) + '/gSpeech'
+        ##################################################### DEBUG
+        servicename = '/gSpeech'
+        ###########################################################
         gspeech = self.create_client(GSpeechSrv, servicename)
-        
+        gspeech_req = GSpeechSrv.Request()
+
         while not gspeech.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('tms_db_reader not available, waiting again...')
         
-        furure  = gspeech.call_async(data)
-        rclpy.spin_until_future_complete(self,future)
-        if future.result() is not None:
-            response = future.result()
+        self.furure_gspeech  = gspeech.call_async(gspeech_req)
+        rclpy.spin_until_future_complete(self,self.future_gspeech)
+        if self.future_gspeech.result() is not None:
+            response = self.future_gspeech.result()
             print(response)
             return response
         else:
-            self.get_logger().info('Service call failed %r' % (future.exception(),))
+            self.get_logger().info('Service call failed %r' % (self.future_gspeech.exception(),))
 
     def speaker(self,data):
         speak = String()
