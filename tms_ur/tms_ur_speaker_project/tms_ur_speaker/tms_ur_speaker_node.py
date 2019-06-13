@@ -1,10 +1,12 @@
 import rclpy
-# from tms_ur_speaker.srv import SpeakerSrv
+from tms_msg_ur.srv import SpeakerSrv
 from std_msgs.msg import String
 import subprocess
 import os
 
+
 base = '/home/ubuntu/ros2_ws/src/ros2_tms/tms_ur/tms_ur_speaker_project/wav'
+
 
 def jtalk(t):
     open_jtalk=['open_jtalk']
@@ -20,6 +22,7 @@ def jtalk(t):
     c.wait()
     aplay = ['aplay','-q','open_jtalk.wav']
     wr = subprocess.Popen(aplay)
+
 
 def speak(data):
     if data == '':
@@ -39,6 +42,7 @@ def speak(data):
         print(ret)
         return ret
 
+
 def subscription_callback(msg):
     global g_node
     g_node.get_logger().info(
@@ -46,6 +50,15 @@ def subscription_callback(msg):
     )
     jtalk(msg.data)
 
+
+def service_callback(request, response):
+    global g_node
+    g_node.get_logger().info(
+        request.data
+    )
+    ret = speak(req.data)
+    response.sec = float(ret)
+    return response
 
 def main(args=None):
     global g_node
@@ -56,6 +69,8 @@ def main(args=None):
 
     subscription = g_node.create_subscription(String, 'speaker', subscription_callback, 10)
     subscription  # prevent unused variable warning
+
+    srv = g_node.create_service(SpeakerSrv, 'speaker_srv', service_callback)
 
     while rclpy.ok():
         rclpy.spin_once(g_node)
