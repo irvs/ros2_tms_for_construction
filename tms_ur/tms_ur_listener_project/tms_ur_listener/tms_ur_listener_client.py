@@ -112,7 +112,7 @@ def gSpeech_callback(request, response):
     json_file.close()
     print("write json_file")
 
-    args = 'curl -s -k -H "Content-Type: application/json" -H "Authorization: Bearer '+token.decode().rstrip('\n')+'" https://speech.googleapis.com/v1beta1/speech:syncrecognize -d @/home/ubuntu/ros2_ws/src/ros2_tms/tms_ur/tms_ur_listener_project/json/sync-request.json'
+    args = 'curl -s -k -H "Content-Type: application/json" -H "Authorization: Bearer '+token.decode().rstrip('\n')+'" https://speech.googleapis.com/v1/speech:recognize -d @/home/ubuntu/ros2_ws/src/ros2_tms/tms_ur/tms_ur_listener_project/json/sync-request.json'
     print(args)
     ret = subprocess.check_output(shlex.split(args))
     ret_str = ret.decode()
