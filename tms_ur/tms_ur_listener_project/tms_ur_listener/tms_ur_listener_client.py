@@ -115,8 +115,9 @@ def gSpeech_callback(request, response):
     args = 'curl -s -k -H "Content-Type: application/json" -H "Authorization: Bearer '+token.decode().rstrip('\n')+'" https://speech.googleapis.com/v1beta1/speech:syncrecognize -d @/home/ubuntu/ros2_ws/src/ros2_tms/tms_ur/tms_ur_listener_project/json/sync-request.json'
     print(args)
     ret = subprocess.check_output(shlex.split(args))
-    print(ret)
-    json_dict = json.loads(ret)
+    ret_str = ret.decode()
+    print(ret_str)
+    json_dict = json.loads(ret_str)
     if "results" in json_dict:
         script = json_dict["results"][0]["alternatives"][0]["transcript"]
         val = float(json_dict["results"][0]["alternatives"][0]["confidence"])
