@@ -99,7 +99,7 @@ class TmsUrListener(Node):
         gspeech_req = GSpeechSrv.Request()
 
         while not gspeech.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('tms_db_reader not available, waiting again...')
+            self.get_logger().info('service "/gSpeech"  not available, waiting again...')
         
         self.future_gspeech  = gspeech.call_async(gspeech_req)
         rclpy.spin_until_future_complete(self,self.future_gspeech)
@@ -116,38 +116,48 @@ class TmsUrListener(Node):
         self.speaker_pub.publish(speak)
 
     def announce(self,data):
-        print(data.data)
+        print(data)
         #rospy.wait_for_service('speaker_srv', timeout=1.0)
         tim = 0.0
 
         speak = self.create_client(SpeakerSrv, 'speaker_srv')
-        furure = speak.call_async(data)
-        rclpy.spin_until_future_complete(self, future)        
+        speak_req = SpeakerSrv.Request()
+        speak_req.data = data
 
-        if furure.result() is not None:
-            tim = future.result()
+        while not speak.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service "speaker_srv" not available, waiting again...')
+
+        self.future_speak = speak.call_async(speak_req)
+        rclpy.spin_until_future_complete(self, self.future_speak) 
+
+        if self.future_speak.result() is not None:
+            tim = self.future_speak.result().sec
         else:
             send_slack = self.create_client(SlackSrv,'slack_srv')
-            furure = send_slack.call_async(data)
-            if furure.result() is not None:
-                tim = future.result()
+            slack_req = SlackSrv.Request()
+            slack_req.data = data
+            self.future_slack = send_slack.call_async(slack_req)
+            if self.future_slack.result() is not None:
+                tim = self.future_slack.result().sec
             else:
-                self.get_logger().info('Service call failed %r' % (future.exception(),))
+                self.get_logger().info('Service call failed %r' % (self.future_slack.exception(),))
         return tim
 
     def db_reader(self,data):
         tms_db_reader = self.create_client(TmsdbGetData, 'tms_db_reader')
+        db_reader_req = TmsdbGetData.Request()
+        db_reader_req.tmsdb = data
         
         while not tms_db_reader.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('tms_db_reader not available, waiting again...')
         
-        furure  = tms_db_reader.call_async(data)
-        rclpy.spin_until_future_complete(self,future)
-        if future.result() is not None:
-            res = future.result()
+        self.future_db_reader  = tms_db_reader.call_async(db_reader_req)
+        rclpy.spin_until_future_complete(self,self.future_db_reader)
+        if self.future_db_reader.result() is not None:
+            res = self.future_db_reader.result().tmsdb
             return res
         else:
-            self.get_logger().info('Service call failed %r' % (future.exception(),))
+            self.get_logger().info('Service call failed %r' % (self.future_db_reader.exception(),))
             return None
 
     def tag_reader(self,data):
@@ -217,6 +227,8 @@ class TmsUrListener(Node):
             self.get_logger().info("kill julius!!")
             self.julius_power(False)
             self.speaker("\sound1")
+            time.sleep(0.5)
+            self.announce(error_msg0)
             time.sleep(0.5)
             data = self.launch_gSpeech(id)
             self.gSpeech_launched = False

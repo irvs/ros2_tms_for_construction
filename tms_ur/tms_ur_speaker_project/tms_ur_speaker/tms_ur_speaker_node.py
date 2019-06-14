@@ -56,7 +56,7 @@ def service_callback(request, response):
     g_node.get_logger().info(
         request.data
     )
-    ret = speak(req.data)
+    ret = speak(request.data)
     response.sec = float(ret)
     return response
 
