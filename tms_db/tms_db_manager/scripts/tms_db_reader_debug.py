@@ -118,6 +118,8 @@ class TmsDbReader(Node):
         else:
             mode = MODE_ERROR
 
+        print("[mode] : " + str(mode))
+
         if mode == MODE_ERROR:
             temp_dbdata.note = "Wrong request! Try to check the command!"
             # ret = TmsdbGetDataResponse()

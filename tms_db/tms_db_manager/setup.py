@@ -31,6 +31,7 @@ setup(
     entry_points={
         'console_scripts': [
             'tms_db_reader = scripts.tms_db_reader:main',
+            'tms_db_reader_debug = scripts.tms_db_reader_debug:main',
             'tms_db_writer = scripts.tms_db_writer:main',
             'tms_db_publisher = scripts.tms_db_publisher:main'
         ],

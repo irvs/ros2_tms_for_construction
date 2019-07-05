@@ -7,7 +7,6 @@ This file is modified by Minsoo Song.
 """
 
 import rclpy
-import genpy
 import pymongo
 import json
 import copy
@@ -119,11 +118,11 @@ def _fill_msg(msg, dic):
                 dic[i] = float(dic[i])
             elif i == "ry":
                 dic[i] = float(dic[i])
-            elif i == "offsetx":
+            elif i == "offset_x":
                 dic[i] = float(dic[i])
-            elif i == "offsety":
+            elif i == "offset_y":
                 dic[i] = float(dic[i])
-            elif i == "offsetz":
+            elif i == "offset_z":
                 dic[i] = float(dic[i])
             elif i == "joint":
                 dic[i] = str(dic[i])
