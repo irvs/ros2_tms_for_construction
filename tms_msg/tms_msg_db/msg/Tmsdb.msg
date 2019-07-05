@@ -8,9 +8,9 @@ float64   z
 float64   rr
 float64   rp
 float64   ry
-float64   offsetx
-float64   offsety
-float64   offsetz
+float64  offset_x
+float64 offset_y
+float64 offset_z
 string    joint
 float64   weight
 string    rfid
