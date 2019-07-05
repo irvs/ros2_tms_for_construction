@@ -1,5 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 import rclpy
 from tms_msg_ur.msg import JuliusMsg
 from tms_msg_ur.srv import GSpeechSrv

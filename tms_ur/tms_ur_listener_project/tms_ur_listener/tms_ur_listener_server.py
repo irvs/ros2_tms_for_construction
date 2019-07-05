@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+
 
 ### This is ROS2 Version of tms_ur_listener_server.py 
 
@@ -14,6 +13,7 @@ from tms_msg_db.msg import Tmsdb
 from tms_msg_db.srv import TmsdbGetData
 from tms_msg_ts.srv import TsReq
 from tms_rc_double.srv import SkypeSrv
+from rclpy.callback_groups import ReentrantCallbackGroup
 import rclpy
 import requests
 import time
@@ -24,6 +24,11 @@ import datetime
 import threading
 import urllib
 import os
+import asyncio
+import pprint
+from websocket import create_connection
+
+
 host_url = os.getenv("ROS_HOSTNAME", "localhost")
 
 
@@ -34,222 +39,174 @@ error_msg2 = "エラーが発生したため、処理を中断します"
 sid = 100000
 
 
-class TmsUrListener(Node):
+class TmsUrListenerServer(Node):
     def __init__(self):
-        super().__init__('tms_ur_listener')
-        self.create_subscription(JuliusMsg,"/julius_msg", lambda msg: self.callback(msg,0))
-        self.create_subscription(JuliusMsg,"/pi1/julius_msg", lambda msg: self.callback(msg,1))
-        self.create_subscription(JuliusMsg,"/pi2/julius_msg", lambda msg: self.callback(msg,2))
-        self.create_subscription(JuliusMsg,"/pi3/julius_msg", lambda msg: self.callback(msg,3))
-        self.create_subscription(JuliusMsg,"/pi4/julius_msg", lambda msg: self.callback(msg,4))
-        self.create_subscription(JuliusMsg,"/pi5/julius_msg", lambda msg: self.callback(msg,5))
-        self.create_subscription(String,"/watch_msg", lambda msg: self.callback(msg,100))
-        self.create_subscription(String,"/line_msg", lambda msg: self.callback(msg,200))
-        self.create_subscription(String,"/slack_msg", lambda msg: self.callback(msg,201))
+        super().__init__('tms_ur_listener_server')
+
         self.gSpeech_launched = False
         self.julius_flag = True
-        self.timer = threading.Timer(1,self.alarm)
-
-        self.power_pub = self.create_publisher(Bool, "julius_power", 10)
-        self.speaker_pub = self.create_publisher(String, "speaker", 10)
-        self.bed_pub = self.create_publisher(Int32, "rc_bed", 10)
         self.tok = Tokenizer()
 
+        # Docomo Api Key
+        self.apikey = ""
+        with open('/home/ros2tms/apikey', 'r') as f:
+            for line in f:
+                self.apikey += line.replace('\n','')
+
+        # Publishers
+        self.pub_power = self.create_publisher(Bool, "julius_power", 10)
+        self.pub_speaker = self.create_publisher(String, "speaker", 10)
+        self.pub_bed = self.create_publisher(Int32, "rc_bed", 10)
+
+        # Callbacks ( subscribers )
+        self.cb_group = ReentrantCallbackGroup()
+        # self.create_subscription(JuliusMsg,"/julius_msg", lambda msg: self.callback(msg,0), callback_group=self.cb_group)
+        self.create_subscription(JuliusMsg,"/julius_msg", self.callback, callback_group=self.cb_group)
+        # self.create_subscription(JuliusMsg,"/pi1/julius_msg", lambda msg: self.callback(msg,1), callback_group=self.cb_group)
+        # self.create_subscription(JuliusMsg,"/pi2/julius_msg", lambda msg: self.callback(msg,2), callback_group=self.cb_group)
+        # self.create_subscription(JuliusMsg,"/pi3/julius_msg", lambda msg: self.callback(msg,3), callback_group=self.cb_group)
+        # self.create_subscription(JuliusMsg,"/pi4/julius_msg", lambda msg: self.callback(msg,4), callback_group=self.cb_group)
+        # self.create_subscription(JuliusMsg,"/pi5/julius_msg", lambda msg: self.callback(msg,5), callback_group=self.cb_group)
+        # self.create_subscription(String,"/watch_msg", lambda msg: self.callback(msg,100), callback_group=self.cb_group)
+        # self.create_subscription(String,"/line_msg", lambda msg: self.callback(msg,200), callback_group=self.cb_group)
+        # self.create_subscription(String,"/slack_msg", lambda msg: self.callback(msg,201), callback_group=self.cb_group)
+
+        # Callbacks ( clients )
+        self.cli_gspeech = self.create_client(GSpeechSrv, '/gSpeech')  # servicename = '/pi' + str(id) + '/gSpeech'
+        while not self.cli_gspeech.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service "/gSpeech"  not available, waiting again...')
+
+        self.cli_speaker = self.create_client(SpeakerSrv, 'speaker_srv')
+        while not self.cli_speaker.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service "speaker_srv" not available, waiting again...')
+
+        self.cli_dbreader = self.create_client(TmsdbGetData, 'tms_db_reader')
+        while not self.cli_dbreader.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service "tms_db_reader" not available, waiting again...')
+        
+        # self.timer = threading.Timer(1,self.alarm)
+
         self.get_logger().info('tms_ur_listener_server ready...')
-        print('tms_ur_listener_server ready...')
-    
 
-    def destroy_node(self):
-        self.get_logger().info("Stopping the node")
-        super().destroy_node()
-
-    def alarm(self):
-        while True:
-            print("alarm")
-            self.speaker('\sound4')
-            time.sleep(1.5)
-            temp_dbdata = Tmsdb()
-            temp_dbdata.id = 1100
-            temp_dbdata.state = 1
-            target = self.db_reader(temp_dbdata)
-            if target is None:
-                self.announce(error_msg2)
-                return
-            print('rp:'+str(target.rp))
-            if target.rp > -0.2:
-                break
 
     def julius_power(self, data, t=0):
+        """[tms_ur_speaker]juliusを起動する・終了する
+        """
         if self.julius_flag != data:
             msg = Bool()
             msg.data = data
             time.sleep(float(t))
-            self.power_pub.publish(msg)
+            self.pub_power.publish(msg)
             self.julius_flag = data
             if data == True:
                 time.sleep(1.5)
                 self.speaker('\sound3')
     
-    def launch_gSpeech(self, id):
-        # servicename = '/pi' + str(id) + '/gSpeech'
-        ##################################################### DEBUG
-        servicename = '/gSpeech'
-        ###########################################################
-        gspeech = self.create_client(GSpeechSrv, servicename)
-        gspeech_req = GSpeechSrv.Request()
 
-        while not gspeech.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('service "/gSpeech"  not available, waiting again...')
-        
-        self.future_gspeech  = gspeech.call_async(gspeech_req)
-        rclpy.spin_until_future_complete(self,self.future_gspeech)
+    async def call_gspeech(self, id):
+        """[tms_ur_listener_client] google speech apiを呼び出し、音声認識をする
+        """
+        req = GSpeechSrv.Request()
+        self.future_gspeech  = self.cli_gspeech.call_async(req)
+
+        await self.future_gspeech
+
         if self.future_gspeech.result() is not None:
             response = self.future_gspeech.result()
-            print(response)
             return response
         else:
-            self.get_logger().info('Service call failed %r' % (self.future_gspeech.exception(),))
+            self.get_logger().info('Service "/gSpeech" call failed %r' % (self.future_gspeech.exception(),))
+
 
     def speaker(self,data):
+        """[tms_ur_speaker] speakerから音を出す(by topic)
+        """
         speak = String()
         speak.data = data
-        self.speaker_pub.publish(speak)
+        self.pub_speaker.publish(speak)
 
-    def announce(self,data):
-        print(data)
-        #rospy.wait_for_service('speaker_srv', timeout=1.0)
+
+    async def call_speaker(self,data):
+        """[tms_ur_speaker] speakerから音を出す(by service)
+        """
+        req = SpeakerSrv.Request()
+        req.data = data
+        self.future_speaker = self.cli_speaker.call_async(req)
+
+        await self.future_speaker
+
         tim = 0.0
-
-        speak = self.create_client(SpeakerSrv, 'speaker_srv')
-        speak_req = SpeakerSrv.Request()
-        speak_req.data = data
-
-        while not speak.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('service "speaker_srv" not available, waiting again...')
-
-        self.future_speak = speak.call_async(speak_req)
-        rclpy.spin_until_future_complete(self, self.future_speak) 
-
-        if self.future_speak.result() is not None:
-            tim = self.future_speak.result().sec
+        if self.future_speaker.result() is not None:
+            tim = self.future_speaker.result().sec
+            print("announce:"+str(tim))
+            return tim
         else:
-            send_slack = self.create_client(SlackSrv,'slack_srv')
-            slack_req = SlackSrv.Request()
-            slack_req.data = data
-            self.future_slack = send_slack.call_async(slack_req)
-            if self.future_slack.result() is not None:
-                tim = self.future_slack.result().sec
-            else:
-                self.get_logger().info('Service call failed %r' % (self.future_slack.exception(),))
-        return tim
+            self.get_logger().info('Service "speaker_srv" call failed %r' % (self.future_gspeech.exception(),))
+        
 
-    def db_reader(self,data):
-        tms_db_reader = self.create_client(TmsdbGetData, 'tms_db_reader')
-        db_reader_req = TmsdbGetData.Request()
-        db_reader_req.tmsdb = data
-        
-        while not tms_db_reader.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('tms_db_reader not available, waiting again...')
-        
-        self.future_db_reader  = tms_db_reader.call_async(db_reader_req)
-        rclpy.spin_until_future_complete(self,self.future_db_reader)
-        if self.future_db_reader.result() is not None:
-            res = self.future_db_reader.result().tmsdb
+    async def call_dbreader(self,data):
+        """[tms_db_reader] DBからデータを読み取る
+        """
+        req = TmsdbGetData.Request()
+        req.tmsdb = data
+        self.future_dbreader  = self.cli_dbreader.call_async(req)
+
+        await self.future_dbreader
+
+        if self.future_dbreader.result() is not None:
+            res = self.future_dbreader.result().tmsdb
             return res
         else:
-            self.get_logger().info('Service call failed %r' % (self.future_db_reader.exception(),))
-            return None
+            self.get_logger().info('Service "tms_db_reader" call failed %r' % (self.future_dbreader.exception(),))
 
-    def tag_reader(self,data):
+
+    async def tag_reader(self,data):
+        """[tms_db_reader] DBからタグを読み取る
+        """
         temp_dbdata = Tmsdb()
         temp_dbdata.tag='「'+data+'」'
-        target = self.db_reader(temp_dbdata)
+        target = await self.call_dbreader(temp_dbdata)
         return target
 
 
-    def ask_remote(self, words, command = "robot_task", talk = False):
-        payload ={
-            "words":words
-        }
-        tms_master = "192.168.4.80"
-        ret = requests.post("http://" + tms_master + ":4000/rms_svr",json = payload)
-        remote_tms = ret.json()
-        print(remote_tms)
-        if remote_tms["message"] == "OK":
-            payload = {
-                "url": remote_tms["hostname"],
-                "room": remote_tms["name"],
-                "command": command,
-            }
-            if command == "robot_task":
-                payload["service"] = "tms_ts_master"
-                payload["service_type"] = "tms_msg_ts/ts_req"
-
-            ret = requests.post("http://" + host_url + ":5000/rp",json = payload)
-            ret_dict = ret.json()
-            if ret_dict["message"] == "OK":
-                if talk:
-                    try:
-                        skype_client = rospy.ServiceProxy('skype_server',skype_srv)
-                        res = skype_client(remote_tms["skype_id"])
-                    except:
-                        print(res)
-                tim = self.announce(ret_dict["announce"])
-                self.julius_power(True,tim.sec)
-                return True
-            else:
-                print(ret_dict["message"])
-                tim = self.announce(error_msg1)
-                self.julius_power(True,tim.sec)
-                return False
-            
-        else:
-            tim = self.announce(error_msg1)
-            self.julius_power(True,tim.sec)
-            return False
-
-            print(ret.json())
-
-            return True
-
-    def callback(self,data,id):
-        self.get_logger().info(str(id))
+    async def callback(self,data,id=0):
+        """[tms_db_reader] マイクに向かって何か発音したときのコールバック関数
+        """
+        # self.get_logger().info(str(id))
         self.get_logger().info(data.data)
-        print(str(id))
-        print(data.data)
+
         if id < 100:
             if data.data not in trigger:
                 return
             if self.gSpeech_launched == True:
                 return
             self.gSpeech_launched = True
-            self.get_logger().info("call trigger on raspi:%d" % id)
-            self.get_logger().info("kill julius!!")
+            # self.get_logger().info("call trigger on raspi:%d" % id)
+            self.get_logger().info("[To tms_ur_listener_client] kill julius.")
             self.julius_power(False)
             self.speaker("\sound1")
             time.sleep(0.5)
-            self.announce(error_msg0)
-            time.sleep(0.5)
-            data = self.launch_gSpeech(id)
+            data = await self.call_gspeech(id)
             self.gSpeech_launched = False
 
-        if data.data == "":
-            tim = self.announce(error_msg0)
-            self.julius_power(True,tim.sec)
+        if data.data == "": 
+            tim = await self.call_speaker(error_msg0)
+            self.julius_power(True,tim)
             return
-        self.get_logger().info("get command!")
-        tokens = self.tok.tokenize(data.data.decode('utf-8'))
+        
+        self.get_logger().info("[From tms_ur_listener_client] get command.")
+        tokens = self.tok.tokenize(data.data)
         words = []
         verb = ''
         for token in tokens:
-            print(token)
+            print('token: ' + str(token))
             if token.part_of_speech.split(',')[0] == u'動詞':
-                verb += token.base_form.encode('utf-8')
+                verb += token.base_form
             elif token.part_of_speech.split(',')[0] == u'名詞':
-                if token.base_form.encode('utf-8') != "*":
-                    words.append(token.base_form.encode('utf-8'))
+                if token.base_form != "*":
+                    words.append(token.base_form)
                 else:
-                    words.append(token.surface.encode('utf-8'))
+                    words.append(token.surface)
         if verb != '':
             words.append(verb)
         if "言う" in words: #「〇〇に行って」が「〇〇に言って」と認識される
@@ -257,7 +214,8 @@ class TmsUrListener(Node):
         if "入る" in words: #同上
             words.append("行く")
         
-        print(str(words).decode('string-escape'))
+        print("words:")
+        print(words)
 
         task_id = 0
         robot_id = 0
@@ -278,13 +236,16 @@ class TmsUrListener(Node):
         other_words = []
         
         for word in words:
-            res = self.tag_reader(word)
+            res = await self.tag_reader(word)
             if res is None:
-                tim = self.announce(error_msg2)
-                self.julius_power(True,tim.sec)
+                tim = await self.call_speaker(error_msg2)
+                self.julius_power(True,tim)
                 return
-            for target in res.tmsdb:
+            for target in res:
+                print(target)
                 if target.type == 'task':
+                    if target.id == 8102:  # 「起こす」でタイマーが起動してしまい、ベッドを起こしてが聞かない
+                        continue
                     task_dic[target.id] = target.announce
                 elif target.type == 'robot':
                     robot_dic[target.id] = target.announce
@@ -303,8 +264,9 @@ class TmsUrListener(Node):
         print("user:" + str(user_dic))
         print("place:" + str(place_dic))
 
+
         if len(task_dic) == 1:
-            task_id = task_dic.keys()[0]
+            task_id = list(task_dic.keys())[0]
             announce = task_dic[task_id]
         elif len(task_dic) > 1:
             print("len(task_dic) > 1")
@@ -313,19 +275,33 @@ class TmsUrListener(Node):
             task_id = min(task_dic.keys())
             announce = task_dic[task_id]
 
+        print("task_id : " + str(task_id))
+
+        # task_id = 8101 ##################################DEBUG####################
+        for word in words:
+            other_words.append(word)
+
         if task_id == 0:
             print('ask docomo Q&A api')
             print(data.data)
-            urlenc = urllib.quote(data.data)
+
+            announce = "jsonが帰ってきません"
+            urlenc = urllib.parse.quote(data.data)
             args = "curl -s 'https://api.apigw.smt.docomo.ne.jp/knowledgeQA/v1/ask?APIKEY=" + self.apikey + "&q=" + urlenc + "'"
             ret = subprocess.check_output(shlex.split(args))
-            json_dict = json.loads(ret,"utf-8")
-            announce = "すみません、わかりませんでした。"
-            if "message" in json_dict:
-                print(json_dict["message"]["textForDisplay"])
-                announce = json_dict["message"]["textForSpeech"]
-            tim = self.announce(announce)
-            self.julius_power(True,tim.sec)
+            print(ret)
+            if ret != b'':  # json return
+                json_dict = json.loads(ret)
+                print(json_dict)
+
+                if "message" in json_dict:  # docomo api return message
+                    print(json_dict["message"]["textForDisplay"])
+                    announce = json_dict["message"]["textForSpeech"]
+                else :
+                    announce = "apiキーが違うようです"
+            
+            tim = await self.call_speaker(announce)
+            self.julius_power(True,tim)
             return
     
         elif task_id == 8100: #search_object
@@ -336,7 +312,7 @@ class TmsUrListener(Node):
                 print("len(object_dic) > 1")
                 #未実装
             else:
-                self.ask_remote(words, "search_object")
+                # self.ask_remote(words, "search_object")
                 return
 
             place_id = 0
@@ -345,30 +321,30 @@ class TmsUrListener(Node):
             temp_dbdata.id = object_id
             temp_dbdata.state = 1
 
-            #target = self.db_reader(temp_dbdata)
-            db_target = self.db_reader(temp_dbdata)
-            target = db_target.tmsdb[0]
+            #target = await self.call_dbreader(temp_dbdata)
+            db_target = await self.call_dbreader(temp_dbdata)
+            target = db_target[0]
             if target is None:
-                tim = self.announce(error_msg2)
-                self.julius_power(True,tim.sec)
+                tim = await self.call_speaker(error_msg2)
+                self.julius_power(True,tim)
                 return
             place_id = target.place
 
             temp_dbdata = Tmsdb()
             temp_dbdata.id = place_id + sid
 
-            db_target =self.db_reader(temp_dbdata)
-            target = db_target.tmsdb[0]
-            #target = self.db_reader(temp_dbdata)
+            db_target =await self.call_dbreader(temp_dbdata)
+            target = db_target[0]
+            #target = await self.call_dbreader(temp_dbdata)
             if target is None:
-                tim = self.announce(error_msg2)
-                self.julius_power(True,tim.sec)
+                tim = await self.call_speaker(error_msg2)
+                self.julius_power(True,tim)
                 return
             place_name = target.announce
 
             if object_name == "" or place_name == "":
-                tim = self.announce(error_msg1)
-                self.julius_power(True,tim.sec)
+                tim = await self.call_speaker(error_msg1)
+                self.julius_power(True,tim)
                 return
 
             anc_list = announce.split("$")
@@ -380,8 +356,8 @@ class TmsUrListener(Node):
                     announce += place_name
                 else:
                     announce += anc
-            tim = self.announce(announce)
-            self.julius_power(True,tim.sec)
+            tim = await self.call_speaker(announce)
+            self.julius_power(True,tim)
         elif task_id == 8101: #weather_forecast
             place = "福岡市"
             date = ""
@@ -390,39 +366,40 @@ class TmsUrListener(Node):
                 if word in ['今日','明日','明後日','あさって']:
                     date = word
             if date == "":
-                tim = self.announce(error_msg1)
-                self.julius_power(True,tim.sec)
+                tim = await self.call_speaker(error_msg1)
+                self.julius_power(True,tim)
                 return
 
             args = "curl -s http://weather.livedoor.com/forecast/webservice/json/v1\?city\=400010"
             ret = subprocess.check_output(shlex.split(args))
-            json_dict = json.loads(ret,"utf-8")
+            json_dict = json.loads(ret)
+            pprint.pprint(json_dict)
             if "forecasts" in json_dict:
                 if date == '今日':
-                    weather = json_dict["forecasts"][0]["telop"].encode('utf-8')
+                    weather = json_dict["forecasts"][0]["telop"]
                 elif date == '明日':
-                    weather = json_dict["forecasts"][1]["telop"].encode('utf-8')
+                    weather = json_dict["forecasts"][1]["telop"]
                 elif date == '明後日' or date == 'あさって':
-                    weather = json_dict["forecasts"][2]["telop"].encode('utf-8')
+                    weather = json_dict["forecasts"][2]["telop"]
             if weather == "":
-                tim = self.announce(error_msg1)
-                self.julius_power(True,tim.sec)
+                tim = await self.call_speaker(error_msg1)
+                self.julius_power(True,tim)
                 return
 
-            anc_list = announce.split("$")
-            announce = ""
-            for anc in anc_list:
-                if anc == "place":
-                    announce += place
-                elif anc == "date":
-                    announce += date
-                elif anc == "weather":
-                    announce += weather
-                else:
-                    announce += anc
-            tim = self.announce(announce)
-            self.julius_power(True,tim.sec)
-
+            # anc_list = announce.split("$")
+            # announce = ""
+            # for anc in anc_list:
+            #     if anc == "place":
+            #         announce += place
+            #     elif anc == "date":
+            #         announce += date
+            #     elif anc == "weather":
+            #         announce += weather
+            #     else:
+            #         announce += anc
+            # tim = await self.call_speaker(announce)
+            tim = await self.call_speaker(place + "の" +date + "の天気は" + weather + "です")
+            self.julius_power(True,tim)
         elif task_id == 8102: #set_alarm
             today = datetime.datetime.today()
             print('now:' + today.strftime("%Y/%m/%d %H:%M:%S"))
@@ -452,7 +429,7 @@ class TmsUrListener(Node):
             print("d:"+str(date)+" h:"+str(hour)+" m:"+str(minute))
             if hour == -1:
                 tim = self.announce(error_msg1)
-                self.julius_power(True,tim.sec)
+                self.julius_power(True,tim)
                 return
 
             tgt_tim = datetime.datetime(today.year,today.month,today.day,hour,minute,0,0)
@@ -462,8 +439,8 @@ class TmsUrListener(Node):
             print('offset_sec:' + str(offset.seconds))
 
             if offset.seconds < 0:
-                tim = self.announce(error_msg1)
-                self.julius_power(True,tim.sec)
+                tim = await self.call_speaker(error_msg1)
+                self.julius_power(True,tim)
                 return
 
             self.timer = threading.Timer(15,self.alarm)#(offset.seconds,self.alarm)
@@ -479,8 +456,8 @@ class TmsUrListener(Node):
                 else:
                     announce += anc
 
-            tim = self.announce(announce)
-            self.julius_power(True,tim.sec)
+            tim = await self.call_speaker(announce)
+            self.julius_power(True,tim)
         elif task_id == 8103:
             url = "http://192.168.100.101/codemari_kyudai/CodemariServlet?deviceID=9999&locale=ja&cmd=%251CFLP%"
             onoff = ""
@@ -493,8 +470,8 @@ class TmsUrListener(Node):
                 onoff = "消し"
                 url += "2005"
             else:
-                tim = self.announce(error_msg1)
-                self.julius_power(True,tim.sec)
+                tim = await self.call_speaker(error_msg1)
+                self.julius_power(True,tim)
                 return
 
             anc_list = announce.split("$")
@@ -504,35 +481,35 @@ class TmsUrListener(Node):
                     announce += onoff
                 else:
                     announce += anc
-            tim = self.announce(announce)
-            self.julius_power(True,tim.sec)
+            tim = await self.call_speaker(announce)
+            self.julius_power(True,tim)
 
             res = requests.get(url)
             print(res.text)
         elif task_id == 8104:
-            msg = Int32()
+            control_number = 0
             cmd = ""
             if "起こす" in words:
-                msg.data = 1
+                control_number = 1
                 cmd = "を起こし"
             elif "寝かせる" in words:
-                msg.data = 2
+                control_number = 2
                 cmd = "を寝かせ"
             elif "立てる" in words:
-                msg.data = 3
+                control_number = 3
                 cmd = "を立て"
             elif "倒す" in words:
-                msg.data = 4
+                control_number = 4
                 cmd = "を倒し"
             elif "上げる" in words:
-                msg.data = 7
+                control_number = 7
                 cmd = "の高さを上げ"
             elif "下げる" in words:
-                msg.data = 8
+                control_number = 8
                 cmd = "の高さを下げ"
             else:
-                tim = self.announce(error_msg1)
-                self.julius_power(True,tim.sec)
+                tim = await self.call_speaker(error_msg1)
+                self.julius_power(True,tim)
                 return
             anc_list = announce.split("$")
             announce = ""
@@ -541,9 +518,12 @@ class TmsUrListener(Node):
                     announce += cmd
                 else:
                     announce += anc
-            tim = self.announce(announce)
-            self.julius_power(True,tim.sec)
-            self.bed_pub.publish(msg)
+            tim = await self.call_speaker(announce)
+            self.julius_power(True,tim)
+            ws = create_connection('ws://192.168.4.131:9989')  # open socket
+            ws.send(str(control_number))  # send to socket
+            ws.close()  # close socket
+            
 
         elif task_id == 8105:
             print(user_dic)
@@ -554,7 +534,7 @@ class TmsUrListener(Node):
                 print("len(user_dic) > 1")
                 #未実装
             else:
-                self.ask_remote(words, "get_health_condition")
+                # self.ask_remote(words, "get_health_condition")
                 return
 
             place_id = 0
@@ -563,12 +543,12 @@ class TmsUrListener(Node):
             temp_dbdata.id = user_id
             temp_dbdata.state = 1
 
-            #target = self.db_reader(temp_dbdata)
-            db_target = self.db_reader(temp_dbdata)
-            target = db_target.tmsdb[0]
+            #target = await self.call_dbreader(temp_dbdata)
+            db_target = await self.call_dbreader(temp_dbdata)
+            target = db_target[0]
             if target is None:
-                tim = self.announce(error_msg2)
-                self.julius_power(True,tim.sec)
+                tim = await self.call_speaker(error_msg2)
+                self.julius_power(True,tim)
                 return
 
             note = json.loads(target.note)
@@ -583,12 +563,11 @@ class TmsUrListener(Node):
                     announce += str(rate)
                 else:
                     announce += anc
-            tim = self.announce(announce)
-            self.julius_power(True,tim.sec)
-
+            tim = await self.call_speaker(announce)
+            self.julius_power(True,tim)
         else: #robot_task
             if task_id ==8009:
-                 talk = True
+                    talk = True
             else:
                 talk = False
             task_announce_list = announce.split(";")
@@ -607,7 +586,7 @@ class TmsUrListener(Node):
 
                         if robot_id==0:
                             if i == len(task_announce_list) - 1:
-                                self.ask_remote(words, "robot_task",talk)
+                                # self.ask_remote(words, "robot_task",talk)
                                 return
                             else:
                                 task_flag = 1
@@ -622,7 +601,7 @@ class TmsUrListener(Node):
 
                         if object_id==0:
                             if i == len(task_announce_list) - 1:
-                                self.ask_remote(words, "robot_task",talk)
+                                # self.ask_remote(words, "robot_task",talk)
                                 return
                             else:
                                 task_flag = 1
@@ -637,7 +616,7 @@ class TmsUrListener(Node):
 
                         if user_id==0:
                             if i == len(task_announce_list) - 1:
-                                self.ask_remote(words, "robot_task",talk)
+                                # self.ask_remote(words, "robot_task",talk)
                                 return
                             else:
                                 task_flag = 1
@@ -652,7 +631,7 @@ class TmsUrListener(Node):
 
                         if place_id==0:
                             if i == len(task_announce_list) - 1:
-                                self.ask_remote(words, "robot_task",talk)
+                                # self.ask_remote(words, "robot_task",talk)
                                 return
                             else:
                                 task_flag = 1
@@ -660,34 +639,34 @@ class TmsUrListener(Node):
                     else:
                         announce += anc
 
-                if task_flag == 1:
-                    continue
-                print('send command')
-                try:
-                    rospy.wait_for_service('tms_ts_master', timeout=1.0)
-                except rospy.ROSException:
-                    print("tms_ts_master is not work")
+                    if task_flag == 1:
+                        continue
+                    print('send command')
+                    try:
+                        rospy.wait_for_service('tms_ts_master', timeout=1.0)
+                    except rospy.ROSException:
+                        print("tms_ts_master is not work")
 
-                try:
-                    tms_ts_master = rospy.ServiceProxy('tms_ts_master',ts_req)
-                    res = tms_ts_master(0,task_id,robot_id,object_id,user_id,place_id,0)
-                    print(res)
-                except rospy.ServiceException as e:
-                    print("Service call failed: %s" % e)
+                    try:
+                        tms_ts_master = rospy.ServiceProxy('tms_ts_master',ts_req)
+                        res = tms_ts_master(0,task_id,robot_id,object_id,user_id,place_id,0)
+                        print(res)
+                    except rospy.ServiceException as e:
+                        print("Service call failed: %s" % e)
 
-                tim = self.announce(announce)
-                self.julius_power(True,tim.sec)
-                return
+                    tim = await self.call_speaker(announce)
+                    self.julius_power(True,tim)
+                    return
 
 
 def main(args=None):
     rclpy.init(args=args)
 
-    tms_ur_listener =TmsUrListener()
+    tms_ur_listener =TmsUrListenerServer()
 
     rclpy.spin(tms_ur_listener)
 
-    minimal_client.destroy_node()
+    tms_ur_listener.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
