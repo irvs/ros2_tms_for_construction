@@ -7,6 +7,7 @@ from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
 import time
+import random
 
 class Robot:
 
@@ -45,31 +46,40 @@ class Task:
 
 
 class SubtaskNode(Node):
+    """サブタスクを実行するノード
+    サブタスクは順序（状態）を持たない最小構成のタスク
+    """
     _count = 0  # use for name
     def __init__(self, subtask=[], parent_name=""):
-        self.statement = "Start"
         self.name = f"subtask_{SubtaskNode._count}"
         self.parent_name = parent_name
         SubtaskNode._count += 1
         self.subtask = subtask
         self.cb_group = ReentrantCallbackGroup()
         super().__init__(self.name)
-        # self.timer = self.create_timer(0, self.main, callback_group=self.cb_group)
         self.srv = self.create_service(TsDoTask, self.name, self.main, callback_group=self.cb_group)
 
     async def main(self, request, response):
-        # self.timer.cancel()
-        self.statement = "Runnning"
+        sleep_time = random.randint(3,15)
         print(f"{self.parent_name}[{self.name}] >> start {self.subtask}")
-        time.sleep(3.0)
-        print(f"{self.parent_name}[{self.name}] >> end {self.subtask}")
-        self.statement = "End"
+        time.sleep(0.1)
+        print(f"{self.parent_name}[{self.name}] >> take {sleep_time} seconds for {self.subtask}")
+        time.sleep(sleep_time)
+        if random.random() > 0.05:
+            print(f"{self.parent_name}[{self.name}] >> end {self.subtask}")
+            response.message = "Success"
+        else:
+            print(f"{self.parent_name}[{self.name}] >> ERROR {self.subtask}")
+            response.message = "Abort"
 
-        response.message = "Success"
         return response
 
 
 class TaskScheduler(Node):
+    """タスクを実行するノード
+    タスクは順序（状態）をもつ
+    タスクはサブタスクに分けることができる
+    """
     _task_num = 0  # it is task count for name, not task_id 
 
     def __init__(self,task=Task()):
@@ -136,10 +146,10 @@ class TaskScheduler(Node):
 
         # 構文解析
         _stack = []
-        _executable = []
         for s in subtask_list:
             if s == ['+']:
-                _executable.append(_stack.pop(-1))
+                # _executable.append(_stack.pop(-1))
+                pass  # 無視
             elif s == ['|']:
                 pre1 = _stack.pop(-1)
                 pre2 = _stack.pop(-1)
@@ -148,11 +158,7 @@ class TaskScheduler(Node):
             else:
                 _stack.append([s])
         
-        while len(_stack) >= 1:
-            _executable.append(_stack.pop(-1))
-        
-        _executable.reverse()
-        states = _executable
+        states = _stack
         print(f"[{self.name}] >> analyze task")
         i=0
         for state in states:
@@ -239,7 +245,9 @@ class TaskScheduler(Node):
 
 
 class TaskSchedulerManager(Node):
-
+    """複数のタスク（スケジューラ）を管理するノード
+    同時に複数のタスクを起動できる
+    """
     def __init__(self):
         self.task_scheduler_list = []
         self.cb_group = ReentrantCallbackGroup()
@@ -247,6 +255,7 @@ class TaskSchedulerManager(Node):
         self.srv_tms_ts_master = self.create_service(TsReq, 'tms_ts_master', self.tms_ts_master_callback, callback_group=self.cb_group)
         self.task_scheduler_clients = []
         self.dic_client_to_future = {}
+        self.dic_client_to_task_scheduler = {}
         self.dic_client_to_task_scheduler_name = {}
     
     def tms_ts_master_callback(self, request, response):
@@ -277,6 +286,7 @@ class TaskSchedulerManager(Node):
     def call_taskmanager(self, task_scheduler):
         client = self.create_client(TsDoTask, task_scheduler.name)
         self.dic_client_to_task_scheduler_name[client] = task_scheduler.name
+        self.dic_client_to_task_scheduler[client] = task_scheduler
         while not client.wait_for_service(timeout_sec=1.0):
             print(f'service "{task_scheduler.name}" not available, waiting again...')
         self.task_scheduler_clients.append(client)
@@ -295,6 +305,10 @@ class TaskSchedulerManager(Node):
             print(f"[ts_manager] {self.dic_client_to_task_scheduler_name[client]} : " + result.message)
         else:
             print(f"[ts_manager] {self.dic_client_to_task_scheduler_name[client]} : " + "error")
+
+        end_task_scheduler = self.dic_client_to_task_scheduler[client]
+        end_task_scheduler.destroy_node()
+        self.task_scheduler_list.remove(end_task_scheduler)
 
     def destroy_node(self):
         for task_scheduler in self.task_scheduler_list:
