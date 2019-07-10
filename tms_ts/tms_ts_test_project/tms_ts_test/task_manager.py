@@ -54,15 +54,19 @@ class SubtaskNode(Node):
         self.subtask = subtask
         self.cb_group = ReentrantCallbackGroup()
         super().__init__(self.name)
-        self.timer = self.create_timer(0, self.main, callback_group=self.cb_group)
+        # self.timer = self.create_timer(0, self.main, callback_group=self.cb_group)
+        self.srv = self.create_service(TsDoTask, self.name, self.main, callback_group=self.cb_group)
 
-    async def main(self):
-        self.timer.cancel()
+    async def main(self, request, response):
+        # self.timer.cancel()
         self.statement = "Runnning"
         print(f"{self.parent_name}[{self.name}] >> start {self.subtask}")
         time.sleep(3.0)
         print(f"{self.parent_name}[{self.name}] >> end {self.subtask}")
         self.statement = "End"
+
+        response.message = "Success"
+        return response
 
 
 class TaskScheduler(Node):
@@ -74,6 +78,7 @@ class TaskScheduler(Node):
         self.task = task
         self.subtask_node_list = []
         self.cb_group = ReentrantCallbackGroup()
+        self.dic_subtask_node_to_future = {}
 
         super().__init__(self.name)
         self.cli_dbreader = self.create_client(TmsdbGetData, 'tms_db_reader', callback_group=self.cb_group)
@@ -87,7 +92,11 @@ class TaskScheduler(Node):
         for subtask_node in self.subtask_node_list:
             subtask_node.destroy_node()
         super().destroy_node()
-    
+
+    def destroy_subtask_nodes(self):
+        for subtask_node in self.subtask_node_list:
+            subtask_node.destroy_node()
+        self.subtask_node_list = []
 
     async def call_dbreader(self, id):
         """[tms_db_reader] DBからデータを読み取る
@@ -159,18 +168,51 @@ class TaskScheduler(Node):
         tmsdb = await self.call_dbreader(int(id))
         return tmsdb[0].name
 
+    async def call_subtask_nodes(self):
+        # call async subtasks
+        for subtask_node in self.subtask_node_list:
+            client = self.create_client(TsDoTask, subtask_node.name)
+            while not client.wait_for_service(timeout_sec=1.0):
+                print(f'service "{subtask_node.name}" not available, waiting again...')
+            req = TsDoTask.Request()
+            future = client.call_async(req)
+            self.dic_subtask_node_to_future[subtask_node] = future
+        
+        results = []
+        # wait all subtasks
+        for subtask_node in self.subtask_node_list:
+            result = await self.dic_subtask_node_to_future[subtask_node]
+            if result is not None:
+                results.append(result.message)
+                # print(f"[{self.name}] >> {result.message} {subtask_node.name}")
+            else:
+                results.append("Error")
+                # print(f"[{self.name}] >> Error")
+        
+        # when all subtasks return success, state is success
+        is_success = True
+        for result in results:
+            if result != "Success":
+                is_success = False
+        
+        self.destroy_subtask_nodes()  # destroy all subtasks
+        return is_success
+
     async def main(self, request, response):
         global executor
+        is_success = True
 
         print(f"[{self.name}] >> init")
 
+        # taskを読み取り、いくつかのstateに変換する
+        # stateはいくつかのsubtaskから構成される
         task_name = await self.read_name(self.task.task_id)
         states = await self.convert_task_to_states(self.task)
         print(f"[{self.name}] >> start task '{task_name}'")
 
         i = 0
         for state in states:
-            readable = []
+            readable = []  # 表示用
             for s in state:
                 readable.append([await self.read_name(c) for c in s])
             print(f"[{self.name}] [state: {i}] >> start subtasks '{readable}'")
@@ -180,12 +222,19 @@ class TaskScheduler(Node):
                 self.subtask_node_list.append(subtask_node)
                 executor.add_node(subtask_node)
 
-            time.sleep(5.0)
+            is_success = await self.call_subtask_nodes()
+            if not is_success:
+                print(f"[{self.name}] [state: {i}] >> ERROR subtasks '{readable}'")
+                break
             print(f"[{self.name}] [state: {i}] >> end subtasks '{readable}'")
             i += 1
         print(f"[{self.name}] >> end task '{task_name}'")
 
-        response.message = "Success"
+        if is_success:
+            response.message = "Success"
+        else:
+            response.message = "Abort"
+        
         return response
 
 
