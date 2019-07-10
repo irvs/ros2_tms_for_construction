@@ -1,6 +1,7 @@
 import asyncio
 from tms_msg_ts.srv import TsReq
 from tms_msg_db.srv import TmsdbGetData
+from tms_msg_ts.srv import TsDoTask
 import rclpy
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
@@ -80,8 +81,8 @@ class TaskScheduler(Node):
             self.get_logger().info('service "tms_db_reader" not available, waiting again...')
     
         self.i = 0
-        self.timer = self.create_timer(0, self.main, callback_group=self.cb_group)
-    
+        self.srv = self.create_service(TsDoTask, self.name, self.main, callback_group=self.cb_group)
+
     def destroy_node(self):
         for subtask_node in self.subtask_node_list:
             subtask_node.destroy_node()
@@ -158,11 +159,10 @@ class TaskScheduler(Node):
         tmsdb = await self.call_dbreader(int(id))
         return tmsdb[0].name
 
-    async def main(self):
+    async def main(self, request, response):
         global executor
 
         print(f"[{self.name}] >> init")
-        self.timer.cancel()
 
         task_name = await self.read_name(self.task.task_id)
         states = await self.convert_task_to_states(self.task)
@@ -185,19 +185,24 @@ class TaskScheduler(Node):
             i += 1
         print(f"[{self.name}] >> end task '{task_name}'")
 
-        
+        response.message = "Success"
+        return response
+
 
 class TaskSchedulerManager(Node):
 
     def __init__(self):
         self.task_scheduler_list = []
-
+        self.cb_group = ReentrantCallbackGroup()
         super().__init__('task_scheduler_manager')
-        self.srv_tms_ts_master = self.create_service(TsReq, 'tms_ts_master', self.tms_ts_master_callback)
+        self.srv_tms_ts_master = self.create_service(TsReq, 'tms_ts_master', self.tms_ts_master_callback, callback_group=self.cb_group)
+        self.task_scheduler_clients = []
+        self.dic_client_to_future = {}
+        self.dic_client_to_task_scheduler_name = {}
     
     def tms_ts_master_callback(self, request, response):
         global executor
-        print(request)
+        print("[ts_manager] receive request\n >> " + str(request))
         
         task = Task(
             rostime=request.rostime,
@@ -209,18 +214,44 @@ class TaskSchedulerManager(Node):
             priority=request.priority,
         )
 
+        # generate task_scheduler node
         task_scheduler = TaskScheduler(task)
         self.task_scheduler_list.append(task_scheduler)
-
         executor.add_node(self.task_scheduler_list[len(self.task_scheduler_list) - 1])  # added last added task
+
+        # make client for task_scheduler
+        self.call_taskmanager(task_scheduler)
 
         response.result = 1  # Success
         return response
     
+    def call_taskmanager(self, task_scheduler):
+        client = self.create_client(TsDoTask, task_scheduler.name)
+        self.dic_client_to_task_scheduler_name[client] = task_scheduler.name
+        while not client.wait_for_service(timeout_sec=1.0):
+            print(f'service "{task_scheduler.name}" not available, waiting again...')
+        self.task_scheduler_clients.append(client)
+        self.timer = self.create_timer(0.1, self._call_taskmanager, callback_group=self.cb_group)
+
+    async def _call_taskmanager(self):
+        self.timer.cancel()
+        req = TsDoTask.Request()
+        client = self.task_scheduler_clients.pop()
+        future = client.call_async(req)
+        self.dic_client_to_future[client] = future
+
+        print(f"[ts_manager] {self.dic_client_to_task_scheduler_name[client]} : launch")
+        result = await self.dic_client_to_future[client]
+        if result is not None:
+            print(f"[ts_manager] {self.dic_client_to_task_scheduler_name[client]} : " + result.message)
+        else:
+            print(f"[ts_manager] {self.dic_client_to_task_scheduler_name[client]} : " + "error")
+
     def destroy_node(self):
         for task_scheduler in self.task_scheduler_list:
             task_scheduler.destroy_node()
         super().destroy_node()
+
 
 
 def main(args=None):
