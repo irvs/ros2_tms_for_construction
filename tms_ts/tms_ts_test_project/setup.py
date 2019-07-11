@@ -32,6 +32,7 @@ setup(
         'console_scripts': [
             'task_manager = tms_ts_test.task_manager:main',
             'task_manager_test_client = tms_ts_test.task_manager_test_client:main',
+            'task_manager_recursion = tms_ts_test.task_manager_recursion:main',
         ],
     },
 )
