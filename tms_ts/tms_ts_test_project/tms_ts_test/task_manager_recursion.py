@@ -82,11 +82,8 @@ class TaskNode(Node):
     async def serial(self):
         global executor
         child_task_node1 = TaskNode(self.task_tree[1], name_prefix=self.name)
-        child_task_node2 = TaskNode(self.task_tree[2], name_prefix=self.name)
         self.child_task_nodes.append(child_task_node1)
-        self.child_task_nodes.append(child_task_node2)
         executor.add_node(child_task_node1)
-        executor.add_node(child_task_node2)
 
         # child task 1 execute
         client = self.create_client(TsDoTask, child_task_node1.name)
@@ -102,7 +99,11 @@ class TaskNode(Node):
         else:
             print(f"[{self.name}] >> first task {child_task_node1.name} : no return value")
             return "Error"
-        
+
+        child_task_node2 = TaskNode(self.task_tree[2], name_prefix=self.name)
+        self.child_task_nodes.append(child_task_node2)
+        executor.add_node(child_task_node2)
+
         # child task 2 execute
         client = self.create_client(TsDoTask, child_task_node2.name)
         while not client.wait_for_service(timeout_sec = 1.0):
@@ -166,8 +167,8 @@ class TaskNode(Node):
 
     async def subtask(self):
         command = self.task_tree[1]
-        readable = [await self.read_name(c) for c in command]  # 表示用
-        # readable = command
+        # readable = [await self.read_name(c) for c in command]  # 表示用
+        readable = command
 
         # print(await self.read_name(command[0]))
         print(f"[{self.name}] >> start {readable}")
