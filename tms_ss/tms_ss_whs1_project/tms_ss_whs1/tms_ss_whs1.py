@@ -1,26 +1,120 @@
 # This is ROS2 version of ros_tms/tms_ss/tms_ss_whs1/src/main.cpp
+# whs1_client(windows)を起動しておく。
+# https://github.com/irvs/whs1_client/Debug/whs1_client.exe
+# whs1_clientからデータを受取り、DBに格納。
+
+import json
+import math
 
 import rclpy
 from rclpy.node import Node
 
 from std_msgs.msg import String
+from tms_msg_db.msg import Tmsdb
+from tms_msg_db.msg import TmsdbStamped
+from tms_msg_db.srv import TmsdbGetData
 
-class TmsSsWhs1(Node):
 
-    def __init__(self):
-        super().__init__('tms_ss_whs1')
-        self.db_pub = self.create_publisher(TmsDbStamped, "tms_db_data", 10)
+temp = 0.0  # 温度
+rate = 0  # 心拍数
+p_rate = 0  # 1frame前の心拍数
+msec = 0  # 周期
+p_msec = 0  # 1frame前の周期
+wave = [0] * 100  # 波形（要素数100)
+roll = 0.0
+pitch = 0.0
+last_peak_time = -1
+
+
+def whs1_read(s):
+    """Socket通信をする
+    args:
+        s :  通信を行うsocket.socket()のオブジェクト
+    """
+    global temp, rate, p_rate, msec, p_msec, hakei, roll, pitch
+    data, addr = s.recvfrom(1024)
+
+    wave = int.from_bytes(data[0:2], 'little')
+    msec = int.from_bytes(data[2:4], "little")
+    temp = int.from_bytes(data[6:8], "little") * 0.01
+
+    # 各方向加速度からroll, pitchを計算
+    acc_x = int.from_bytes(data[4:6], "little") * 0.01
+    acc_y = int.from_bytes(data[10:12], "little") * 0.01
+    acc_z = int.from_bytes(data[8:10], "little") * 0.01
+    g = math.sqrt(acc_x*acc_x + acc_y*acc_y + acc_z*acc_z)
+    if acc_y != 0:
+        roll = math.asin(-acc_x / g)
+        pitch = atan(acc_x / acc_y)
+
+    # 心拍周波数(rate)を計算
+    ## msecがオーバーフローしている際の調整
+    if msec == p_msec:
+        msec += 8
+    elif msec == (p_msec - 8):
+        msec += 16
+    elif msec == (p_msec - 16):
+        msec += 24
+    elif msec == (p_msec - 24):
+        msec += 32
+    
+    ## 周期を計算
+    interval = msec - last_peak_time
+
+    pass
         
+def db_write(pub, state):
+    """tms_db_writerにトピックを送る（結果、DBにデータを書き込む)
+    args:
+        pub: node.publisher型。tms_db_writerへのトピック送信用
+        state: int型。1なら測定中、0なら測定停止中
+    """
+    global node
+
+    send_data = {"temp": temp, "rate" : rate, "wave" : wave]
+
+    db_msg = TmsdbStamped()
+    db_msg.header.frame_id = "/world"
+    db_msg.header.stamp = node.now()
+    
+    tmp_data = Tmsdb()
+    tmp_data.time = str(node.now())
+    tmp_data.name = "whs1_mybeat"
+    tmp_data.id = 3021
+    tmp_data.place = 5001
+    tmp_data.sensor = 3021
+    tmp_data.state = state
+    tmp_data.rr = roll
+    tmp_data.rp = pitch
+    tmp_data.ry = 0
+
+    tmp_data.note = json.dumps(send_data)
+    db_msg.tmsdb[0] = tmp_data
+
+    pub.publish(db_msg)
+    
 
 
 def main(args=None):
+    global node
     rclpy.init(args=args)
 
-    tms_ss_whs1 = TmsSsWhs1()
+    node = rclpy.create_node('tms_ss_whs1')
 
-    rclpy.spin(tms_ss_whs1)
+    publisher = node.create_publisher(TmsdbStamped, 'tms_db_data', 1000)
+    i = 0
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:  # UDP
+        s.bind(('192.168.4.102', 65001))  # IPv4アドレス, PORT番号
+        print("tms_ss_whs1 ready ... ")
+        while rclpy.ok():
+            whs1_read(s)  # socketから各種センサ値を取得
 
-    tms_ss_whs1.destroy_node()
+            if i % 10 == 0:
+                db_write(1))  # 10回に一回、DBに格納
+            i += 1
+        db_write(0)
+
+    node.destroy_node()
     rclpy.shutdown()
 
 

@@ -45,7 +45,6 @@ class Task:
         self.priority = priority
 
 
-
 class TaskNode(Node):
     """タスクを実行するノード
     受け取ったタスクによって、再帰的にタスクノードを作る。
@@ -61,9 +60,7 @@ class TaskNode(Node):
         self.child_task_nodes = []
         
         super().__init__(self.name)
-        self.cli_dbreader = self.create_client(TmsdbGetData, 'tms_db_reader', callback_group=self.cb_group)
-        while not self.cli_dbreader.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('service "tms_db_reader" not available, waiting again...')
+        
         self.srv = self.create_service(TsDoTask, self.name, self.main, callback_group=self.cb_group)
     
     async def main(self, request, response):
@@ -167,8 +164,8 @@ class TaskNode(Node):
 
     async def subtask(self):
         command = self.task_tree[1]
-        # readable = [await self.read_name(c) for c in command]  # 表示用
-        readable = command
+        readable = [await self.read_name(c) for c in command]  # 表示用
+        # readable = command
 
         # print(await self.read_name(command[0]))
         print(f"[{self.name}] >> start {readable}")
@@ -181,6 +178,9 @@ class TaskNode(Node):
     async def call_dbreader(self, id):
         """[tms_db_reader] DBからデータを読み取る
         """
+        self.cli_dbreader = self.create_client(TmsdbGetData, 'tms_db_reader', callback_group=self.cb_group)
+        while not self.cli_dbreader.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service "tms_db_reader" not available, waiting again...')
         req = TmsdbGetData.Request()
         req.tmsdb.id = id + 100000  # TODO: why add 100000 ?
         self.future_dbreader  = self.cli_dbreader.call_async(req)
@@ -201,7 +201,6 @@ class TaskNode(Node):
         for task_node in self.child_task_nodes:
             task_node.destroy_node()
         super().destroy_node()
-
 
 
 

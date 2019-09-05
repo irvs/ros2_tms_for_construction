@@ -14,8 +14,8 @@ find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(tms_ss_whs1
-  "msg/JuliusMsg.msg"
-  "srv/GSpeechSrv.srv"
+  # "msg/JuliusMsg.msg"
+  # "srv/GSpeechSrv.srv"
   DEPENDENCIES builtin_interfaces
 )
 
