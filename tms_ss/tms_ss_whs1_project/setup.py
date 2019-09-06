@@ -1,7 +1,7 @@
 from setuptools import setup
 from setuptools import find_packages
 
-package_name = 'tms_ur_listener'
+package_name = 'tms_ss_whs1'
 setup(
     name=package_name,
     version='0.1.0',

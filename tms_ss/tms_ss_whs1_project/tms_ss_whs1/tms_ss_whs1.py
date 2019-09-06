@@ -5,15 +5,19 @@
 
 import json
 import math
+import socket
+from datetime import datetime
 
 import rclpy
-from rclpy.node import Node
+from rclpy.node import Node, Clock
 
 from std_msgs.msg import String
 from tms_msg_db.msg import Tmsdb
 from tms_msg_db.msg import TmsdbStamped
 from tms_msg_db.srv import TmsdbGetData
 
+PEAK = 700
+MIN_INTERVAL = 300
 
 temp = 0.0  # 温度
 rate = 0  # 心拍数
@@ -25,16 +29,17 @@ roll = 0.0
 pitch = 0.0
 last_peak_time = -1
 
-
+count = 0
 def whs1_read(s):
     """Socket通信をする
     args:
         s :  通信を行うsocket.socket()のオブジェクト
     """
-    global temp, rate, p_rate, msec, p_msec, hakei, roll, pitch
+    global temp, rate, p_rate, msec, p_msec, hakei, roll, pitch, count
+    global last_peak_time
     data, addr = s.recvfrom(1024)
 
-    wave = int.from_bytes(data[0:2], 'little')
+    wave[count%100] = int.from_bytes(data[0:2], 'little')
     msec = int.from_bytes(data[2:4], "little")
     temp = int.from_bytes(data[6:8], "little") * 0.01
 
@@ -45,7 +50,7 @@ def whs1_read(s):
     g = math.sqrt(acc_x*acc_x + acc_y*acc_y + acc_z*acc_z)
     if acc_y != 0:
         roll = math.asin(-acc_x / g)
-        pitch = atan(acc_x / acc_y)
+        pitch = math.atan(acc_x / acc_y)
 
     # 心拍周波数(rate)を計算
     ## msecがオーバーフローしている際の調整
@@ -61,6 +66,22 @@ def whs1_read(s):
     ## 周期を計算
     interval = msec - last_peak_time
 
+    if wave[count%100] > PEAK and interval > MIN_INTERVAL:
+        if last_peak_time == -1:
+            last_peak_time = msec
+        else:
+            p_rate = rate
+            rate = 1000.0 / interval * 60.0
+            print(rate)
+            if rate < 30:
+                rate = 0
+            elif rate > 200:
+                rate = p_rate
+            last_peak_time = msec
+        
+    count += 1
+
+
     pass
         
 def db_write(pub, state):
@@ -69,16 +90,19 @@ def db_write(pub, state):
         pub: node.publisher型。tms_db_writerへのトピック送信用
         state: int型。1なら測定中、0なら測定停止中
     """
-    global node
+    global node, roll, pitch, temp, rate, wave
+    now_time = datetime.now().isoformat()
 
-    send_data = {"temp": temp, "rate" : rate, "wave" : wave]
+    send_data = {"temp": temp, "rate" : rate, "wave" : wave}
 
     db_msg = TmsdbStamped()
     db_msg.header.frame_id = "/world"
-    db_msg.header.stamp = node.now()
+    # TODO: db_msgのヘッダーのstampがわからなかったので書いていない
+    # clock = Clock()
+    # db_msg.header.stamp = clock.now()
     
     tmp_data = Tmsdb()
-    tmp_data.time = str(node.now())
+    tmp_data.time = now_time
     tmp_data.name = "whs1_mybeat"
     tmp_data.id = 3021
     tmp_data.place = 5001
@@ -86,17 +110,17 @@ def db_write(pub, state):
     tmp_data.state = state
     tmp_data.rr = roll
     tmp_data.rp = pitch
-    tmp_data.ry = 0
+    tmp_data.ry = 0.0
 
     tmp_data.note = json.dumps(send_data)
-    db_msg.tmsdb[0] = tmp_data
+    db_msg.tmsdb = [tmp_data]
 
     pub.publish(db_msg)
     
 
 
 def main(args=None):
-    global node
+    global node, roll, pitch, temp, rate, wave
     rclpy.init(args=args)
 
     node = rclpy.create_node('tms_ss_whs1')
@@ -110,9 +134,10 @@ def main(args=None):
             whs1_read(s)  # socketから各種センサ値を取得
 
             if i % 10 == 0:
-                db_write(1))  # 10回に一回、DBに格納
+                # print(f"temp: {temp}, rate: {rate}")
+                db_write(publisher, 1)  # 10回に一回、DBに格納
             i += 1
-        db_write(0)
+        db_write(publisher, 0)
 
     node.destroy_node()
     rclpy.shutdown()

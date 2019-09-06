@@ -27,8 +27,6 @@ db = client.rostmsdb
 class TmsDbWriter(Node):
     def __init__(self):
         super().__init__("tms_db_writer")
-        #rclpy.init("tms_db_writer")
-        # rclpy.shutdown(self.shutdown)
         db_host = 'localhost'
         db_port = 27017
         # self.is_connected = db_util.check_connection(db_host, db_port)
@@ -43,11 +41,11 @@ class TmsDbWriter(Node):
             try:
                 doc = db_util.msg_to_document(tmsdb)
                 print(doc)
-                if sys.argv[1] =="true":
-                     db.history.insert(doc)
-                     result = db.now.find({"name": doc['name'], "sensor": doc['sensor']})
-                     if result.count() >= 1:
-                         del doc['id']
+                # if sys.argv[1] =="true":
+                #      db.history.insert(doc)
+                #      result = db.now.find({"name": doc['name'], "sensor": doc['sensor']})
+                #      if result.count() >= 1:
+                #          del doc['id']
                 result = db.now.update(
                     {"name": doc['name'], "sensor": doc['sensor']},
                     doc,
@@ -60,7 +58,9 @@ class TmsDbWriter(Node):
     def writeInitData(self):
         cursor = db.default.find({"$or": [{"type": "furniture"}, {"type": "robot"}]})
         for doc in cursor:
-            # print(doc)
+            if '_id' in doc:
+                del doc['_id']
+
             result = db.now.update(
                 {"name": doc['name']},
                 doc,
