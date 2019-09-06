@@ -12,7 +12,7 @@ from janome.tokenizer import Tokenizer
 from tms_msg_db.msg import Tmsdb
 from tms_msg_db.srv import TmsdbGetData
 from tms_msg_ts.srv import TsReq
-from tms_rc_double.srv import SkypeSrv
+# from tms_rc_double.srv import SkypeSrv
 from rclpy.callback_groups import ReentrantCallbackGroup
 import rclpy
 import requests
