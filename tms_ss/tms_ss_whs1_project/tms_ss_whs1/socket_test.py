@@ -15,8 +15,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
 
         print("msec: " + str(temp))
 
-        
-
-
 def main(args=None):
     rclpy.init(args=args)

@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-
 # doubleをwhs1(心拍センサ)でコントロールする
 
-import rospy
+import rclpy
 from tms_msg_db.srv import TmsdbGetData, TmsdbGetDataRequest
 from geometry_msgs.msg import PoseStamped
 
@@ -13,57 +10,39 @@ import json
 TMSDB_ID = 3021  # database request "id" for whs1
 TMSDB_SENSOR = 3021  # database request "sensor" for whs1
 
-def main():
-    print "Double Whs1 Control"
-    pub = rospy.Publisher("/tms_rc_double/room957/move_base_simple/goal",PoseStamped,queue_size=10)
-    rospy.init_node('double_whs1_control')
-    rospy.wait_for_service('/tms_db_reader')
+class DoubleWhs1Control(Node):
 
-    goal_pose_stamped = setGoalPoseStamped()
-    is_published = False
+    def __init__(self):
+        super().__init__('double_whs1_control')
+        self.publisher = node.create_publisher(PoseStamped, "/tms_rc_double/room957/move_base_simple/goal", 10)
 
-    r = rospy.Rate(1)  # 1Hz
-    while not rospy.is_shutdown():
-        rate = getWhs1HeartRate()
-        
-        if is_published:
-            print "[Warning]",
-        print "Whs1 Heart Rate : " + str(rate)  # debug
+        self.cli_dbreader = self.create_client(TmsdbGetData, 'tms_db_reader')
+        while not self.cli_dbreader.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service "tms_db_reader" not available, waiting again...')
 
-        if (not is_published) and (rate > 140):
-            pub.publish(goal_pose_stamped)
-            print "\n[Warning] robot start.\n"
-            is_published = True
+        self.cb_group = ReentrantCallbackGroup()
+        timer_period = 1  # seconds
+        self.timer = self.create_timer(timer_period, self.timer_callback, callback_group=self.cb_group)
+        self.get_logger().info('double_whs1_control ready...')
 
-        r.sleep()
+    async def timer_callback(self):
+        rate = await self.get_whs1_heartrate()
+        if rate > 140:
+            self.publisher.publish(self.setGoalPoseStamped())
+            self.get_logger().info('[HeartRate Warning] Robot moves to you !')
 
-def setGoalPoseStamped():
-    pose_stamped = PoseStamped()
-    pose_stamped.header.frame_id = "map"
-    pose_stamped.pose.position.x = 3.1917
-    pose_stamped.pose.position.y = 1.3222
-    pose_stamped.pose.position.z = 0.0
-    pose_stamped.pose.orientation.x = 0.0
-    pose_stamped.pose.orientation.y = 0.0
-    pose_stamped.pose.orientation.z = 0.0
-    pose_stamped.pose.orientation.w = 1.0
+    async def get_whs1_heartrate(self):
+        """Whs1の心拍数を取得する
 
-    return pose_stamped
+        tms_ss_whs1/src/main.cppは、tmsdbのnoteにjsonとして各種データを保存しているので、
+        noteをjson.loadsで辞書型に変更して読みだす。
+        """
+        rate = -1  # Error Number
+        data_tmsdb = Tmsdb()
+        data_tmsdb.id = TMSDB_ID
+        data_tmsdb.sensor = TMSDB_SENSOR
 
-def getWhs1HeartRate():
-    """Whs1の心拍数を取得する
-
-    tms_ss_whs1/src/main.cppは、tmsdbのnoteにjsonとして各種データを保存しているので、
-    noteをjson.loadsで辞書型に変更して読みだす。
-    """
-    rate = -1  # Error Number
-    db_req = TmsdbGetDataRequest()
-    db_req.tmsdb.id = TMSDB_ID
-    db_req.tmsdb.sensor = TMSDB_SENSOR
-    try:
-        srv_client = rospy.ServiceProxy("/tms_db_reader", TmsdbGetData)
-
-        res = srv_client(db_req)
+        res = await self.call_dbreader(data_tmsdb)  
         if len(res.tmsdb) == 0:
             return rate
         note = res.tmsdb[0].note
@@ -71,13 +50,50 @@ def getWhs1HeartRate():
         whs1_params = json.loads(note)
         rate = whs1_params["rate"]
 
-    except rospy.ServiceException as e:
-        print "Service call failed: %s" %e
-    
-    return rate
+        return rate
+
+
+    async def call_dbreader(self,data):
+        """[tms_db_reader] DBからデータを読み取る
+        """
+        req = TmsdbGetData.Request()
+        req.tmsdb = data
+        self.future_dbreader  = self.cli_dbreader.call_async(req)
+
+        await self.future_dbreader
+
+        if self.future_dbreader.result() is not None:
+            res = self.future_dbreader.result().tmsdb
+            return res
+        else:
+            self.get_logger().info('Service "tms_db_reader" call failed %r' % (self.future_dbreader.exception(),))
+
+    def setGoalPoseStamped(self):
+        pose_stamped = PoseStamped()
+        pose_stamped.header.frame_id = "map"
+        pose_stamped.pose.position.x = 3.1917
+        pose_stamped.pose.position.y = 1.3222
+        pose_stamped.pose.position.z = 0.0
+        pose_stamped.pose.orientation.x = 0.0
+        pose_stamped.pose.orientation.y = 0.0
+        pose_stamped.pose.orientation.z = 0.0
+        pose_stamped.pose.orientation.w = 1.0
+
+        return pose_stamped
+
+def main():
+    rclpy.init(args=args)
+
+
+    double_whs1_control = DoubleWhs1Control()
+
+    rclpy.spin(double_whs1_control)
+
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    double_whs1_control.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == '__main__':
-    try:
-        main()
-    except rospy.ROSInterruptException:
-        pass
+    main()

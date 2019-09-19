@@ -1,7 +1,7 @@
 from setuptools import setup
 from setuptools import find_packages
 
-package_name = 'tms_ss_whs1'
+package_name = 'tms_rc_double'
 setup(
     name=package_name,
     version='0.1.0',
@@ -30,7 +30,7 @@ setup(
     test_suite='pytest',
     entry_points={
         'console_scripts': [
-            'tms_ss_whs1 = tms_ss_whs1.tms_ss_whs1:main',
+            'convert_twist2vector3 = tms_rc_double.convert_twist2vector3:main',
         ],
     },
 )
