@@ -37,6 +37,7 @@ def whs1_read(s):
     """
     global temp, rate, p_rate, msec, p_msec, hakei, roll, pitch, count
     global last_peak_time
+
     data, addr = s.recvfrom(1024)
 
     wave[count%100] = int.from_bytes(data[0:2], 'little')
@@ -51,20 +52,11 @@ def whs1_read(s):
     if acc_y != 0:
         roll = math.asin(-acc_x / g)
         pitch = math.atan(acc_x / acc_y)
-
-    # 心拍周波数(rate)を計算
-    ## msecがオーバーフローしている際の調整
-    if msec == p_msec:
-        msec += 8
-    elif msec == (p_msec - 8):
-        msec += 16
-    elif msec == (p_msec - 16):
-        msec += 24
-    elif msec == (p_msec - 24):
-        msec += 32
     
     ## 周期を計算
     interval = msec - last_peak_time
+    while(interval < 0):
+        interval += 60000
 
     if wave[count%100] > PEAK and interval > MIN_INTERVAL:
         if last_peak_time == -1:
@@ -72,7 +64,7 @@ def whs1_read(s):
         else:
             p_rate = rate
             rate = 1000.0 / interval * 60.0
-            print(rate)
+            # print(rate)
             if rate < 30:
                 rate = 0
             elif rate > 200:
@@ -80,9 +72,6 @@ def whs1_read(s):
             last_peak_time = msec
         
     count += 1
-
-
-    pass
         
 def db_write(pub, state):
     """tms_db_writerにトピックを送る（結果、DBにデータを書き込む)
@@ -123,18 +112,19 @@ def main(args=None):
     global node, roll, pitch, temp, rate, wave
     rclpy.init(args=args)
 
+
     node = rclpy.create_node('tms_ss_whs1')
 
     publisher = node.create_publisher(TmsdbStamped, 'tms_db_data', 1000)
     i = 0
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:  # UDP
         s.bind(('192.168.4.102', 65001))  # IPv4アドレス, PORT番号
-        print("tms_ss_whs1 ready ... ")
+        print("tms_ss_whs1 ready  ... ")
         while rclpy.ok():
             whs1_read(s)  # socketから各種センサ値を取得
+            # print(f"temp: {temp}, rate: {rate}")
 
             if i % 10 == 0:
-                # print(f"temp: {temp}, rate: {rate}")
                 db_write(publisher, 1)  # 10回に一回、DBに格納
             i += 1
         db_write(publisher, 0)

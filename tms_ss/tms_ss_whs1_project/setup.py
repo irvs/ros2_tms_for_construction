@@ -31,7 +31,8 @@ setup(
     entry_points={
         'console_scripts': [
             'tms_ss_whs1 = tms_ss_whs1.tms_ss_whs1:main',
-            'double_whs1_control = tms_ss_whs1.double_whs1_control:main'
+            'double_whs1_control = tms_ss_whs1.double_whs1_control:main',
+            'tms_ss_whs1_monitor = tms_ss_whs1.tms_ss_whs1_monitor:main'
         ],
     },
 )
