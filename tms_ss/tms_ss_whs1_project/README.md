@@ -17,3 +17,33 @@ Another terminal,
 ```
 $ ros2 run tms_db_manager tms_db_writer
 ```
+
+### tms_ss_whs1_monitor
+This is monitoring system of tms_ss_whs1 outputs.
+
+One terminal,
+
+```
+$ ros2 run tms_ss_whs1 tms_ss_whs1_monitor
+```
+
+Another terminal,
+```
+$ ros2 run tms_db_manager tms_db_reader
+```
+
+### double_whs1_control
+This node can control "double(robot)" by tms_ss_whs1.
+
+IF your heartbeat over standard bpm, double moves.
+
+One terminal,
+
+```
+$ ros2 run tms_ss_whs1 double_whs1_control
+```
+
+Another terminal,
+```
+$ ros2 run tms_db_manager tms_db_reader
+```
