@@ -9,10 +9,10 @@ from geometry_msgs.msg import Vector3
 subscribe_ topic_name = "/cmd_vel"  # 変換前のトピック名
 publish_topic_name = "/vel"  # 変換後のトピック名
 
-class ConvertTwist2Vector3(Node):
+class Twist2Vector3(Node):
 
     def __init__(self):
-        super().__init__('convert_twist2vector3')
+        super().__init__('twist2vector3')
         self.subscription = self.create_subscription(
             Twist,
             subscribe_topic_name,

@@ -30,7 +30,7 @@ setup(
     test_suite='pytest',
     entry_points={
         'console_scripts': [
-            'twist2vector3=tms_rc_double.twist2vector3:main'
+            'twist2vector3 = tms_rc_double.twist2vector3:main'
         ],
     },
 )
