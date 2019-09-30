@@ -63,7 +63,7 @@ class ViconStream : public rclcpp::Node
 public:
   //ViconStream(idSensor, idPlace, stream_mode, host_name, frame_id, update_time, isDebug)
   ViconStream()
-  : Node("Vicon")
+  : Node("vicon")
   , count_(0)
   , idPlace(5001)
   , stream_mode("ClientPull")
@@ -197,7 +197,8 @@ bool init_vicon()
     MyClient.EnableUnlabeledMarkerData();
     MyClient.EnableDeviceData();
 
-      while (MyClient.GetFrame().Result != Result::Success)
+    std::cout << "Get Frame" << std::endl;
+    while (MyClient.GetFrame().Result != Result::Success)
     {
       std::cout << "." << std::endl;
     }
@@ -205,7 +206,7 @@ bool init_vicon()
 
     Output_GetFrameNumber _Output_GetFrameNumber = MyClient.GetFrameNumber();
     bool isDebug = true;
-      if (isDebug)
+    if (isDebug)
     {
       std::cout << "Segment Data Enabled: " << Adapt(MyClient.IsSegmentDataEnabled().Enabled) << std::endl;
       std::cout << "Marker Data Enabled: " << Adapt(MyClient.IsMarkerDataEnabled().Enabled) << std::endl;
@@ -220,8 +221,8 @@ bool init_vicon()
     {
       std::cout << "." << std::endl;
     }
-        unsigned int SubjectCount = MyClient.GetSubjectCount().SubjectCount;
-     if (isDebug)
+    unsigned int SubjectCount = MyClient.GetSubjectCount().SubjectCount;
+    if (isDebug)
       std::cout << "Subjects (" << SubjectCount << "):" << std::endl;
     for (unsigned int SubjectIndex = 0; SubjectIndex < SubjectCount; ++SubjectIndex)
     {
@@ -243,6 +244,22 @@ bool init_vicon()
       if (isDebug)
         std::cout << "    Segments (" << SegmentCount << "):" << std::endl;
 
+      // tsuika shimasu
+      unsigned int markerCount = MyClient.GetMarkerCount(SubjectName).MarkerCount;
+      for(unsigned int markerIndex = 0; markerIndex < markerCount; ++markerIndex){
+        string markerName = MyClient.GetMarkerName(SubjectName, markerIndex).MarkerName;
+        std::cout << "      Marker #" << markerIndex << " "<< markerName << endl;
+
+        Output_GetMarkerGlobalTranslation _Output_GetSegmentGlobalTranslation =
+            MyClient.GetMarkerGlobalTranslation(SubjectName, markerName);
+        if (isDebug)
+          std::cout << "        Global Translation: (" << _Output_GetSegmentGlobalTranslation.Translation[0] << ", "
+                    << _Output_GetSegmentGlobalTranslation.Translation[1] << ", "
+                    << _Output_GetSegmentGlobalTranslation.Translation[2] << ") "
+                    << Adapt(_Output_GetSegmentGlobalTranslation.Occluded) << std::endl;
+      }
+
+
       for (unsigned int SegmentIndex = 0; SegmentIndex < SegmentCount; ++SegmentIndex)
       {
         if (isDebug)
@@ -255,6 +272,24 @@ bool init_vicon()
 // Get the global segment translation
         Output_GetSegmentGlobalTranslation _Output_GetSegmentGlobalTranslation =
             MyClient.GetSegmentGlobalTranslation(SubjectName, SegmentName);
+        
+        if(_Output_GetSegmentGlobalTranslation.Result==ViconDataStreamSDK::CPP::Result::Success){
+          printf("success");
+        }else if(_Output_GetSegmentGlobalTranslation.Result==ViconDataStreamSDK::CPP::Result::NotConnected){
+          printf("not connected");
+        }else if(_Output_GetSegmentGlobalTranslation.Result==ViconDataStreamSDK::CPP::Result::NoFrame){
+          printf("No Frame");
+        }else if(_Output_GetSegmentGlobalTranslation.Result==ViconDataStreamSDK::CPP::Result::InvalidSubjectName){
+          printf("InvalidSubjectName");
+        }else if(_Output_GetSegmentGlobalTranslation.Result==ViconDataStreamSDK::CPP::Result::InvalidSegmentName){
+          printf("InvalidSegmentName");
+        }
+
+        if(_Output_GetSegmentGlobalTranslation.Occluded){
+          printf("occluded enable");
+        }else{
+          printf("occluded disable");
+        }
         if (isDebug)
           std::cout << "        Global Translation: (" << _Output_GetSegmentGlobalTranslation.Translation[0] << ", "
                     << _Output_GetSegmentGlobalTranslation.Translation[1] << ", "
@@ -280,12 +315,12 @@ bool init_vicon()
                     << _Output_GetSegmentGlobalRotationEulerXYZ.Rotation[2] << ") "
                     << Adapt(_Output_GetSegmentGlobalRotationEulerXYZ.Occluded) << std::endl;
        
-    posemsg.header.frame_id = "frame_id";
+    posemsg.header.frame_id = frame_id;
     posemsg.header.stamp = rclcpp::Clock().now();
     // posemsg.measuredtime = rclcpp::Clock().now();
     // posemsg.measuredtime = now;
-    posemsg.subjectname = "SubjectName";
-    posemsg.segmentname = "SegmentName";
+    posemsg.subjectname = SubjectName;
+    posemsg.segmentname = SegmentName;
     posemsg.translation.x = _Output_GetSegmentGlobalTranslation.Translation[0];
     posemsg.translation.y = _Output_GetSegmentGlobalTranslation.Translation[1];
     posemsg.translation.z = _Output_GetSegmentGlobalTranslation.Translation[2];
