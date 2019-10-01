@@ -16,7 +16,7 @@ def generate_launch_description():
     launch_dir = os.path.join(get_package_share_directory('tms_rc_bot'), 'launch')
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
     map_dir = LaunchConfiguration('map', 
-                                default=os.path.join(get_package_share_directory('tms_rc_bot'), 'maps', 'map.yaml'))
+                                default=os.path.join(get_package_share_directory('tms_rc_bot'), 'maps', 'map_bsen.yaml'))
 
     # map_yaml_file = LaunchConfiguration('map')
 
@@ -98,12 +98,12 @@ def generate_launch_description():
         arguments=[urdf]
         )
 
-    # start_guidebot_node_cmd = Node(
-    #     package='guidebot_node',
-    #     node_executable='guidebot_odom',
-    #     node_name='guidebot_node',
-    #     output='screen'
-    #     )
+    start_double_node_cmd = Node(
+        package='doublenode',
+        node_executable='double_odom',
+        node_name='double_node',
+        output='screen'
+        )
 
     # start_map_server_cmd = Node(
     #     package='nav2_map_server',
@@ -148,7 +148,7 @@ def generate_launch_description():
         node_executable='dwb_controller',
         output='screen',
         parameters=[configured_params],
-        remappings=[('/cmd_vel', '/vel'), ('/odom', 'odometry/vicon')]
+        remappings=[('/cmd_vel', '/cmd2vel'), ('/odom', '/odometry/vicon')]
         ) 
 
     # start_planner_cmd = Node(
@@ -175,7 +175,7 @@ def generate_launch_description():
         node_name='recoveries',
         output='screen',
         parameters=[{'use_sim_time': use_sim_time}],
-        remappings=[('/amcl_pose', '/initialpose'), ('/cmd_vel', '/cmd2vel'),  ('/odom', 'odometry/vicon')]
+        remappings=[('/amcl_pose', '/initialpose'), ('/cmd_vel', '/cmd2vel'), ('/odom', '/odometry/vicon')]
         )
 
     start_navigator_cmd = Node(
@@ -207,7 +207,7 @@ def generate_launch_description():
 
     # Add the actions to launch all of the navigation nodes
     ld.add_action(start_lifecycle_manager_cmd)
-    # ld.add_action(start_guidebot_node_cmd)
+    ld.add_action(start_double_node_cmd)
     ld.add_action(start_map_server_cmd)
     # ld.add_action(start_localizer_cmd)
     ld.add_action(start_world_model_cmd)

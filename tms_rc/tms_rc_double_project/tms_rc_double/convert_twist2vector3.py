@@ -26,10 +26,10 @@ class ConvertTwist2Vector3(Node):
         print(f"[converter] << receive Twist: {msg}")
         send_msg = Vector3()
         send_msg.x = msg.linear.x
-        send_msg.y = 0
+        send_msg.y = 0.0
         send_msg.z = msg.angular.z 
         print(f"[converter] >> send Vector3: {send_msg}")
-        self.publisher_.publish(msg)
+        self.publisher_.publish(send_msg)
 
 
 def main(args=None):

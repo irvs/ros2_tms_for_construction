@@ -63,9 +63,9 @@ class ViconStream : public rclcpp::Node
 public:
   //ViconStream(idSensor, idPlace, stream_mode, host_name, frame_id, update_time, isDebug)
   ViconStream()
-  : Node("vicon")
+  : Node("vicon_stream")
   , count_(0)
-  , idPlace(5001)
+  , idPlace(5002)
   , stream_mode("ClientPull")
   , frame_id("/world")
   , update_time(0.01)
@@ -89,9 +89,9 @@ public:
     //nh_priv.param("debug", isDebug, isDebug);
     // Publishers
       // auto db_pub = std::make_shared<ViconStream>("tms_db_data");
-      posepub = this->create_publisher<tms_msg_ss::msg::ViconData>("~/output");
-      dbpub = this->create_publisher<tms_msg_db::msg::TmsdbStamped>("~/tms_db_data");
-      checkerpub = this->create_publisher<visualization_msgs::msg::MarkerArray>("~/checker_box");
+      posepub = this->create_publisher<tms_msg_ss::msg::ViconData>("/vicon/output");
+      dbpub = this->create_publisher<tms_msg_db::msg::TmsdbStamped>("/tms_db_data");
+      checkerpub = this->create_publisher<visualization_msgs::msg::MarkerArray>("/checker_box");
 
     //db_pub = nh.advertise< tms_msg_db::TmsdbStamped >("tms_db_data", 1);
 
@@ -180,7 +180,7 @@ bool init_vicon()
     auto tmsdb = tms_msg_db::msg::Tmsdb();
     auto now = rclcpp::Clock().now();
 
-    tmsdb.type = "Hello";
+    tmsdb.type = "robot";
     // message.data = "Hello, world! " + std::to_string(count_++);
     // RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
     // posepub->publish(message);
@@ -419,8 +419,19 @@ bool init_vicon()
         else if (id != 0 && posemsg.translation.x != 0 && posemsg.translation.y != 0)
         {
           
+          // auto now = std::chrono::system_clock::now();
+          // auto in_time_t = std::chrono::system_clock::to_time_t(now);
+          // boost::posix_time::ptime t = boost::posix_time::second_clock::local_time(); 
+          // auto ts = std::ctime(&in_time_t);
+          // boost::posix_time::to_iso_extended_string(t);
+          // tmsdb.time = boost::posix_time::to_iso_extended_string(t);
 
-          // tmsdb.time = boost::posix_time::to_iso_extended_string(rclcpp::Clock().now().toBoost());
+          auto now = std::chrono::system_clock::now();
+          auto itt = std::chrono::system_clock::to_time_t(now);
+          std::ostringstream ss;
+          ss << std::put_time(gmtime(&itt), "%FT%TZ");
+          // tmsdb.time = std::to_string(std::chrono::system_clock::now());
+          tmsdb.time = ss.str();
           tmsdb.id = id;
           tmsdb.name = name;
           // Vicon DataStream SDK: Positions are expressed in millimeters.
@@ -441,7 +452,7 @@ bool init_vicon()
     
     
 
-    // dbpub->publish(tmsdbstamped);
+    dbpub->publish(tmsdbstamped);
   
 
       }
