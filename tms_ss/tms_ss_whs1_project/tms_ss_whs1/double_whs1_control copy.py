@@ -6,7 +6,6 @@ import rclpy
 from tms_msg_db.msg import Tmsdb
 from tms_msg_db.srv import TmsdbGetData
 from geometry_msgs.msg import PoseStamped
-from skpy import Skype
 
 import pymongo
 import json
@@ -17,8 +16,6 @@ TMSDB_SENSOR = 3021  # database request "sensor" for whs1
 class DoubleWhs1Control(Node):
 
     def __init__(self):
-        self.sk = Skype("sms0432@gmail.com", "alzl8254") # connect to Skype
-        self.ch = self.sk.contacts["live:.cid.12d87193dac1a317"].chat 
         super().__init__('double_whs1_control')
         self.publish_flag = False
 
@@ -36,10 +33,8 @@ class DoubleWhs1Control(Node):
     async def timer_callback(self):
         rate = await self.get_whs1_heartrate()
         print(f"rate: {rate}")
+        
         if rate > 140 and not self.publish_flag:
-
-            self.ch.sendMsg("SOS: high heartrate") 
-
             self.publisher.publish(self.setGoalPoseStamped())
             self.get_logger().info('[HeartRate Warning] Robot moves to you !')
             self.publish_flag = True

@@ -5,7 +5,7 @@
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
     <Sequence name="root">
-      <RateController hz="1.0">
+      <RateController hz="10000.0">
         <Fallback>
           <GoalReached/>
           <ComputePathToPose goal="${goal}"/>

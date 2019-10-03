@@ -4,9 +4,9 @@
 -->
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
-    <RecoveryNode number_of_retries="6">
+    <RecoveryNode number_of_retries="1000">
       <Sequence name="NavigateWithReplanning">
-        <RateController hz="1.0">
+        <RateController hz="1">
           <Fallback>
             <GoalReached/>
              <ComputePathToPose goal="${goal}" path="${path}"/>

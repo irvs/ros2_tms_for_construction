@@ -86,7 +86,7 @@ def generate_launch_description():
     declare_bt_xml_cmd = DeclareLaunchArgument(
         'bt_xml_file',
         default_value=os.path.join(get_package_share_directory('tms_rc_bot'),
-            'behavior_trees', 'navigate_w_replanning_and_recovery.xml'),
+            'behavior_trees', 'navigate_w_replanning_without_recovery.xml'),
         description='Full path to the behavior tree xml file to use')
 
     start_robot_state_publisher_cmd = Node(

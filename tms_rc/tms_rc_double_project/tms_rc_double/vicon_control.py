@@ -240,6 +240,7 @@ class ViconControl(Node):
         vicon_position_msg.pose.pose.position.x = var_pos_x / 1000
         vicon_position_msg.pose.pose.position.y = var_pos_y / 1000
         vicon_position_msg.pose.pose.position.z = 0.0
+        # print(v_rotation)
 
         vicon_position_msg.pose.pose.orientation = v_rotation
         # vicon_position_msg.pose.pose.orientation.y = q["y"]

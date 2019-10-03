@@ -118,11 +118,11 @@ def main(args=None):
     publisher = node.create_publisher(TmsdbStamped, 'tms_db_data', 1000)
     i = 0
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:  # UDP
-        s.bind(('192.168.4.102', 65001))  # IPv4アドレス, PORT番号
+        s.bind(('192.168.4.58', 65001))  # IPv4アドレス, PORT番号
         print("tms_ss_whs1 ready  ... ")
         while rclpy.ok():
             whs1_read(s)  # socketから各種センサ値を取得
-            # print(f"temp: {temp}, rate: {rate}")
+            print(f"temp: {temp}, rate: {rate}")
 
             if i % 10 == 0:
                 db_write(publisher, 1)  # 10回に一回、DBに格納
