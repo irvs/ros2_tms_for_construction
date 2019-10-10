@@ -3,7 +3,7 @@ from tms_msg_db.msg import Tmsdb
 from tms_msg_db.srv import TmsdbGetData
 import rclpy
 import pymongo
-import scripts.tms_db_util as db_util
+import tms_db_manager.tms_db_util as db_util
 
 client = pymongo.MongoClient("localhost:27017")
 db = client.rostmsdb

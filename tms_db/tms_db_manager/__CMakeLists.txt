@@ -15,6 +15,11 @@ find_package(ament_cmake REQUIRED COMPONENTS
   tms_msg_db
 )
 
+install(DIRECTORY
+    launch
+    DESTINATION share/${PROJECT_NAME}/
+)
+
 ament_package(
   #INCLUDE_DIRS include
   #LIBRARIES tms_db_manager

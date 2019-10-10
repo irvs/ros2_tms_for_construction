@@ -17,7 +17,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from tms_msg_db.msg import TmsdbStamped, Tmsdb
 from tms_msg_db.srv import *
-import scripts.tms_db_util as db_util
+import tms_db_manager.tms_db_util as db_util
 
 
 
