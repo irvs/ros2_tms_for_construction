@@ -64,6 +64,7 @@ class SubtaskBedLinkUp(SubtaskNodeBase):
         ws.close()  # close socket
 
         time.sleep(TIME)
+        response.message = "Success"
         return response
 
 
@@ -82,6 +83,7 @@ class SubtaskBedLinkDown(SubtaskNodeBase):
         ws.close()  # close socket
 
         time.sleep(TIME)
+        response.message = "Success"
         return response
 
 
@@ -100,6 +102,7 @@ class SubtaskBedHeadUp(SubtaskNodeBase):
         ws.close()  # close socket
 
         time.sleep(TIME)
+        response.message = "Success"
         return response
     
 
@@ -118,6 +121,7 @@ class SubtaskBedHeadDown(SubtaskNodeBase):
         ws.close()  # close socket
 
         time.sleep(TIME)
+        response.message = "Success"
         return response
 
 
@@ -136,6 +140,7 @@ class SubtaskBedFootUp(SubtaskNodeBase):
         ws.close()  # close socket
 
         time.sleep(TIME)
+        response.message = "Success"
         return response
 
 
@@ -154,6 +159,7 @@ class SubtaskBedFootDown(SubtaskNodeBase):
         ws.close()  # close socket
 
         time.sleep(TIME)
+        response.message = "Success"
         return response
 
 
@@ -172,6 +178,7 @@ class SubtaskBedHeightUp(SubtaskNodeBase):
         ws.close()  # close socket
 
         time.sleep(TIME)
+        response.message = "Success"
         return response
 
 
@@ -190,4 +197,5 @@ class SubtaskBedHeightDown(SubtaskNodeBase):
         ws.close()  # close socket
 
         time.sleep(TIME)
+        response.message = "Success"
         return response

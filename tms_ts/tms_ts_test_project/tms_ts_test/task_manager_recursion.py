@@ -148,9 +148,11 @@ class TaskNode(Node):
         """サブタスクを実行する
         """
         command = self.task_tree[1]
-        readable = [await self.read_name(c) for c in command]  # 表示用
+        # readable = [await self.read_name(c) for c in command]  # 表示用
         # readable = command
-        self.get_logger().info("subtask_node_" + str(command[0]))
+        readable = await self.read_name(command[0])
+        self.get_logger().info(f'start "{readable}"')
+        self.get_logger().info(f'service call "subtask_node_{command[0]}"')
         cli_subtask = self.create_client(TsDoTask, "subtask_node_" + str(command[0]))
         while not cli_subtask.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service "tms_db_reader" not available, waiting again...')

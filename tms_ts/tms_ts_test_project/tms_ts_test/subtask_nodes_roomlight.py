@@ -39,6 +39,8 @@ class SubtaskRoomLightOn(SubtaskNodeBase):
     
     async def service_callback(self, request, response):
         res = requests.get(BSEN_URL + "2003")
+
+        response.message = "Success"
         return response
 
 
@@ -53,4 +55,6 @@ class SubtaskRoomLightOff(SubtaskNodeBase):
     
     async def service_callback(self, request, response):
         res = requests.get(BSEN_URL + "2005")
+
+        response.message = "Success"
         return response

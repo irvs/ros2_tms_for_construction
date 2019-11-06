@@ -47,7 +47,7 @@ class SubtaskNodeBase(Node, metaclass=ABCMeta):
             self._test_service_callback, \
             callback_group = self.cb_group)
         
-        self.get_logger().info(f"begin service subtask_node_{self.id()}")
+        self.get_logger().info(f'begin service "subtask_node_{self.id()}"')
 
     @abstractmethod
     def node_name(self) -> str:
@@ -82,6 +82,7 @@ class SubtaskMove(SubtaskNodeBase):
         return 9001
     
     async def service_callback(self, request, response):
+        response.message = "Success"
         return response
 
 
@@ -93,6 +94,7 @@ class SubtaskGrasp(SubtaskNodeBase):
         return 9002
     
     async def service_callback(self, request, response):
+        response.message = "Success"
         return response
 
 
@@ -104,6 +106,7 @@ class SubtaskRelease(SubtaskNodeBase):
         return 9003
     
     async def service_callback(self, request, response):
+        response.message = "Success"
         return response
 
 
@@ -115,6 +118,7 @@ class SubtaskOpen(SubtaskNodeBase):
         return 9004
     
     async def service_callback(self, request, response):
+        response.message = "Success"
         return response
 
 
@@ -126,6 +130,7 @@ class SubtaskClose(SubtaskNodeBase):
         return 9005
     
     async def service_callback(self, request, response):
+        response.message = "Success"
         return response
 
 
@@ -137,6 +142,7 @@ class SubtaskRandomMove(SubtaskNodeBase):
         return 9006
     
     async def service_callback(self, request, response):
+        response.message = "Success"
         return response
 
 
@@ -148,4 +154,5 @@ class SubtaskSensing(SubtaskNodeBase):
         return 9007
     
     async def service_callback(self, request, response):
+        response.message = "Success"
         return response
