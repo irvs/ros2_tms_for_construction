@@ -18,11 +18,11 @@ import threading
 
 
 julius_path = '/usr/local/bin/julius'
-jconf_path = '/home/ubuntu/ros2_ws/src/ros2_tms/tms_ur/tms_ur_listener_project/julius_dictation_kit/tms.jconf'
+jconf_path = './src/ros2_tms/tms_ur/tms_ur_listener_project/julius_dictation_kit/tms.jconf'
 julius = None
 julius_socket = None
 adinrec_path = '/usr/local/bin/adinrec'
-wav_file = '/home/ubuntu/ros2_ws/src/ros2_tms/tms_ur/tms_ur_listener_project/wav/rec.wav'
+wav_file = './src/ros2_tms/tms_ur/tms_ur_listener_project/wav/rec.wav'
 gs_filename = 'gs://ros-tms/rec.wav'
 
 def invoke_julius():

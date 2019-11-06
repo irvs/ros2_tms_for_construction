@@ -6,14 +6,14 @@ class TaskManagerTestClient(Node):
 
     def __init__(self):
         super().__init__('task_manager_test_client')
-        self.cli = self.create_client(TsReq, 'task_viewer')
-        # self.cli = self.create_client(TsReq, 'tms_ts_master')
+        # self.cli = self.create_client(TsReq, 'task_viewer')
+        self.cli = self.create_client(TsReq, 'tms_ts_master')
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
         self.req = TsReq.Request()
 
     def send_request(self):
-        self.req.task_id = 8003  # patrol
+        self.req.task_id = 8901  # patrol
         self.req.robot_id = 2003  # smartpal
         self.req.object_id = 7001  # chipstar
         self.req.place_id = 6004  # chair

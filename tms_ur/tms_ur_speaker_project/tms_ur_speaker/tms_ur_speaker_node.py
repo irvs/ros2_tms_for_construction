@@ -5,7 +5,7 @@ import subprocess
 import os
 
 
-base = '/home/ubuntu/ros2_ws/src/ros2_tms/tms_ur/tms_ur_speaker_project/wav'
+base = '~/ros2_ws/src/ros2_tms/tms_ur/tms_ur_speaker_project/wav'
 
 
 def jtalk(t):
@@ -30,17 +30,17 @@ def speak(data):
     elif data[0]=='\\':
         aplay = ['aplay','-q',os.path.join(base, data[1:]+'.wav')]
         wr = subprocess.Popen(aplay)
-        soxi = ['soxi','-D',os.path.join(base, data[1:]+'.wav')]
-        ret = subprocess.check_output(soxi)
+        #soxi = ['soxi','-D',os.path.join(base, data[1:]+'.wav')]
+        #ret = subprocess.check_output(soxi)
         print(ret)
         return ret
     else:
         talk = data.replace(',','')
         jtalk(talk)
-        soxi = ['soxi','-D',os.path.join(base, 'open_jtalk.wav')]
-        ret = subprocess.check_output(soxi)
-        print(ret)
-        return ret
+        #soxi = ['soxi','-D',os.path.join(base, 'open_jtalk.wav')]
+        #ret = subprocess.check_output(soxi)
+        #print(ret)
+        #return ret
 
 
 def subscription_callback(msg):

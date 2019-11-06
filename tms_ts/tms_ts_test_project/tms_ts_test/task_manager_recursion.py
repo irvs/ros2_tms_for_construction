@@ -9,30 +9,6 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 import time
 import random
 
-class Robot:
-
-    def __init__(self, name='dummy robot'):
-        self.name = name
-    
-    def execute(self):
-        self.grasp()
-        time.sleep(3.0)
-        self.move()
-        time.sleep(3.0)
-        self.release()
-
-    def grasp(self):
-        print(f'[{self.name}] grasp')
-        return 1
-    
-    def move(self):
-        print(f'[{self.name}] move')
-        return 1
-    
-    def release(self):
-        print(f'[{self.name}] release')
-        return 1
-
 
 class Task:
     def __init__(self, rostime=0, task_id=0, robot_id=0, object_id=0, user_id=0, place_id=0, priority=0):
@@ -174,14 +150,14 @@ class TaskNode(Node):
         command = self.task_tree[1]
         readable = [await self.read_name(c) for c in command]  # 表示用
         # readable = command
-
-        # print(await self.read_name(command[0]))
-        print(f"[{self.name}] >> start {readable}")
-        wait = random.randint(5,15)
-        print(f"[{self.name}] >> execute {wait} seconds for {readable}")
-        time.sleep(wait)
-        print(f"[{self.name}] >> end{readable}")
-        return "Success"
+        self.get_logger().info("subtask_node_" + str(command[0]))
+        cli_subtask = self.create_client(TsDoTask, "subtask_node_" + str(command[0]))
+        while not cli_subtask.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service "tms_db_reader" not available, waiting again...')
+        req = TsDoTask.Request()
+        result = await cli_subtask.call_async(req)
+        self.get_logger().info(result.message)
+        return result.message
 
     async def call_dbreader(self, id):
         """[tms_db_reader] DBからデータを読み取る

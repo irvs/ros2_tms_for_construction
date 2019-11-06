@@ -34,6 +34,9 @@ setup(
             'task_manager_test_client = tms_ts_test.task_manager_test_client:main',
             'task_manager_recursion = tms_ts_test.task_manager_recursion:main',
             'task_viewer = tms_ts_test.task_viewer:main',
+            'subtask_nodes = tms_ts_test.subtask_nodes:main',
+            'subtask_nodes_bed = tms_ts_test.subtask_nodes_bed:main',
+            'subtask_nodes_roomlight = tms_ts_test.subtask_nodes_roomlight:main',
         ],
     },
 )
