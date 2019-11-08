@@ -13,7 +13,7 @@ class TaskManagerTestClient(Node):
         self.req = TsReq.Request()
 
     def send_request(self):
-        self.req.task_id = 8901  # patrol
+        self.req.task_id = 8999  # patrol
         self.req.robot_id = 2003  # smartpal
         self.req.object_id = 7001  # chipstar
         self.req.place_id = 6004  # chair

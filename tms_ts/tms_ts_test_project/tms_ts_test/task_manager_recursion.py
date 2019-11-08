@@ -8,6 +8,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
 import time
 import random
+import re
 
 
 class Task:
@@ -157,6 +158,10 @@ class TaskNode(Node):
         while not cli_subtask.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service "tms_db_reader" not available, waiting again...')
         req = TsDoTask.Request()
+        if len(command) >= 2:
+            req.arg_json = command[1]
+        else:
+            req.arg_json = "{}"
         result = await cli_subtask.call_async(req)
         self.get_logger().info(result.message)
         return result.message
@@ -299,7 +304,10 @@ class TaskSchedulerManager(Node):
         subtask_str = tmsdb_data[0].etcdata
         print(f"[{self.name}] >> find task '{tmsdb_data[0].name}'")
         print(f"[{self.name}] >> read task '{subtask_str}'")
-        subtask_raw_list = subtask_str.split(" ")
+        #subtask_raw_list = subtask_str.split(" ")
+        subtask_raw_list = re.findall(r'[0-9]+\$\{.*?\}|[0-9]+|\+|\|', subtask_str)
+        # print(serch)
+
         for subtask_raw in subtask_raw_list:
             subtask = subtask_raw.split("$")
             # 辞書に含まれているなら置換
