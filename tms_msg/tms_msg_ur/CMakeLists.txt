@@ -18,6 +18,7 @@ rosidl_generate_interfaces(tms_msg_ur
   "srv/GSpeechSrv.srv"
   "srv/SlackSrv.srv"
   "srv/SpeakerSrv.srv"
+  "srv/SpeakerWavSrv.srv"
   DEPENDENCIES builtin_interfaces
 )
 

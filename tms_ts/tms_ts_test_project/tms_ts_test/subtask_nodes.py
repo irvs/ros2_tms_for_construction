@@ -9,6 +9,8 @@ import time
 import random
 import json
 
+from tms_msg_ur.srv import SpeakerSrv
+
 def main(args=None):
     global executor
     rclpy.init(args=args)
@@ -23,6 +25,7 @@ def main(args=None):
         executor.add_node(SubtaskSensing())
         executor.add_node(SubtaskRandomMove())
         executor.add_node(SubtaskWait())
+        executor.add_node(SubtaskSpeakerAnnounce())
 
         try:
             executor.spin()
@@ -192,3 +195,22 @@ class SubtaskWait(SubtaskNodeBase):
     def init_argument(self):
         """引数が必要なため、オーバーライド"""
         return {"wait_msec" : 30}
+
+class SubtaskSpeakerAnnounce(SubtaskNodeBase):
+    def node_name(self):
+        return "subtask_speaker_announce"
+    
+    def id(self):
+        return 9300
+    
+    async def service_callback(self, request, response):
+        self.get_logger().info(f'{request["announce"]}')
+        self.cli = self.create_client(SpeakerSrv, "speaker_srv", callback_group=ReentrantCallbackGroup())
+        req = SpeakerSrv.Request()
+        req.data = request["announce"]
+        await self.cli.call_async(req)
+        response.message = "Success"
+        return response
+    
+    def init_argument(self):
+        return {"announce" : "よくわかりませんでした"}

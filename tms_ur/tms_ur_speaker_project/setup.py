@@ -29,6 +29,7 @@ setup(
     test_suite='pytest',
     entry_points={
         'console_scripts': [
+            'test_client = tms_ur_speaker.test_client:main',
             'tms_ur_speaker_node = tms_ur_speaker.tms_ur_speaker_node:main',
         ],
     },

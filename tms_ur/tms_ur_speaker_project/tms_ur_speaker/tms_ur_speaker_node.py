@@ -1,11 +1,38 @@
 import rclpy
+from rclpy.callback_groups import ReentrantCallbackGroup
 from tms_msg_ur.srv import SpeakerSrv
+from tms_msg_ur.srv import SpeakerWavSrv
 from std_msgs.msg import String
 import subprocess
 import os
 
+import pyaudio
+import wave
+
 
 base = '~/ros2_ws/src/ros2_tms/tms_ur/tms_ur_speaker_project/wav'
+
+
+def play_wave(filename):
+    try:
+        wf = wave.open(filename, "r")
+    except FileNotFoundError:
+        print("Error: " + filename)
+        return 0
+        
+    p = pyaudio.PyAudio()
+    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+                    channels=wf.getnchannels(),
+                    rate=wf.getframerate(),
+                    output=True)
+
+    chunk = 1024
+    data = wf.readframes(chunk)
+    while data != b'':
+        stream.write(data)
+        data = wf.readframes(chunk)
+    stream.close()
+    p.terminate()
 
 
 def jtalk(t):
@@ -14,33 +41,25 @@ def jtalk(t):
     htsvoice=['-m','/usr/share/hts-voice/mei/mei_normal.htsvoice']
     speed=['-r','1.0']
     quality=['-a','0.57']
-    outwav=['-ow','open_jtalk.wav']
+    outwav=['-ow','./wav/open_jtalk.wav']
     cmd=open_jtalk+mech+htsvoice+speed+quality+outwav
     c = subprocess.Popen(cmd,stdin=subprocess.PIPE)
     c.stdin.write(t.encode())
     c.stdin.close()
     c.wait()
-    aplay = ['aplay','-q','open_jtalk.wav']
-    wr = subprocess.Popen(aplay)
+    play_wave('./wav/open_jtalk.wav')
 
 
 def speak(data):
     if data == '':
         return 0
     elif data[0]=='\\':
-        aplay = ['aplay','-q',os.path.join(base, data[1:]+'.wav')]
-        wr = subprocess.Popen(aplay)
-        #soxi = ['soxi','-D',os.path.join(base, data[1:]+'.wav')]
-        #ret = subprocess.check_output(soxi)
-        print(ret)
-        return ret
+        play_wave(os.path.join(data[1:]))
+        return 0
     else:
         talk = data.replace(',','')
         jtalk(talk)
-        #soxi = ['soxi','-D',os.path.join(base, 'open_jtalk.wav')]
-        #ret = subprocess.check_output(soxi)
-        #print(ret)
-        #return ret
+        return 0
 
 
 def subscription_callback(msg):
@@ -56,8 +75,19 @@ def service_callback(request, response):
     g_node.get_logger().info(
         request.data
     )
-    ret = speak(request.data)
-    response.sec = float(ret)
+    speak(request.data)
+    return response
+
+def wav_srv_callback(request, response):
+    global g_node
+    g_node.get_logger().info('incoming wav data')
+
+    # print(request.data)
+    with open('./wav/speaker_temp.wav', 'wb') as f:
+        for d in request.data:
+            f.write(d)
+    
+    play_wave('./wav/speaker_temp.wav')
     return response
 
 def main(args=None):
@@ -65,12 +95,13 @@ def main(args=None):
     rclpy.init(args=args)
 
     g_node = rclpy.create_node('tms_ur_speaker')
-    print('tms_ur_speaker : '+base)
+    g_node.get_logger().info('start')
 
     subscription = g_node.create_subscription(String, 'speaker', subscription_callback, 10)
     subscription  # prevent unused variable warning
 
-    srv = g_node.create_service(SpeakerSrv, 'speaker_srv', service_callback)
+    srv = g_node.create_service(SpeakerSrv, 'speaker_srv', service_callback, callback_group=ReentrantCallbackGroup())
+    wav_srv = g_node.create_service(SpeakerWavSrv, 'speaker_wav_srv', wav_srv_callback, callback_group=ReentrantCallbackGroup())
 
     while rclpy.ok():
         rclpy.spin_once(g_node)
