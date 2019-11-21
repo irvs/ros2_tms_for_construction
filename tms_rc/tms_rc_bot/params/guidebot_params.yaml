@@ -94,23 +94,23 @@ local_costmap:
     ros__parameters:
       use_sim_time: False
       global_frame: odom
-      plugin_names: ["static_layer", "obstacle_layer", "inflation_layer"]
-      plugin_types: ["nav2_costmap_2d::StaticLayer", "nav2_costmap_2d::ObstacleLayer", "nav2_costmap_2d::InflationLayer"]
-      rolling_window: true
+      plugin_names: ["static_layer", "inflation_layer"]
+      plugin_types: ["nav2_costmap_2d::StaticLayer", "nav2_costmap_2d::InflationLayer"]
+      rolling_window: True
       width: 3
       height: 3
       resolution: 0.05
       robot_radius: 0.105
       inflation_layer.cost_scaling_factor: 3.0
-      obstacle_layer:
-        enabled: True
+      # obstacle_layer:
+      #   enabled: True
       always_send_full_costmap: True
-      observation_sources: scan
-      scan:
-        topic: /scan
-        max_obstacle_height: 2.0
-        clearing: True
-        marking: True
+      # observation_sources: scan
+      # scan:
+      #   topic: /scan
+      #   max_obstacle_height: 2.0
+      #   clearing: True
+      #   marking: True
   local_costmap_client:
     ros__parameters:
       use_sim_time: False

@@ -151,5 +151,5 @@ def _fill_msg(msg, dic):
             elif i == "announce":
                 dic[i] = str(dic[i])
 
-            
-            setattr(msg, i, dic[i])
+            if i != "require_tag" and i != "noun":
+                setattr(msg, i, dic[i])

@@ -95,7 +95,7 @@ class TmsUrListenerServer(Node):
             self.julius_flag = data
             if data == True:
                 time.sleep(1.5)
-                self.speaker('\sound3')
+                # self.speaker('\sound3')
     
 
     async def call_gspeech(self, id):
@@ -395,10 +395,31 @@ class TmsUrListenerServer(Node):
 
         print("task_id : " + str(task_id))
 
-        # 通常会話 ----------
-        if task_id == 0:  # task_idが一つも取れなかった場合
-            print(f'Ask docomo Q&A api : {data.data}')
-            await self.ask_to_docomo_api(data.data)
+        # task_id = 8101 ##################################DEBUG####################
+        for word in words:
+            other_words.append(word)
+
+        if task_id == 0:
+            print('ask docomo Q&A api')
+            print(data.data)
+
+            announce = "すみません、よくわかりませんでした"
+            urlenc = urllib.parse.quote(data.data)
+            args = "curl -s 'https://api.apigw.smt.docomo.ne.jp/knowledgeQA/v1/ask?APIKEY=" + self.apikey + "&q=" + urlenc + "'"
+            ret = subprocess.check_output(shlex.split(args))
+            print(ret)
+            if ret != b'':  # json return
+                json_dict = json.loads(ret)
+                print(json_dict)
+
+                if "message" in json_dict:  # docomo api return message
+                    print(json_dict["message"]["textForDisplay"])
+                    announce = json_dict["message"]["textForSpeech"]
+                else :
+                    announce = "apiキーが違うようです"
+            
+            tim = await self.call_speaker(announce)
+            self.julius_power(True,tim)
             return
         # 「今日の天気」、「明日の天気」、「明後日の天気」----------
         elif task_id == 8101:
@@ -464,6 +485,213 @@ class TmsUrListenerServer(Node):
                     announce += object_name
                 elif anc == "place":
                     announce += place_name
+                else:
+                    announce += anc
+            tim = await self.call_speaker(announce)
+            self.julius_power(True,tim)
+        elif task_id == 8101: #weather_forecast
+            place = "福岡市"
+            date = ""
+            weather = ""
+            for word in other_words:
+                if word in ['今日','明日','明後日','あさって']:
+                    date = word
+            if date == "":
+                tim = await self.call_speaker(error_msg1)
+                self.julius_power(True,tim)
+                return
+
+            args = "curl -s http://weather.livedoor.com/forecast/webservice/json/v1\?city\=400010"
+            ret = subprocess.check_output(shlex.split(args))
+            json_dict = json.loads(ret)
+            pprint.pprint(json_dict)
+            if "forecasts" in json_dict:
+                if date == '今日':
+                    weather = json_dict["forecasts"][0]["telop"]
+                elif date == '明日':
+                    weather = json_dict["forecasts"][1]["telop"]
+                elif date == '明後日' or date == 'あさって':
+                    weather = json_dict["forecasts"][2]["telop"]
+            if weather == "":
+                tim = await self.call_speaker(error_msg1)
+                self.julius_power(True, 5.0)  #tim)
+                return
+
+            # anc_list = announce.split("$")
+            # announce = ""
+            # for anc in anc_list:
+            #     if anc == "place":
+            #         announce += place
+            #     elif anc == "date":
+            #         announce += date
+            #     elif anc == "weather":
+            #         announce += weather
+            #     else:
+            #         announce += anc
+            # tim = await self.call_speaker(announce)
+            tim = await self.call_speaker(place + "の" +date + "の天気は" + weather + "です")
+            self.julius_power(True,tim)
+        elif task_id == 8102: #set_alarm
+            today = datetime.datetime.today()
+            print('now:' + today.strftime("%Y/%m/%d %H:%M:%S"))
+            if today.hour < 6:
+                date = 0
+            else:
+                date = 1
+            hour = -1
+            minute = 0
+            for i,word in enumerate(other_words):
+                if word == "今日":
+                    date = 0
+                elif word == "明日" and today.hour > 6:
+                    date = 1
+                elif word in ["時","時半"] and i>0:
+                    if words[i-1].isdigit():
+                        hour = int(words[i-1])
+                        if word == "時半":
+                            minute = 30
+                        if i>1 and words[i-2] == "午後" and hour <=12:
+                            hour += 12
+                        elif i>1 and words[i-2] == "夜" and hour <=12 and hour>=6:
+                            hour += 12
+                elif word == "分":
+                    if words[i-1].isdigit():
+                        minute = int(words[i-1])
+            print("d:"+str(date)+" h:"+str(hour)+" m:"+str(minute))
+            if hour == -1:
+                tim = self.announce(error_msg1)
+                self.julius_power(True,tim)
+                return
+
+            tgt_tim = datetime.datetime(today.year,today.month,today.day,hour,minute,0,0)
+            tgt_time += datetime.timedelta(1)
+            print('tgt_time:' + tgt_time.strftime("%Y/%m/%d %H:%M:%S"))
+            offset = tgt_time - today
+            print('offset_sec:' + str(offset.seconds))
+
+            if offset.seconds < 0:
+                tim = await self.call_speaker(error_msg1)
+                self.julius_power(True,tim)
+                return
+
+            self.timer = threading.Timer(15,self.alarm)#(offset.seconds,self.alarm)
+            self.timer.start()
+
+            anc_list = announce.split("$")
+            announce = ""
+            for anc in anc_list:
+                if anc == "date":
+                    announce += str(tgt_time.month)+"月"+str(tgt_time.day)+"日"
+                elif anc == "time":
+                    announce += str(tgt_time.hour)+"時"+str(tgt_time.minute)+"分"
+                else:
+                    announce += anc
+
+            tim = await self.call_speaker(announce)
+            self.julius_power(True,tim)
+        elif task_id == 8103:
+            url = "http://192.168.100.101/codemari_kyudai/CodemariServlet?deviceID=9999&locale=ja&cmd=%251CFLP%"
+            onoff = ""
+            if "つける" in other_words:
+                print("light on")
+                onoff = "付け"
+                url += "2003"
+            elif "消す" in other_words:
+                print("light off")
+                onoff = "消し"
+                url += "2005"
+            else:
+                tim = await self.call_speaker(error_msg1)
+                self.julius_power(True,tim)
+                return
+
+            anc_list = announce.split("$")
+            announce = ""
+            for anc in anc_list:
+                if anc == "onoff":
+                    announce += onoff
+                else:
+                    announce += anc
+            tim = await self.call_speaker(announce)
+            self.julius_power(True,tim)
+
+            res = requests.get(url)
+            print(res.text)
+        elif task_id == 8104:
+            control_number = 0
+            cmd = ""
+            if "起こす" in words:
+                control_number = 1
+                cmd = "を起こし"
+            elif "寝かせる" in words:
+                control_number = 2
+                cmd = "を寝かせ"
+            elif "立てる" in words:
+                control_number = 3
+                cmd = "を立て"
+            elif "倒す" in words:
+                control_number = 4
+                cmd = "を倒し"
+            elif "上げる" in words:
+                control_number = 7
+                cmd = "の高さを上げ"
+            elif "下げる" in words:
+                control_number = 8
+                cmd = "の高さを下げ"
+            else:
+                tim = await self.call_speaker(error_msg1)
+                self.julius_power(True,tim)
+                return
+            anc_list = announce.split("$")
+            announce = ""
+            for anc in anc_list:
+                if anc == "cmd":
+                    announce += cmd
+                else:
+                    announce += anc
+            tim = await self.call_speaker(announce)
+            self.julius_power(True,tim)
+            ws = create_connection('ws://192.168.4.131:9989')  # open socket
+            ws.send(str(control_number))  # send to socket
+            ws.close()  # close socket
+            
+
+        elif task_id == 8105:
+            print(user_dic)
+            if len(user_dic) == 1:
+                user_id = user_dic.keys()[0]
+                user_name = user_dic[user_id]
+            elif len(user_dic) > 1:
+                print("len(user_dic) > 1")
+                #未実装
+            else:
+                # self.ask_remote(words, "get_health_condition")
+                return
+
+            place_id = 0
+            place_name = ""
+            temp_dbdata = Tmsdb()
+            temp_dbdata.id = user_id
+            temp_dbdata.state = 1
+
+            #target = await self.call_dbreader(temp_dbdata)
+            db_target = await self.call_dbreader(temp_dbdata)
+            target = db_target[0]
+            if target is None:
+                tim = await self.call_speaker(error_msg2)
+                self.julius_power(True,tim)
+                return
+
+            note = json.loads(target.note)
+            rate = note["rate"]
+            
+            anc_list = announce.split("$")
+            announce = ""
+            for anc in anc_list:
+                if anc == "user":
+                    announce += user_name
+                elif anc == "data":
+                    announce += str(rate)
                 else:
                     announce += anc
             tim = await self.call_speaker(announce)

@@ -6,7 +6,7 @@ import rclpy
 from tms_msg_db.msg import Tmsdb
 from tms_msg_db.srv import TmsdbGetData
 from geometry_msgs.msg import PoseStamped
-from skpy import Skype
+from skpy import Skype, SkypeCallMsg
 
 import pymongo
 import json
@@ -17,12 +17,12 @@ TMSDB_SENSOR = 3021  # database request "sensor" for whs1
 class DoubleWhs1Control(Node):
 
     def __init__(self):
-        self.sk = Skype("sms0432@gmail.com", "alzl8254") # connect to Skype
-        self.ch = self.sk.contacts["live:.cid.12d87193dac1a317"].chat 
+        # self.sk = Skype("sms0432@gmail.com", "alzl8254") # connect to Skype
+        # self.ch = self.sk.contacts["live:.cid.12d87193dac1a317"].chat 
         super().__init__('double_whs1_control')
         self.publish_flag = False
 
-        self.publisher = self.create_publisher(PoseStamped, "/move_base_simple/goal", 10)
+        self.publisher = self.create_publisher(PoseStamped, "/goal_pose", 10)
 
         self.cli_dbreader = self.create_client(TmsdbGetData, 'tms_db_reader')
         while not self.cli_dbreader.wait_for_service(timeout_sec=1.0):
@@ -38,7 +38,8 @@ class DoubleWhs1Control(Node):
         print(f"rate: {rate}")
         if rate > 140 and not self.publish_flag:
 
-            self.ch.sendMsg("SOS: high heartrate") 
+            # self.ch.sendMsg("SOS : Adnomoral heartrate") 
+            # self.ch.sendMsg("skype:live:sms0432?call&amp;video=true") 
 
             self.publisher.publish(self.setGoalPoseStamped())
             self.get_logger().info('[HeartRate Warning] Robot moves to you !')
@@ -84,13 +85,17 @@ class DoubleWhs1Control(Node):
     def setGoalPoseStamped(self):
         pose_stamped = PoseStamped()
         pose_stamped.header.frame_id = "map"
-        pose_stamped.pose.position.x = 4.0516
-        pose_stamped.pose.position.y = -1.5177
-        pose_stamped.pose.position.z = -0.0053
+        # pose_stamped.pose.position.x = 4.0516
+        # pose_stamped.pose.position.y = -1.5177
+        pose_stamped.pose.position.x = 8.65 # 3.7712
+        pose_stamped.pose.position.y = 1.62 # -1.35371
+        pose_stamped.pose.position.z = -0.000
         pose_stamped.pose.orientation.x = 0.0
         pose_stamped.pose.orientation.y = 0.0
-        pose_stamped.pose.orientation.z = -0.38268343
-        pose_stamped.pose.orientation.w = -0.92387953
+        pose_stamped.pose.orientation.z = 0.28030099562220423  # -0.449804
+        pose_stamped.pose.orientation.w = 0.9599121584047162  # -0.893127
+        # pose_stamped.pose.orientation.z = -0.38268343
+        # pose_stamped.pose.orientation.w = -0.92387953
 
         return pose_stamped
 
