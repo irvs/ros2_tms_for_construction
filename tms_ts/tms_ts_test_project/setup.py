@@ -1,3 +1,5 @@
+import os
+from glob import glob
 from setuptools import setup
 from setuptools import find_packages
 
@@ -5,11 +7,13 @@ package_name = 'tms_ts_test'
 setup(
     name=package_name,
     version='0.1.0',
-    packages=find_packages(exclude=['test']),
+    # packages=find_packages(exclude=['test']),
+    packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name, ['package.xml', 'test.launch.py']),
+        # (os.path.join('share', package_name, 'launch'), glob('*.launch.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -37,6 +41,8 @@ setup(
             'subtask_nodes = tms_ts_test.subtask_nodes:main',
             'subtask_nodes_bed = tms_ts_test.subtask_nodes_bed:main',
             'subtask_nodes_roomlight = tms_ts_test.subtask_nodes_roomlight:main',
+            'task_text_recognizer = tms_ts_test.task_text_recognizer:main',
+            'task_text_recognizer_test_client = tms_ts_test.task_text_recognizer_test_client:main',
         ],
     },
 )
