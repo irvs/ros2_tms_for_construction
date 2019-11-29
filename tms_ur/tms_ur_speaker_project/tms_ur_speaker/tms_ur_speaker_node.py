@@ -14,6 +14,8 @@ base = '~/ros2_ws/src/ros2_tms/tms_ur/tms_ur_speaker_project/wav'
 
 
 def play_wave(filename):
+    subprocess.run(['aplay', filename])
+"""
     try:
         wf = wave.open(filename, "r")
     except FileNotFoundError:
@@ -33,6 +35,7 @@ def play_wave(filename):
         data = wf.readframes(chunk)
     stream.close()
     p.terminate()
+"""
 
 
 def jtalk(t):

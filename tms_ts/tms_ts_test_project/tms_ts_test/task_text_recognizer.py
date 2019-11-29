@@ -1,6 +1,7 @@
 from janome.tokenizer import Tokenizer
 from pymongo import MongoClient
 import pprint
+import json
 
 from rclpy.node import Node
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -25,6 +26,16 @@ class TaskTextRecognizer(Node):
 
     async def tms_ts_text_callback(self, request, response):
         tags = self.tokenize(request.data)
+
+        room_places = self.room_place_search(tags)
+        if(len(room_places) >= 1):
+            tags.append("#room_place#")
+            for room in room_places:
+                del room["_id"]
+                print(f'{room["name"]} : position{room["position"]} orientation{room["orientation"]}')
+                self.arg_data = {"room_place" : room}
+        
+        print(self.arg_data)
         tasks = self.task_search(tags)
         announce_text = ""
 
@@ -32,6 +43,7 @@ class TaskTextRecognizer(Node):
             task = tasks[0]
             req = TsReq.Request()
             req.task_id = task["id"]
+            req.data = json.dumps(self.arg_data)
             announce_text = task["announce"]
             if request.is_announce:
                 await self.play_jtalk(announce_text)
@@ -115,6 +127,22 @@ class TaskTextRecognizer(Node):
 
         pprint.pprint(document_array)
         return document_array
+    
+    def room_place_search(self,tags):
+        client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
+        db = client.rostmsdb
+        cursor = db.default.aggregate([
+            {"$match": {"type": "room_place"}},
+            {"$match": {"call_name": {"$in": tags}}},
+            {"$sort": {"id": 1}},
+        ])
+        document_array = []
+        for doc in cursor:
+            document_array.append(doc)
+
+        pprint.pprint(document_array)
+        return document_array
+
     
     async def play_jtalk(self, t):
         self.cli_speaker = self.create_client(SpeakerSrv, 'speaker_srv', callback_group=ReentrantCallbackGroup())

@@ -5,6 +5,7 @@ int32 object_id
 int32 user_id
 int32 place_id
 int32 priority
+string data
 ---
 int32 result
 float32[] val

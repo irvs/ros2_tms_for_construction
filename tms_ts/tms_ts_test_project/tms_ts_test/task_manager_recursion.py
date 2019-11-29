@@ -9,6 +9,7 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 import time
 import random
 import re
+import json
 
 
 class Task:
@@ -228,6 +229,8 @@ class TaskSchedulerManager(Node):
             place_id=request.place_id,
             priority=request.priority,
         )
+        self.arg_data = json.load(request.data)
+
 
         # syntax analyze
         task_tree = await self.convert_task_to_states(task)
@@ -304,15 +307,15 @@ class TaskSchedulerManager(Node):
         subtask_str = tmsdb_data[0].etcdata
         print(f"[{self.name}] >> find task '{tmsdb_data[0].name}'")
         print(f"[{self.name}] >> read task '{subtask_str}'")
-        #subtask_raw_list = subtask_str.split(" ")
         subtask_raw_list = re.findall(r'[0-9]+\$\{.*?\}|[0-9]+|\+|\|', subtask_str)
-        # print(serch)
 
         for subtask_raw in subtask_raw_list:
             subtask = subtask_raw.split("$")
             # 辞書に含まれているなら置換
             subtask = [(str(convert_dic[command]) if command in convert_dic else command) for command in subtask]
             subtask_list.append(subtask)
+
+        print(f"subtask_list: {subtask_list}")
 
         # 構文解析
         _stack = []
