@@ -7,6 +7,8 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 import rclpy
 from tms_msg_ts.srv import TsReq
 from std_msgs.msg import String
+from tms_msg_ts.srv import TaskTextRecognize
+from tms_msg_ur.srv import SpeakerSrv
 
 MONGODB_IPADDRESS = '192.168.4.119'
 MONGODB_PORTNUMBER = 27017
@@ -18,20 +20,30 @@ class TaskTextRecognizer(Node):
         self.cli_ts_req = self.create_client(TsReq, 'tms_ts_master', callback_group=self.cb_group)
         while not self.cli_ts_req.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service "tms_ts_master" not available, waiting again...')
-        self.subscriber = self.create_subscription(String, 'tms_ts_text_recognizer', self.tms_ts_text_callback, callback_group=self.cb_group)
-        
-    def tms_ts_text_callback(self, msg):
-        tags = self.tokenize(msg.data)
+        #self.subscriber = self.create_subscription(String, 'tms_ts_text_recognizer', self.tms_ts_text_callback, callback_group=self.cb_group)
+        self.srv = self.create_service(TaskTextRecognize, "tms_ts_text_recognizer", self.tms_ts_text_callback, callback_group=self.cb_group)
+
+    async def tms_ts_text_callback(self, request, response):
+        tags = self.tokenize(request.data)
         tasks = self.task_search(tags)
+        announce_text = ""
 
         if(len(tasks) >= 1):
             task = tasks[0]
             req = TsReq.Request()
             req.task_id = task["id"]
+            announce_text = task["announce"]
+            if request.is_announce:
+                await self.play_jtalk(announce_text)
+
             self.cli_ts_req.call_async(req)
             self.get_logger().info(f"Call task {task['id']}")
         else:
             self.get_logger().info("There are no task.")
+            announce_text =""
+        
+        response.data = announce_text
+        return response
 
 
     def tokenize(self, sentence):
@@ -57,6 +69,7 @@ class TaskTextRecognizer(Node):
                     search_tags.append(token.surface)
             i += 1
         
+        search_tags.append(sentence)
         for search_tag in search_tags:
             self.get_logger().info(str(search_tag))
         
@@ -68,9 +81,7 @@ class TaskTextRecognizer(Node):
         db = client.rostmsdb
 
         self.get_logger().info("\n[tasks]")
-        cursor = db.default.aggregate([
-            { '$sample' : {'size': 5} }
-        ])
+
         cursor = db.default.aggregate([
             {"$match": {"type": "task"}},
             {"$unwind": "$require_tag"},
@@ -104,6 +115,18 @@ class TaskTextRecognizer(Node):
 
         pprint.pprint(document_array)
         return document_array
+    
+    async def play_jtalk(self, t):
+        self.cli_speaker = self.create_client(SpeakerSrv, 'speaker_srv', callback_group=ReentrantCallbackGroup())
+        while  not self.cli_speaker.wait_for_service(1.0):
+            self.get_logger().info('service "speaker_srv" not found...')
+        req = SpeakerSrv.Request()
+        req.data = t
+        await self.cli_speaker.call_async(req)
+    # def place_search(self, tags):
+    #     client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
+    #     db = client.rostmsdb
+    #     cursor = db.
 
 def main(args=None):
     rclpy.init(args=args)

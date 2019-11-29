@@ -96,7 +96,25 @@ class SubtaskNodeBase(Node, metaclass=ABCMeta):
         return response
 
 
+from rcl_interfaces.msg import Log
+
 class SubtaskMove(SubtaskNodeBase):
+    def __init__(self):
+        super().__init__()
+        self.log_subscriber = self.create_subscription(Log, "/rosout", self.log_callback, callback_group=ReentrantCallbackGroup())
+        self.is_navigation_end = False
+        self.is_navigation_start = False
+    
+    def log_callback(self, data):
+        print(f'{data.name} : {data.msg}')
+
+        if data.name == "dwb_controller" and data.msg == "Received a goal, begin following path":
+            self.is_navigation_start = True
+        if data.name == "bt_navigator" and \
+            data.msg == "Navigation succeeded":
+            self.is_navigation_end = True
+        
+
     def node_name(self):
         return "subtask_move"
     
@@ -110,18 +128,37 @@ class SubtaskMove(SubtaskNodeBase):
         print(f"position: {position}, orientation: {orientation}")
         if place_id != -1:
             pass
-        
-        self.publisher = self.create_publisher(PoseStamped, "/goal_pose", 10)
-        pose_stamped = PoseStamped()
-        pose_stamped.header.frame_id = "map"
-        pose_stamped.pose.position.x = position[0]
-        pose_stamped.pose.position.y = position[1]
-        pose_stamped.pose.position.z = position[2]
-        pose_stamped.pose.orientation.x = orientation[0]
-        pose_stamped.pose.orientation.y = orientation[1]
-        pose_stamped.pose.orientation.z = orientation[2]
-        pose_stamped.pose.orientation.w = orientation[3]
-        self.publisher.publish(pose_stamped)
+        self.is_navigation_start = False
+        while not self.is_navigation_start:
+            self.publisher = self.create_publisher(PoseStamped, "/goal_pose", 10)
+            pose_stamped = PoseStamped()
+            pose_stamped.header.frame_id = "map"
+            pose_stamped.pose.position.x = position[0]
+            pose_stamped.pose.position.y = position[1]
+            pose_stamped.pose.position.z = position[2]
+            pose_stamped.pose.orientation.x = orientation[0]
+            pose_stamped.pose.orientation.y = orientation[1]
+            pose_stamped.pose.orientation.z = orientation[2]
+            pose_stamped.pose.orientation.w = orientation[3]
+            self.publisher.publish(pose_stamped)
+            self.publisher = self.create_publisher(PoseStamped, "/move_base_simple/goal", 10)
+            pose_stamped = PoseStamped()
+            pose_stamped.header.frame_id = "map"
+            pose_stamped.pose.position.x = position[0]
+            pose_stamped.pose.position.y = position[1]
+            pose_stamped.pose.position.z = position[2]
+            pose_stamped.pose.orientation.x = orientation[0]
+            pose_stamped.pose.orientation.y = orientation[1]
+            pose_stamped.pose.orientation.z = orientation[2]
+            pose_stamped.pose.orientation.w = orientation[3]
+            self.publisher.publish(pose_stamped)
+
+            time.sleep(1)
+
+        self.is_navigation_end = False
+        while not self.is_navigation_end:
+            print('navigation drive now...')
+            time.sleep(1)
 
         response.message = "Success"
         return response

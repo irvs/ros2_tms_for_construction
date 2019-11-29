@@ -19,6 +19,7 @@ rosidl_generate_interfaces(tms_msg_ts
   "srv/TsReq.srv"
   "srv/TsStateControl.srv"
   "srv/TsDoTask.srv"
+  "srv/TaskTextRecognize.srv"
   DEPENDENCIES builtin_interfaces
 )
 
