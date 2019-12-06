@@ -44,7 +44,7 @@ class TmsSsPozyx(Node):
                 pozyx_position_msg.pose.pose.orientation.z = q["z"]
                 pozyx_position_msg.pose.pose.orientation.w = q["w"]
 
-                 self.pozyx_pos_publisher_.publish(pozyx_position_msg)
+                self.pozyx_pos_publisher_.publish(pozyx_position_msg)
 
 
 
