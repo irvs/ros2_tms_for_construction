@@ -2,6 +2,7 @@ from janome.tokenizer import Tokenizer
 from pymongo import MongoClient
 import pprint
 import json
+import re
 
 from rclpy.node import Node
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -26,31 +27,50 @@ class TaskTextRecognizer(Node):
 
     async def tms_ts_text_callback(self, request, response):
         tags = self.tokenize(request.data)
+        self.arg_data = {}
+        tms_objects = self.tms_objects_search(tags)
 
-        room_places = self.room_place_search(tags)
-        if(len(room_places) >= 1):
-            tags.append("#room_place#")
-            for room in room_places:
-                del room["_id"]
-                print(f'{room["name"]} : position{room["position"]} orientation{room["orientation"]}')
-                self.arg_data = {"room_place" : room}
-        
+        tags = set(tags)  # タグが重複しないように一旦setにする
+        for tms_object in tms_objects:
+            del tms_object["_id"]
+            self.arg_data[tms_object["type"]] = tms_object
+            tags.add("("+tms_object["type"]+")")
         print(self.arg_data)
-        tasks = self.task_search(tags)
+        tags = list(tags)  # setからlistに戻す
+
+        task = self.task_search(tags)
         announce_text = ""
 
-        if(len(tasks) >= 1):
-            task = tasks[0]
-            req = TsReq.Request()
-            req.task_id = task["id"]
-            req.data = json.dumps(self.arg_data)
-            announce_text = task["announce"]
-            if request.is_announce:
-                await self.play_jtalk(announce_text)
+        if(task != None):  # タスクが存在するとき
+            # task = tasks[0]
 
-            self.cli_ts_req.call_async(req)
-            self.get_logger().info(f"Call task {task['id']}")
-        else:
+            _is_valid_task_argument = True
+            print(task.get("tokens", []))
+            for token in  task.get("tokens", []):
+                if token not in self.arg_data:
+                    _is_valid_task_argument = False
+            
+            if _is_valid_task_argument:  # タスクが存在し、かつ引数がすべて揃っているとき
+                req = TsReq.Request()
+                req.task_id = task["id"]
+                if self.arg_data:
+                    req.data = json.dumps(self.arg_data)
+                announce_text = task["announce"]
+                announce_text = re.sub(r"\((.*?)\)", self.re_func, announce_text)
+                if request.is_announce:
+                    await self.play_jtalk(announce_text)
+
+                self.cli_ts_req.call_async(req)
+                self.get_logger().info(f"Call task {task['id']}")
+            else:   # タスクが存在するが、引数がすべて揃っていないとき
+                if request.is_announce:
+                    announce_text = task.get("error_announce", None)
+                    if announce_text != None:
+                        await self.play_jtalk(announce_text)
+                    
+                self.get_logger().info(f"Lack of arguments for task {task['id']}")
+
+        else:  # タスクが存在しないとき
             self.get_logger().info("There are no task.")
             announce_text =""
         
@@ -101,21 +121,21 @@ class TaskTextRecognizer(Node):
             {"$group": {
                 "_id": "$_id",
                 "id": {"$addToSet": "$id"},
-                "name": {"$addToSet": "$name"},
-                "type": {"$addToSet": "$type"},
-                "etcdata": {"$addToSet": "$etcdata"},
-                "note": {"$addToSet": "$note"},
-                "announce": {"$addToSet": "$announce"},
+                # "name": {"$addToSet": "$name"},
+                # "type": {"$addToSet": "$type"},
+                # "etcdata": {"$addToSet": "$etcdata"},
+                # "note": {"$addToSet": "$note"},
+                # "announce": {"$addToSet": "$announce"},
                 "count": {"$sum": 1},
             }},
             {
                 "$project": {"_id": 0,
                     "id": {"$arrayElemAt": ["$id", 0]},
-                    "name": {"$arrayElemAt": ["$name", 0]},
-                    "type": {"$arrayElemAt": ["$type", 0]},
-                    "etcdata": {"$arrayElemAt": ["$etcdata", 0]},
-                    "note": {"$arrayElemAt": ["$note", 0]},
-                    "announce": {"$arrayElemAt": ["$announce", 0]},
+                    # "name": {"$arrayElemAt": ["$name", 0]},
+                    # "type": {"$arrayElemAt": ["$type", 0]},
+                    # "etcdata": {"$arrayElemAt": ["$etcdata", 0]},
+                    # "note": {"$arrayElemAt": ["$note", 0]},
+                    # "announce": {"$arrayElemAt": ["$announce", 0]},
                     "count": 1,
                 },
             },
@@ -124,15 +144,17 @@ class TaskTextRecognizer(Node):
         document_array = []
         for doc in cursor:
             document_array.append(doc)
-
         pprint.pprint(document_array)
-        return document_array
+        if len(document_array) == 0:
+            return None
+        task = db.default.find_one({"id": document_array[0]["id"]})
+        return task
     
-    def room_place_search(self,tags):
+    def tms_objects_search(self,tags):
         client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client.rostmsdb
         cursor = db.default.aggregate([
-            {"$match": {"type": "room_place"}},
+            # {"$match": {"type": "room_place"}},
             {"$match": {"call_name": {"$in": tags}}},
             {"$sort": {"id": 1}},
         ])
@@ -155,6 +177,20 @@ class TaskTextRecognizer(Node):
     #     client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
     #     db = client.rostmsdb
     #     cursor = db.
+
+    def re_func(self,m):
+        arg_str = m.groups()[0]
+        args = arg_str.split('.')
+        if self.arg_data is None:
+            return 'エラー'
+        
+        answer = self.arg_data.copy()
+        for arg in args:
+            answer = answer.get(arg, {})
+        if answer == {}:
+            return 'エラー'
+        else:
+            return str(answer)
 
 def main(args=None):
     rclpy.init(args=args)

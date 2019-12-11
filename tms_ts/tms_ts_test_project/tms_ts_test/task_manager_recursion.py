@@ -229,11 +229,12 @@ class TaskSchedulerManager(Node):
             place_id=request.place_id,
             priority=request.priority,
         )
-        self.arg_data = json.load(request.data)
-
+        data_str = request.data
+        self.arg_data = json.loads(data_str)
+        print(self.arg_data)
 
         # syntax analyze
-        task_tree = await self.convert_task_to_states(task)
+        task_tree = await self.convert_task_to_states(task, self.arg_data)
         if task_tree == []:  # ERROR
             response.result = 0  # fault
             return response
@@ -294,13 +295,27 @@ class TaskSchedulerManager(Node):
         tmsdb = await self.call_dbreader(int(id))
         return tmsdb[0].name
 
-    async def convert_task_to_states(self, task):
+    async def convert_task_to_states(self, task, arg_data):
+        """
         convert_dic ={
             "oid": task.object_id,
             "uid": task.user_id,
             "pid": task.place_id,
             "rid": task.robot_id,
         }
+        """
+
+        def func(m):
+            arg_str = m.groups()[0]
+            args = arg_str.split('.')
+            answer = arg_data.copy()
+            for arg in args:
+                answer = answer.get(arg, {})
+            if answer == {}:
+                self._is_valid_subtask_replace = False
+                return '"ARGUMENT ERROR"'
+            else:
+                return str(answer)
 
         subtask_list = []
         tmsdb_data = await self.call_dbreader(task.task_id)  # this is list
@@ -309,14 +324,24 @@ class TaskSchedulerManager(Node):
         print(f"[{self.name}] >> read task '{subtask_str}'")
         subtask_raw_list = re.findall(r'[0-9]+\$\{.*?\}|[0-9]+|\+|\|', subtask_str)
 
+        self._is_valid_subtask_replace = True
         for subtask_raw in subtask_raw_list:
             subtask = subtask_raw.split("$")
+            generated_subtask = []
             # 辞書に含まれているなら置換
-            subtask = [(str(convert_dic[command]) if command in convert_dic else command) for command in subtask]
-            subtask_list.append(subtask)
+            #subtask = [(str(convert_dic[command]) if command in convert_dic else command) for command in subtask]
+            for elem in subtask:
+                elem = re.sub(r"\((.*?)\)",\
+                    func,\
+                    elem)
+                generated_subtask.append(elem)
+            subtask_list.append(generated_subtask)
 
         print(f"subtask_list: {subtask_list}")
-
+        if self._is_valid_subtask_replace == False:
+            print(f"[{self.name}] >> argument error!")
+            return []
+        
         # 構文解析
         _stack = []
         for s in subtask_list:
