@@ -21,6 +21,10 @@
   <exec_depend>rclpy</exec_depend>
   <exec_depend>builtin_interfaces</exec_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
+<<<<<<< HEAD
+=======
+  <exec_depend>launch_ros</exec_depend>
+>>>>>>> feature_user_request
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
