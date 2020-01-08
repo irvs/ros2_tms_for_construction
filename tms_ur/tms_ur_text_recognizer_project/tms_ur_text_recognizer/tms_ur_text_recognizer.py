@@ -128,45 +128,62 @@ class TmsUrTextRecognizer(Node):
             {"$match": {"require_tag": {"$in": tags}}},
             {"$group": {
                 "_id": "$_id",
-                "id": {"$addToSet": "$id"},
-                "name": {"$addToSet": "$name"},
-                "tag": {"$addToSet": "$tag"},
-                "require_tag_count": {"$addToSet": "$require_tag_count"},
+                "id": {"$first": "$id"},
+                "name": {"$first": "$name"},
+                "tag": {"$first": "$tag"},
+                "require_tag_count": {"$first": "$require_tag_count"},
                 "count": {"$sum": 1},
             }},
+            {"$match": {"$expr": {"$eq": ["$count", "$require_tag_count"]}}},
+            {"$unwind": {"path": "$tag", "preserveNullAndEmptyArrays": True}},
             {
                 "$project": {
                     "_id": 1,
-                    "id": {"$arrayElemAt": ["$id", 0]},
-                    "name": {"$arrayElemAt": ["$name", 0]},
-                    "tag": {"$arrayElemAt": ["$tag", 0]},
-                    "require_tag_count": {"$arrayElemAt": ["$require_tag_count", 0]},
-                    "count": 1,
+                    "id": 1,
+                    "name": 1,
+                    "tag": {"$ifNull": ["$tag", []]},
+                    "m_tag": {"$ifNull": ["$tag", []]},
                 }
             },
-            {"$match": {"$expr": {"$eq": ["$count", "$require_tag_count"]}}},
-            {"$unwind": "$tag"},
-            {"$match": {"tag": {"$in": tags}}},
-            {"$group": {
-                "_id": "$_id",
-                "id": {"$addToSet": "$id"},
-                "name": {"$addToSet": "$name"},
-                # "type": {"$addToSet": "$type"},
-                # "etcdata": {"$addToSet": "$etcdata"},
-                # "note": {"$addToSet": "$note"},
-                # "announce": {"$addToSet": "$announce"},
-                "count": {"$sum": 1},
-            }},
             {
-                "$project": {"_id": 0,
-                    "id": {"$arrayElemAt": ["$id", 0]},
-                    "name": {"$arrayElemAt": ["$name", 0]},
-                    # "type": {"$arrayElemAt": ["$type", 0]},
-                    # "etcdata": {"$arrayElemAt": ["$etcdata", 0]},
-                    # "note": {"$arrayElemAt": ["$note", 0]},
-                    # "announce": {"$arrayElemAt": ["$announce", 0]},
-                    "count": 1,
+                "$unwind": {
+                    "path": "$tag",
+                    "preserveNullAndEmptyArrays": True,
+                }
+            },
+            {
+                "$project":{
+                    "_id": {"$concatArrays": [["$_id"], "$m_tag"]},
+                    "id": 1,
+                    "name": 1,
+                    "tag": 1,
+                    "m_tag": 1,
+                    "tag_exist": {"$in": ["$tag", tags]}
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$_id",
+                    "id": {"$first": "$id"},
+                    "name": {"$first": "$name"},
+                    "tag_exist": {"$addToSet": "$tag_exist"},
+                }
+            },
+            {
+                "$project": {
+                    "_id": {"$arrayElemAt": ["$_id", 0]},
+                    "id": 1,
+                    "name": 1,
+                    "tag_count": {"$cond": [{"$anyElementTrue": "$tag_exist"}, 1, 0]},
                 },
+            },
+            {
+                "$group": {
+                    "_id": "$_id",
+                    "id": {"$first": "$id"},
+                    "name": {"$first": "$name"},
+                    "count": {"$sum": "$tag_count"}
+                }
             },
             {"$sort": {"count": -1, "id": 1}},
         ])
