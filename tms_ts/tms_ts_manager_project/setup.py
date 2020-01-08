@@ -1,7 +1,7 @@
 from setuptools import setup
 from setuptools import find_packages
 
-package_name = 'tms_ts_subtask'
+package_name = 'tms_ts_manager'
 setup(
     name=package_name,
     version='0.1.0',
@@ -30,9 +30,7 @@ setup(
     test_suite='pytest',
     entry_points={
         'console_scripts': [
-            'subtask_nodes = tms_ts_subtask.subtask_nodes:main',
-            'subtask_nodes_bed = tms_ts_subtask.subtask_nodes_bed:main',
-            'subtask_nodes_roomlight = tms_ts_subtask.subtask_nodes_roomlight:main',
+            'tms_ts_manager = tms_ts_manager.tms_ts_manager:main',
         ],
     },
 )

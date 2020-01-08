@@ -33,6 +33,7 @@ password = "80fb1af1-00a3-4bbe-9d0a-f6db5e7b61b7"  # your generated api key
 def on_connect(client, userdata, flags, rc):
     print(mqtt.connack_string(rc))
 
+
 # Callback triggered by a new Pozyx data packet
 def on_message(client, userdata, msg):
     datas = json.loads(msg.payload.decode())

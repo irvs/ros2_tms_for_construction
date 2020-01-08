@@ -1,15 +1,19 @@
+import os
+from glob import glob
 from setuptools import setup
 from setuptools import find_packages
 
-package_name = 'tms_ts_subtask'
+package_name = 'tms_ts_launch'
 setup(
     name=package_name,
     version='0.1.0',
-    packages=find_packages(exclude=['test']),
+    # packages=find_packages(exclude=['test']),
+    packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name, ['package.xml', 'tms_ts.launch.py']),
+        # (os.path.join('share', package_name, 'launch'), glob('*.launch.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -30,9 +34,6 @@ setup(
     test_suite='pytest',
     entry_points={
         'console_scripts': [
-            'subtask_nodes = tms_ts_subtask.subtask_nodes:main',
-            'subtask_nodes_bed = tms_ts_subtask.subtask_nodes_bed:main',
-            'subtask_nodes_roomlight = tms_ts_subtask.subtask_nodes_roomlight:main',
         ],
     },
 )

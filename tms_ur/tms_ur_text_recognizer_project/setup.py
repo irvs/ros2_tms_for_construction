@@ -1,11 +1,10 @@
 from setuptools import setup
-from setuptools import find_packages
 
-package_name = 'tms_ts_subtask'
+package_name = 'tms_ur_text_recognizer'
 setup(
     name=package_name,
     version='0.1.0',
-    packages=find_packages(exclude=['test']),
+    packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
@@ -30,9 +29,8 @@ setup(
     test_suite='pytest',
     entry_points={
         'console_scripts': [
-            'subtask_nodes = tms_ts_subtask.subtask_nodes:main',
-            'subtask_nodes_bed = tms_ts_subtask.subtask_nodes_bed:main',
-            'subtask_nodes_roomlight = tms_ts_subtask.subtask_nodes_roomlight:main',
+            'tms_ur_text_recognizer_test_client = tms_ur_text_recognizer.tms_ur_text_recognizer_test_client:main',
+            'tms_ur_text_recognizer = tms_ur_text_recognizer.tms_ur_text_recognizer:main',
         ],
     },
 )

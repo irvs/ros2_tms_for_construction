@@ -230,7 +230,11 @@ class TaskSchedulerManager(Node):
             priority=request.priority,
         )
         data_str = request.data
-        self.arg_data = json.loads(data_str)
+        if data_str != '':
+            self.arg_data = json.loads(data_str)
+        else:
+            self.arg_data = {}
+
         print(self.arg_data)
 
         # syntax analyze
