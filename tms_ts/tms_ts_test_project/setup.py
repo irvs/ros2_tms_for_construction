@@ -42,6 +42,9 @@ setup(
             'subtask_nodes_roomlight = tms_ts_test.subtask_nodes_roomlight:main',
             'task_text_recognizer = tms_ts_test.task_text_recognizer:main',
             'task_text_recognizer_test_client = tms_ts_test.task_text_recognizer_test_client:main',
+            'test_stop_service = tms_ts_test.test_stop_service:main',
+            'test_stop_client = tms_ts_test.test_stop_client:main',
+            'test_stop_publisher = tms_ts_test.test_stop_publisher:main',
         ],
     },
 )
