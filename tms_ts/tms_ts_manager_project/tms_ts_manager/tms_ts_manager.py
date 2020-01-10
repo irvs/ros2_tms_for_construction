@@ -6,6 +6,10 @@ import rclpy
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
+from std_msgs.msg import String
+
+from rclpy.action import ActionClient
+from tms_msg_ts.action import TsDoSubtask
 import time
 import random
 import re
@@ -42,9 +46,37 @@ class TaskNode(Node):
         super().__init__(self.name)
         
         self.srv = self.create_service(TsDoTask, self.name, self.main, callback_group=self.cb_group)
-    
-    async def main(self, request, response):
+        self.stop_sub = self.create_subscription(String, self.name, self.stop_callback, callback_group=self.cb_group)
+        self.subtask_client = None
+        if self.node_type == "subtask":
+            command = self.task_tree[1]
+            self.subtask_client = ActionClient(self, TsDoSubtask, "subtask_node_" + str(command[0]), callback_group=ReentrantCallbackGroup())
 
+    async def stop_callback(self, msg):
+        """タスク緊急停止用のコールバック関数
+        std_msgs.msg.Stringを型にしているが
+        今の所、publisher通信に型が必要なため設定しているだけである
+        """
+        self.get_logger().info("stop!")
+        self.flag_stop = True  # 緊急停止
+        if self.node_type == "subtask":
+            # self.pub_stop= self.create_publisher(String, "subtask_node_" + str(command[0]), 10, callback_group=self.cb_group)
+            # data = String()  # 空データ（何でも良い）
+            # self.pub_stop.publish()
+
+            future = self._goal_handle.cancel_goal_async()
+            await future
+            super().destroy_node()
+        else:
+            for child in self.child_task_nodes:
+                self.pub_stop = self.create_publisher(String, child.name, 10, callback_group=self.cb_group)
+                data = String()  # 空データ（何でも良い）
+                self.pub_stop.publish(data)  # 子も止める
+            
+            super().destroy_node()
+
+    async def main(self, request, response):
+        self.flag_stop = False
         print(f"[{self.name}] >> init")
 
         if(self.node_type == "serial"):
@@ -70,7 +102,9 @@ class TaskNode(Node):
             print(f'service "{child_task_node1.name}" not available, waiting again...')
         req = TsDoTask.Request()
         self.future = client.call_async(req)
+
         result = await self.future
+        
         if result is not None:
             print(f"[{self.name}] >> first task {child_task_node1.name} : {result.message}")
             if result.message != "Success":
@@ -155,6 +189,7 @@ class TaskNode(Node):
         readable = await self.read_name(command[0])
         self.get_logger().info(f'start "{readable}"')
         self.get_logger().info(f'service call "subtask_node_{command[0]}"')
+        """ # サービスのときの実装
         cli_subtask = self.create_client(TsDoTask, "subtask_node_" + str(command[0]))
         while not cli_subtask.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service "tms_db_reader" not available, waiting again...')
@@ -164,8 +199,25 @@ class TaskNode(Node):
         else:
             req.arg_json = "{}"
         result = await cli_subtask.call_async(req)
-        self.get_logger().info(result.message)
-        return result.message
+        """
+        goal_msg = TsDoSubtask.Goal()
+        if len(command) >= 2:
+            goal_msg.arg_json = command[1]
+        else:
+            goal_msg.arg_json = "{}"
+        
+        # uture = await self.subtask_client.send_goal_async(goal_msg)
+
+        self.goal_handle = await self.subtask_client.send_goal_async(goal_msg)
+
+        if not self.goal_handle.accepted:
+            self.get_logger().info("goal cancel")
+            return "Cancel"
+        self.get_logger().info("goal accept")
+        self.future_result = await self.goal_handle.get_result_async()
+        self.get_logger().info(self.future_result.result.message)
+        
+        return self.future_result.result.message
 
     async def call_dbreader(self, id):
         """[tms_db_reader] DBからデータを読み取る
@@ -215,6 +267,20 @@ class TaskSchedulerManager(Node):
         while not self.cli_dbreader.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service "tms_db_reader" not available, waiting again...')
         self.srv_tms_ts_master = self.create_service(TsReq, 'tms_ts_master', self.tms_ts_master_callback, callback_group=self.cb_group)
+        self.sub_stop = self.create_subscription(String, "tms_ts_stop", self.stop_callback, callback_group=self.cb_group)
+
+    def stop_callback(self, msg):
+        """msgを受け取ったらタスクの動作をストップする
+        """
+        self.get_logger().info("STOP!!!")
+        for task_node in self.task_node_list:
+            self.stop_pub = self.create_publisher(String, task_node.name, 10, callback_group=self.cb_group)
+            data = String()
+            self.stop_pub.publish(data)  # 現在のタスクに停止命令を渡す
+        
+        self.task_node_list = []
+        self.task_node_client_list = []
+
 
     async def tms_ts_master_callback(self, request, response):
         global executor

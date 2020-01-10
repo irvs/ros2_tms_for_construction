@@ -1,5 +1,6 @@
 import rclpy
 from tms_ts_subtask.subtask_node_base import SubtaskNodeBase
+# from tms_ts_subtask.subtask_node_base import CustomMultiThreadedExecutor
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
 import time
@@ -8,11 +9,11 @@ import json
 
 from tms_msg_ur.srv import SpeakerSrv
 from geometry_msgs.msg import PoseStamped
+import asyncio
 
 def main(args=None):
     global executor
     rclpy.init(args=args)
-
     try:
         executor = MultiThreadedExecutor()
         executor.add_node(SubtaskMove())
@@ -47,7 +48,7 @@ class SubtaskMove(SubtaskNodeBase):
         self.is_navigation_start = False
     
     def log_callback(self, data):
-        print(f'{data.name} : {data.msg}')
+        # print(f'{data.name} : {data.msg}')
 
         if data.name == "dwb_controller" and data.msg == "Received a goal, begin following path":
             self.is_navigation_start = True
@@ -62,7 +63,7 @@ class SubtaskMove(SubtaskNodeBase):
     def id(self):
         return 9001
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         place_id = request["PLACE_ID"]
         position = request["position"]
         orientation = request["orientation"]
@@ -140,7 +141,7 @@ class SubtaskGrasp(SubtaskNodeBase):
     def id(self):
         return 9002
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         response.message = "Success"
         return response
 
@@ -152,7 +153,7 @@ class SubtaskRelease(SubtaskNodeBase):
     def id(self):
         return 9003
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         response.message = "Success"
         return response
 
@@ -164,7 +165,7 @@ class SubtaskOpen(SubtaskNodeBase):
     def id(self):
         return 9004
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         response.message = "Success"
         return response
 
@@ -176,7 +177,7 @@ class SubtaskClose(SubtaskNodeBase):
     def id(self):
         return 9005
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         response.message = "Success"
         return response
 
@@ -188,7 +189,7 @@ class SubtaskRandomMove(SubtaskNodeBase):
     def id(self):
         return 9006
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         response.message = "Success"
         return response
 
@@ -200,7 +201,7 @@ class SubtaskSensing(SubtaskNodeBase):
     def id(self):
         return 9007
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         response.message = "Success"
         return response
 
@@ -212,7 +213,7 @@ class SubtaskWait(SubtaskNodeBase):
     def id(self):
         return 9900
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         self.get_logger().info(f'{request["wait_msec"]}')
         time.sleep(request["wait_msec"])
         response.message = "Success"
@@ -229,7 +230,7 @@ class SubtaskSpeakerAnnounce(SubtaskNodeBase):
     def id(self):
         return 9300
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         self.get_logger().info(f'{request["announce"]}')
         self.cli = self.create_client(SpeakerSrv, "speaker_srv", callback_group=ReentrantCallbackGroup())
         req = SpeakerSrv.Request()

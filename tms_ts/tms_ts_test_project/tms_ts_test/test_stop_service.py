@@ -21,6 +21,8 @@ from std_msgs.msg import String
 from rclpy.callback_groups import ReentrantCallbackGroup
 import threading
 from rclpy.executors import MultiThreadedExecutor
+from threading import Event
+import asyncio
 
 class WaitNode(Node):
     def __init__(self):
@@ -30,12 +32,13 @@ class WaitNode(Node):
     
     def wait_callback(self, request, response):
         time.sleep(request.a)
-        return response
+        return response   
 
 class MinimalService(Node):
 
-    def __init__(self):
+    def __init__(self, loop):
         super().__init__('minimal_service')
+        self.loop = loop
         self.cb_group = ReentrantCallbackGroup()
         self.sub = self.create_subscription(String, 'topic', self.stop_callback, callback_group=self.cb_group)
         self.srv = self.create_service(AddTwoInts, 'add_two_ints', self.add_two_ints_callback, callback_group=self.cb_group)
@@ -46,23 +49,42 @@ class MinimalService(Node):
         self.cli = self.create_client(AddTwoInts, 'wait', callback_group=self.cb_group)
         req = AddTwoInts.Request()
         req.a = 10
-        await self.cli.call_async(req)
-        # time.sleep(10.0) # sleep for 10 seconds
+        self.future = self.cli.call_async(req)
+        self.flag_stoptask = False
+        
+        while not self.flag_stoptask and not self.future.done():
+            pass
+        # _count = 0
+        # asyncio.set_event_loop(self.loop)
+        # while not self.future.done() or self.flag_stoptask:
+        #     try: 
+        #         #await asyncio.wait_for(asyncio.shield(self.future), timeout=1.0)
+        #         pass
+        #     except asyncio.TimeoutError:
+        #         print(f'timeout: {_count}')
+        if self.flag_stoptask:
+            print('stop!')
+            response.sum = 404
+        else:
+            print('complete!')
+            response.sum = 1
         return response
 
     def stop_callback(self, msg):
         # stop service
         self.get_logger().info("stop!!")
-        return
+        self.flag_stoptask = True
 
 
 def main(args=None):
     rclpy.init(args=args)
+    loop = asyncio.new_event_loop()
     try:
-        minimal_service = MinimalService()
+        minimal_service = MinimalService(loop)
         wait_node = WaitNode()
 
         executor = MultiThreadedExecutor()
+        # executor = CustomThreadedExecutor(loop)
         executor.add_node(minimal_service)
         executor.add_node(wait_node)
         try:
