@@ -48,6 +48,7 @@ class TaskNode(Node):
         self.srv = self.create_service(TsDoTask, self.name, self.main, callback_group=self.cb_group)
         self.stop_sub = self.create_subscription(String, self.name, self.stop_callback, callback_group=self.cb_group)
         self.subtask_client = None
+        self.goal_handle = None
         if self.node_type == "subtask":
             command = self.task_tree[1]
             self.subtask_client = ActionClient(self, TsDoSubtask, "subtask_node_" + str(command[0]), callback_group=ReentrantCallbackGroup())
@@ -63,17 +64,20 @@ class TaskNode(Node):
             # self.pub_stop= self.create_publisher(String, "subtask_node_" + str(command[0]), 10, callback_group=self.cb_group)
             # data = String()  # 空データ（何でも良い）
             # self.pub_stop.publish()
-
-            future = self._goal_handle.cancel_goal_async()
-            await future
-            super().destroy_node()
+            if self.goal_handle is not None:
+                try:
+                    future = self.goal_handle.cancel_goal_async()
+                    await future
+                except rclpy.handle.InvalidHandle as e:
+                    print(e)
+            # super().destroy_node()
         else:
             for child in self.child_task_nodes:
                 self.pub_stop = self.create_publisher(String, child.name, 10, callback_group=self.cb_group)
                 data = String()  # 空データ（何でも良い）
                 self.pub_stop.publish(data)  # 子も止める
             
-            super().destroy_node()
+            # super().destroy_node()
 
     async def main(self, request, response):
         self.flag_stop = False
@@ -315,21 +319,21 @@ class TaskSchedulerManager(Node):
         executor.add_node(self.task_node_list[len(self.task_node_list) - 1])  # added last added task
 
         # make client for task_node
-        self.call_task_node(task_node)
+    #    self.call_task_node(task_node)
 
-        response.result = 1  # Success
-        return response
+    #     response.result = 1  # Success
+    #     return response
 
-    def call_task_node(self, task_node):
+    # def call_task_node(self, task_node):
         client = self.create_client(TsDoTask, task_node.name)
         self.dic_client_to_task_node[client] = task_node
         self.task_node_client_list.append(client)
         while not client.wait_for_service(timeout_sec=1.0):
             print(f'service "{task_node.name}" not available, waiting again...')
-        self._timer_call_task_node = self.create_timer(0, self._call_task_node, callback_group=self.cb_group)
+    #     self._timer_call_task_node = self.create_timer(0, self._call_task_node, callback_group=self.cb_group)
     
-    async def _call_task_node(self):
-        self._timer_call_task_node.cancel()
+    # async def _call_task_node(self):
+    #     self._timer_call_task_node.cancel()
         req = TsDoTask.Request()
         client = self.task_node_client_list.pop()
         future = client.call_async(req)
@@ -337,14 +341,24 @@ class TaskSchedulerManager(Node):
 
         print(f"[ts_manager] {self.dic_client_to_task_node[client].name} : launch")
         result = await self.dic_client_to_future[client]
+        result_msg = "Error"
         if result is not None:
             print(f"[ts_manager] {self.dic_client_to_task_node[client].name} : " + result.message)
+            result_msg = result.message
         else:
             print(f"[ts_manager] {self.dic_client_to_task_node[client].name} : " + "error")
-        
+            result_msg = "Error"
         end_task_node = self.dic_client_to_task_node[client]
         end_task_node.destroy_node()
         self.task_node_list.remove(end_task_node)
+
+        if result_msg == "Success":
+            response.result = 1
+        else:
+            response.result = 0
+        return response
+
+        
     
     async def call_dbreader(self, id):
         """[tms_db_reader] DBからデータを読み取る

@@ -7,7 +7,9 @@ import re
 from rclpy.node import Node
 from rclpy.callback_groups import ReentrantCallbackGroup
 import rclpy
-from tms_msg_ts.srv import TsReq
+from tms_msg_ts.action import TsReq
+from rclpy.action import ActionClient
+
 from std_msgs.msg import String
 from tms_msg_ts.srv import TaskTextRecognize
 from tms_msg_ur.srv import SpeakerSrv
@@ -18,9 +20,10 @@ MONGODB_PORTNUMBER = 27017
 class TmsUrTextRecognizer(Node):
     def __init__(self):
         super().__init__('task_text_recognizer')
+        self.goal_handles = []
         self.cb_group = ReentrantCallbackGroup()
-        self.cli_ts_req = self.create_client(TsReq, 'tms_ts_master', callback_group=self.cb_group)
-        while not self.cli_ts_req.wait_for_service(timeout_sec=1.0):
+        self.cli_ts_req = ActionClient(self, TsReq, 'tms_ts_master', callback_group=self.cb_group)
+        while not self.cli_ts_req.wait_for_server(timeout_sec=1.0):
             self.get_logger().info('service "tms_ts_master" not available, waiting again...')
         #self.subscriber = self.create_subscription(String, 'tms_ts_text_recognizer', self.tms_ts_text_callback, callback_group=self.cb_group)
         self.srv = self.create_service(TaskTextRecognize, "tms_ts_text_recognizer", self.tms_ts_text_callback, callback_group=self.cb_group)
@@ -51,7 +54,7 @@ class TmsUrTextRecognizer(Node):
                     _is_valid_task_argument = False
             
             if _is_valid_task_argument:  # タスクが存在し、かつ引数がすべて揃っているとき
-                req = TsReq.Request()
+                req = TsReq.Goal()
                 req.task_id = task["id"]
                 if self.arg_data:
                     req.data = json.dumps(self.arg_data)
@@ -60,7 +63,9 @@ class TmsUrTextRecognizer(Node):
                 if request.is_announce:
                     await self.play_jtalk(announce_text)
 
-                self.cli_ts_req.call_async(req).add_done_callback(self.done_callback)
+                goal_handle = await self.cli_ts_req.send_goal_async(req)
+                self.goal_handles.append(goal_handle)
+                goal_handle.get_result_async().add_done_callback(self.done_callback)
                 self.get_logger().info(f"Call task {task['id']}")
             else:   # タスクが存在するが、引数がすべて揃っていないとき
                 if request.is_announce:

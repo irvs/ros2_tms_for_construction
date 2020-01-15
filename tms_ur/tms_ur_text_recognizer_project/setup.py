@@ -31,6 +31,7 @@ setup(
         'console_scripts': [
             'tms_ur_text_recognizer_test_client = tms_ur_text_recognizer.tms_ur_text_recognizer_test_client:main',
             'tms_ur_text_recognizer = tms_ur_text_recognizer.tms_ur_text_recognizer:main',
+            'tms_ur_text_recognizer_action = tms_ur_text_recognizer.tms_ur_text_recognizer_action:main',
         ],
     },
 )

@@ -2,6 +2,7 @@ import rclpy
 from tms_ts_subtask.subtask_node_base import SubtaskNodeBase
 from rclpy.executors import MultiThreadedExecutor
 import requests
+from requests.exceptions import Timeout
 
 # 九大Big Sensor Boxの電気をコントロールするip address
 BSEN_URL = "http://192.168.100.101/codemari_kyudai/CodemariServlet?deviceID=9999&locale=ja&cmd=%251CFLP%"
@@ -35,12 +36,16 @@ class SubtaskRoomLightOn(SubtaskNodeBase):
     def id(self):
         return 9200
     
-    async def service_callback(self, request, response):
-        print('light on!')
-        res = requests.get(BSEN_URL + "2003")
-
-        response.message = "Success"
-        return response
+    async def service_callback(self, request, response, goal_handle) -> "response":
+        try:
+            res = requests.get(BSEN_URL + "2003", timeout=2.0)
+            response.message = "Success"
+            self.get_logger().info("Success")
+        except Timeout as e:  # timeout error
+            self.get_logger().info("Abort")
+            response.message = "Abort"
+        finally:
+            return response
 
 
 class SubtaskRoomLightOff(SubtaskNodeBase):
@@ -52,9 +57,16 @@ class SubtaskRoomLightOff(SubtaskNodeBase):
     def id(self):
         return 9201
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle) -> "response":
         self.get_logger().info('light off!')
-        res = requests.get(BSEN_URL + "2005")
-
-        response.message = "Success"
-        return response
+        try:
+            res = requests.get(BSEN_URL + "2005", timeout=2.0)
+            response.message = "Success"
+            self.get_logger().info("Success")
+        except Timeout as e:  # timeout error
+            self.get_logger().info("Abort")
+            response.message = "Abort"
+        else:
+            print("aiosf")
+        finally:
+            return response

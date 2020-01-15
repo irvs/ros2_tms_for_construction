@@ -51,7 +51,15 @@ class SubtaskNodeBase(Node, metaclass=ABCMeta):
 
         result = await self.service_callback(self._dict, TsDoSubtask.Result(), goal_handle)
         
-        goal_handle.succeed()
+        if goal_handle.is_cancel_requested:
+            goal_handle.canceled()
+            result.message == "Canceled"
+        elif result.message == "Success":
+            goal_handle.succeed()
+        elif result.message == "Canceled":
+            goal_handle.canceled()
+        else:  # Abortとして処理
+            goal_handle.abort()
         return result
 
     @abstractmethod
