@@ -41,6 +41,17 @@ class TmsUrTextRecognizer(Node):
         print(self.arg_data)
         tags = list(tags)  # setからlistに戻す
 
+        if "キャンセル" in tags:
+            futures = []
+            for gh in self.goal_handles:
+                futures.append(gh.cancel_goal_async())
+            # for future in futures:
+            #     await futures
+            announce_text = "キャンセルしました"
+            await self.play_jtalk(announce_text)
+            response.data = announce_text
+            return response
+
         task = self.task_search(tags)
         announce_text = ""
 
