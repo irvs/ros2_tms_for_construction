@@ -57,7 +57,7 @@ class TmsUrTextRecognizer(Node):
                 req = TsReq.Goal()
                 req.task_id = task["id"]
                 if self.arg_data:
-                    req.data = json.dumps(self.arg_data)
+                    req.arg_json = json.dumps(self.arg_data)
                 announce_text = task["announce"]
                 announce_text = re.sub(r"\((.*?)\)", self.re_func, announce_text)
                 if request.is_announce:
@@ -83,8 +83,8 @@ class TmsUrTextRecognizer(Node):
         return response
 
     async def done_callback(self, future):
-        print(f"Finish: {future.result().result}")
-        if future.result().result == 0:
+        print(f"Finish: {future.result().result.message}")
+        if future.result().result.message != "Success":
             await self.play_jtalk("タスクが異常終了しました")
 
     def tokenize(self, sentence):

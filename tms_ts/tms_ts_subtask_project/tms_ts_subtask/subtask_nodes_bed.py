@@ -58,11 +58,11 @@ class SubtaskBedLinkUp(SubtaskNodeBase):
     def id(self):
         return 9100
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(LINK_UP + f",{request['sec']}")  # send to socket
         ws.close()  # close socket
-
+        TIME = request['sec']
         time.sleep(TIME)
         response.message = "Success"
         return response
@@ -80,10 +80,11 @@ class SubtaskBedLinkDown(SubtaskNodeBase):
     def id(self):
         return 9101
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(LINK_DOWN + f",{request['sec']}")  # send to socket
         ws.close()  # close socket
+        TIME = request['sec']
 
         time.sleep(TIME)
         response.message = "Success"
@@ -102,10 +103,11 @@ class SubtaskBedHeadUp(SubtaskNodeBase):
     def id(self):
         return 9102
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(HEAD_UP + f",{request['sec']}")  # send to socket
         ws.close()  # close socket
+        TIME = request['sec']
 
         time.sleep(TIME)
         response.message = "Success"
@@ -124,10 +126,11 @@ class SubtaskBedHeadDown(SubtaskNodeBase):
     def id(self):
         return 9103
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(HEAD_DOWN + f",{request['sec']}")  # send to socket
         ws.close()  # close socket
+        TIME = request['sec']
 
         time.sleep(TIME)
         response.message = "Success"
@@ -146,10 +149,11 @@ class SubtaskBedFootUp(SubtaskNodeBase):
     def id(self):
         return 9104
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(FOOT_UP + f",{request['sec']}")  # send to socket
         ws.close()  # close socket
+        TIME = request['sec']
 
         time.sleep(TIME)
         response.message = "Success"
@@ -168,10 +172,11 @@ class SubtaskBedFootDown(SubtaskNodeBase):
     def id(self):
         return 9105
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(FOOT_DOWN + f",{request['sec']}")  # send to socket
         ws.close()  # close socket
+        TIME = request['sec']
 
         time.sleep(TIME)
         response.message = "Success"
@@ -190,10 +195,11 @@ class SubtaskBedHeightUp(SubtaskNodeBase):
     def id(self):
         return 9106
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(HEIGHT_UP + f",{request['sec']}")  # send to socket
         ws.close()  # close socket
+        TIME = request['sec']
 
         time.sleep(TIME)
         response.message = "Success"
@@ -212,10 +218,11 @@ class SubtaskBedHeightDown(SubtaskNodeBase):
     def id(self):
         return 9107
     
-    async def service_callback(self, request, response):
+    async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(HEIGHT_DOWN + f",{request['sec']}")  # send to socket
         ws.close()  # close socket
+        TIME = request['sec']
 
         time.sleep(TIME)
         response.message = "Success"

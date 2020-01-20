@@ -22,6 +22,7 @@ class TaskNode(Node):
         self.cb_group = ReentrantCallbackGroup()
         self.name = f'tasknode_{TaskNode._count}'
         self.task_tree = task_tree
+        self.child_tasknode = []
         super().__init__(self.name)
         TaskNode._count += 1
 
@@ -41,7 +42,10 @@ class TaskNode(Node):
     async def execute_callback(self, goal_handle):
         result = TsDoTask.Result()
         result.message = await self.execute(goal_handle, self.task_tree)
-        goal_handle.succeed()
+        if result.message == "Success":
+            goal_handle.succeed()
+        else:
+            goal_handle.abort()
         return result
     
     async def execute(self, goal_handle, task_tree):
@@ -61,22 +65,34 @@ class TaskNode(Node):
     async def serial(self, goal_handle, task_tree):
         #print(f'serial: {task_tree[1]} {task_tree[2]}')
         print("serial")
-        await self.execute(goal_handle, task_tree[1])
-        await self.execute(goal_handle, task_tree[2])
-        return "Success"
+        msg1 = await self.execute(goal_handle, task_tree[1])
+        msg2 = await self.execute(goal_handle, task_tree[2])
+
+        if msg1 == "Success" and msg2 == "Success":
+            return "Success"
+        elif msg1 != "Success":
+            return msg1
+        else:
+            return msg2
 
     async def parallel(self, goal_handle, task_tree):
         #print(f'parallel: {task_tree[1]} {task_tree[2]}')
         print("parallel")
         future = self.create_tasknode(task_tree[1])
-        await self.execute(goal_handle, task_tree[2])
-        await future
-        return "Success"
+        msg2 = await self.execute(goal_handle, task_tree[2])
+        future_result = await future
+        msg1 = future_result.result.message
+        
+        if msg1 == "Success" and msg2 == "Success":
+            return "Success"
+        elif msg1 != "Success":
+            return msg1
+        else:
+            return msg2
 
     async def subtask(self, goal_handle, task_tree):
         # print("subtask")
         command = task_tree[1]
-        print(f'subtask: subtask_node_{command[0]} args:{command[1]}')
 
         self.subtask_client = ActionClient(self, TsDoSubtask, "subtask_node_" + str(command[0]), callback_group=ReentrantCallbackGroup())
         goal_msg = TsDoSubtask.Goal()
@@ -85,6 +101,7 @@ class TaskNode(Node):
         else:
             goal_msg.arg_json = "{}"
 
+        print(f'subtask: subtask_node_{command[0]} args:{goal_msg.arg_json}')
         gh= await self.subtask_client.send_goal_async(goal_msg)
         if not gh.accepted:
             self.get_logger().info("goal rejected")
@@ -92,12 +109,13 @@ class TaskNode(Node):
         
         future_result = await gh.get_result_async()
         self.get_logger().info(future_result.result.message)
-        return "Success"
+        return future_result.result.message
     
     async def create_tasknode(self, task_tree):
         global executor
         # generate task_node
         task_node = TaskNode(task_tree)
+        self.child_tasknode.append(task_node)
         executor.add_node(task_node)  # added last added task
         ## execute
         client = ActionClient(self, TsDoTask, task_node.name, callback_group=ReentrantCallbackGroup())
@@ -178,7 +196,7 @@ class TaskSchedulerManager(Node):
         if not client.wait_for_server(timeout_sec=5.0):
             self.get_logger().error('No action server available')
             goal_handle.abort()
-            result = TsDoTask.Result()
+            result = TsReq.Result()
             result.message = "Abort"
             return result
         goal = TsDoTask.Goal()
@@ -186,16 +204,23 @@ class TaskSchedulerManager(Node):
         if not goal_handle_client.accepted:
             self.get_logger().info("goal reject")
             goal_handle.abort()
-            result = TsDoTask.Result()
+            result = TsReq.Result()
             result.message = "Goal Reject"
             return result
         self.get_logger().info("goal accept")
         self.future_result = await goal_handle_client.get_result_async()
 
         # 結果を返す
-        goal_handle.succeed()
-        result = TsReq.Result()
-        result.message = "Success"
+        msg = self.future_result.result.message
+        if msg == "Success":
+            goal_handle.succeed()
+            result = TsReq.Result()
+            result.message = "Success"
+        else:
+            goal_handle.abort()
+            result = TsReq.Result()
+            result.message = msg
+        # result.message = "Success"
         return result
         
 
