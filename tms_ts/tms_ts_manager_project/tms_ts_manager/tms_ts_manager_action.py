@@ -7,6 +7,7 @@ from tms_msg_ts.action import TsDoSubtask, TsDoTask, TsReq
 import json
 import re
 from tms_msg_db.srv import TmsdbGetData
+import time
 
 class TaskNode(Node):
     """タスクを実行するノード
@@ -31,7 +32,7 @@ class TaskNode(Node):
     
         super().__init__(self.name)
 
-        self.get_logger().info(f"task tree:{self.task_tree}")
+        # self.get_logger().info(f"task tree:{self.task_tree}")
         self.action_server = ActionServer(
             self,
             TsDoTask,
@@ -40,6 +41,8 @@ class TaskNode(Node):
             callback_group=self.cb_group,
             # goal_callback=self.goal_callback,
             cancel_callback=self.cancel_callback)
+        
+        self.get_logger().info('Instantiate')
 
     async def execute_callback(self, goal_handle):
         result = TsDoTask.Result()
@@ -56,42 +59,55 @@ class TaskNode(Node):
             goal_handle.cancel_goal_async()
         return CancelResponse.ACCEPT
 
-
     async def serial(self, goal_handle):
         """child task 1を実行した後，child task 2を実行する
         """
         global executor
         # child task 1
-        ## generate
+        ## generate        
         child_task_node1 = TaskNode(self.task_tree[1], name_prefix=self.name)
-        self.child_task_nodes.append(child_task_node1)
         executor.add_node(child_task_node1)
+        self.child_task_nodes.append(child_task_node1)
+        self.get_logger().info(f"Generate {child_task_node1.name}")
+
+        # time.sleep(1.0)
+
         ## execute
         self.client = ActionClient(self, TsDoTask, child_task_node1.name, callback_group=ReentrantCallbackGroup())
+        print(f"subtask1: {self.client}")
         self.child_clients.append(self.client)
         self.client.wait_for_server()
         goal = TsDoTask.Goal()
+        self.get_logger().info(f"start {child_task_node1.name} send_goal_async")
         self.goal_handle_client = await self.client.send_goal_async(goal)
+        self.get_logger().info(f"end {child_task_node1.name} send_goal_async")
         self.goal_handles.append(self.goal_handle_client)
         if not self.goal_handle_client.accepted:
-            self.get_logger().info("subtask1 goal reject")
             goal_handle.abort()
             result = TsDoTask.Result()
             result.message = "Goal Reject"
             return result
-        self.get_logger().info("subtask1 goal accept")
+        self.get_logger().info(f"start {child_task_node1.name} get_result_async")
         self.future_result = await self.goal_handle_client.get_result_async()
-        #if not self.future_result.done():
+        self.get_logger().info(f"end {child_task_node1.name} get_result_async")
         if not self.future_result.result.message == "Success":
             goal_handle.abort()
             result = TsDoTask.Result()
             result.message = "Abort"
             return result
-        ## destroy
-        self.child_task_nodes.pop()
-        self.child_clients.pop()
+        self.get_logger().info(f"Execute {child_task_node1.name}")
+        ## destroy      
+        # self.child_clients.pop()
+        # self.client.destroy()
+        # self.child_task_nodes.pop()
+        # try:
+        #     executor.remove_node(child_task_node1)
+        #     child_task_node1.destroy_node()
+        # except(e):
+        #     print(e)
         self.goal_handles.pop()
-        child_task_node1.destroy_node()
+        # child_task_node1.destroy_node()
+        self.get_logger().info(f"Destroy {child_task_node1.name}")
         
         # cancelされていないか確認する
         if goal_handle.is_cancel_requested:
@@ -104,14 +120,21 @@ class TaskNode(Node):
         # child task 2
         ## generate
         child_task_node2 = TaskNode(self.task_tree[2], name_prefix=self.name)
-        self.child_task_nodes.append(child_task_node2)
         executor.add_node(child_task_node2)
+        self.child_task_nodes.append(child_task_node2)
+        self.get_logger().info(f"Generate {child_task_node2.name}")
+
+        # time.sleep(1.0)
+
         ## execute
         self.client = ActionClient(self, TsDoTask, child_task_node2.name, callback_group=ReentrantCallbackGroup())
+        print(f"subtask2: {self.client}")
         self.child_clients.append(self.client)
         self.client.wait_for_server()
         goal = TsDoTask.Goal()
+        self.get_logger().info(f"start {child_task_node2.name} send_goal_async")
         self.goal_handle_client = await self.client.send_goal_async(goal)
+        self.get_logger().info(f"end {child_task_node2.name} send_goal_async")
         self.goal_handles.append(self.goal_handle_client)
         if not self.goal_handle_client.accepted:
             self.get_logger().info("subtask2 goal reject")
@@ -120,18 +143,27 @@ class TaskNode(Node):
             result.message = "Goal Reject"
             return result
         self.get_logger().info("subtask2 goal accept")
+        self.get_logger().info(f"start {child_task_node2.name} get_result_async")
         self.future_result = await self.goal_handle_client.get_result_async()
+        self.get_logger().info(f"end {child_task_node2.name} get_result_async")
         #if not self.future_result.done():
         if not self.future_result.result.message == "Success":
             goal_handle.abort()
             result = TsDoTask.Result()
             result.message = "Abort"
             return result
+        self.get_logger().info(f"Execute {child_task_node2.name}")
+
         ## destroy
-        self.child_task_nodes.pop()
+        """
         self.child_clients.pop()
+        self.client.destroy()
+        self.child_task_nodes.pop()
+        # executor.remove_node(child_task_node2)
+        # child_task_node2.destroy_node()
         self.goal_handles.pop()
-        child_task_node2.destroy_node()
+        """
+        self.get_logger().info(f"Destroy {child_task_node2.name}")
 
         goal_handle.succeed()
         result = TsDoTask.Result()
@@ -149,6 +181,8 @@ class TaskNode(Node):
         child_task_node2 = TaskNode(self.task_tree[2], name_prefix=self.name)
         self.child_task_nodes.append(child_task_node2)
         executor.add_node(child_task_node2)
+
+        time.sleep(1.0)
 
         # send goal
         self.client1 = ActionClient(self, TsDoTask, child_task_node1.name, callback_group=ReentrantCallbackGroup())
@@ -202,11 +236,11 @@ class TaskNode(Node):
         self.child_task_nodes.pop()
         self.child_clients.pop()
         self.goal_handles.pop()
-        child_task_node1.destroy_node()
+        # child_task_node1.destroy_node()
         self.child_task_nodes.pop()
         self.child_clients.pop()
         self.goal_handles.pop()
-        child_task_node2.destroy_node()
+        # child_task_node2.destroy_node()
 
         goal_handle.succeed()
         result = TsDoTask.Result()
@@ -219,11 +253,13 @@ class TaskNode(Node):
         command = self.task_tree[1]
         self.subtask_client = ActionClient(self, TsDoSubtask, "subtask_node_" + str(command[0]), callback_group=ReentrantCallbackGroup())
         self.child_clients.append(self.subtask_client)
+        print(self.subtask_client)
         # readable = [await self.read_name(c) for c in command]  # 表示用
         # readable = command
-        readable = await self.read_name(command[0])
-        self.get_logger().info(f'start "{readable}"')
-        self.get_logger().info(f'service call "subtask_node_{command[0]}"')
+        # readable = await self.read_name(command[0])
+        # self.get_logger().info(f'start "{readable}"')
+        self.get_logger().info(f'service call "subtask_node_{command[0]} args: {command[1]}"')
+      
         goal_msg = TsDoSubtask.Goal()
         if len(command) >= 2:
             goal_msg.arg_json = command[1]
@@ -253,6 +289,13 @@ class TaskNode(Node):
             goal_handle.abort()
             result.message = self.future_result.result.message
         self.goal_handles.pop()
+        """
+        goal_handle.succeed()
+        result = TsDoTask.Result()
+        result.message = "Success"
+        """
+        # self.get_logger().info("Success")
+        time.sleep(0.1)
         return result
     
     async def call_dbreader(self, id):
@@ -276,6 +319,10 @@ class TaskNode(Node):
     async def read_name(self, id):
         tmsdb = await self.call_dbreader(int(id))
         return tmsdb[0].name
+    
+    #def destroy_node(self):
+    #    self.action_server.destroy()
+    #    super().destroy_node()
         
 class TaskSchedulerManager(Node):
     """TaskNodeを管理するマネージャノード
@@ -335,7 +382,7 @@ class TaskSchedulerManager(Node):
         task_tree = await self.convert_task_to_subtasks(task_id, self.arg_data)
         if task_tree == []:  # ERROR
             goal_handle.abort()
-            result = TsDoTask.Result()
+            result = TsReq.Result()
             result.message = "Syntax Error"
             return result
 
@@ -353,7 +400,7 @@ class TaskSchedulerManager(Node):
         if not goal_handle_client.accepted:
             self.get_logger().info("goal reject")
             goal_handle.abort()
-            result = TsDoTask.Result()
+            result = TsReq.Result()
             result.message = "Goal Reject"
             return result
         self.get_logger().info("goal accept")
@@ -361,13 +408,13 @@ class TaskSchedulerManager(Node):
         #if not self.future_result.done():
         if True:
             goal_handle.abort()
-            result = TsDoTask.Result()
+            result = TsReq.Result()
             result.message = "Abort"
             return result
 
         # return result
         goal_handle.succeed()
-        result = TsDoTask.Result()
+        result = TsReq.Result()
         result.message = "Success"
         task_node.destroy_node()
         return result
@@ -458,7 +505,7 @@ def main(args=None):
     global executor
     rclpy.init(args=args)
     try:
-        executor = MultiThreadedExecutor()
+        executor = MultiThreadedExecutor(num_threads=999)
 
         task_scheduler_manager = TaskSchedulerManager()
         executor.add_node(task_scheduler_manager)

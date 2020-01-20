@@ -32,6 +32,7 @@ setup(
         'console_scripts': [
             'tms_ts_manager = tms_ts_manager.tms_ts_manager:main',
             'tms_ts_manager_action = tms_ts_manager.tms_ts_manager_action:main',
+            'tms_ts_manager_new = tms_ts_manager.tms_ts_manager_new:main',
         ],
     },
 )
