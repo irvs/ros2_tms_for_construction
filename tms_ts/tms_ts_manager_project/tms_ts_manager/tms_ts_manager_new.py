@@ -40,11 +40,19 @@ class TaskNode(Node):
 
     def cancel_callback(self, goal_handle):
         self.get_logger().warning("Canceled")
-        if self.subtask_goalhandle is not None:
-            future_sub_gh = self.subtask_goalhandle.cancel_goal_async()
-        if self.goal_handle_client is not None:
-            future = self.goal_handle_client.cancel_goal_async()
+        self._cancel_timer = self.create_timer(0.0, self._cancel, callback_group=self.cb_group)
+        # if self.subtask_goalhandle is not None:
+        #     future_sub_gh = self.subtask_goalhandle.cancel_goal_async()
+        # if self.goal_handle_client is not None:
+        #     future = self.goal_handle_client.cancel_goal_async()
         return CancelResponse.ACCEPT
+
+    async def _cancel(self):
+        self._cancel_timer.cancel()
+        if self.subtask_goalhandle is not None:
+            future_sub_gh = await self.subtask_goalhandle.cancel_goal_async()
+        if self.goal_handle_client is not None:
+            future = await self.goal_handle_client.cancel_goal_async()
 
     async def execute_callback(self, goal_handle):
         result = TsDoTask.Result()
@@ -56,6 +64,8 @@ class TaskNode(Node):
         return result
     
     async def execute(self, goal_handle, task_tree):
+        if task_tree == []:
+            return "Success"
         tree_type = task_tree[0]
         msg = ""
         if goal_handle.is_cancel_requested:
@@ -89,9 +99,9 @@ class TaskNode(Node):
     async def parallel(self, goal_handle, task_tree):
         #print(f'parallel: {task_tree[1]} {task_tree[2]}')
         print("parallel")
-        self.goal_handle_client = self.create_tasknode(task_tree[1])
+        self.goal_handle_client = await self.create_tasknode(task_tree[1])
         msg2 = await self.execute(goal_handle, task_tree[2])
-        future_result = await goal_handle_client.get_result_async()
+        future_result = await self.goal_handle_client.get_result_async()
         msg1 = future_result.result.message
         
         if msg1 == "Success" and msg2 == "Success":
@@ -132,8 +142,8 @@ class TaskNode(Node):
         global executor
         # generate task_node
         self.child_task_node = TaskNode(task_tree)
-        self.child_tasknode.append(self.child_task_node)
-        executor.add_node(child_task_node)  # added last added task
+        # self.child_tasknode.append(self.child_task_node)
+        executor.add_node(self.child_task_node)  # added last added task
         ## execute
         client = ActionClient(self, TsDoTask, self.child_task_node.name, callback_group=ReentrantCallbackGroup())
         if not client.wait_for_server(timeout_sec=5.0):
@@ -188,11 +198,19 @@ class TaskSchedulerManager(Node):
         """タスクのキャンセル
         """
         self.get_logger().info('Received Cancel task')
+        self._cancel_timer = self.create_timer(0.0, self._cancel, callback_group=self.cb_group)
+
+        return CancelResponse.ACCEPT
     
+    async def _cancel(self):
+        self._cancel_timer.cancel()
+        await self.goal_handle_client.cancel_goal_async()
+
     async def execute_callback(self, goal_handle):
         """タスク処理
         """
         global executor
+        self.goal_handle = goal_handle
 
         task_id = goal_handle.request.task_id
         arg_json = goal_handle.request.arg_json
@@ -217,15 +235,15 @@ class TaskSchedulerManager(Node):
             result.message = "Abort"
             return result
         goal = TsDoTask.Goal()
-        goal_handle_client = await client.send_goal_async(goal)
-        if not goal_handle_client.accepted:
+        self.goal_handle_client = await client.send_goal_async(goal)
+        if not self.goal_handle_client.accepted:
             self.get_logger().info("goal reject")
             goal_handle.abort()
             result = TsReq.Result()
             result.message = "Goal Reject"
             return result
         self.get_logger().info("goal accept")
-        self.future_result = await goal_handle_client.get_result_async()
+        self.future_result = await self.goal_handle_client.get_result_async()
 
         # 結果を返す
         msg = self.future_result.result.message
