@@ -135,7 +135,7 @@ class TaskNode(Node):
             return "Abort"
         
         future_result = await self.subtask_goalhandle.get_result_async()
-        self.get_logger().info(future_result.result.message)
+        self.get_logger().info(f"returned {future_result.result.message}")
         return future_result.result.message
     
     async def create_tasknode(self, task_tree):

@@ -43,6 +43,7 @@ class SubtaskNodeBase(Node, metaclass=ABCMeta):
     
     def cancel_callback(self, goal_handle):
         self.get_logger().info('Received cancel request')
+        self._timer = self.create_timer(0.0, self._cancel_service_callback, callback_group=ReentrantCallbackGroup())
         return CancelResponse.ACCEPT
 
     async def execute_callback(self, goal_handle):
@@ -50,16 +51,20 @@ class SubtaskNodeBase(Node, metaclass=ABCMeta):
         self._dict.update(json.loads(goal_handle.request.arg_json))
 
         result = await self.service_callback(self._dict, TsDoSubtask.Result(), goal_handle)
-        
+        self.get_logger().warning(result.message)
+
         if goal_handle.is_cancel_requested:
             goal_handle.canceled()
-            result.message == "Canceled"
+            result.message = "Canceled"
         elif result.message == "Success":
             goal_handle.succeed()
         elif result.message == "Canceled":
             goal_handle.canceled()
         else:  # Abortとして処理
             goal_handle.abort()
+        
+        if result.message != "Success":
+            self.get_logger().warning(f"return {result.message}")
         return result
 
     @abstractmethod
@@ -89,6 +94,15 @@ class SubtaskNodeBase(Node, metaclass=ABCMeta):
     @abstractmethod
     async def service_callback(self, request, response, goal_handle) -> "response":
         """実行時の働き"""
+        pass
+
+    async def _cancel_service_callback(self):
+        self._timer.cancel()
+        await self.cancel_service_callback()
+    
+    async def cancel_service_callback(self):
+        """キャンセルときに必要な動作がある場合オーバーライドする
+        """
         pass
 
     def init_argument(self) -> dict:
