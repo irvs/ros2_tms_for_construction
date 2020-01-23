@@ -32,11 +32,16 @@ class TaskNode(Node):
         cancel_callback=self.cancel_callback,
         callback_group=self.cb_group)
     
-    def destroy_node(self):
-        """デストラクタ
-        """
-        self.action_server.destroy()
-        super().destroy_node()
+    # def destroy_node(self):
+    #     """デストラクタ
+    #     """
+    #     global executor
+    #     self.get_logger().info('destroy')
+    #     if self.child_tasknode is not None:
+    #         self.child_tasknode.destroy_node()
+    #     self.action_server.destroy()
+    #     executor.remove_node(self)
+        # super().destroy_node()
 
     def cancel_callback(self, goal_handle):
         self.get_logger().warning("Canceled")
@@ -141,11 +146,11 @@ class TaskNode(Node):
     async def create_tasknode(self, task_tree):
         global executor
         # generate task_node
-        self.child_task_node = TaskNode(task_tree)
-        # self.child_tasknode.append(self.child_task_node)
-        executor.add_node(self.child_task_node)  # added last added task
+        self.child_tasknode = TaskNode(task_tree)
+        # self.child_tasknode.append(self.childtask_node)
+        executor.add_node(self.child_tasknode)  # added last added task
         ## execute
-        client = ActionClient(self, TsDoTask, self.child_task_node.name, callback_group=ReentrantCallbackGroup())
+        client = ActionClient(self, TsDoTask, self.child_tasknode.name, callback_group=ReentrantCallbackGroup())
         if not client.wait_for_server(timeout_sec=5.0):
             self.get_logger().error('No action server available')
             goal_handle.abort()
@@ -256,6 +261,7 @@ class TaskSchedulerManager(Node):
             result = TsReq.Result()
             result.message = msg
         # result.message = "Success"
+        # task_node.destroy_node()
         return result
         
 
