@@ -22,9 +22,7 @@ class TaskNode(Node):
         self.cb_group = ReentrantCallbackGroup()
         self.name = f'tasknode_{TaskNode._count}'
         self.task_tree = task_tree
-        self.child_tasknode = None
-        self.goal_handle_clients = {}
-        self.subtask_goalhandle = None
+        self.subtask_goalhandles = {}
         super().__init__(self.name)
         TaskNode._count += 1
 
@@ -46,14 +44,11 @@ class TaskNode(Node):
     def cancel_callback(self, goal_handle):
         self.get_logger().warning("Canceled")
         self._cancel_timer = self.create_timer(0.0, self._cancel, callback_group=self.cb_group)
-        return CancelResponse.ACCEPT
 
     async def _cancel(self):
         self._cancel_timer.cancel()
-        if self.subtask_goalhandle is not None:
-            future_sub_gh = await self.subtask_goalhandle.cancel_goal_async()
-        for goal_handle_client in  self.goal_handle_clients.values():
-            future = await goal_handle_client.cancel_goal_async()
+        for subtask_goalhandle in self.subtask_goalhandles.values():
+            future_sub_gh = await subtask_goalhandle.cancel_goal_async()
 
     async def execute_callback(self, goal_handle):
         result = TsDoTask.Result()
@@ -100,13 +95,12 @@ class TaskNode(Node):
     async def parallel(self, goal_handle, task_tree):
         #print(f'parallel: {task_tree[1]} {task_tree[2]}')
         print("parallel")
-        goal_handle_client = await self.create_tasknode(task_tree[1])
-        self.goal_handle_clients[goal_handle_client.goal_id.uuid.tostring()] = goal_handle_client
-        print(self.goal_handle_clients)
-        msg2 = await self.execute(goal_handle, task_tree[2])
-        future_result = await goal_handle_client.get_result_async()
-        msg1 = future_result.result.message
-        del self.goal_handle_clients[goal_handle_client.goal_id.uuid.tostring()]
+        future1 = self.execute(goal_handle, task_tree[1])
+        future2 = self.execute(goal_handle, task_tree[2])
+        print(f"parallel execute: {self.subtask_goalhandles.keys()}")
+        msg1 = await future1
+        msg2 = await future2
+        
         if msg1 == "Success" and msg2 == "Success":
             return "Success"
         elif msg1 != "Success":
@@ -118,8 +112,8 @@ class TaskNode(Node):
         # print("subtask")
         command = task_tree[1]
 
-        self.subtask_client = ActionClient(self, TsDoSubtask, "subtask_node_" + str(command[0]), callback_group=ReentrantCallbackGroup())
-        if not self.subtask_client.wait_for_server(timeout_sec=5.0):
+        subtask_client = ActionClient(self, TsDoSubtask, "subtask_node_" + str(command[0]), callback_group=ReentrantCallbackGroup())
+        if not subtask_client.wait_for_server(timeout_sec=5.0):
             self.get_logger().error('No action server available')
             goal_handle.abort()
             result = TsReq.Result()
@@ -132,39 +126,18 @@ class TaskNode(Node):
             goal_msg.arg_json = "{}"
 
         print(f'subtask: subtask_node_{command[0]} args:{goal_msg.arg_json}')
-        self.subtask_goalhandle = await self.subtask_client.send_goal_async(goal_msg)
-        if not self.subtask_goalhandle.accepted:
+        subtask_goalhandle = await subtask_client.send_goal_async(goal_msg)
+        self.subtask_goalhandles[subtask_goalhandle.goal_id.uuid.tostring()] = subtask_goalhandle
+        if not subtask_goalhandle.accepted:
             self.get_logger().info("goal rejected")
+            del self.subtask_goalhandles[subtask_goalhandle.goal_id.uuid.tostring()]
             return "Abort"
         
-        future_result = await self.subtask_goalhandle.get_result_async()
+        future_result = await subtask_goalhandle.get_result_async()
+        del self.subtask_goalhandles[subtask_goalhandle.goal_id.uuid.tostring()]
         self.get_logger().info(f"returned {future_result.result.message}")
         return future_result.result.message
-    
-    async def create_tasknode(self, task_tree):
-        global executor
-        # generate task_node
-        self.child_tasknode = TaskNode(task_tree)
-        # self.child_tasknode.append(self.childtask_node)
-        executor.add_node(self.child_tasknode)  # added last added task
-        ## execute
-        client = ActionClient(self, TsDoTask, self.child_tasknode.name, callback_group=ReentrantCallbackGroup())
-        if not client.wait_for_server(timeout_sec=5.0):
-            self.get_logger().error('No action server available')
-            goal_handle.abort()
-            result = TsDoTask.Result()
-            result.message = "Abort"
-            return result
-        goal = TsDoTask.Goal()
-        goal_handle_client = await client.send_goal_async(goal)
-        if not goal_handle_client.accepted:
-            self.get_logger().info("goal reject")
-            goal_handle.abort()
-            result = TsDoTask.Result()
-            result.message = "Goal Reject"
-            return result
-        self.get_logger().info("goal accept")
-        return goal_handle_client
+
 
 
 

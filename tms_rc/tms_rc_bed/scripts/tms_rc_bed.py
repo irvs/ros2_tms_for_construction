@@ -1,7 +1,8 @@
-# import wiringpi2 as pi
-import asyncio
-import websockets
+import wiringpi as pi
+from websocket_server import WebsocketServer
 from enum import IntEnum
+import time
+import threading
 
 TIME = 20
 
@@ -27,58 +28,105 @@ command_to_pin = {
     8 : Pin.HEIGHT_DOWN,
 }
 
-# def pinMode(pin, is_output):
-#     pi.pinMode(int(pin), is_output)
+def pinMode(pin, is_output):
+    pi.pinMode(int(pin), is_output)
 
-# def digitalWrite(pin, is_high):
-#     pi.digitalWrite(int(pin), is_high)
+def digitalWrite(pin, is_high):
+    pi.digitalWrite(int(pin), is_high)
 
-# def stop_all():
-#     digitalWrite(Pin.LINK_UP,1)
-#     digitalWrite(Pin.LINK_DOWN,1)
-#     digitalWrite(Pin.HEAD_UP,1)
-#     digitalWrite(Pin.HEAD_DOWN,1)
-#     digitalWrite(Pin.FOOT_UP,1)
-#     digitalWrite(Pin.FOOT_DOWN,1)
-#     digitalWrite(Pin.HEIGHT_UP,1)
-#     digitalWrite(Pin.HEIGHT_DOWN,1)
-#     pinMode(Pin.LINK_UP,0)
-#     pinMode(Pin.LINK_DOWN,0)
-#     pinMode(Pin.HEAD_UP,0)
-#     pinMode(Pin.HEAD_DOWN,0)
-#     pinMode(Pin.FOOT_UP,0)
-#     pinMode(Pin.FOOT_DOWN,0)
-#     pinMode(Pin.HEIGHT_UP,0)
-#     pinMode(Pin.HEIGHT_DOWN,0)
+def stop_all():
+    digitalWrite(Pin.LINK_UP,1)
+    digitalWrite(Pin.LINK_DOWN,1)
+    digitalWrite(Pin.HEAD_UP,1)
+    digitalWrite(Pin.HEAD_DOWN,1)
+    digitalWrite(Pin.FOOT_UP,1)
+    digitalWrite(Pin.FOOT_DOWN,1)
+    digitalWrite(Pin.HEIGHT_UP,1)
+    digitalWrite(Pin.HEIGHT_DOWN,1)
+    pinMode(Pin.LINK_UP,0)
+    pinMode(Pin.LINK_DOWN,0)
+    pinMode(Pin.HEAD_UP,0)
+    pinMode(Pin.HEAD_DOWN,0)
+    pinMode(Pin.FOOT_UP,0)
+    pinMode(Pin.FOOT_DOWN,0)
+    pinMode(Pin.HEIGHT_UP,0)
+    pinMode(Pin.HEIGHT_DOWN,0)
 
+def move(client, server, message):
+    thread = threading.Thread(target=_move, args=([client, server, message]$
+    thread.start()
 
-async def move(websocket, path):
-    command = await websocket.recv()
+event = threading.Event()
+def _move(client, server, message):
+    global callback_count, stop_flag, event
+    with lock:
+        callback_count += 1
+    msg = message.split(',')
+    command = msg[0]
     try:
         pin = command_to_pin[int(command)]
     except KeyError as instance:
-        print(f"{command} is not included commands\n[invoke] stop_all")
-        #stop_all()
+        with lock:
+            print(f"{command} is not included commands\n[invoke] stop_all")
+            stop_all()
+            callback_count -= 1
+            if callback_count >= 1:
+                event.set()
+            else:
+                event.clear()
         return
-
-        
-
-    print(f"[start]  {command} : {pin.name}")
-    # pinMode(pin, 1)
-    # digitalWrite(pin, 0)
-    await asyncio.sleep(TIME)
-    # digitalWrite(pin, 1)
-    # pinMode(pin, 0)
-    print(f"[end] {command} : {pin.name}")
     
+    tim = TIME
+    try:
+        tim = float(msg[1])
+    except IndexError:
+        tim = TIME
 
+    print(f"[start]  {command} : {pin.name} for {tim} seconds")
+    # ボタンを一度押せばリモコンが起動する
+    pinMode(pin, 1)
+    digitalWrite(pin, 0)
+    time.sleep(0.1)
+    digitalWrite(pin, 1)
+    pinMode(pin, 0)
+    time.sleep(0.1)
+    # ２回目にボタンを押せばそのボタンの動作をする
+    pinMode(pin, 1)
+    digitalWrite(pin, 0)
+    #time.sleep(tim)
+    event.wait(timeout=tim)
+    """
+    while not event.wait(timeout=tim):
+        print("wait")
+        if stop_flag:
+            print(f"[stop] {command} : {pin.name}")
+            with lock:
+                callback_count -= 1
+                if callback_count <= 0:
+                    stop_flag = False
+                    stop_all()
+            return
+    """
+    digitalWrite(pin, 1)
+    pinMode(pin, 0)
+    print(f"[end] {command} : {pin.name}")
+    with lock:
+        callback_count -= 1
+        if callback_count <= 0:
+            event.clear()
 
+callback_count = 0
+stop_flag = False
+
+lock = threading.Lock()
 if __name__ == '__main__':
-    # pi.wiringPiSetupGpio()
-    # stop_all()
-    start_server = websockets.serve(move, 'localhost', 9989)
+
+    pi.wiringPiSetupGpio()
+    stop_all()
+
+    server = WebsocketServer(9989, host='192.168.4.131')
+
     print("tms_rc_bed ready...")
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(start_server)
-    loop.run_forever()
+    server.set_fn_message_received(move)
+    server.run_forever()

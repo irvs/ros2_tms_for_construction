@@ -4,6 +4,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
 from tms_ts_subtask.subtask_node_base import SubtaskNodeBase
 import time
+from threading import Event 
 from websocket import create_connection
 
 
@@ -64,11 +65,24 @@ class SubtaskBedLinkUp(SubtaskNodeBase):
         ws.close()  # close socket
         TIME = request['sec']
         time.sleep(TIME)
+        # event = Event()
+        # while not event.wait(timeout=TIME):
+        #     if goal_handle.is_cancel_requested:
+        #         response.message = "Canceled"
+        #         return response
         response.message = "Success"
         return response
     
     def init_argument(self):
         return {"sec": 20.0}
+    
+    async def cancel_service_callback(self):
+        """@override
+        """
+        print("Cancel subtask_bed_link_up")
+        ws = create_connection(BED_WS_ADDRESS)  # open socket
+        ws.send("0,0.0")  # send to socket
+        ws.close()  # close socket
 
 
 class SubtaskBedLinkDown(SubtaskNodeBase):
@@ -87,11 +101,24 @@ class SubtaskBedLinkDown(SubtaskNodeBase):
         TIME = request['sec']
 
         time.sleep(TIME)
+        # event = Event()
+        # while not event.wait(timeout=TIME):
+        #     if goal_handle.is_cancel_requested:
+        #         response.message = "Canceled"
+        #         return response
         response.message = "Success"
         return response
     
     def init_argument(self):
         return {"sec": 20.0}
+    
+    async def cancel_service_callback(self):
+        """@override
+        """
+        print("Cancel subtask_bed_link_up")
+        ws = create_connection(BED_WS_ADDRESS)  # open socket
+        ws.send("0,0.0")  # send to socket
+        ws.close()  # close socket
 
 
 class SubtaskBedHeadUp(SubtaskNodeBase):
@@ -110,12 +137,24 @@ class SubtaskBedHeadUp(SubtaskNodeBase):
         TIME = request['sec']
 
         time.sleep(TIME)
+        # event = Event()
+        # while not event.wait(timeout=TIME):
+        #     if goal_handle.is_cancel_requested:
+        #         response.message = "Canceled"
+        #         return response
         response.message = "Success"
         return response
 
     def init_argument(self):
         return {"sec": 20.0}
 
+    async def cancel_service_callback(self):
+        """@override
+        """
+        print("Cancel subtask_bed_link_up")
+        ws = create_connection(BED_WS_ADDRESS)  # open socket
+        ws.send("0,0.0")  # send to socket
+        ws.close()  # close socket
 
 class SubtaskBedHeadDown(SubtaskNodeBase):
     """ベッドの頭を下げるタスク
@@ -133,12 +172,24 @@ class SubtaskBedHeadDown(SubtaskNodeBase):
         TIME = request['sec']
 
         time.sleep(TIME)
+        # event = Event()
+        # while not event.wait(timeout=TIME):
+        #     if goal_handle.is_cancel_requested:
+        #         response.message = "Canceled"
+        #         return response
         response.message = "Success"
         return response
 
     def init_argument(self):
         return {"sec": 20.0}
 
+    async def cancel_service_callback(self):
+        """@override
+        """
+        print("Cancel subtask_bed_link_up")
+        ws = create_connection(BED_WS_ADDRESS)  # open socket
+        ws.send("0,0.0")  # send to socket
+        ws.close()  # close socket
 
 class SubtaskBedFootUp(SubtaskNodeBase):
     """ベッドの足を上げるタスク
@@ -156,12 +207,24 @@ class SubtaskBedFootUp(SubtaskNodeBase):
         TIME = request['sec']
 
         time.sleep(TIME)
+        # event = Event()
+        # while not event.wait(timeout=TIME):
+        #     if goal_handle.is_cancel_requested:
+        #         response.message = "Canceled"
+        #         return response
         response.message = "Success"
         return response
 
     def init_argument(self):
         return {"sec": 20.0}
 
+    async def cancel_service_callback(self):
+        """@override
+        """
+        print("Cancel subtask_bed_link_up")
+        ws = create_connection(BED_WS_ADDRESS)  # open socket
+        ws.send("0,0.0")  # send to socket
+        ws.close()  # close socket
 
 class SubtaskBedFootDown(SubtaskNodeBase):
     """ベッドの足を下げるタスク
@@ -179,12 +242,24 @@ class SubtaskBedFootDown(SubtaskNodeBase):
         TIME = request['sec']
 
         time.sleep(TIME)
+        # event = Event()
+        # while not event.wait(timeout=TIME):
+        #     if goal_handle.is_cancel_requested:
+        #         response.message = "Canceled"
+        #         return response
         response.message = "Success"
         return response
 
     def init_argument(self):
         return {"sec": 20.0}
 
+    async def cancel_service_callback(self):
+        """@override
+        """
+        print("Cancel subtask_bed_link_up")
+        ws = create_connection(BED_WS_ADDRESS)  # open socket
+        ws.send("0,0.0")  # send to socket
+        ws.close()  # close socket
 
 class SubtaskBedHeightUp(SubtaskNodeBase):
     """ベッドの高さを上げるタスク
@@ -202,12 +277,24 @@ class SubtaskBedHeightUp(SubtaskNodeBase):
         TIME = request['sec']
 
         time.sleep(TIME)
+        # event = Event()
+        # while not event.wait(timeout=TIME):
+        #     if goal_handle.is_cancel_requested:
+        #         response.message = "Canceled"
+        #         return response
         response.message = "Success"
         return response
 
     def init_argument(self):
         return {"sec": 20.0}
 
+    async def cancel_service_callback(self):
+        """@override
+        """
+        print("Cancel subtask_bed_link_up")
+        ws = create_connection(BED_WS_ADDRESS)  # open socket
+        ws.send("0,0.0")  # send to socket
+        ws.close()  # close socket
 
 class SubtaskBedHeightDown(SubtaskNodeBase):
     """ベッドの高さを下げるタスク
@@ -225,8 +312,21 @@ class SubtaskBedHeightDown(SubtaskNodeBase):
         TIME = request['sec']
 
         time.sleep(TIME)
+        # event = Event()
+        # while not event.wait(timeout=TIME):
+        #     if goal_handle.is_cancel_requested:
+        #         response.message = "Canceled"
+        #         return response
         response.message = "Success"
         return response
 
     def init_argument(self):
         return {"sec": 20.0}
+
+    async def cancel_service_callback(self):
+        """@override
+        """
+        print("Cancel subtask_bed_link_up")
+        ws = create_connection(BED_WS_ADDRESS)  # open socket
+        ws.send("0,0.0")  # send to socket
+        ws.close()  # close socket

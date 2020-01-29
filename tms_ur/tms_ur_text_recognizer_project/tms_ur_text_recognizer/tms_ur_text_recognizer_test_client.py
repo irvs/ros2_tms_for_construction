@@ -15,16 +15,16 @@ def main(args=None):
     node = TmsUrTextRecognizerTestClient()
 
     while rclpy.ok():
-        # text = input('実行したい命令（日本語の文章でどうぞ）>>')
+        text = input('実行したい命令（日本語の文章でどうぞ）>>')
         send_data = TaskTextRecognize.Request()
-        #send_data.data = text
-        send_data.data = "ダブル、センサーに向かって"
-        send_data.is_announce = False
+        send_data.data = text
+        # send_data.data = "ダブル、センサーに向かって"
+        send_data.is_announce = True
         node.cli.call_async(send_data)
 
         print(f'{send_data.data} : OK')
 
-        time.sleep(5.0)
+        # time.sleep(5.0)
     
     node.destroy_node()
     rclpy.shutdown()

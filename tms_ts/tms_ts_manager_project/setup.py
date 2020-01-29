@@ -33,6 +33,7 @@ setup(
             'tms_ts_manager = tms_ts_manager.tms_ts_manager:main',
             'tms_ts_manager_action = tms_ts_manager.tms_ts_manager_action:main',
             'tms_ts_manager_new = tms_ts_manager.tms_ts_manager_new:main',
+            'tms_ts_manager_new2 = tms_ts_manager.tms_ts_manager_new2:main',
         ],
     },
 )
