@@ -62,16 +62,19 @@ class SubtaskBedLinkUp(SubtaskNodeBase):
     async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(LINK_UP + f",{request['sec']}")  # send to socket
+        response.message = ws.recv()
+        self.get_logger().error(response.message)
         ws.close()  # close socket
-        TIME = request['sec']
-        time.sleep(TIME)
+        return response
+        # TIME = request['sec']
+        # time.sleep(TIME)
         # event = Event()
         # while not event.wait(timeout=TIME):
         #     if goal_handle.is_cancel_requested:
         #         response.message = "Canceled"
         #         return response
-        response.message = "Success"
-        return response
+        # response.message = "Success"
+        # return response
     
     def init_argument(self):
         return {"sec": 20.0}
@@ -83,6 +86,7 @@ class SubtaskBedLinkUp(SubtaskNodeBase):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send("0,0.0")  # send to socket
         ws.close()  # close socket
+
 
 
 class SubtaskBedLinkDown(SubtaskNodeBase):
@@ -97,17 +101,24 @@ class SubtaskBedLinkDown(SubtaskNodeBase):
     async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(LINK_DOWN + f",{request['sec']}")  # send to socket
+        response.message = ws.recv()
+        self.get_logger().error(response.message)
         ws.close()  # close socket
-        TIME = request['sec']
-
-        time.sleep(TIME)
-        # event = Event()
-        # while not event.wait(timeout=TIME):
-        #     if goal_handle.is_cancel_requested:
-        #         response.message = "Canceled"
-        #         return response
-        response.message = "Success"
         return response
+    # async def service_callback(self, request, response, goal_handle):
+    #     ws = create_connection(BED_WS_ADDRESS)  # open socket
+    #     ws.send(LINK_DOWN + f",{request['sec']}")  # send to socket
+    #     ws.close()  # close socket
+    #     TIME = request['sec']
+
+    #     time.sleep(TIME)
+    #     # event = Event()
+    #     # while not event.wait(timeout=TIME):
+    #     #     if goal_handle.is_cancel_requested:
+    #     #         response.message = "Canceled"
+    #     #         return response
+    #     response.message = "Success"
+    #     return response
     
     def init_argument(self):
         return {"sec": 20.0}
@@ -129,21 +140,29 @@ class SubtaskBedHeadUp(SubtaskNodeBase):
     
     def id(self):
         return 9102
-    
+
     async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(HEAD_UP + f",{request['sec']}")  # send to socket
+        response.message = ws.recv()
+        self.get_logger().error(response.message)
         ws.close()  # close socket
-        TIME = request['sec']
+        return response   
 
-        time.sleep(TIME)
-        # event = Event()
-        # while not event.wait(timeout=TIME):
-        #     if goal_handle.is_cancel_requested:
-        #         response.message = "Canceled"
-        #         return response
-        response.message = "Success"
-        return response
+    # async def service_callback(self, request, response, goal_handle):
+    #     ws = create_connection(BED_WS_ADDRESS)  # open socket
+    #     ws.send(HEAD_UP + f",{request['sec']}")  # send to socket
+    #     ws.close()  # close socket
+    #     TIME = request['sec']
+
+    #     time.sleep(TIME)
+    #     # event = Event()
+    #     # while not event.wait(timeout=TIME):
+    #     #     if goal_handle.is_cancel_requested:
+    #     #         response.message = "Canceled"
+    #     #         return response
+    #     response.message = "Success"
+    #     return response
 
     def init_argument(self):
         return {"sec": 20.0}
@@ -164,21 +183,29 @@ class SubtaskBedHeadDown(SubtaskNodeBase):
     
     def id(self):
         return 9103
-    
+
     async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(HEAD_DOWN + f",{request['sec']}")  # send to socket
+        response.message = ws.recv()
+        self.get_logger().error(response.message)
         ws.close()  # close socket
-        TIME = request['sec']
+        return response   
+             
+    # async def service_callback(self, request, response, goal_handle):
+    #     ws = create_connection(BED_WS_ADDRESS)  # open socket
+    #     ws.send(HEAD_DOWN + f",{request['sec']}")  # send to socket
+    #     ws.close()  # close socket
+    #     TIME = request['sec']
 
-        time.sleep(TIME)
-        # event = Event()
-        # while not event.wait(timeout=TIME):
-        #     if goal_handle.is_cancel_requested:
-        #         response.message = "Canceled"
-        #         return response
-        response.message = "Success"
-        return response
+    #     time.sleep(TIME)
+    #     # event = Event()
+    #     # while not event.wait(timeout=TIME):
+    #     #     if goal_handle.is_cancel_requested:
+    #     #         response.message = "Canceled"
+    #     #         return response
+    #     response.message = "Success"
+    #     return response
 
     def init_argument(self):
         return {"sec": 20.0}
@@ -199,21 +226,29 @@ class SubtaskBedFootUp(SubtaskNodeBase):
     
     def id(self):
         return 9104
-    
+
     async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(FOOT_UP + f",{request['sec']}")  # send to socket
+        response.message = ws.recv()
+        self.get_logger().error(response.message)
         ws.close()  # close socket
-        TIME = request['sec']
+        return response   
+             
+    # async def service_callback(self, request, response, goal_handle):
+    #     ws = create_connection(BED_WS_ADDRESS)  # open socket
+    #     ws.send(FOOT_UP + f",{request['sec']}")  # send to socket
+    #     ws.close()  # close socket
+    #     TIME = request['sec']
 
-        time.sleep(TIME)
-        # event = Event()
-        # while not event.wait(timeout=TIME):
-        #     if goal_handle.is_cancel_requested:
-        #         response.message = "Canceled"
-        #         return response
-        response.message = "Success"
-        return response
+    #     time.sleep(TIME)
+    #     # event = Event()
+    #     # while not event.wait(timeout=TIME):
+    #     #     if goal_handle.is_cancel_requested:
+    #     #         response.message = "Canceled"
+    #     #         return response
+    #     response.message = "Success"
+    #     return response
 
     def init_argument(self):
         return {"sec": 20.0}
@@ -234,21 +269,29 @@ class SubtaskBedFootDown(SubtaskNodeBase):
     
     def id(self):
         return 9105
-    
+
     async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(FOOT_DOWN + f",{request['sec']}")  # send to socket
+        response.message = ws.recv()
+        self.get_logger().error(response.message)
         ws.close()  # close socket
-        TIME = request['sec']
+        return response   
+             
+    # async def service_callback(self, request, response, goal_handle):
+    #     ws = create_connection(BED_WS_ADDRESS)  # open socket
+    #     ws.send(FOOT_DOWN + f",{request['sec']}")  # send to socket
+    #     ws.close()  # close socket
+    #     TIME = request['sec']
 
-        time.sleep(TIME)
-        # event = Event()
-        # while not event.wait(timeout=TIME):
-        #     if goal_handle.is_cancel_requested:
-        #         response.message = "Canceled"
-        #         return response
-        response.message = "Success"
-        return response
+    #     time.sleep(TIME)
+    #     # event = Event()
+    #     # while not event.wait(timeout=TIME):
+    #     #     if goal_handle.is_cancel_requested:
+    #     #         response.message = "Canceled"
+    #     #         return response
+    #     response.message = "Success"
+    #     return response
 
     def init_argument(self):
         return {"sec": 20.0}
@@ -269,21 +312,29 @@ class SubtaskBedHeightUp(SubtaskNodeBase):
     
     def id(self):
         return 9106
-    
+
     async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(HEIGHT_UP + f",{request['sec']}")  # send to socket
+        response.message = ws.recv()
+        self.get_logger().error(response.message)
         ws.close()  # close socket
-        TIME = request['sec']
+        return response   
+             
+    # async def service_callback(self, request, response, goal_handle):
+    #     ws = create_connection(BED_WS_ADDRESS)  # open socket
+    #     ws.send(HEIGHT_UP + f",{request['sec']}")  # send to socket
+    #     ws.close()  # close socket
+    #     TIME = request['sec']
 
-        time.sleep(TIME)
-        # event = Event()
-        # while not event.wait(timeout=TIME):
-        #     if goal_handle.is_cancel_requested:
-        #         response.message = "Canceled"
-        #         return response
-        response.message = "Success"
-        return response
+    #     time.sleep(TIME)
+    #     # event = Event()
+    #     # while not event.wait(timeout=TIME):
+    #     #     if goal_handle.is_cancel_requested:
+    #     #         response.message = "Canceled"
+    #     #         return response
+    #     response.message = "Success"
+    #     return response
 
     def init_argument(self):
         return {"sec": 20.0}
@@ -304,21 +355,29 @@ class SubtaskBedHeightDown(SubtaskNodeBase):
     
     def id(self):
         return 9107
-    
+
     async def service_callback(self, request, response, goal_handle):
         ws = create_connection(BED_WS_ADDRESS)  # open socket
         ws.send(HEIGHT_DOWN + f",{request['sec']}")  # send to socket
+        response.message = ws.recv()
+        self.get_logger().error(response.message)
         ws.close()  # close socket
-        TIME = request['sec']
+        return response   
+             
+    # async def service_callback(self, request, response, goal_handle):
+    #     ws = create_connection(BED_WS_ADDRESS)  # open socket
+    #     ws.send(HEIGHT_DOWN + f",{request['sec']}")  # send to socket
+    #     ws.close()  # close socket
+    #     TIME = request['sec']
 
-        time.sleep(TIME)
-        # event = Event()
-        # while not event.wait(timeout=TIME):
-        #     if goal_handle.is_cancel_requested:
-        #         response.message = "Canceled"
-        #         return response
-        response.message = "Success"
-        return response
+    #     time.sleep(TIME)
+    #     # event = Event()
+    #     # while not event.wait(timeout=TIME):
+    #     #     if goal_handle.is_cancel_requested:
+    #     #         response.message = "Canceled"
+    #     #         return response
+    #     response.message = "Success"
+    #     return response
 
     def init_argument(self):
         return {"sec": 20.0}

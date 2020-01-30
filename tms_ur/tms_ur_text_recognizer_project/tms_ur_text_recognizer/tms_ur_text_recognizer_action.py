@@ -95,8 +95,12 @@ class TmsUrTextRecognizer(Node):
 
     async def done_callback(self, future):
         print(f"Finish: {future.result().result.message}")
-        if future.result().result.message != "Success":
-            await self.play_jtalk("タスクが異常終了しました")
+        msg = future.result().result.message
+        if msg != "Success":
+            if msg == "Canceled":
+                await self.play_jtalk("タスクがキャンセルされました")
+            else:
+                await self.play_jtalk("タスクが異常終了しました")
 
     def tokenize(self, sentence):
         search_tags = []

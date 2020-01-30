@@ -22,7 +22,7 @@ class TaskNode(Node):
         self.cb_group = ReentrantCallbackGroup()
         self.name = f'tasknode_{TaskNode._count}'
         self.task_tree = task_tree
-        self.child_tasknode = None
+        self.child_tasknodes = {}
         self.goal_handle_clients = {}
         self.subtask_goalhandle = None
         super().__init__(self.name)
@@ -32,21 +32,27 @@ class TaskNode(Node):
         cancel_callback=self.cancel_callback,
         callback_group=self.cb_group)
     
-    # def destroy_node(self):
-    #     """デストラクタ
-    #     """
-    #     global executor
-    #     self.get_logger().info('destroy')
-    #     if self.child_tasknode is not None:
-    #         self.child_tasknode.destroy_node()
-    #     self.action_server.destroy()
-    #     executor.remove_node(self)
-        # super().destroy_node()
+    def destroy_node(self):
+        global executor
+        self.get_logger().warning('destroy')
+        executor.remove_node(self)
+        for child in self.child_tasknodes.values():
+            try:
+                child.destroy_node()
+            except rclpy.handle.InvalidHandle as e:
+                print(f"DestroyNode error: {e}")
+        
+        super().destroy_node()  # 注意
+        # 2020-01-30現在，このsuper().destroy_node()を実行すればrclpy.handle.InvalidHandleが起こってしまうが
+        # rqt_graphやros2 node listなどの表示からこのノードが消える
 
     def cancel_callback(self, goal_handle):
-        self.get_logger().warning("Canceled")
+        self.get_logger().warning(f"Canceled, {goal_handle.status}")
         self._cancel_timer = self.create_timer(0.0, self._cancel, callback_group=self.cb_group)
-        return CancelResponse.ACCEPT
+        if not goal_handle.is_cancel_requested:
+            return CancelResponse.ACCEPT
+        else:
+            return CancelResponse.REJECT
 
     async def _cancel(self):
         self._cancel_timer.cancel()
@@ -57,6 +63,7 @@ class TaskNode(Node):
 
     async def execute_callback(self, goal_handle):
         result = TsDoTask.Result()
+        self.get_logger().warning(f"{self.task_tree}")
         result.message = await self.execute(goal_handle, self.task_tree)
         if result.message == "Success":
             goal_handle.succeed()
@@ -100,13 +107,18 @@ class TaskNode(Node):
     async def parallel(self, goal_handle, task_tree):
         #print(f'parallel: {task_tree[1]} {task_tree[2]}')
         print("parallel")
-        goal_handle_client = await self.create_tasknode(task_tree[1])
+        goal_handle_client, child_tasknode = await self.create_tasknode(task_tree[1])
+        self.child_tasknodes[id(child_tasknode)] = child_tasknode
         self.goal_handle_clients[goal_handle_client.goal_id.uuid.tostring()] = goal_handle_client
         print(self.goal_handle_clients)
         msg2 = await self.execute(goal_handle, task_tree[2])
         future_result = await goal_handle_client.get_result_async()
         msg1 = future_result.result.message
+        self.goal_handle_clients[goal_handle_client.goal_id.uuid.tostring()] = None
         del self.goal_handle_clients[goal_handle_client.goal_id.uuid.tostring()]
+        self.child_tasknodes[id(child_tasknode)] = None
+        del self.child_tasknodes[id(child_tasknode)]
+        child_tasknode.destroy_node()
         if msg1 == "Success" and msg2 == "Success":
             return "Success"
         elif msg1 != "Success":
@@ -117,7 +129,7 @@ class TaskNode(Node):
     async def subtask(self, goal_handle, task_tree):
         # print("subtask")
         command = task_tree[1]
-
+        self.get_logger().warn(command[0])
         self.subtask_client = ActionClient(self, TsDoSubtask, "subtask_node_" + str(command[0]), callback_group=ReentrantCallbackGroup())
         if not self.subtask_client.wait_for_server(timeout_sec=5.0):
             self.get_logger().error('No action server available')
@@ -144,11 +156,11 @@ class TaskNode(Node):
     async def create_tasknode(self, task_tree):
         global executor
         # generate task_node
-        self.child_tasknode = TaskNode(task_tree)
+        child_tasknode = TaskNode(task_tree)
         # self.child_tasknode.append(self.childtask_node)
-        executor.add_node(self.child_tasknode)  # added last added task
+        executor.add_node(child_tasknode)  # added last added task
         ## execute
-        client = ActionClient(self, TsDoTask, self.child_tasknode.name, callback_group=ReentrantCallbackGroup())
+        client = ActionClient(self, TsDoTask, child_tasknode.name, callback_group=ReentrantCallbackGroup())
         if not client.wait_for_server(timeout_sec=5.0):
             self.get_logger().error('No action server available')
             goal_handle.abort()
@@ -164,7 +176,7 @@ class TaskNode(Node):
             result.message = "Goal Reject"
             return result
         self.get_logger().info("goal accept")
-        return goal_handle_client
+        return goal_handle_client, child_tasknode
 
 
 
@@ -177,6 +189,7 @@ class TaskSchedulerManager(Node):
         """
         self.cb_group = ReentrantCallbackGroup()
 
+        self.goal_handle_clients = {}
         super().__init__("task_scheduler_manager")
         self.get_logger().info('task_scheduler_manager')
         self.action_server = ActionServer(
@@ -201,13 +214,21 @@ class TaskSchedulerManager(Node):
         """タスクのキャンセル
         """
         self.get_logger().info('Received Cancel task')
-        self._cancel_timer = self.create_timer(0.0, self._cancel, callback_group=self.cb_group)
-
+        # self._cancel_timer = self.create_timer(0.0, self._cancel, callback_group=self.cb_group)
+        client = None
+        try:
+            client = self.goal_handle_clients[goal_handle.goal_id.uuid.tostring()]
+        except IndexError as e:
+            self.get_logger().error(f"{str(e)}")
+            return CancelResponse.ACCEPT
+        if client is not None:
+            client.cancel_goal_async()
+        
         return CancelResponse.ACCEPT
     
-    async def _cancel(self):
-        self._cancel_timer.cancel()
-        await self.goal_handle_client.cancel_goal_async()
+    # async def _cancel(self):
+    #     self._cancel_timer.cancel()
+    #     await self.goal_handle_client.cancel_goal_async()
 
     async def execute_callback(self, goal_handle):
         """タスク処理
@@ -238,16 +259,21 @@ class TaskSchedulerManager(Node):
             result.message = "Abort"
             return result
         goal = TsDoTask.Goal()
-        self.goal_handle_client = await client.send_goal_async(goal)
-        if not self.goal_handle_client.accepted:
+        goal_handle_client = await client.send_goal_async(goal)
+
+        self.goal_handle_clients[goal_handle.goal_id.uuid.tostring()] = goal_handle_client
+
+        if not goal_handle_client.accepted:
             self.get_logger().info("goal reject")
             goal_handle.abort()
             result = TsReq.Result()
             result.message = "Goal Reject"
             return result
         self.get_logger().info("goal accept")
-        self.future_result = await self.goal_handle_client.get_result_async()
+        self.future_result = await goal_handle_client.get_result_async()
 
+        self.goal_handle_clients[goal_handle.goal_id.uuid.tostring()] = None
+        del self.goal_handle_clients[goal_handle.goal_id.uuid.tostring()]
         # 結果を返す
         msg = self.future_result.result.message
         if msg == "Success":
@@ -259,7 +285,7 @@ class TaskSchedulerManager(Node):
             result = TsReq.Result()
             result.message = msg
         # result.message = "Success"
-        # task_node.destroy_node()
+        task_node.destroy_node()
         return result
         
 

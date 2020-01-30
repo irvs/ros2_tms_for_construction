@@ -15,7 +15,7 @@ def generate_launch_description():
             launch_ros.actions.Node(
             package='tms_ts_subtask', node_executable='subtask_nodes_roomlight',
             output='screen'),
-            launch_ros.actions.Node(
-            package='tms_ur_text_recognizer', node_executable='tms_ur_text_recognizer_action',
-            output='screen'),
+            # launch_ros.actions.Node(
+            # package='tms_ur_text_recognizer', node_executable='tms_ur_text_recognizer_action',
+            # output='screen'),
       ])

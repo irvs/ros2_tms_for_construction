@@ -38,7 +38,7 @@ class SubtaskRoomLightOn(SubtaskNodeBase):
     
     async def service_callback(self, request, response, goal_handle) -> "response":
         try:
-            res = requests.get(BSEN_URL + "2003", timeout=2.0)
+            res = requests.get(BSEN_URL + "2003", timeout=5.0)
             response.message = "Success"
             self.get_logger().info("Success")
         except Timeout as e:  # timeout error
@@ -60,7 +60,7 @@ class SubtaskRoomLightOff(SubtaskNodeBase):
     async def service_callback(self, request, response, goal_handle) -> "response":
         self.get_logger().info('light off!')
         try:
-            res = requests.get(BSEN_URL + "2005", timeout=2.0)
+            res = requests.get(BSEN_URL + "2005", timeout=5.0)
             response.message = "Success"
             self.get_logger().info("Success")
         except Timeout as e:  # timeout error
