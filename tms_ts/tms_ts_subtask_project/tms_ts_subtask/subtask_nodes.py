@@ -262,14 +262,14 @@ class SubtaskWait(SubtaskNodeBase):
         return 9900
     
     async def service_callback(self, request, response, goal_handle):
-        self.get_logger().info(f'{request["wait_msec"]}')
-        time.sleep(request["wait_msec"])
+        self.get_logger().info(f'{request["wait_sec"]}')
+        time.sleep(request["wait_sec"])
         response.message = "Success"
         return response
     
     def init_argument(self):
         """引数が必要なため、オーバーライド"""
-        return {"wait_msec" : 30}
+        return {"wait_sec" : 30}
 
 class SubtaskSpeakerAnnounce(SubtaskNodeBase):
     def node_name(self):
