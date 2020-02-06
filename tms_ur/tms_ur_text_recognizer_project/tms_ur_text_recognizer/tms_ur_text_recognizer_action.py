@@ -20,7 +20,7 @@ MONGODB_PORTNUMBER = 27017
 class TmsUrTextRecognizer(Node):
     def __init__(self):
         super().__init__('task_text_recognizer')
-        self.goal_handles = []
+        self.goal_handles = {}
         self.cb_group = ReentrantCallbackGroup()
         self.cli_ts_req = ActionClient(self, TsReq, 'tms_ts_master', callback_group=self.cb_group)
         while not self.cli_ts_req.wait_for_server(timeout_sec=1.0):
@@ -43,7 +43,8 @@ class TmsUrTextRecognizer(Node):
 
         if "キャンセル" in tags:
             futures = []
-            for gh in self.goal_handles:
+            for gh in self.goal_handles.values():
+                print(str(gh.status))
                 futures.append(gh.cancel_goal_async())
             # for future in futures:
             #     await futures
@@ -75,7 +76,7 @@ class TmsUrTextRecognizer(Node):
                     await self.play_jtalk(announce_text)
 
                 goal_handle = await self.cli_ts_req.send_goal_async(req)
-                self.goal_handles.append(goal_handle)
+                self.goal_handles[goal_handle.goal_id.uuid.tostring()] = goal_handle
                 goal_handle.get_result_async().add_done_callback(self.done_callback)
                 self.get_logger().info(f"Call task {task['id']}")
             else:   # タスクが存在するが、引数がすべて揃っていないとき
@@ -96,6 +97,8 @@ class TmsUrTextRecognizer(Node):
     async def done_callback(self, future):
         print(f"Finish: {future.result().result.message}")
         msg = future.result().result.message
+        # self.goal_handle_clients[goal_handle_client.goal_id.uuid.tostring()] = None
+        # del self.goal_handle_clients[goal_handle_client.goal_id.uuid.tostring()]
         if msg != "Success":
             if msg == "Canceled":
                 await self.play_jtalk("タスクがキャンセルされました")
