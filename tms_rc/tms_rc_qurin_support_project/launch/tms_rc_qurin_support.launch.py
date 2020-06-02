@@ -13,19 +13,19 @@ from ament_index_python.packages import get_package_prefix
 from nav2_common.launch import RewrittenYaml
 
 def generate_launch_description():
-    launch_dir = os.path.join(get_package_share_directory('tms_rc_bot'), 'launch')
+    launch_dir = os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'launch')
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
     map_dir = LaunchConfiguration('map', 
-                                default=os.path.join(get_package_share_directory('tms_rc_bot'), 'maps', 'map_bsen.yaml'))
+                                default=os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'maps', 'map_bsen.yaml'))
 
     # map_yaml_file = LaunchConfiguration('map')
 
-    # bt_navigator_xml=os.path.join(get_package_share_directory('tms_rc_bot'), 'behavior_trees', 'navigate_w_recovery_retry.xml')
+    # bt_navigator_xml=os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'behavior_trees', 'navigate_w_recovery_retry.xml')
 
     params_file = 'guidebot_params.yaml'
     params_file_dir = LaunchConfiguration(
         'params', 
-        default=os.path.join(get_package_share_directory('tms_rc_bot'), 'params', params_file))
+        default=os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'params', params_file))
     
     bt_xml_file = LaunchConfiguration('bt_xml_file')
     autostart = LaunchConfiguration('autostart')
@@ -38,7 +38,7 @@ def generate_launch_description():
     #                                 'behavior_trees',
     #                                 'navigate_w_recovery_retry.xml') # TODO(mkhansen): change to an input parameter
 
-    # rviz_config_dir = os.path.join(get_package_share_directory('tms_rc_bot'), 'rviz', 'tb3_navigation2.rviz')
+    # rviz_config_dir = os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'rviz', 'tb3_navigation2.rviz')
 
     urdf_file_name = 'turtlebot3_burger.urdf'
     urdf = os.path.join(get_package_share_directory('turtlebot3_description'), 'urdf', urdf_file_name)
@@ -60,12 +60,12 @@ def generate_launch_description():
     # Declare the launch arguments
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map', 
-        default_value=os.path.join(get_package_share_directory('tms_rc_bot'), 'maps', 'map_bsen.yaml'),
+        default_value=os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'maps', 'map_bsen.yaml'),
         description='Full path to map file to load')
 
     declare_params_file_cmd = DeclareLaunchArgument(
         'params', 
-        default_value=os.path.join(get_package_share_directory('tms_rc_bot'), 'params', params_file),
+        default_value=os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'params', params_file),
         description='Full path to param file to load')
 
     declare_use_sim_time_cmd = DeclareLaunchArgument(
@@ -85,7 +85,7 @@ def generate_launch_description():
 
     declare_bt_xml_cmd = DeclareLaunchArgument(
         'bt_xml_file',
-        default_value=os.path.join(get_package_share_directory('tms_rc_bot'),
+        default_value=os.path.join(get_package_share_directory('tms_rc_qurin_support'),
             'behavior_trees', 'navigate_w_replanning_without_recovery.xml'),
         description='Full path to the behavior tree xml file to use')
 
@@ -127,14 +127,14 @@ def generate_launch_description():
     #     output='screen',
     #     parameters=[configured_params])
 
-    start_localizer_cmd = Node(
-        package='robot_localization', 
-        node_executable='se_node', 
-        node_name='ekf_localization_node',
-        output='screen',
-        parameters=[params_file_dir],
-        remappings=[('/set_pose', '/initialpose')]
-       )
+    # start_localizer_cmd = Node(
+    #     package='robot_localization', 
+    #     node_executable='se_node', 
+    #     node_name='ekf_localization_node',
+    #     output='screen',
+    #     parameters=[params_file_dir],
+    #     remappings=[('/set_pose', '/initialpose')]
+    #    )
     
     start_world_model_cmd = Node(
         package='nav2_world_model',
