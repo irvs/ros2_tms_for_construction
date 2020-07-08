@@ -27,26 +27,25 @@ def on_message(client, userdata, msg):
     global pub
     data_str = msg.payload.decode()
     datas = json.loads(data_str)
-    pprint.pprint(datas)
+    # pprint.pprint(datas)
     for d in datas:
-        if d[u"success"] and d[u"tagId"] == tagId:
-            pos = d[u"data"][u"coordinates"]
-            odom = Odometry()
-            odom.header.stamp = rospy.Time.now()
-            
-            odom.header.frame_id = "odom"
-            odom.child_frame_id = "base_footprint"
-            odom.pose.pose.position.x = pos[u"x"] * 0.001
-            odom.pose.pose.position.y = pos[u"y"] * 0.001
-            odom.pose.pose.position.z = pos[u"z"] * 0.001
-            
-            ori = d[u"data"][u"tagData"][u"quaternion"]
-            odom.pose.pose.orientation.x = ori[u"x"]
-            odom.pose.pose.orientation.y = ori[u"y"]
-            odom.pose.pose.orientation.z = ori[u"z"]
-            odom.pose.pose.orientation.w = ori[u"w"]
-            rclpy.get_logger().info(odom)
-            pub.publish(odom)
+        #if d[u"success"] and d[u"tagId"] == tagId:
+        pos = d[u"data"][u"coordinates"]
+        odom = Odometry()
+        # odom.header.stamp = rospy.Time.now() 
+        
+        odom.header.frame_id = "odom"
+        odom.child_frame_id = "base_footprint"
+        odom.pose.pose.position.x = pos[u"x"] * 0.001
+        odom.pose.pose.position.y = pos[u"y"] * 0.001
+        odom.pose.pose.position.z = pos[u"z"] * 0.001
+        
+        ori = d[u"data"][u"tagData"][u"quaternion"]
+        odom.pose.pose.orientation.x = ori[u"x"]
+        odom.pose.pose.orientation.y = ori[u"y"]
+        odom.pose.pose.orientation.z = ori[u"z"]
+        odom.pose.pose.orientation.w = ori[u"w"]
+        pub.publish(odom)
 
 
 
@@ -58,7 +57,7 @@ def main(args=None):
     global pub
     rclpy.init(args=args)
 
-    node = rclpy.create_node('qurin_pozyx')
+    node = rclpy.create_node('qurianaPozyx')
     pub = node.create_publisher(Odometry, "odometry/pozyx", 1000)
 
     client = mqtt.Client()
@@ -73,7 +72,8 @@ def main(args=None):
     #pub = rospy.Publisher('chatter', String, queue_size=10)
     #r = rospy.Rate(100) # 20hz
     while rclpy.ok():
-        client.loop(timeout=0.1)
+        client.loop(timeout=0.5)
+        # rclpy.spin_once(node)
     node.destroy_node()
     rclpy.shutdown()
 

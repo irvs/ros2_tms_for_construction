@@ -1,0 +1,8 @@
+image: map_bsen.png
+resolution: 0.0500000
+# origin: [-4.700, -4.00000, 0.0]
+# origin: [-3.500, -5.30000, 0.0]  # 2019/11/18 台所まえの角
+origin: [2.02, -2.35, 0.0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.1

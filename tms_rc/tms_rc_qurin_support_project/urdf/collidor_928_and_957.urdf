@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<robot name="collidor_928_and_957">
+  <link name="map">
+    <visual>
+      <origin xyz="-8.03 24.3 0" rpy="0 0 3.12"/>
+      <geometry>
+        <mesh filename="package://tms_rc_qurin_support/urdf/collidor_928_and_957.stl" scale="1.0 1.0 1.0"/>
+      </geometry>
+      <material name="red">
+        <color rgba="1.0 1.0 1.0 0.5"/>
+      </material>
+    </visual>
+  </link>
+</robot>

@@ -1,5 +1,5 @@
 # tms_rc_qurin_support
-Qurin　屋内見守りロボット
+Quriana　屋内見守りロボット
 
 ## Scripts
 ### pozyx
@@ -17,6 +17,11 @@ TF(odom→base_footprint)，Odometryトピックを発行．
 #### publish
 * (nav_msgs/msg/Odometry)
 * TF (odom→base_footprint)
+
+### HueBridgeRainbow
+
+とりあえずLEDの色を点ける用．
+後にTopic OR Serviceに切り替える予定
 
 ## Launch
 * 
