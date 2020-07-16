@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<robot name="environment">
+
+  <!-- ========== basic link ========== -->
+  <link name="origin_position"/>
+  
+  <!-- ========== environment ========== -->
+  <joint name="ceil_joint" type="fixed">
+    <parent link="origin_position"/>
+    <child link="ceil"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+  <joint name="floor_joint" type="fixed">
+    <parent link="origin_position"/>
+    <child link="floor"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+  <joint name="wall_joint" type="fixed">
+    <parent link="origin_position"/>
+    <child link="wall"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+  <link name="ceil">
+    <visual>
+      <geometry>
+        <mesh filename="package://tms_rc_qurin_support/models/Contours3_v3_ceil.dae"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <material name="alpha05">
+        <color rgba="1.0 1.0 1.0 0.8"/>
+      </material>
+    </visual>
+  </link>
+  <link name="floor">
+    <visual>
+      <geometry>
+        <mesh filename="package://tms_rc_qurin_support/models/Contours3_v3_floor.dae"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <material name="alpha05">
+        <color rgba="1.0 1.0 1.0 0.8"/>
+      </material>
+    </visual>
+  </link>
+  <link name="wall">
+    <visual>
+      <geometry>
+        <mesh filename="package://tms_rc_qurin_support/models/Contours3_v3_wall.dae"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <material name="alpha05">
+        <color rgba="1.0 1.0 1.0 0.8"/>
+      </material>
+    </visual>
+  </link>
+</robot>

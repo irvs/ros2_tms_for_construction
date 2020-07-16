@@ -16,7 +16,7 @@ def generate_launch_description():
     launch_dir = os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'launch')
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
     map_dir = LaunchConfiguration('map', 
-                                default=os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'maps', 'map_928_and_957.yaml'))
+                                default=os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'maps', 'map_w2_9f.yaml'))
 
     # map_yaml_file = LaunchConfiguration('map')
 
@@ -60,7 +60,7 @@ def generate_launch_description():
     # Declare the launch arguments
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map', 
-        default_value=os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'maps', 'map_928_and_957.yaml'),
+        default_value=os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'maps', 'map_w2_9f.yaml'),
         description='Full path to map file to load')
 
     declare_params_file_cmd = DeclareLaunchArgument(
@@ -113,6 +113,8 @@ def generate_launch_description():
     #     parameters=[{ 'use_sim_time': use_sim_time}, { 'yaml_filename': map_dir}]
     #     )
 
+
+    print(f"!!!{configured_params}")
     start_map_server_cmd = Node(
         package='nav2_map_server',
         node_executable='map_server',
