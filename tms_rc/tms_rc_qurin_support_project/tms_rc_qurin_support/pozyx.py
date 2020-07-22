@@ -34,7 +34,7 @@ def on_message(client, userdata, msg):
         odom = Odometry()
         # odom.header.stamp = rospy.Time.now() 
         
-        odom.header.frame_id = "odom"
+        odom.header.frame_id = "map"
         odom.child_frame_id = "base_footprint"
         odom.pose.pose.position.x = pos[u"x"] * 0.001
         odom.pose.pose.position.y = pos[u"y"] * 0.001

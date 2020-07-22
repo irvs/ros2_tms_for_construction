@@ -174,6 +174,7 @@ def generate_launch_description():
         node_executable='recoveries_node',
         node_name='recoveries',
         output='screen',
+        node_namespace='new_turtle',
         parameters=[{'use_sim_time': use_sim_time}],
         remappings=[('/amcl_pose', '/initialpose'), ('/cmd_vel', '/cmd2vel'), ('/odom', '/odometry/vicon')]
         )

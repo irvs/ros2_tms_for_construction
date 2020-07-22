@@ -1,41 +1,69 @@
 ## guidebot_odometry
 # Robot端末からオドメトリを取得，
-# TF(odom→base_footprint)，Odometryトピックを発行．
+# TF(odom→base_footprint)，Odometryトピックを発行． はros2 dashing pythonではできない
 
+import tf
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import String
+from nav_msgs.msg import Odometry
 
 
-class MinimalPublisher(Node):
+class GuidebotOdometry(Node):
 
     def __init__(self):
-        super().__init__('minimal_publisher')
-        self.publisher_ = self.create_publisher(String, 'topic', 10)
-        timer_period = 0.5  # seconds
-        self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.i = 0
+        super().__init__('guidebot_odometry')
+        self.odom_frame = "odom"
+        self.base_frame = "base_footprint"
+        self.odom_pub = self.create_publisher(Odometry, '/odometry/wheel', 10)
+        self.subscription = self.create_subscription(
+            Odometry,
+            '/hapirobo/loomo_odd',
+            self.listener_callback,
+            10)
 
-    def timer_callback(self):
-        msg = String()
-        msg.data = 'Hello World: %d' % self.i
-        self.publisher_.publish(msg)
-        self.get_logger().info('Publishing: "%s"' % msg.data)
-        self.i += 1
+    def listener_callback(self, data):
+        # while data.pose.pose.orientation.z >  pi: data.pose.pose.orientation.z -= 2.0 * pi
+        # while data.pose.pose.orientation.z < -pi: data.pose.pose.orientation.z += 2.0 * pi
 
+        # quate = tf.transformations.quaternion_from_euler(0.0, 0.0, data.pose.pose.orientation.z)
+        
+        odom                         = Odometry()
+        odom.header.stamp            = self.get_clock().now().to_msg()
+        odom.header.frame_id         = self.odom_frame
+        odom.child_frame_id          = self.base_frame
+        #odom.pose.pose.position.x    = data.pose.pose.position.x
+        #odom.pose.pose.position.y    = data.pose.pose.position.y
+
+        """
+        odom.pose.pose.orientation.x = data.pose.pose.orientation.x
+        odom.pose.pose.orientation.y = data.pose.pose.orientation.y
+        odom.pose.pose.orientation.z = data.pose.pose.orientation.z
+        odom.pose.pose.orientation.w = data.pose.pose.orientation.w
+        """
+        """
+        odom.pose.pose.orientation.x = quate[0]
+        odom.pose.pose.orientation.y = quate[1]
+        odom.pose.pose.orientation.z = quate[2]
+        odom.pose.pose.orientation.w = quate[3]
+        """
+
+        odom.twist.twist.linear.x    = data.twist.twist.linear.x 
+        odom.twist.twist.angular.z   = data.twist.twist.angular.z
+    
+        self.odom_pub.publish(odom)
 
 def main(args=None):
     rclpy.init(args=args)
 
-    minimal_publisher = MinimalPublisher()
+    guidebot_odometry = GuidebotOdometry()
 
-    rclpy.spin(minimal_publisher)
+    rclpy.spin(guidebot_odometry)
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    minimal_publisher.destroy_node()
+    guidebot_odometry.destroy_node()
     rclpy.shutdown()
 
 

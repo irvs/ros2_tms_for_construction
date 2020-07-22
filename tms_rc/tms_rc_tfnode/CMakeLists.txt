@@ -20,6 +20,7 @@ find_package(rclcpp REQUIRED)
 #find_package(std_msgs REQUIRED)
 #find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 #find_package(nav_msgs REQUIRED)
 #find_package(tms_msg_ss REQUIRED) 
 #find_package(tms_msg_rc REQUIRED)
@@ -40,8 +41,12 @@ find_package(tf2_ros REQUIRED)
 add_executable(Tfnode Tfnode.cpp)
 ament_target_dependencies(Tfnode rclcpp geometry_msgs tf2_ros)
 
+add_executable(odom_tf_node odom_tf_node.cpp)
+ament_target_dependencies(odom_tf_node rclcpp nav_msgs geometry_msgs tf2_ros)
+
 install(TARGETS
   Tfnode
+  odom_tf_node
 
   DESTINATION lib/${PROJECT_NAME}
 )
