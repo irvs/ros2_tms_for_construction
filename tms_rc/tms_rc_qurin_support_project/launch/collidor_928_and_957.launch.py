@@ -88,19 +88,19 @@ def generate_launch_description():
         # node_name='se_node',
         output='screen',
         parameters=[params_file_dir],
-        # remappings=[('/set_pose', '/initialpose')]
+        remappings=[('/set_pose', '/initialpose')]
        )
-
-    start_tfnode_cmd = launch_ros.actions.Node(
-        package='tms_rc_tfnode',
-        node_executable='odom_tf_node',
-        output='screen',
-    )
 
     start_guidebot_odometry_cmd = launch_ros.actions.Node(
         package='tms_rc_qurin_support',
         node_executable='guidebot_odometry',
         output='screen'
+    )
+
+    start_tfnode_cmd = launch_ros.actions.Node(
+        package='tms_rc_tfnode',
+        node_executable='odom_tf_node',
+        output='screen',
     )
 
     start_pozyx_local_cmd = launch_ros.actions.Node(
@@ -127,12 +127,61 @@ def generate_launch_description():
                                     output='both',
                                     arguments=['-d',os.path.join(share_dir_path, 'rviz2', 'pozyx_test.rviz') ])
 
-    start_ros1_bridge_cmd = Node(
-        package='ros1_bridge',
-        node_executable='dynamic_bridge',
-        node_name='dynamic_bridge',
+    start_world_model_cmd = launch_ros.actions.Node(
+        package='nav2_world_model',
+        node_executable='world_model',
+        output='screen',
+        parameters=[configured_params]
+        )
+
+    start_dwb_cmd = launch_ros.actions.Node(
+        package='dwb_controller',
+        node_executable='dwb_controller',
+        output='screen',
+        parameters=[configured_params],
+        remappings=[('/odom', '/odometry/filtered')]
+        ) 
+
+    # start_planner_cmd = Node(
+    #     package='nav2_navfn_planner',
+    #     node_executable='navfn_planner',
+    #     node_name='navfn_planner',
+    #     output='screen',
+    #     parameters=[{'use_sim_time': use_sim_time}],
+    #     remappings=[('/amcl_pose', '/initialpose'), ('/cmd_vel', '/hapirobo/cmd_vel')]
+    #     )
+    
+    start_planner_cmd = launch_ros.actions.Node(
+        package='nav2_navfn_planner',
+        node_executable='navfn_planner',
+        node_name='navfn_planner',
+        output='screen',
+        parameters=[configured_params],
+        remappings=[('/amcl_pose', '/initialpose'), ('/cmd_vel', '/hapirobo/cmd_vel')]
+        )
+
+    start_recovery_cmd = launch_ros.actions.Node(
+        package='nav2_recoveries',
+        node_executable='recoveries_node',
+        node_name='recoveries',
+        output='screen',
+        parameters=[{'use_sim_time': use_sim_time}],
+        remappings=[('/amcl_pose', '/initialpose'), ('/odom', '/odometry/filtered')]
+        )
+
+    start_navigator_cmd = launch_ros.actions.Node(
+        package='nav2_bt_navigator',
+        node_executable='bt_navigator',
+        node_name='bt_navigator',
         output='screen',
         parameters=[configured_params])
+
+    # start_ros1_bridge_cmd = Node(
+    #     package='ros1_bridge',
+    #     node_executable='dynamic_bridge',
+    #     node_name='dynamic_bridge',
+    #     output='screen',
+    #     parameters=[configured_params])
 
     ld = LaunchDescription()
 
@@ -146,16 +195,21 @@ def generate_launch_description():
     ld.add_action(declare_bt_xml_cmd)
 
     # Add the actions to launch all of the navigation nodes
-    ld.add_action(start_lifecycle_manager_cmd)
-    ld.add_action(start_map_server_cmd)
     ld.add_action(stf_map_originpos)
     ld.add_action(rsp)
     ld.add_action(start_rviz)
     ld.add_action(start_localizer_cmd)
-    ld.add_action(start_tfnode_cmd)
     ld.add_action(start_guidebot_odometry_cmd)
-    ld.add_action(start_pozyx_local_cmd)
-    ld.add_action(start_ros1_bridge_cmd)
+    ld.add_action(start_tfnode_cmd)
+    ld.add_action(start_map_server_cmd)
+    ld.add_action(start_lifecycle_manager_cmd)
+    ld.add_action(start_world_model_cmd)
+    ld.add_action(start_dwb_cmd)
+    ld.add_action(start_planner_cmd)
+    ld.add_action(start_recovery_cmd)
+    ld.add_action(start_navigator_cmd)
+    # ld.add_action(start_pozyx_local_cmd)
+    # ld.add_action(start_ros1_bridge_cmd)
 
 
     return ld

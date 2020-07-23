@@ -39,7 +39,8 @@ setup(
     entry_points={
         'console_scripts': [
             'pozyx = tms_rc_qurin_support.pozyx:main', 
-            'pozyx_local = tms_rc_qurin_support.pozyx_local:main'
+            'pozyx_local = tms_rc_qurin_support.pozyx_local:main',
+            'guidebot_odometry = tms_rc_qurin_support.guidebot_odometry:main',
         ],
     },
 )

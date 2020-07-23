@@ -28,7 +28,7 @@ class MultitagPositioning(object):
     """Continuously performs multitag positioning"""
 
     def __init__(self, pozyx, osc_udp_client, tag_ids, anchors, algorithm=PozyxConstants.POSITIONING_ALGORITHM_UWB_ONLY,
-                 dimension=PozyxConstants.DIMENSION_3D, height=1000):
+                 dimension=PozyxConstants.DIMENSION_3D, height=1000, node=None):
         self.pozyx = pozyx
         self.osc_udp_client = osc_udp_client
 
@@ -37,6 +37,7 @@ class MultitagPositioning(object):
         self.algorithm = algorithm
         self.dimension = dimension
         self.height = height
+        self.node = node
 
     def setup(self):
         """Sets up the Pozyx for positioning by calibrating its anchor list."""
@@ -82,7 +83,7 @@ class MultitagPositioning(object):
         if "0x6e04" == ("0x%0.4x"%network_id):
             print(s)
             odom = Odometry()
-            odom.header.stamp = self.get_clock().now().to_msg()
+            odom.header.stamp = self.node.get_clock().now().to_msg()
             odom.header.frame_id = "map"
             odom.child_frame_id = "base_footprint"
             odom.pose.pose.position.x = position.x * 0.001
@@ -154,6 +155,12 @@ class MultitagPositioning(object):
                 sleep(0.025)
 
 def main(args=None):
+    global pub
+    rclpy.init(args=args)
+
+    node = rclpy.create_node('qurianaPozyx')
+    pub = node.create_publisher(Odometry, "odometry/pozyx", 1000)
+
     # Check for the latest PyPozyx version. Skip if this takes too long or is not needed by setting to False.
     check_pypozyx_version = True
     if check_pypozyx_version:
@@ -214,17 +221,12 @@ def main(args=None):
     #     pozyx.printDeviceList(remote_id)
 
     r = MultitagPositioning(pozyx, osc_udp_client, tag_ids, anchors,
-                            algorithm, dimension, height)
+                            algorithm, dimension, height, node)
     #try:
     r.setup()
     #except:
     #    print("eror")
 
-    global pub
-    rclpy.init(args=args)
-
-    node = rclpy.create_node('qurianaPozyx')
-    pub = node.create_publisher(Odometry, "odometry/pozyx", 1000)
 
     #pub = rospy.Publisher('chatter', String, queue_size=10)
     #r = rospy.Rate(100) # 20hz

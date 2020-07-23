@@ -2,7 +2,6 @@
 # Robot端末からオドメトリを取得，
 # TF(odom→base_footprint)，Odometryトピックを発行． はros2 dashing pythonではできない
 
-import tf
 import rclpy
 from rclpy.node import Node
 
@@ -35,18 +34,12 @@ class GuidebotOdometry(Node):
         #odom.pose.pose.position.x    = data.pose.pose.position.x
         #odom.pose.pose.position.y    = data.pose.pose.position.y
 
-        """
-        odom.pose.pose.orientation.x = data.pose.pose.orientation.x
-        odom.pose.pose.orientation.y = data.pose.pose.orientation.y
-        odom.pose.pose.orientation.z = data.pose.pose.orientation.z
-        odom.pose.pose.orientation.w = data.pose.pose.orientation.w
-        """
-        """
-        odom.pose.pose.orientation.x = quate[0]
-        odom.pose.pose.orientation.y = quate[1]
-        odom.pose.pose.orientation.z = quate[2]
-        odom.pose.pose.orientation.w = quate[3]
-        """
+        
+        odom.pose.pose.orientation.x = 0.0  # data.pose.pose.orientation.x
+        odom.pose.pose.orientation.y = 0.0  # data.pose.pose.orientation.y
+        odom.pose.pose.orientation.z = 0.0  # data.pose.pose.orientation.z
+        odom.pose.pose.orientation.w = 1.0  # data.pose.pose.orientation.w
+        
 
         odom.twist.twist.linear.x    = data.twist.twist.linear.x 
         odom.twist.twist.angular.z   = data.twist.twist.angular.z
