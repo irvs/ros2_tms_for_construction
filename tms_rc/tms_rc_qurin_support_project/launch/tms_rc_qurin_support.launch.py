@@ -114,7 +114,6 @@ def generate_launch_description():
     #     )
 
 
-    print(f"!!!{configured_params}")
     start_map_server_cmd = Node(
         package='nav2_map_server',
         node_executable='map_server',

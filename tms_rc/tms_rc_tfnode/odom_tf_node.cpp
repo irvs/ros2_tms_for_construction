@@ -30,25 +30,20 @@ private:
   {
     
     auto odom_to_footprint_msg = std::make_shared<geometry_msgs::msg::TransformStamped>();
-
     odom_to_footprint_msg->header.stamp = rclcpp::Clock().now();
     odom_to_footprint_msg->header.frame_id = "odom";
     odom_to_footprint_msg->child_frame_id = "base_footprint";
-    odom_to_footprint_msg->transform.translation.x = 
-      msg->pose.pose.position.x;
-    odom_to_footprint_msg->transform.translation.y = 
-      msg->pose.pose.position.y;
-    odom_to_footprint_msg->transform.translation.z = 
-      0.0;  
+    odom_to_footprint_msg->transform.translation.x = msg->pose.pose.position.x;
+    odom_to_footprint_msg->transform.translation.y = msg->pose.pose.position.y;
+    odom_to_footprint_msg->transform.translation.z = msg->pose.pose.position.z;
+    odom_to_footprint_msg->transform.rotation = msg->pose.pose.orientation;
 
-    odom_to_footprint_msg->transform.rotation.x = 0.0;
-    odom_to_footprint_msg->transform.rotation.y = 0.0;
-    odom_to_footprint_msg->transform.rotation.z = 0.0;
-    odom_to_footprint_msg->transform.rotation.w = 1.0;
+    //auto t = odom_to_footprint_msg->transform.translation;
+    //auto r = odom_to_footprint_msg-> transform.rotation;
+    //std::cout << "publish {x:" << t.x << " y:" << t.y << " z:" << t.z << std::endl;
+    //std::cout << "        {x:" << r.x << " y:" << r.y << " z:" << r.z << " w:" << r.w << std::endl;
 
-    // std::cout << "topic callback" << std::endl;
     this->tf_broadcaster_->sendTransform(*odom_to_footprint_msg);
-    // std::cout << "send!" << std::endl;
     
   }
 

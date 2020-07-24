@@ -109,6 +109,21 @@ def generate_launch_description():
         output='screen'
     )
 
+    # TODO: remap /cmd_vel -> /hapirobo/cmd_vel
+    # this node re-publish /cmd_vel with rename
+    start_convert = launch_ros.actions.Node(
+        package='tms_rc_qurin_support',
+        node_executable='convert',
+        output='screen'
+    )
+
+    # TODO: change robot_base_frame /base_link -> /base_footprint
+    # this node publish /base_link = /base_footprint, this is not elegant.
+    stf_footprint_baselink = launch_ros.actions.Node(package='tf2_ros',
+                                node_executable='static_transform_publisher',
+                                output='both',
+                                arguments=["0", "0", "0", "0", "0", "0", "base_footprint", "base_link"])
+
     # static_transform_publisher: map -> origin_position
     stf_map_originpos = launch_ros.actions.Node(package='tf2_ros',
                                 node_executable='static_transform_publisher',
@@ -141,15 +156,6 @@ def generate_launch_description():
         parameters=[configured_params],
         remappings=[('/odom', '/odometry/filtered')]
         ) 
-
-    # start_planner_cmd = Node(
-    #     package='nav2_navfn_planner',
-    #     node_executable='navfn_planner',
-    #     node_name='navfn_planner',
-    #     output='screen',
-    #     parameters=[{'use_sim_time': use_sim_time}],
-    #     remappings=[('/amcl_pose', '/initialpose'), ('/cmd_vel', '/hapirobo/cmd_vel')]
-    #     )
     
     start_planner_cmd = launch_ros.actions.Node(
         package='nav2_navfn_planner',
@@ -196,6 +202,7 @@ def generate_launch_description():
 
     # Add the actions to launch all of the navigation nodes
     ld.add_action(stf_map_originpos)
+    ld.add_action(stf_footprint_baselink)
     ld.add_action(rsp)
     ld.add_action(start_rviz)
     ld.add_action(start_localizer_cmd)
@@ -208,7 +215,8 @@ def generate_launch_description():
     ld.add_action(start_planner_cmd)
     ld.add_action(start_recovery_cmd)
     ld.add_action(start_navigator_cmd)
-    # ld.add_action(start_pozyx_local_cmd)
+    ld.add_action(start_pozyx_local_cmd)
+    ld.add_action(start_convert)
     # ld.add_action(start_ros1_bridge_cmd)
 
 

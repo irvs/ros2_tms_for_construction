@@ -22,6 +22,7 @@ import paho.mqtt.client as mqtt
 import ssl
 import json
 import pprint
+import datetime
 
 
 class MultitagPositioning(object):
@@ -81,7 +82,6 @@ class MultitagPositioning(object):
                                                                  position.x, position.y, position.z)
 
         if "0x6e04" == ("0x%0.4x"%network_id):
-            print(s)
             odom = Odometry()
             odom.header.stamp = self.node.get_clock().now().to_msg()
             odom.header.frame_id = "map"
@@ -90,11 +90,31 @@ class MultitagPositioning(object):
             odom.pose.pose.position.y = position.y * 0.001
             odom.pose.pose.position.z = position.z * 0.001
             
+            # with open("/home/common/pozyx_static_datas.csv", mode='a') as f:
+            #     f.write(f'{datetime.datetime.now().isoformat()}, {position.x*0.001}, {position.y*0.001}, {position.z*0.001}\n')
+
             # ori = d[u"data"][u"tagData"][u"quaternion"]
             odom.pose.pose.orientation.x = 0.0 # ori[u"x"]
             odom.pose.pose.orientation.y = 0.0 # ori[u"y"]
             odom.pose.pose.orientation.z = 0.0 # ori[u"z"]
             odom.pose.pose.orientation.w = 1.0 # ori[u"w"]
+
+            # odom.pose.covariance = [
+            #     0.14408971883333066, 0.0, 0.0, 0.0, 0.0, 0.0,\
+            #     0.0, 0.06944361656077998, 0.0, 0.0, 0.0, 0.0,\
+            #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,\
+            #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,\
+            #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,\
+            #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            #     ]
+            odom.pose.covariance = [
+                1.0, 0.0, 0.0, 0.0, 0.0, 0.0,\
+                0.0, 1.0, 0.0, 0.0, 0.0, 0.0,\
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,\
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,\
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,\
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                ]
             pub.publish(odom)
 
         if self.osc_udp_client is not None:
@@ -205,11 +225,11 @@ def main(args=None):
 
     # positioning algorithm to use, other is PozyxConstants.POSITIONING_ALGORITHM_TRACKING
     # algorithm = PozyxConstants.POSITIONING_ALGORITHM_UWB_ONLY
-    algorithm = PozyxConstants.POSITIONING_ALGORITHM_UWB_ONLY # PozyxConstants.POSITIONING_ALGORITHM_TRACKING
+    algorithm = PozyxConstants.POSITIONING_ALGORITHM_TRACKING
     # positioning dimension. Others are PozyxConstants.DIMENSION_2D, PozyxConstants.DIMENSION_2_5D
     dimension = PozyxConstants.DIMENSION_2_5D # PozyxConstants.DIMENSION_2_5D
     # height of device, required in 2.5D positioning
-    height = 1000
+    height = 500
 
     osc_udp_client = None
     if use_processing:

@@ -18,6 +18,7 @@ setup(
         (os.path.join('share', package_name, 'urdf'), glob('urdf/*.urdf') + glob('urdf/*.stl')),
         (os.path.join('share', package_name, 'models'), glob('models/*')),
         (os.path.join('share', package_name, 'rviz2'), glob('rviz2/*.rviz')),
+        (os.path.join('share', package_name, 'behavior_trees'), glob('behavior_trees/*.xml')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -41,6 +42,7 @@ setup(
             'pozyx = tms_rc_qurin_support.pozyx:main', 
             'pozyx_local = tms_rc_qurin_support.pozyx_local:main',
             'guidebot_odometry = tms_rc_qurin_support.guidebot_odometry:main',
+            'convert = tms_rc_qurin_support.convert:main',
         ],
     },
 )
