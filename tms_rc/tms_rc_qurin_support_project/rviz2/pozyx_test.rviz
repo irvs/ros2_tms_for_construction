@@ -116,6 +116,8 @@ Visualization Manager:
           Value: true
         origin_position:
           Value: true
+        pozyx:
+          Value: true
         wall:
           Value: true
       Marker Scale: 1
@@ -128,6 +130,8 @@ Visualization Manager:
           odom:
             base_footprint:
               base_link:
+                {}
+              pozyx:
                 {}
           origin_position:
             ceil:
@@ -154,7 +158,7 @@ Visualization Manager:
           Color: 204; 51; 204
           Scale: 1
           Value: true
-        Value: true
+        Value: false
       Enabled: true
       Keep: 10
       Name: Odometry
@@ -188,7 +192,7 @@ Visualization Manager:
           Color: 204; 51; 204
           Scale: 1
           Value: true
-        Value: false
+        Value: true
       Enabled: true
       Keep: 1
       Name: Odometry
@@ -304,16 +308,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 139.75106811523438
+      Distance: 20.539752960205078
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.9158141016960144
-        Y: 18.309904098510742
-        Z: -15.72491455078125
+        X: 15.172600746154785
+        Y: 27.414161682128906
+        Z: -8.703689575195312
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false

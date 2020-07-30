@@ -130,6 +130,13 @@ def generate_launch_description():
                                 output='both',
                                 arguments=["34.6", "2.15", "0", "0", "0", "0", "map", "origin_position"])
 
+    # static_transform_publisher: base_footprint -> pozyx
+    stf_base_footprint_pozyx = launch_ros.actions.Node(package='tf2_ros',
+                                node_executable='static_transform_publisher',
+                                output='both',
+                                arguments=["-0.09", "-0.165", "0.5", "0", "0", "0", "base_footprint", "pozyx"])
+
+
     # collidor model: (frame: origin_position)
     rsp = launch_ros.actions.Node(package='robot_state_publisher',
                                   node_executable='robot_state_publisher',
@@ -203,6 +210,7 @@ def generate_launch_description():
     # Add the actions to launch all of the navigation nodes
     ld.add_action(stf_map_originpos)
     ld.add_action(stf_footprint_baselink)
+    ld.add_action(stf_base_footprint_pozyx)
     ld.add_action(rsp)
     ld.add_action(start_rviz)
     ld.add_action(start_localizer_cmd)
@@ -215,7 +223,7 @@ def generate_launch_description():
     ld.add_action(start_planner_cmd)
     ld.add_action(start_recovery_cmd)
     ld.add_action(start_navigator_cmd)
-    ld.add_action(start_pozyx_local_cmd)
+    # ld.add_action(start_pozyx_local_cmd)
     ld.add_action(start_convert)
     # ld.add_action(start_ros1_bridge_cmd)
 

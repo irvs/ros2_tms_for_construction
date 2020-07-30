@@ -10,7 +10,7 @@ from time import sleep
 
 import pypozyx
 from pypozyx import (PozyxConstants, Coordinates, POZYX_SUCCESS, PozyxRegisters, version,
-                     DeviceCoordinates, PozyxSerial, get_first_pozyx_serial_port, SingleRegister)
+                     DeviceCoordinates, PozyxSerial, get_first_pozyx_serial_port, SingleRegister, Quaternion)
 from pythonosc.udp_client import SimpleUDPClient
 
 from pypozyx.tools.version_check import perform_latest_version_check
@@ -18,6 +18,7 @@ from pypozyx.tools.version_check import perform_latest_version_check
 import rclpy
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
+# from geometry_msgs.msg import Quaternion
 import paho.mqtt.client as mqtt
 import ssl
 import json
@@ -39,6 +40,7 @@ class MultitagPositioning(object):
         self.dimension = dimension
         self.height = height
         self.node = node
+        self.count_log = 0
 
     def setup(self):
         """Sets up the Pozyx for positioning by calibrating its anchor list."""
@@ -68,12 +70,14 @@ class MultitagPositioning(object):
             position = Coordinates()
             status = self.pozyx.doPositioning(
                 position, self.dimension, self.height, self.algorithm, remote_id=tag_id)
+            quat = Quaternion()
+            status &= self.pozyx.getNormalizedQuaternion(quat, tag_id)
             if status == POZYX_SUCCESS:
-                self.printPublishPosition(position, tag_id)
+                self.printPublishPosition(position, tag_id, quat)
             else:
                 self.printPublishErrorCode("positioning", tag_id)
 
-    def printPublishPosition(self, position, network_id):
+    def printPublishPosition(self, position, network_id, quat):
         """Prints the Pozyx's position and possibly sends it as a OSC packet"""
         global pub
         if network_id is None:
@@ -82,24 +86,31 @@ class MultitagPositioning(object):
                                                                  position.x, position.y, position.z)
 
         if "0x6e04" == ("0x%0.4x"%network_id):
+            print(s)
             odom = Odometry()
             odom.header.stamp = self.node.get_clock().now().to_msg()
             odom.header.frame_id = "map"
-            odom.child_frame_id = "base_footprint"
+            odom.child_frame_id = "pozyx"
             odom.pose.pose.position.x = position.x * 0.001
             odom.pose.pose.position.y = position.y * 0.001
             odom.pose.pose.position.z = position.z * 0.001
             
-            # with open("/home/common/pozyx_static_datas.csv", mode='a') as f:
-            #     f.write(f'{datetime.datetime.now().isoformat()}, {position.x*0.001}, {position.y*0.001}, {position.z*0.001}\n')
 
-            # ori = d[u"data"][u"tagData"][u"quaternion"]
-            odom.pose.pose.orientation.x = 0.0 # ori[u"x"]
-            odom.pose.pose.orientation.y = 0.0 # ori[u"y"]
-            odom.pose.pose.orientation.z = 0.0 # ori[u"z"]
-            odom.pose.pose.orientation.w = 1.0 # ori[u"w"]
+            odom.pose.pose.orientation.x = quat.x
+            odom.pose.pose.orientation.y = quat.y
+            odom.pose.pose.orientation.z = quat.z
+            odom.pose.pose.orientation.w = quat.w
+            
+            row = 0  # 行
+            col = 1  # 列
+            height_l = "65cm"
 
-            # odom.pose.covariance = [
+            # with open(f"/home/common/pozyx_tracking_datas_{height_l}_{row}_{col}.csv", mode='a') as f:
+            #     f.write(f'{row}, {col}, {datetime.datetime.now().isoformat()}, {position.x*0.001}, {position.y*0.001}, {position.z*0.001}, {quat.x}, {quat.y}, {quat.z}, {quat.w}\n')
+            # print(f"{self.count_log} datas")
+            # self.count_log += 1
+
+            # odom.pose.cov ariance = [
             #     0.14408971883333066, 0.0, 0.0, 0.0, 0.0, 0.0,\
             #     0.0, 0.06944361656077998, 0.0, 0.0, 0.0, 0.0,\
             #     0.0, 0.0, 0.0, 0.0, 0.0, 0.0,\
@@ -113,7 +124,7 @@ class MultitagPositioning(object):
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,\
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,\
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,\
-                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.03,
                 ]
             pub.publish(odom)
 
@@ -193,11 +204,11 @@ def main(args=None):
         quit()
 
     # enable to send position data through OSC
-    use_processing = True
+    use_processing = False
 
     # configure if you want to route OSC to outside your localhost. Networking knowledge is required.
-    ip = "127.0.0.1"
-    network_port = 8888
+    # ip = "127.0.0.1"
+    # network_port = 8888
 
 
     # IDs of the tags to position, add None to position the local tag as well.
@@ -210,10 +221,10 @@ def main(args=None):
                DeviceCoordinates(0x6e49, 1, Coordinates(24000, 20500, 2000)),  # 928
                DeviceCoordinates(0x6e23, 1, Coordinates(24400, 9500, 2000)),  # 928
             #    DeviceCoordinates(0x6e08, 1, Coordinates(26200, 21400, 2000)),  # first area
-            #    DeviceCoordinates(0x6056, 1, Coordinates(24200, 19800, 2000)),  # first area
+            #    DeviceCoordinates(0x605b, 1, Coordinates(24200, 19300, 2000)),  # first area
             #    DeviceCoordinates(0x6037, 1, Coordinates(23900, 26600, 2000)),  # first-second area
             #    DeviceCoordinates(0x6e30, 1, Coordinates(23800, 24100, 2000)),  # first-second area
-            #    DeviceCoordinates(0x6e7c, 1, Coordinates(26100, 26600, 2000)),  # first-second area
+               DeviceCoordinates(0x6e7c, 1, Coordinates(26100, 26600, 2000)),  # first-second area
             #    DeviceCoordinates(0x6e39, 1, Coordinates(11800, 24300, 2000)),
             #    DeviceCoordinates(0x6044, 1, Coordinates(76400, 25500, 2000)),
             #    DeviceCoordinates(0x6e5c, 1, Coordinates(12300, 25900, 2000)),
@@ -227,7 +238,7 @@ def main(args=None):
     # algorithm = PozyxConstants.POSITIONING_ALGORITHM_UWB_ONLY
     algorithm = PozyxConstants.POSITIONING_ALGORITHM_TRACKING
     # positioning dimension. Others are PozyxConstants.DIMENSION_2D, PozyxConstants.DIMENSION_2_5D
-    dimension = PozyxConstants.DIMENSION_2_5D # PozyxConstants.DIMENSION_2_5D
+    dimension = PozyxConstants.DIMENSION_2D # PozyxConstants.DIMENSION_2_5D
     # height of device, required in 2.5D positioning
     height = 500
 
@@ -236,9 +247,9 @@ def main(args=None):
         osc_udp_client = SimpleUDPClient(ip, network_port)
 
     pozyx = PozyxSerial(serial_port)
-    # # pozyx.clearDevices(remote_id)
-    # if pozyx.doDiscovery(discovery_type=2, remote_id=remote_id) == POZYX_SUCCESS:
-    #     pozyx.printDeviceList(remote_id)
+    pozyx.clearDevices(0x6e04)
+    if pozyx.doDiscovery(discovery_type=2, remote_id=0x6e04) == POZYX_SUCCESS:
+        pozyx.printDeviceList(0x6e04)
 
     r = MultitagPositioning(pozyx, osc_udp_client, tag_ids, anchors,
                             algorithm, dimension, height, node)
