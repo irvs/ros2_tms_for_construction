@@ -101,14 +101,14 @@ class MultitagPositioning(object):
             odom.pose.pose.orientation.z = quat.z
             odom.pose.pose.orientation.w = quat.w
             
-            row = 0  # 行
-            col = 1  # 列
+            row = 1  # 行
+            col = 7  # 列
             height_l = "65cm"
 
-            # with open(f"/home/common/pozyx_tracking_datas_{height_l}_{row}_{col}.csv", mode='a') as f:
-            #     f.write(f'{row}, {col}, {datetime.datetime.now().isoformat()}, {position.x*0.001}, {position.y*0.001}, {position.z*0.001}, {quat.x}, {quat.y}, {quat.z}, {quat.w}\n')
-            # print(f"{self.count_log} datas")
-            # self.count_log += 1
+            with open(f"/home/common/pozyx_0804_add_datas_{height_l}_{row}_{col}.csv", mode='a') as f:
+                f.write(f'{row}, {col}, {datetime.datetime.now().isoformat()}, {position.x*0.001}, {position.y*0.001}, {position.z*0.001}, {quat.x}, {quat.y}, {quat.z}, {quat.w}\n')
+            print(f"{self.count_log} datas")
+            self.count_log += 1
 
             # odom.pose.cov ariance = [
             #     0.14408971883333066, 0.0, 0.0, 0.0, 0.0, 0.0,\
@@ -212,19 +212,20 @@ def main(args=None):
 
 
     # IDs of the tags to position, add None to position the local tag as well.
-    tag_ids = [None, 0x6e04]
+    tag_ids = [0x6e04] # [None, 0x6e04]
 
     # necessary data for calibration
-    anchors = [DeviceCoordinates(0x6023, 1, Coordinates(12320, 23300, 2000)),  # 928
-               DeviceCoordinates(0x6050, 1, Coordinates(14320, 9100, 2000)),  # 928 
-               DeviceCoordinates(0x6e58, 1, Coordinates(17861, 23738, 2000)),  # 928
-               DeviceCoordinates(0x6e49, 1, Coordinates(24000, 20500, 2000)),  # 928
-               DeviceCoordinates(0x6e23, 1, Coordinates(24400, 9500, 2000)),  # 928
+    anchors = [DeviceCoordinates(0x6023, 1, Coordinates(-6109, 5305, 2000)),# Coordinates(12320, 23300, 2000)),  # 928
+               DeviceCoordinates(0x6050, 1, Coordinates(-5239, -8444, 2000)),# Coordinates(14320, 9100, 2000)),  # 928 
+               DeviceCoordinates(0x6e58, 1, Coordinates(-647, 5866, 2000)),# Coordinates(17861, 23738, 2000)),  # 928
+               DeviceCoordinates(0x6e49, 1, Coordinates(5735, 2233, 2000)),# Coordinates(24000, 20500, 2000)),  # 928
+               DeviceCoordinates(0x6e23, 1, Coordinates(5410, -8742, 2000)),# Coordinates(24400, 9500, 2000)),  # 928
+               DeviceCoordinates(0x6e11, 1, Coordinates(2609, -4647, 2000)),# Coordinates(24400, 9500, 2000)),  # 928
             #    DeviceCoordinates(0x6e08, 1, Coordinates(26200, 21400, 2000)),  # first area
             #    DeviceCoordinates(0x605b, 1, Coordinates(24200, 19300, 2000)),  # first area
             #    DeviceCoordinates(0x6037, 1, Coordinates(23900, 26600, 2000)),  # first-second area
             #    DeviceCoordinates(0x6e30, 1, Coordinates(23800, 24100, 2000)),  # first-second area
-               DeviceCoordinates(0x6e7c, 1, Coordinates(26100, 26600, 2000)),  # first-second area
+            #    DeviceCoordinates(0x6e7c, 1, Coordinates(26100, 26600, 2000)),  # first-second area
             #    DeviceCoordinates(0x6e39, 1, Coordinates(11800, 24300, 2000)),
             #    DeviceCoordinates(0x6044, 1, Coordinates(76400, 25500, 2000)),
             #    DeviceCoordinates(0x6e5c, 1, Coordinates(12300, 25900, 2000)),
@@ -235,12 +236,12 @@ def main(args=None):
                ]
 
     # positioning algorithm to use, other is PozyxConstants.POSITIONING_ALGORITHM_TRACKING
-    # algorithm = PozyxConstants.POSITIONING_ALGORITHM_UWB_ONLY
-    algorithm = PozyxConstants.POSITIONING_ALGORITHM_TRACKING
+    algorithm = PozyxConstants.POSITIONING_ALGORITHM_UWB_ONLY
+    # algorithm = PozyxConstants.POSITIONING_ALGORITHM_TRACKING
     # positioning dimension. Others are PozyxConstants.DIMENSION_2D, PozyxConstants.DIMENSION_2_5D
     dimension = PozyxConstants.DIMENSION_2D # PozyxConstants.DIMENSION_2_5D
     # height of device, required in 2.5D positioning
-    height = 500
+    height = 650 # 500
 
     osc_udp_client = None
     if use_processing:
