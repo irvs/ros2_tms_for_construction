@@ -126,7 +126,7 @@ global_costmap:
   global_costmap:
     ros__parameters:
       use_sim_time: False
-      robot_radius: 0.275
+      robot_radius: 0.500
       robot_base_frame: base_footprint
       obstacle_layer:
         enabled: True
@@ -222,7 +222,7 @@ se_node:
 # Debug settings. Not for the faint of heart. Outputs a ludicrous amount of information to the file specified by
 # debug_out_file. I hope you like matrices! Please note that setting this to true will have strongly deleterious
 # effects on the performance of the node. Defaults to false if unspecified.
-        debug: true
+        debug: false
 
 # Defaults to "robot_localization_debug.txt" if unspecified. Please specify the full path.
         debug_out_file: robot_localization_debug.txt

@@ -19,6 +19,7 @@ import rclpy
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 # from geometry_msgs.msg import Quaternion
+from visualization_msgs.msg import Marker, MarkerArray
 import paho.mqtt.client as mqtt
 import ssl
 import json
@@ -79,7 +80,7 @@ class MultitagPositioning(object):
 
     def printPublishPosition(self, position, network_id, quat):
         """Prints the Pozyx's position and possibly sends it as a OSC packet"""
-        global pub
+        global pub, markers_pub, anchors
         if network_id is None:
             network_id = 0
         s = "POS ID: {}, x(mm): {}, y(mm): {}, z(mm): {}".format("0x%0.4x" % network_id,
@@ -101,14 +102,72 @@ class MultitagPositioning(object):
             odom.pose.pose.orientation.z = quat.z
             odom.pose.pose.orientation.w = quat.w
             
-            row = 1  # 行
-            col = 7  # 列
-            height_l = "65cm"
+            markerArray = MarkerArray()
+            m_id = 0
+            for a in anchors:
+                marker = Marker()
+                marker.header.frame_id = "/map"
+                marker.header.stamp = self.node.get_clock().now().to_msg()
+                marker.ns = "pozyx_local"
+                marker.id = m_id
+                m_id += 1
 
-            with open(f"/home/common/pozyx_0804_add_datas_{height_l}_{row}_{col}.csv", mode='a') as f:
-                f.write(f'{row}, {col}, {datetime.datetime.now().isoformat()}, {position.x*0.001}, {position.y*0.001}, {position.z*0.001}, {quat.x}, {quat.y}, {quat.z}, {quat.w}\n')
-            print(f"{self.count_log} datas")
-            self.count_log += 1
+                marker.type = Marker.CUBE
+                marker.action = Marker.ADD
+                marker.lifetime.sec = 100
+                marker.scale.x = 0.3
+                marker.scale.y = 0.3
+                marker.scale.z = 0.3
+                marker.pose.position.x = a.pos.x / 1000
+                marker.pose.position.y = a.pos.y / 1000
+                marker.pose.position.z = a.pos.z / 1000
+                marker.pose.orientation.x = 0.0
+                marker.pose.orientation.y = 0.0
+                marker.pose.orientation.z = 0.0
+                marker.pose.orientation.w = 1.0
+                marker.color.r = 0.0
+                marker.color.g = 1.0
+                marker.color.b = 0.0
+                marker.color.a = 1.0
+                markerArray.markers.append(marker)
+
+                marker_text = Marker()
+                marker_text.header.frame_id = "/map"
+                marker_text.header.stamp = self.node.get_clock().now().to_msg()
+                marker_text.ns = "pozyx_anchors_id"
+                marker_text.id = m_id
+                m_id += 1
+
+                marker_text.type = Marker.TEXT_VIEW_FACING
+                marker_text.action = Marker.ADD
+                marker_text.lifetime.sec = 100
+                marker_text.scale.x = 0.3
+                marker_text.scale.y = 0.3
+                marker_text.scale.z = 0.3
+                marker_text.pose.position.x = a.pos.x / 1000
+                marker_text.pose.position.y = a.pos.y / 1000
+                marker_text.pose.position.z = a.pos.z / 1000 + 1.0
+                marker_text.pose.orientation.x = 0.0
+                marker_text.pose.orientation.y = 0.0
+                marker_text.pose.orientation.z = 0.0
+                marker_text.pose.orientation.w = 1.0
+                marker_text.color.r = 1.0
+                marker_text.color.g = 1.0
+                marker_text.color.b = 1.0
+                marker_text.color.a = 1.0
+                marker_text.text = "0x%0.4x" % a.network_id
+                markerArray.markers.append(marker_text)
+
+
+            markers_pub.publish(markerArray)
+            # row = 0  # 行
+            # col = 8  # 列
+            # height_l = "200cm"
+
+            # with open(f"/home/common/pozyx_0824_2D_{height_l}_{row}_{col}.csv", mode='a') as f:
+            #     f.write(f'{row}, {col}, {datetime.datetime.now().isoformat()}, {position.x*0.001}, {position.y*0.001}, {position.z*0.001}, {quat.x}, {quat.y}, {quat.z}, {quat.w}\n')
+            # print(f"{self.count_log} datas")
+            # self.count_log += 1
 
             # odom.pose.cov ariance = [
             #     0.14408971883333066, 0.0, 0.0, 0.0, 0.0, 0.0,\
@@ -186,11 +245,12 @@ class MultitagPositioning(object):
                 sleep(0.025)
 
 def main(args=None):
-    global pub
+    global pub, markers_pub, anchors
     rclpy.init(args=args)
 
     node = rclpy.create_node('qurianaPozyx')
     pub = node.create_publisher(Odometry, "odometry/pozyx", 1000)
+    markers_pub = node.create_publisher(MarkerArray, "odometry/pozyx/markers", 10)
 
     # Check for the latest PyPozyx version. Skip if this takes too long or is not needed by setting to False.
     check_pypozyx_version = True
@@ -215,12 +275,33 @@ def main(args=None):
     tag_ids = [0x6e04] # [None, 0x6e04]
 
     # necessary data for calibration
-    anchors = [DeviceCoordinates(0x6023, 1, Coordinates(-6109, 5305, 2000)),# Coordinates(12320, 23300, 2000)),  # 928
-               DeviceCoordinates(0x6050, 1, Coordinates(-5239, -8444, 2000)),# Coordinates(14320, 9100, 2000)),  # 928 
-               DeviceCoordinates(0x6e58, 1, Coordinates(-647, 5866, 2000)),# Coordinates(17861, 23738, 2000)),  # 928
-               DeviceCoordinates(0x6e49, 1, Coordinates(5735, 2233, 2000)),# Coordinates(24000, 20500, 2000)),  # 928
-               DeviceCoordinates(0x6e23, 1, Coordinates(5410, -8742, 2000)),# Coordinates(24400, 9500, 2000)),  # 928
-               DeviceCoordinates(0x6e11, 1, Coordinates(2609, -4647, 2000)),# Coordinates(24400, 9500, 2000)),  # 928
+    anchors = [
+        DeviceCoordinates(0x6023, 1, Coordinates(12995, 17049, 475)),
+        DeviceCoordinates(0x6037, 1, Coordinates(24229, 19294, 475)),
+        DeviceCoordinates(0x6050, 1, Coordinates(17352, 17024, 475)),
+        DeviceCoordinates(0x605b, 1, Coordinates(24052, 26749, 475)),
+        DeviceCoordinates(0x6e08, 1, Coordinates(26239, 19293, 475)),
+        DeviceCoordinates(0x6e23, 1, Coordinates(23195, 17997, 475)),
+        DeviceCoordinates(0x6e30, 1, Coordinates(26055, 26616, 475)),
+        DeviceCoordinates(0x6e49, 1, Coordinates(23144, 23493, 475)),
+        DeviceCoordinates(0x6e58, 1, Coordinates(19019, 22715, 475)),
+        DeviceCoordinates(0x6e7c, 1, Coordinates(26112, 24490, 475)),
+    ]
+
+    """
+    anchors = [
+        DeviceCoordinates(0x6023, 1, Coordinates(-6109, 5305, 2000)),# Coordinates(12320, 23300, 2000)),  # 928 new
+               DeviceCoordinates(0x6050, 1, Coordinates(-5239, -8444, 2000)),# Coordinates(14320, 9100, 2000)),  # 928 new 
+               DeviceCoordinates(0x6e58, 1, Coordinates(-647, 5866, 2000)),# Coordinates(17861, 23738, 2000)),  # 928 new 
+               DeviceCoordinates(0x6e49, 1, Coordinates(5735, 2233, 2000)),# Coordinates(24000, 20500, 2000)),  # 928 new
+               DeviceCoordinates(0x6e23, 1, Coordinates(5410, -8742, 2000)),# Coordinates(24400, 9500, 2000)),  # 928 new 
+        #        DeviceCoordinates(0x6e11, 1, Coordinates(2609, -4647, 2000)),# Coordinates(24400, 9500, 2000)),  # 928 new
+            #    DeviceCoordinates(0x6023, 1, Coordinates(12320, 23300, 2000)),  # 928
+            #    DeviceCoordinates(0x6050, 1, Coordinates(14320, 9100, 2000)),  # 928 
+            #    DeviceCoordinates(0x6e58, 1, Coordinates(17861, 23738, 2000)),  # 928
+            #    DeviceCoordinates(0x6e49, 1, Coordinates(24000, 20500, 2000)),  # 928
+            #    DeviceCoordinates(0x6e23, 1, Coordinates(24400, 9500, 2000)),  # 928
+            #    DeviceCoordinates(0x6e11, 1, Coordinates(24400, 9500, 2000)),  # 928 add
             #    DeviceCoordinates(0x6e08, 1, Coordinates(26200, 21400, 2000)),  # first area
             #    DeviceCoordinates(0x605b, 1, Coordinates(24200, 19300, 2000)),  # first area
             #    DeviceCoordinates(0x6037, 1, Coordinates(23900, 26600, 2000)),  # first-second area
@@ -234,6 +315,7 @@ def main(args=None):
             #    DeviceCoordinates(0x6e31, 1, Coordinates(6620, 8630, 2000)),
             #    DeviceCoordinates(0x6e69, 1, Coordinates(5300, 24200, 2000)),
                ]
+    """
 
     # positioning algorithm to use, other is PozyxConstants.POSITIONING_ALGORITHM_TRACKING
     algorithm = PozyxConstants.POSITIONING_ALGORITHM_UWB_ONLY
@@ -241,7 +323,7 @@ def main(args=None):
     # positioning dimension. Others are PozyxConstants.DIMENSION_2D, PozyxConstants.DIMENSION_2_5D
     dimension = PozyxConstants.DIMENSION_2D # PozyxConstants.DIMENSION_2_5D
     # height of device, required in 2.5D positioning
-    height = 650 # 500
+    height = 475 # 500
 
     osc_udp_client = None
     if use_processing:
