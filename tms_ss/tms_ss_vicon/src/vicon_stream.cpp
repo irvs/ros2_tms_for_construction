@@ -89,9 +89,9 @@ public:
     //nh_priv.param("debug", isDebug, isDebug);
     // Publishers
       // auto db_pub = std::make_shared<ViconStream>("tms_db_data");
-      posepub = this->create_publisher<tms_msg_ss::msg::ViconData>("/vicon/output");
-      dbpub = this->create_publisher<tms_msg_db::msg::TmsdbStamped>("/tms_db_data");
-      checkerpub = this->create_publisher<visualization_msgs::msg::MarkerArray>("/checker_box");
+      posepub = this->create_publisher<tms_msg_ss::msg::ViconData>("/vicon/output", 10);
+      dbpub = this->create_publisher<tms_msg_db::msg::TmsdbStamped>("/tms_db_data", 10);
+      checkerpub = this->create_publisher<visualization_msgs::msg::MarkerArray>("/checker_box", 10);
 
     //db_pub = nh.advertise< tms_msg_db::TmsdbStamped >("tms_db_data", 1);
 

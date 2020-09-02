@@ -78,8 +78,10 @@ class DoubleNode : public rclcpp::Node
         this->tf_broadcaster_->sendTransform(this->odom_->getOdomTf());
       };
 
-    odom_sub_ = this->create_subscription<geometry_msgs::msg::Vector3>("/odom", odom_to_footprint_callback);
-    odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("odometry/wheel", rmw_qos_profile_default);
+    odom_sub_ = this->create_subscription<geometry_msgs::msg::Vector3>("/odom", 10, odom_to_footprint_callback);
+    // odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("odometry/wheel", rmw_qos_profile_default);
+    odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("odometry/wheel", 10);
+    
     // input_odom_stack_ = nav_msgs::msg::Odometry();
     // time_pub_ = this->create_publisher<builtin_interfaces::msg::Time>(TimeTopic, rmw_qos_profile_default);
 

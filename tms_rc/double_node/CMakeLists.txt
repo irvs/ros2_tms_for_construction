@@ -51,7 +51,6 @@ ament_target_dependencies(
   "sensor_msgs"
   "geometry_msgs"
   "nav_msgs"
-  "turtlebot3_msgs"
   "tf2"
   "tf2_ros"
   "builtin_interfaces"
