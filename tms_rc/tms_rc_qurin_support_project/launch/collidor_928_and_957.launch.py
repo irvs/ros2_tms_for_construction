@@ -38,7 +38,7 @@ def generate_launch_description():
         'autostart': autostart
     }
     configured_params = RewrittenYaml(
-        source_file=params_file_dir, rewrites=param_substitutions,
+        source_file=params_file_dir, param_rewrites=param_substitutions,
         convert_types=True)
 
     declare_params_file_cmd = DeclareLaunchArgument(
