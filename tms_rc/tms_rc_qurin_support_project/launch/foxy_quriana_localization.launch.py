@@ -32,7 +32,7 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
     autostart = LaunchConfiguration('autostart')
     params_file = LaunchConfiguration('params_file')
-    lifecycle_nodes = ['map_server', 'amcl']
+    lifecycle_nodes = ['map_server']  # ['map_server', 'amcl']
 
     # Map fully qualified names to relative ones so the node's namespace can be prepended.
     # In case of the transforms (tf), currently, there doesn't seem to be a better alternative
@@ -101,7 +101,7 @@ def generate_launch_description():
             executable='se_node', 
             name='ekf_localization_node',
             output='screen',
-            parameters=[params_file],
+            parameters=[configured_params],  # [params_file],
             remappings=[('/set_pose', '/initialpose')]
         ),
 

@@ -33,8 +33,9 @@ def generate_launch_description():
             get_package_share_directory('tms_rc_qurin_support'),
             'maps',
             'map_w2_9f.yaml'))
+    
 
-    param_file_name = 'guidebot_params.yaml'
+    param_file_name = 'nav2_params.yaml'
     param_dir = LaunchConfiguration(
         'params',
         default=os.path.join(
@@ -45,9 +46,9 @@ def generate_launch_description():
     nav2_launch_file_dir = os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'launch')
 
     rviz_config_dir = os.path.join(
-        get_package_share_directory('nav2_bringup'),
-        'rviz',
-        'nav2_default_view.rviz')
+        get_package_share_directory('tms_rc_qurin_support'),
+        'rviz2',
+        'nav2_quriana_view.rviz')
 
     share_dir_path = os.path.join(get_package_share_directory('tms_rc_qurin_support'))
     #urdf_path = os.path.join(share_dir_path, 'urdf', 'collidor_928_and_957.urdf')
@@ -106,7 +107,7 @@ def generate_launch_description():
         # TODO: change robot_base_frame /base_link -> /base_footprint
         # this node publish /base_link = /base_footprint, this is not elegant.
         Node(package='tf2_ros',
-            node_executable='static_transform_publisher',
+            executable='static_transform_publisher',
             output='both',
             arguments=["0", "0", "0", "0", "0", "0", "base_footprint", "base_link"]
         ),
@@ -114,7 +115,7 @@ def generate_launch_description():
         # static_transform_publisher: map -> origin_position
         Node(
             package='tf2_ros',
-            node_executable='static_transform_publisher',
+            executable='static_transform_publisher',
             output='both',
             arguments=["34.6", "2.15", "0", "0", "0", "0", "map", "origin_position"]
         ),
@@ -122,7 +123,7 @@ def generate_launch_description():
         # static_transform_publisher: base_footprint -> pozyx
         Node(
             package='tf2_ros',
-            node_executable='static_transform_publisher',
+            executable='static_transform_publisher',
             output='both',
             arguments=["-0.09", "-0.165", "0.5", "0", "0", "0", "base_footprint", "pozyx"]
         ),
@@ -131,7 +132,7 @@ def generate_launch_description():
         # collidor model: (frame: origin_position)
         Node(
             package='robot_state_publisher',
-            node_executable='robot_state_publisher',
+            executable='robot_state_publisher',
             output='both',
             # argumentsでURDFを出力したパスを指定
             arguments=[urdf_path]
