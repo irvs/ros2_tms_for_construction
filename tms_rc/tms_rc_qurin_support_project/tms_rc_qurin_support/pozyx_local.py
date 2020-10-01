@@ -14,6 +14,8 @@ from pypozyx import (PozyxConstants, Coordinates, POZYX_SUCCESS, PozyxRegisters,
 from pythonosc.udp_client import SimpleUDPClient
 
 from pypozyx.tools.version_check import perform_latest_version_check
+from pypozyx.structures.device import DeviceList
+
 
 import rclpy
 from std_msgs.msg import String
@@ -90,8 +92,8 @@ class MultitagPositioning(object):
             print(s)
             odom = Odometry()
             odom.header.stamp = self.node.get_clock().now().to_msg()
-            odom.header.frame_id = "map"
-            odom.child_frame_id = "pozyx"
+            odom.header.frame_id = "pozyx"
+            # odom.child_frame_id = "pozyx"
             odom.pose.pose.position.x = position.x * 0.001
             odom.pose.pose.position.y = position.y * 0.001
             odom.pose.pose.position.z = position.z * 0.001
@@ -144,12 +146,20 @@ class MultitagPositioning(object):
         anchors : list<Anchor>
 
         """
+        # for tag_id in self.tag_ids:
+        #     list_size = SingleRegister()  
+        #     self.pozyx.getNumberOfAnchors(list_size)  
+        #     print(list_size)
+        #     anchor_list = DeviceList(list_size=4)
+        #     self.pozyx.getPositioningAnchorIds(anchor_list)  # , remote_id=tag_id)
+        #     print(f'anchors for tag{"0x%0.4x" % tag_id} : {anchor_list}')
+
 
         markerArray = MarkerArray()
         m_id = 0
         for a in anchors:
             marker = Marker()
-            marker.header.frame_id = "/map"
+            marker.header.frame_id = "/pozyx"
             marker.header.stamp = self.node.get_clock().now().to_msg()
             marker.ns = "pozyx_local"  # namespace
             marker.id = m_id
@@ -175,7 +185,7 @@ class MultitagPositioning(object):
             markerArray.markers.append(marker)
 
             marker_text = Marker()
-            marker_text.header.frame_id = "/map"
+            marker_text.header.frame_id = "/pozyx"
             marker_text.header.stamp = self.node.get_clock().now().to_msg()
             marker_text.ns = "pozyx_anchors_id"
             marker_text.id = m_id
@@ -210,7 +220,7 @@ class MultitagPositioning(object):
             for anchor in self.anchors:
                 status &= self.pozyx.addDevice(anchor, tag_id)
             if len(self.anchors) > 4:
-                status &= self.pozyx.setSelectionOfAnchors(PozyxConstants.ANCHOR_SELECT_AUTO, len(self.anchors),
+                status &= self.pozyx.setSelectionOfAnchors(PozyxConstants.ANCHOR_SELECT_MANUAL, len(self.anchors),
                                                            remote_id=tag_id)
             # enable these if you want to save the configuration to the devices.
             if save_to_flash:
@@ -289,21 +299,21 @@ def main(args=None):
     # necessary data for calibration
     # anchors 9/30
     anchors = [
-        DeviceCoordinates(0x6023, 1, Coordinates(-13563, -8838, 475)),
-        DeviceCoordinates(0x6037, 1, Coordinates( -2223, -7211, 475)),
-        DeviceCoordinates(0x6044, 1, Coordinates(-14124,   922, 475)),
-        DeviceCoordinates(0x6050, 1, Coordinates( -9214, -9102, 475)),
-        DeviceCoordinates(0x605b, 1, Coordinates( -1992,   243, 475)),
-        DeviceCoordinates(0x6e08, 1, Coordinates(  -216, -7322, 475)),
-        DeviceCoordinates(0x6e22, 1, Coordinates(-14224,  -686, 475)),
-        DeviceCoordinates(0x6e23, 1, Coordinates( -3327, -8849, 475)),
-        DeviceCoordinates(0x6e30, 1, Coordinates(     0,     0, 475)),
-        DeviceCoordinates(0x6e39, 1, Coordinates(-20836,  -929, 475)),
-        DeviceCoordinates(0x6e49, 1, Coordinates( -3077, -2959, 475)),
-        DeviceCoordinates(0x6e58, 1, Coordinates( -7238, -3510, 475)),
-        DeviceCoordinates(0x6e5c, 1, Coordinates(-18693,  1072, 475)),
-        DeviceCoordinates(0x6e69, 1, Coordinates(-20902,   879, 475)),
-        DeviceCoordinates(0x6e7c, 1, Coordinates(   -59, -2126, 475)),
+        ## DeviceCoordinates(0x6023, 1, Coordinates(-13563, -8838, 475)),  # ROOM
+        # DeviceCoordinates(0x6e23, 1, Coordinates( -3327, -8849, 475)),  # ROOM
+        # DeviceCoordinates(0x6e49, 1, Coordinates( -3077, -2959, 475)),  # ROOM
+        # DeviceCoordinates(0x6e58, 1, Coordinates( -7238, -3510, 475)),  # ROOM
+        # DeviceCoordinates(0x6050, 1, Coordinates( -9214, -9102, 475)),  # ROOM
+        # DeviceCoordinates(0x6037, 1, Coordinates( -2223, -7211, 475)),  # COR1
+        # DeviceCoordinates(0x6e08, 1, Coordinates(  -216, -7322, 475)),  # COR1
+        # DeviceCoordinates(0x605b, 1, Coordinates( -1992,   243, 475)),  # COR1
+        DeviceCoordinates(0x6e30, 1, Coordinates(     0,     0, 475)),  # COR1 # COR2
+        DeviceCoordinates(0x6e7c, 1, Coordinates(   -59, -2126, 475)),  # COR2
+        DeviceCoordinates(0x6044, 1, Coordinates(-14124,   922, 475)),  # COR2 # COR3
+        DeviceCoordinates(0x6e22, 1, Coordinates(-14224,  -686, 475)),  # COR2 # COR3
+        # DeviceCoordinates(0x6e39, 1, Coordinates(-20836,  -929, 475)),  # COR3
+        # DeviceCoordinates(0x6e69, 1, Coordinates(-20902,   879, 475)),  # COR3
+        # DeviceCoordinates(0x6e5c, 1, Coordinates(-18693,  1072, 475)),  # COR4
     ]
 
     """
@@ -367,6 +377,7 @@ def main(args=None):
     if pozyx.doDiscovery(discovery_type=2, remote_id=0x6e04) == POZYX_SUCCESS:
         pozyx.printDeviceList(0x6e04)
 
+    print(len(anchors))
     r = MultitagPositioning(pozyx, osc_udp_client, tag_ids, anchors,
                             algorithm, dimension, height, node)
     #try:

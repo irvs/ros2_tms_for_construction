@@ -131,11 +131,15 @@ def generate_launch_description():
                                 arguments=["34.6", "2.15", "0", "0", "0", "0", "map", "origin_position"])
 
     # static_transform_publisher: base_footprint -> pozyx
+    # stf_base_footprint_pozyx = launch_ros.actions.Node(package='tf2_ros',
+    #                             node_executable='static_transform_publisher',
+    #                             output='both',
+    #                             arguments=["-0.09", "-0.165", "0.5", "0", "0", "0", "base_footprint", "pozyx"])
+    # static_transform_publisher: map -> pozyx
     stf_base_footprint_pozyx = launch_ros.actions.Node(package='tf2_ros',
                                 node_executable='static_transform_publisher',
                                 output='both',
-                                arguments=["-0.09", "-0.165", "0.5", "0", "0", "0", "base_footprint", "pozyx"])
-
+                                arguments=["26.1", "26.2", "0", "0.092", "0", "0", "map", "pozyx"])
 
     # collidor model: (frame: origin_position)
     rsp = launch_ros.actions.Node(package='robot_state_publisher',
