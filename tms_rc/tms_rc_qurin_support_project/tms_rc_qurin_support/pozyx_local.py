@@ -102,64 +102,7 @@ class MultitagPositioning(object):
             odom.pose.pose.orientation.z = quat.z
             odom.pose.pose.orientation.w = quat.w
             
-            markerArray = MarkerArray()
-            m_id = 0
-            for a in anchors:
-                marker = Marker()
-                marker.header.frame_id = "/map"
-                marker.header.stamp = self.node.get_clock().now().to_msg()
-                marker.ns = "pozyx_local"
-                marker.id = m_id
-                m_id += 1
-
-                marker.type = Marker.CUBE
-                marker.action = Marker.ADD
-                marker.lifetime.sec = 100
-                marker.scale.x = 0.3
-                marker.scale.y = 0.3
-                marker.scale.z = 0.3
-                marker.pose.position.x = a.pos.x / 1000
-                marker.pose.position.y = a.pos.y / 1000
-                marker.pose.position.z = a.pos.z / 1000
-                marker.pose.orientation.x = 0.0
-                marker.pose.orientation.y = 0.0
-                marker.pose.orientation.z = 0.0
-                marker.pose.orientation.w = 1.0
-                marker.color.r = 0.0
-                marker.color.g = 1.0
-                marker.color.b = 0.0
-                marker.color.a = 1.0
-                markerArray.markers.append(marker)
-
-                marker_text = Marker()
-                marker_text.header.frame_id = "/map"
-                marker_text.header.stamp = self.node.get_clock().now().to_msg()
-                marker_text.ns = "pozyx_anchors_id"
-                marker_text.id = m_id
-                m_id += 1
-
-                marker_text.type = Marker.TEXT_VIEW_FACING
-                marker_text.action = Marker.ADD
-                marker_text.lifetime.sec = 100
-                marker_text.scale.x = 0.3
-                marker_text.scale.y = 0.3
-                marker_text.scale.z = 0.3
-                marker_text.pose.position.x = a.pos.x / 1000
-                marker_text.pose.position.y = a.pos.y / 1000
-                marker_text.pose.position.z = a.pos.z / 1000 + 1.0
-                marker_text.pose.orientation.x = 0.0
-                marker_text.pose.orientation.y = 0.0
-                marker_text.pose.orientation.z = 0.0
-                marker_text.pose.orientation.w = 1.0
-                marker_text.color.r = 1.0
-                marker_text.color.g = 1.0
-                marker_text.color.b = 1.0
-                marker_text.color.a = 1.0
-                marker_text.text = "0x%0.4x" % a.network_id
-                markerArray.markers.append(marker_text)
-
-
-            markers_pub.publish(markerArray)
+            
             # row = 0  # 行
             # col = 8  # 列
             # height_l = "200cm"
@@ -186,10 +129,79 @@ class MultitagPositioning(object):
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.03,
                 ]
             pub.publish(odom)
+            self.publishMarkerArray(anchors)
 
         if self.osc_udp_client is not None:
             self.osc_udp_client.send_message(
                 "/position", [network_id, position.x, position.y, position.z])
+
+    def publishMarkerArray(self, anchors):
+        """
+        Rviz上でPozyxアンカーの位置を表示する。
+
+        Parameters
+        ----------
+        anchors : list<Anchor>
+
+        """
+
+        markerArray = MarkerArray()
+        m_id = 0
+        for a in anchors:
+            marker = Marker()
+            marker.header.frame_id = "/map"
+            marker.header.stamp = self.node.get_clock().now().to_msg()
+            marker.ns = "pozyx_local"  # namespace
+            marker.id = m_id
+            m_id += 1
+
+            marker.type = Marker.CUBE
+            marker.action = Marker.ADD
+            marker.lifetime.sec = 100
+            marker.scale.x = 0.3
+            marker.scale.y = 0.3
+            marker.scale.z = 0.3
+            marker.pose.position.x = a.pos.x / 1000
+            marker.pose.position.y = a.pos.y / 1000
+            marker.pose.position.z = a.pos.z / 1000
+            marker.pose.orientation.x = 0.0
+            marker.pose.orientation.y = 0.0
+            marker.pose.orientation.z = 0.0
+            marker.pose.orientation.w = 1.0
+            marker.color.r = 0.0
+            marker.color.g = 1.0
+            marker.color.b = 0.0
+            marker.color.a = 1.0
+            markerArray.markers.append(marker)
+
+            marker_text = Marker()
+            marker_text.header.frame_id = "/map"
+            marker_text.header.stamp = self.node.get_clock().now().to_msg()
+            marker_text.ns = "pozyx_anchors_id"
+            marker_text.id = m_id
+            m_id += 1
+
+            marker_text.type = Marker.TEXT_VIEW_FACING
+            marker_text.action = Marker.ADD
+            marker_text.lifetime.sec = 100
+            marker_text.scale.x = 0.3
+            marker_text.scale.y = 0.3
+            marker_text.scale.z = 0.3
+            marker_text.pose.position.x = a.pos.x / 1000
+            marker_text.pose.position.y = a.pos.y / 1000
+            marker_text.pose.position.z = a.pos.z / 1000 + 1.0
+            marker_text.pose.orientation.x = 0.0
+            marker_text.pose.orientation.y = 0.0
+            marker_text.pose.orientation.z = 0.0
+            marker_text.pose.orientation.w = 1.0
+            marker_text.color.r = 1.0
+            marker_text.color.g = 1.0
+            marker_text.color.b = 1.0
+            marker_text.color.a = 1.0
+            marker_text.text = "0x%0.4x" % a.network_id
+            markerArray.markers.append(marker_text)
+
+        markers_pub.publish(markerArray)
 
     def setAnchorsManual(self, save_to_flash=False):
         """Adds the manually measured anchors to the Pozyx's device list one for one."""
@@ -275,6 +287,26 @@ def main(args=None):
     tag_ids = [0x6e04] # [None, 0x6e04]
 
     # necessary data for calibration
+    # anchors 9/30
+    anchors = [
+        DeviceCoordinates(0x6023, 1, Coordinates(-13563, -8838, 475)),
+        DeviceCoordinates(0x6037, 1, Coordinates( -2223, -7211, 475)),
+        DeviceCoordinates(0x6044, 1, Coordinates(-14124,   922, 475)),
+        DeviceCoordinates(0x6050, 1, Coordinates( -9214, -9102, 475)),
+        DeviceCoordinates(0x605b, 1, Coordinates( -1992,   243, 475)),
+        DeviceCoordinates(0x6e08, 1, Coordinates(  -216, -7322, 475)),
+        DeviceCoordinates(0x6e22, 1, Coordinates(-14224,  -686, 475)),
+        DeviceCoordinates(0x6e23, 1, Coordinates( -3327, -8849, 475)),
+        DeviceCoordinates(0x6e30, 1, Coordinates(     0,     0, 475)),
+        DeviceCoordinates(0x6e39, 1, Coordinates(-20836,  -929, 475)),
+        DeviceCoordinates(0x6e49, 1, Coordinates( -3077, -2959, 475)),
+        DeviceCoordinates(0x6e58, 1, Coordinates( -7238, -3510, 475)),
+        DeviceCoordinates(0x6e5c, 1, Coordinates(-18693,  1072, 475)),
+        DeviceCoordinates(0x6e69, 1, Coordinates(-20902,   879, 475)),
+        DeviceCoordinates(0x6e7c, 1, Coordinates(   -59, -2126, 475)),
+    ]
+
+    """
     anchors = [
         DeviceCoordinates(0x6023, 1, Coordinates(12995, 17049, 475)),
         DeviceCoordinates(0x6037, 1, Coordinates(24229, 19294, 475)),
@@ -287,6 +319,7 @@ def main(args=None):
         DeviceCoordinates(0x6e58, 1, Coordinates(19019, 22715, 475)),
         DeviceCoordinates(0x6e7c, 1, Coordinates(26112, 24490, 475)),
     ]
+    """
 
     """
     anchors = [
@@ -344,6 +377,8 @@ def main(args=None):
 
     #pub = rospy.Publisher('chatter', String, queue_size=10)
     #r = rospy.Rate(100) # 20hz
+
+    r.publishMarkerArray(anchors)
     while rclpy.ok():
         r.loop()
         # rclpy.spin_once(node)
