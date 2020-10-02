@@ -304,13 +304,15 @@ def main(args=None):
         # DeviceCoordinates(0x6e49, 1, Coordinates( -3077, -2959, 475)),  # ROOM
         # DeviceCoordinates(0x6e58, 1, Coordinates( -7238, -3510, 475)),  # ROOM
         # DeviceCoordinates(0x6050, 1, Coordinates( -9214, -9102, 475)),  # ROOM
-        # DeviceCoordinates(0x6037, 1, Coordinates( -2223, -7211, 475)),  # COR1
-        # DeviceCoordinates(0x6e08, 1, Coordinates(  -216, -7322, 475)),  # COR1
+        DeviceCoordinates(0x6037, 1, Coordinates( -2223, -7211, 475)),  # COR1
+        DeviceCoordinates(0x6e08, 1, Coordinates(  -216, -7322, 475)),  # COR1
         # DeviceCoordinates(0x605b, 1, Coordinates( -1992,   243, 475)),  # COR1
-        DeviceCoordinates(0x6e30, 1, Coordinates(     0,     0, 475)),  # COR1 # COR2
-        DeviceCoordinates(0x6e7c, 1, Coordinates(   -59, -2126, 475)),  # COR2
-        DeviceCoordinates(0x6044, 1, Coordinates(-14124,   922, 475)),  # COR2 # COR3
-        DeviceCoordinates(0x6e22, 1, Coordinates(-14224,  -686, 475)),  # COR2 # COR3
+        # DeviceCoordinates(0x6e30, 1, Coordinates(     0,     0, 475)),  # COR1 # COR2
+        DeviceCoordinates(0x605b, 1, Coordinates( -2109,   -2683, 475)),  # COR1_CHANGE
+        DeviceCoordinates(0x6e30, 1, Coordinates(  -112,   -2707, 475)),  # COR1_CHANGE        
+        # DeviceCoordinates(0x6e7c, 1, Coordinates(   -59, -2126, 475)),  # COR2
+        # DeviceCoordinates(0x6044, 1, Coordinates(-14124,   922, 475)),  # COR2 # COR3
+        # DeviceCoordinates(0x6e22, 1, Coordinates(-14224,  -686, 475)),  # COR2 # COR3
         # DeviceCoordinates(0x6e39, 1, Coordinates(-20836,  -929, 475)),  # COR3
         # DeviceCoordinates(0x6e69, 1, Coordinates(-20902,   879, 475)),  # COR3
         # DeviceCoordinates(0x6e5c, 1, Coordinates(-18693,  1072, 475)),  # COR4
