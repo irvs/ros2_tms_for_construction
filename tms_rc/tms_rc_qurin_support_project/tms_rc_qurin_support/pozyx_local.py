@@ -297,7 +297,33 @@ def main(args=None):
     tag_ids = [0x6e04] # [None, 0x6e04]
 
     # necessary data for calibration
-    # anchors 9/30
+    # anchors 10/05
+    anchors = [
+        ## DeviceCoordinates(0x6023, 1, Coordinates(-13563, -8838, 475)),  # ROOM
+        # DeviceCoordinates(0x6e23, 1, Coordinates( -3327, -8849, 475)),  # ROOM
+        # DeviceCoordinates(0x6e49, 1, Coordinates( -3077, -2959, 475)),  # ROOM
+        # DeviceCoordinates(0x6e58, 1, Coordinates( -7238, -3510, 475)),  # ROOM
+        # DeviceCoordinates(0x6050, 1, Coordinates( -9214, -9102, 475)),  # ROOM
+        # DeviceCoordinates(0x6037, 1, Coordinates( -2223, -7211, 475)),  # COR1
+        # DeviceCoordinates(0x6e08, 1, Coordinates(  -216, -7322, 475)),  # COR1
+        DeviceCoordinates(0x6037, 1, Coordinates( -2199, -5889, 475)),  # COR1_C2
+        DeviceCoordinates(0x6e08, 1, Coordinates(  -239, -7321, 475)),  # COR1_C2
+        # DeviceCoordinates(0x605b, 1, Coordinates( -1992,   243, 475)),  # COR1
+        # DeviceCoordinates(0x6e30, 1, Coordinates(     0,     0, 475)),  # COR1 # COR2
+        # DeviceCoordinates(0x605b, 1, Coordinates( -2109,   -2683, 475)),  # COR1_CHANGE
+        # DeviceCoordinates(0x6e30, 1, Coordinates(  -112,   -2707, 475)),  # COR1_CHANGE
+        DeviceCoordinates(0x605b, 1, Coordinates( -2130,   -2630, 475)),  # COR1_C2
+        DeviceCoordinates(0x6e30, 1, Coordinates(  -178,   -4168, 475)),  # COR1_C2       
+        # DeviceCoordinates(0x6e7c, 1, Coordinates(   -59, -2126, 475)),  # COR2
+        # DeviceCoordinates(0x6044, 1, Coordinates(-14124,   922, 475)),  # COR2 # COR3
+        # DeviceCoordinates(0x6e22, 1, Coordinates(-14224,  -686, 475)),  # COR2 # COR3
+        # DeviceCoordinates(0x6e39, 1, Coordinates(-20836,  -929, 475)),  # COR3
+        # DeviceCoordinates(0x6e69, 1, Coordinates(-20902,   879, 475)),  # COR3
+        # DeviceCoordinates(0x6e5c, 1, Coordinates(-18693,  1072, 475)),  # COR4
+    ]
+
+    """
+    # anchors 10/02
     anchors = [
         ## DeviceCoordinates(0x6023, 1, Coordinates(-13563, -8838, 475)),  # ROOM
         # DeviceCoordinates(0x6e23, 1, Coordinates( -3327, -8849, 475)),  # ROOM
@@ -317,8 +343,10 @@ def main(args=None):
         # DeviceCoordinates(0x6e69, 1, Coordinates(-20902,   879, 475)),  # COR3
         # DeviceCoordinates(0x6e5c, 1, Coordinates(-18693,  1072, 475)),  # COR4
     ]
+    """
 
     """
+    # anchors 9/30
     anchors = [
         DeviceCoordinates(0x6023, 1, Coordinates(12995, 17049, 475)),
         DeviceCoordinates(0x6037, 1, Coordinates(24229, 19294, 475)),

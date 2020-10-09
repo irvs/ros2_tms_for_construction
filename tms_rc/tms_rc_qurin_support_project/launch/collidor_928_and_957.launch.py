@@ -141,6 +141,12 @@ def generate_launch_description():
                                 output='both',
                                 arguments=["26.1", "26.2", "0", "0.092", "0", "0", "map", "pozyx"])
 
+    # static_transform_publisher: base_footprint -> laser
+    stf_base_footprint_laser = launch_ros.actions.Node(package='tf2_ros',
+                                node_executable='static_transform_publisher',
+                                output='both',
+                                arguments=["0", "0", "680", "0", "0", "3.14", "base_footprint", "laser"])
+
     # collidor model: (frame: origin_position)
     rsp = launch_ros.actions.Node(package='robot_state_publisher',
                                   node_executable='robot_state_publisher',
@@ -215,6 +221,7 @@ def generate_launch_description():
     ld.add_action(stf_map_originpos)
     ld.add_action(stf_footprint_baselink)
     ld.add_action(stf_base_footprint_pozyx)
+    ld.add_action(stf_base_footprint_laser)
     ld.add_action(rsp)
     ld.add_action(start_rviz)
     ld.add_action(start_localizer_cmd)
