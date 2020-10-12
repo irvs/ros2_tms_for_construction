@@ -145,7 +145,7 @@ def generate_launch_description():
     stf_base_footprint_laser = launch_ros.actions.Node(package='tf2_ros',
                                 node_executable='static_transform_publisher',
                                 output='both',
-                                arguments=["0", "0", "680", "0", "0", "3.14", "base_footprint", "laser"])
+                                arguments=["0", "0", "0", "0", "0", "3.14", "base_footprint", "laser"])
 
     # collidor model: (frame: origin_position)
     rsp = launch_ros.actions.Node(package='robot_state_publisher',
