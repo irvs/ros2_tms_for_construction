@@ -9,7 +9,7 @@ parameters and upload this sketch. Watch the coordinates change as you move your
 from time import sleep
 
 import pypozyx
-from pypozyx import (PozyxConstants, Coordinates, POZYX_SUCCESS, PozyxRegisters, version,
+from pypozyx import (PozyxConstants, Coordinates, POZYX_SUCCESS, PozyxRegisters, version, DeviceRange,
                      DeviceCoordinates, PozyxSerial, get_first_pozyx_serial_port, SingleRegister, Quaternion)
 from pythonosc.udp_client import SimpleUDPClient
 
@@ -158,13 +158,15 @@ class MultitagPositioning(object):
         markerArray = MarkerArray()
         m_id = 0
         for a in anchors:
+
+            # pozyx_position_marker
             marker = Marker()
             marker.header.frame_id = "/pozyx"
             marker.header.stamp = self.node.get_clock().now().to_msg()
             marker.ns = "pozyx_local"  # namespace
             marker.id = m_id
             m_id += 1
-
+            
             marker.type = Marker.CUBE
             marker.action = Marker.ADD
             marker.lifetime.sec = 100
@@ -184,6 +186,8 @@ class MultitagPositioning(object):
             marker.color.a = 1.0
             markerArray.markers.append(marker)
 
+
+            # pozyx marker label
             marker_text = Marker()
             marker_text.header.frame_id = "/pozyx"
             marker_text.header.stamp = self.node.get_clock().now().to_msg()
@@ -210,6 +214,35 @@ class MultitagPositioning(object):
             marker_text.color.a = 1.0
             marker_text.text = "0x%0.4x" % a.network_id
             markerArray.markers.append(marker_text)
+
+
+            # pozyx marker label
+            marker_dist = Marker()
+            marker_dist.header.frame_id = "/pozyx"
+            marker_dist.header.stamp = self.node.get_clock().now().to_msg()
+            marker_dist.ns = "pozyx_marker_distance"
+            marker_dist.id = m_id
+            m_id += 1
+
+            marker_dist.type = Marker.CYLINDER
+            marker_dist.action = Marker.ADD
+            marker_dist.lifetime.sec = 1.0
+            marker_dist.scale.x = 0.3
+            marker_dist.scale.y = 0.3
+            marker_dist.scale.z = 0.1
+            marker_dist.pose.position.x = a.pos.x / 1000
+            marker_dist.pose.position.y = a.pos.y / 1000
+            marker_dist.pose.position.z = a.pos.z / 1000
+            marker_dist.pose.orientation.x = 0.0
+            marker_dist.pose.orientation.y = 0.0
+            marker_dist.pose.orientation.z = 0.0
+            marker_dist.pose.orientation.w = 1.0
+            marker_dist.color.r = 0.0
+            marker_dist.color.g = 1.0
+            marker_dist.color.b = 0.0
+            marker_dist.color.a = 0.1
+            # marker_dist.text = "0x%0.4x" % a.network_id
+            markerArray.markers.append(marker_dist)
 
         markers_pub.publish(markerArray)
 
