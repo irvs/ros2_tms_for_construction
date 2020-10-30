@@ -18,9 +18,10 @@ def generate_launch_description():
     map_dir = LaunchConfiguration('map', 
         default=os.path.join(
             get_package_share_directory('tms_rc_qurin_support'), 
-            'maps', 'map_w2_9f.yaml'))
+            'maps', 'map_w2_9f_10dpm.yaml'))
     bt_xml_file = LaunchConfiguration('bt_xml_file')
     autostart = LaunchConfiguration('autostart')
+    enable_rviz = LaunchConfiguration('rviz', default='false')
 
     params_file = 'quriana_pozyx_with_amcl_params.yaml'
     params_file_dir = LaunchConfiguration(
@@ -47,7 +48,7 @@ def generate_launch_description():
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map', 
-        default_value=os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'maps', 'map_w2_9f.yaml'),
+        default_value=os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'maps', 'map_w2_9f_10dpm.yaml'),
         description='Full path to map file to load')
 
     declare_use_sim_time_cmd = DeclareLaunchArgument(
@@ -64,6 +65,12 @@ def generate_launch_description():
         default_value=os.path.join(get_package_share_directory('tms_rc_qurin_support'),
             'behavior_trees', 'navigate_w_replanning_without_recovery.xml'),
         description='Full path to the behavior tree xml file to use')
+    
+    declare_rviz_cmd = DeclareLaunchArgument(
+        'rviz',
+        default_value='false',
+        description='Enable rviz2',
+    )
 
     start_lifecycle_manager_cmd = launch_ros.actions.Node(
         package='nav2_lifecycle_manager',
@@ -227,7 +234,8 @@ def generate_launch_description():
     ld.add_action(stf_base_footprint_pozyx)
     ld.add_action(stf_base_footprint_laser)
     ld.add_action(rsp)
-    ld.add_action(start_rviz)
+    # if(enable_rviz != 'false'):
+    #     ld.add_action(start_rviz)
     # ld.add_action(start_localizer_ekf_cmd)
     ld.add_action(start_localizer_amcl_cmd)
     ld.add_action(start_guidebot_odometry_cmd)
@@ -241,7 +249,7 @@ def generate_launch_description():
     ld.add_action(start_navigator_cmd)
     # ld.add_action(start_pozyx_local_cmd)
     ld.add_action(start_convert)
-    ld.add_action(start_ros1_bridge_cmd)
+    # ld.add_action(start_ros1_bridge_cmd)
 
 
     return ld
