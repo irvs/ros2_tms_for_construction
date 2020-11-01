@@ -57,9 +57,9 @@ dwb_controller:
   ros__parameters:
     use_sim_time: False
     debug_trajectory_details: True
-    min_vel_x: -0.3
+    min_vel_x: 0.0  # -0.3
     min_vel_y: 0.0
-    max_vel_x: 0.6  # 0.3
+    max_vel_x: 0.8  # 0.3
     max_vel_y: 0.0
     max_vel_theta: 4.0 # 1.0
     min_speed_xy: 0.0
