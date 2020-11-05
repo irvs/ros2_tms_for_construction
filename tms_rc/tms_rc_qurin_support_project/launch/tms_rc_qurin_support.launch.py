@@ -113,7 +113,6 @@ def generate_launch_description():
     #     parameters=[{ 'use_sim_time': use_sim_time}, { 'yaml_filename': map_dir}]
     #     )
 
-
     start_map_server_cmd = Node(
         package='nav2_map_server',
         node_executable='map_server',
@@ -192,6 +191,7 @@ def generate_launch_description():
         node_name='lifecycle_manager',
         output='screen',
         parameters=[configured_params])
+    
     share_dir_path = os.path.join(get_package_share_directory('tms_rc_qurin_support'))
     urdf_path = os.path.join(share_dir_path, 'urdf', 'collidor_928_and_957.urdf')
     rsp = Node(package='robot_state_publisher',
@@ -199,6 +199,7 @@ def generate_launch_description():
         output='both',
         # argumentsでURDFを出力したパスを指定
         arguments=[urdf_path])
+    
     # start_ros1_bridge_cmd = Node(
     #     package='ros1_bridge',
     #     node_executable='dynamic_bridge',

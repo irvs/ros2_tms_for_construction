@@ -8,7 +8,6 @@ from launch.substitutions import LaunchConfiguration
 from nav2_common.launch import RewrittenYaml
 import launch
 import launch_ros.actions
-#import xacro
 
 share_dir_path = os.path.join(get_package_share_directory('tms_rc_qurin_support'))
 #urdf_path = os.path.join(share_dir_path, 'urdf', 'collidor_928_and_957.urdf')
@@ -17,19 +16,20 @@ urdf_path = os.path.join(share_dir_path, 'urdf', 'model.urdf')
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
     map_dir = LaunchConfiguration('map', 
-                                default=os.path.join(
-                                    get_package_share_directory('tms_rc_qurin_support'), 
-                                    'maps', 'map_w2_9f.yaml'))    
+        default=os.path.join(
+            get_package_share_directory('tms_rc_qurin_support'), 
+            'maps', 'map_w2_9f_10dpm.yaml'))
     bt_xml_file = LaunchConfiguration('bt_xml_file')
     autostart = LaunchConfiguration('autostart')
+    enable_rviz = LaunchConfiguration('rviz', default='false')
 
-    params_file = 'guidebot_params.yaml'
+    params_file = 'quriana_pozyx_with_amcl_params.yaml'
     params_file_dir = LaunchConfiguration(
         'params', 
         default=os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'params', params_file))
     
     stdout_linebuf_envvar = SetEnvironmentVariable(
-    'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
+        'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
     
     param_substitutions = {
         'use_sim_time': use_sim_time,
@@ -38,7 +38,7 @@ def generate_launch_description():
         'autostart': autostart
     }
     configured_params = RewrittenYaml(
-        source_file=params_file_dir, param_rewrites=param_substitutions,
+        source_file=params_file_dir, rewrites=param_substitutions,
         convert_types=True)
 
     declare_params_file_cmd = DeclareLaunchArgument(
@@ -48,7 +48,7 @@ def generate_launch_description():
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map', 
-        default_value=os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'maps', 'map_w2_9f.yaml'),
+        default_value=os.path.join(get_package_share_directory('tms_rc_qurin_support'), 'maps', 'map_w2_9f_10dpm.yaml'),
         description='Full path to map file to load')
 
     declare_use_sim_time_cmd = DeclareLaunchArgument(
@@ -65,6 +65,12 @@ def generate_launch_description():
         default_value=os.path.join(get_package_share_directory('tms_rc_qurin_support'),
             'behavior_trees', 'navigate_w_replanning_without_recovery.xml'),
         description='Full path to the behavior tree xml file to use')
+    
+    declare_rviz_cmd = DeclareLaunchArgument(
+        'rviz',
+        default_value='false',
+        description='Enable rviz2',
+    )
 
     start_lifecycle_manager_cmd = launch_ros.actions.Node(
         package='nav2_lifecycle_manager',
@@ -80,9 +86,7 @@ def generate_launch_description():
         output='both',
         parameters=[configured_params])
     
-
-    print(params_file_dir)
-    start_localizer_cmd = launch_ros.actions.Node(
+    start_localizer_ekf_cmd = launch_ros.actions.Node(
         package='robot_localization', 
         node_executable='se_node', 
         # node_name='se_node',
@@ -159,6 +163,13 @@ def generate_launch_description():
                                     output='both',
                                     arguments=['-d',os.path.join(share_dir_path, 'rviz2', 'pozyx_test.rviz') ])
 
+    start_localizer_amcl_cmd = launch_ros.actions.Node(
+        package='nav2_amcl',
+        node_executable='amcl',
+        node_name='amcl',
+        output='screen',
+        parameters=[configured_params])
+
     start_world_model_cmd = launch_ros.actions.Node(
         package='nav2_world_model',
         node_executable='world_model',
@@ -199,12 +210,12 @@ def generate_launch_description():
         output='screen',
         parameters=[configured_params])
 
-    # start_ros1_bridge_cmd = Node(
-    #     package='ros1_bridge',
-    #     node_executable='dynamic_bridge',
-    #     node_name='dynamic_bridge',
-    #     output='screen',
-    #     parameters=[configured_params])
+    start_ros1_bridge_cmd = launch_ros.actions.Node(
+        package='ros1_bridge',
+        node_executable='dynamic_bridge',
+        node_name='dynamic_bridge',
+        output='screen',
+        parameters=[configured_params])
 
     ld = LaunchDescription()
 
@@ -223,8 +234,10 @@ def generate_launch_description():
     ld.add_action(stf_base_footprint_pozyx)
     ld.add_action(stf_base_footprint_laser)
     ld.add_action(rsp)
-    ld.add_action(start_rviz)
-    ld.add_action(start_localizer_cmd)
+    # if(enable_rviz != 'false'):
+    #     ld.add_action(start_rviz)
+    # ld.add_action(start_localizer_ekf_cmd)
+    ld.add_action(start_localizer_amcl_cmd)
     ld.add_action(start_guidebot_odometry_cmd)
     ld.add_action(start_tfnode_cmd)
     ld.add_action(start_map_server_cmd)
@@ -240,3 +253,5 @@ def generate_launch_description():
 
 
     return ld
+
+
