@@ -88,9 +88,9 @@ def generate_launch_description():
 
     # Specify the actions
     bringup_cmd_group = GroupAction([
-        PushRosNamespace(
-            condition=IfCondition(use_namespace),
-            namespace=namespace),
+        # PushRosNamespace(
+        #     condition=IfCondition(use_namespace),
+        #     namespace=namespace),
 
         # IncludeLaunchDescription(
         #     PythonLaunchDescriptionSource(os.path.join(launch_dir, 'slam_launch.py')),
