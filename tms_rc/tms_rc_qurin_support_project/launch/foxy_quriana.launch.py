@@ -32,7 +32,7 @@ def generate_launch_description():
         default=os.path.join(
             get_package_share_directory('tms_rc_qurin_support'),
             'maps',
-            'map_w2_9f.yaml'))
+            'map_w2_9f_10dpm.yaml'))
     
 
     param_file_name = 'nav2_params.yaml'
@@ -106,8 +106,10 @@ def generate_launch_description():
 
         # TODO: change robot_base_frame /base_link -> /base_footprint
         # this node publish /base_link = /base_footprint, this is not elegant.
-        Node(package='tf2_ros',
+        Node(
+            package='tf2_ros',
             executable='static_transform_publisher',
+            name='stf_basefootprint_baselink',
             output='both',
             arguments=["0", "0", "0", "0", "0", "0", "base_footprint", "base_link"]
         ),
@@ -116,18 +118,28 @@ def generate_launch_description():
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',
+            name='stf_map_originposition',
             output='both',
             arguments=["34.6", "2.15", "0", "0", "0", "0", "map", "origin_position"]
         ),
 
         # static_transform_publisher: base_footprint -> pozyx
+        # Node(
+        #     package='tf2_ros',
+        #     executable='static_transform_publisher',
+        #     name='stf_basefootprint_pozyx',
+        #     output='both',
+        #     arguments=["-0.09", "-0.165", "0.5", "0", "0", "0", "base_footprint", "pozyx"]
+        # ),
+
+
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',
+            name='stf_basefootprint_laser',
             output='both',
-            arguments=["-0.09", "-0.165", "0.5", "0", "0", "0", "base_footprint", "pozyx"]
+            arguments=["0", "0", "0", "0", "0", "3.14", "base_footprint", "laser"]
         ),
-
 
         # collidor model: (frame: origin_position)
         Node(
