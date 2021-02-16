@@ -18,6 +18,7 @@ from rclpy.node import Node
 
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
 
 class ConvertNode(Node):
 
@@ -32,10 +33,22 @@ class ConvertNode(Node):
 
         self.publisher_ = self.create_publisher(Twist, '/hapirobo/cmd_vel', 10)
 
+        self.odom_pub_ = self.create_publisher(Odometry, '/odom', 10)
+        self.odom_sub = self.create_subscription(
+            Odometry,
+            '/hapirobo/odom',
+            self.odom_callback,
+            10
+        )
+        self.odom_sub  # prevent unused variable warning
+
+
     def listener_callback(self, msg):
         self.get_logger().info(f'speed:{msg.linear.x} angular:{msg.angular.z}')
         self.publisher_.publish(msg)
 
+    def odom_callback(self, msg):
+        self.odom_pub_.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)
