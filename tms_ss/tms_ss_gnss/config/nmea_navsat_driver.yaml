@@ -1,0 +1,12 @@
+nmea_serial_driver:
+  ros__parameters:
+    port: "/dev/ttyACM0"
+    baud_rate: 115200
+    fix_topic_name: "fix"
+    gga_topic_name: "gga"
+    sentence_topic_name: "sentence"
+    frame_id: "gnss"
+    timer_preriod_fix: 0.1
+    timer_preriod_gga: 0.1
+    timer_preriod_serial: 0.125
+    pub_sentense: False
