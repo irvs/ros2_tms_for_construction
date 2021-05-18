@@ -8,5 +8,5 @@ nmea_serial_driver:
     frame_id: "gnss"
     timer_preriod_fix: 0.1
     timer_preriod_gga: 0.1
-    timer_preriod_serial: 0.125
+    timer_preriod_serial: 0.001
     pub_sentense: False

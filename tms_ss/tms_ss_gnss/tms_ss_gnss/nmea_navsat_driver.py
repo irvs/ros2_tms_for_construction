@@ -19,11 +19,10 @@ class NMEASerialDriver(Node):
         self.current_fix = None
         self.current_gga = None
 
-        self.declare_parameter('timer_preriod_serial', 0.02)
+        self.declare_parameter('timer_preriod_serial', 0.1)
         self.declare_parameter('timer_preriod_fix', 0.1)
         self.declare_parameter('timer_preriod_gga', 0.1)
         
-        self.declare_parameter('timer_preriod', 0.1)
         self.declare_parameter('port', '/dev/ttyACM0')
         self.declare_parameter('baud_rate', 115200)
         self.declare_parameter('frame_id', 'gnss')
@@ -60,7 +59,7 @@ class NMEASerialDriver(Node):
         self.timer_serial = self.create_timer(timer_period_serial, self.serial_callback, callback_group=self.group)
         self.timer_fix = self.create_timer(timer_period_fix, self.fix_callback, callback_group=self.group)
         self.timer_gga = self.create_timer(timer_period_gga, self.gga_callback, callback_group=self.group)
-        self.serial = serial.Serial(serial_port, baud_rate)
+        self.serial = serial.Serial(serial_port, baud_rate, timeout=2)
 
         self.fix_publisher = self.create_publisher(NavSatFix, 'fix', 10)
         self.gga_publisher = self.create_publisher(String, 'gga', 10)
@@ -101,13 +100,13 @@ class NMEASerialDriver(Node):
             # RTK Fix
             4: [
                 self.default_epe_quality4,
-                NavSatStatus.STATUS_GBAS_FIX,
+                NavSatStatus.STATUS_GBAS_FIX, # 2
                 NavSatFix.COVARIANCE_TYPE_APPROXIMATED
             ],
             # RTK Float
             5: [
                 self.default_epe_quality5,
-                NavSatStatus.STATUS_GBAS_FIX,
+                3,
                 NavSatFix.COVARIANCE_TYPE_APPROXIMATED
             ],
             # WAAS
@@ -131,7 +130,7 @@ class NMEASerialDriver(Node):
             sentence = self.serial.readline().strip()
             try:
                 if isinstance(sentence, bytes):
-                    sentence = sentence.decode("utf-8")
+                    sentence = sentence.decode('ascii')
             except ValueError as e:
                 self.get_logger().warn(
                     "Value error, likely due to missing fields in the NMEA message. Error was: %s. " % e)
