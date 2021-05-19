@@ -20,9 +20,6 @@ class NMEASerialDriver(Node):
         self.current_fix = None
         self.current_gga = None
 
-        self.declare_parameter('timer_preriod_serial', 0.1)
-        self.declare_parameter('timer_preriod_fix', 0.1)
-        self.declare_parameter('timer_preriod_gga', 0.1)
         self.declare_parameter('frame_id', 'gnss')
         self.declare_parameter('fix_topic_name', 'fix')
         self.declare_parameter('gga_topic_name', 'gga')
@@ -46,10 +43,6 @@ class NMEASerialDriver(Node):
         self.using_receiver_epe = False
         
         self.group = ReentrantCallbackGroup()
-        timer_period_fix = self.get_parameter('timer_preriod_fix').value
-        timer_period_gga = self.get_parameter('timer_preriod_gga').value
-        self.timer_fix = self.create_timer(timer_period_fix, self.fix_callback, callback_group=self.group)
-        self.timer_gga = self.create_timer(timer_period_gga, self.gga_callback, callback_group=self.group)
 
         self.fix_publisher = self.create_publisher(NavSatFix, 'fix', 10)
         self.gga_publisher = self.create_publisher(String, 'gga', 10)
@@ -114,14 +107,6 @@ class NMEASerialDriver(Node):
             ]
         }
     
-    def fix_callback(self):
-        if self.current_fix != None:
-            self.fix_publisher.publish(self.current_fix)
-    
-    def gga_callback(self):
-        if self.current_gga != None:
-            self.gga_publisher.publish(self.current_gga)
-    
     def nmea_callback(self, data):
         try:
             sentence = data.sentence
@@ -133,7 +118,8 @@ class NMEASerialDriver(Node):
             if 'GGA' in parsed_sentence:
                 gga_msg = String()
                 gga_msg.data = sentence.replace('$', '')
-                self.current_gga = gga_msg
+                self.gga_publisher.publish(gga_msg)
+
                 fix_msg = NavSatFix()
                 fix_msg.header.stamp = self.get_clock().now().to_msg()
                 fix_msg.header.frame_id = self.get_parameter('frame_id').value
@@ -180,7 +166,7 @@ class NMEASerialDriver(Node):
                 fix_msg.position_covariance[4] = (hdop * self.lat_std_dev) ** 2
                 fix_msg.position_covariance[8] = (2 * hdop * self.alt_std_dev) ** 2  # FIXME
 
-                self.current_fix = fix_msg
+                self.fix_publisher.publish(fix_msg)
 
             elif 'GST' in parsed_sentence:
                 data = parsed_sentence['GST']
@@ -199,13 +185,10 @@ def main():
     print('Hi from tms_ss_gnss.')
 
     nmea_serial_driver = NMEASerialDriver()
-    executor = MultiThreadedExecutor(num_threads=4)
-    executor.add_node(nmea_serial_driver)
     try:
-        executor.spin()
+        rclpy.spin(nmea_serial_driver)
     finally:
         nmea_serial_driver.destroy_node()
-        executor.shutdown()
         rclpy.shutdown()
 
 if __name__ == '__main__':
