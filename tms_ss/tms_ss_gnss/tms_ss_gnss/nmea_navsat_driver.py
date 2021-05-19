@@ -6,6 +6,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from sensor_msgs.msg import NavSatFix, NavSatStatus
+from nmea_msgs.msg import Sentence
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
 import serial
@@ -14,7 +15,7 @@ import tms_ss_gnss.parser as parser
 
 class NMEASerialDriver(Node):
     def __init__(self):
-        super().__init__('nmea_serial_driver')
+        super().__init__('nmea_navsat_driver')
 
         self.current_fix = None
         self.current_gga = None
@@ -22,16 +23,10 @@ class NMEASerialDriver(Node):
         self.declare_parameter('timer_preriod_serial', 0.1)
         self.declare_parameter('timer_preriod_fix', 0.1)
         self.declare_parameter('timer_preriod_gga', 0.1)
-        
-        self.declare_parameter('port', '/dev/ttyACM0')
-        self.declare_parameter('baud_rate', 115200)
         self.declare_parameter('frame_id', 'gnss')
-        self.declare_parameter('pub_sentence', False)
-
         self.declare_parameter('fix_topic_name', 'fix')
         self.declare_parameter('gga_topic_name', 'gga')
-        self.declare_parameter('sentence_topic_name', 'sentence')
-
+        self.declare_parameter('sentence_topic_name', 'nmea_sentence')
 
         # epe = estimated position error
         self.declare_parameter('epe_quality0', 1000000)
@@ -51,19 +46,21 @@ class NMEASerialDriver(Node):
         self.using_receiver_epe = False
         
         self.group = ReentrantCallbackGroup()
-        timer_period_serial = self.get_parameter('timer_preriod_serial').value
         timer_period_fix = self.get_parameter('timer_preriod_fix').value
         timer_period_gga = self.get_parameter('timer_preriod_gga').value
-        serial_port = self.get_parameter('port').value
-        baud_rate = self.get_parameter('baud_rate').value
-        self.timer_serial = self.create_timer(timer_period_serial, self.serial_callback, callback_group=self.group)
         self.timer_fix = self.create_timer(timer_period_fix, self.fix_callback, callback_group=self.group)
         self.timer_gga = self.create_timer(timer_period_gga, self.gga_callback, callback_group=self.group)
-        self.serial = serial.Serial(serial_port, baud_rate, timeout=2)
 
         self.fix_publisher = self.create_publisher(NavSatFix, 'fix', 10)
         self.gga_publisher = self.create_publisher(String, 'gga', 10)
-        self.sentence_publisher = self.create_publisher(String, 'sentence', 10)
+
+        self.sentence_sub = self.create_subscription(
+            Sentence, 
+            self.get_parameter('sentence_topic_name').value, 
+            self.nmea_callback, 
+            10, 
+            callback_group=self.group
+            )
 
         self.lon_std_dev = float("nan")
         self.lat_std_dev = float("nan")
@@ -124,17 +121,10 @@ class NMEASerialDriver(Node):
     def gga_callback(self):
         if self.current_gga != None:
             self.gga_publisher.publish(self.current_gga)
-
-    def serial_callback(self):
+    
+    def nmea_callback(self, data):
         try:
-            sentence = self.serial.readline().strip()
-            try:
-                if isinstance(sentence, bytes):
-                    sentence = sentence.decode('ascii')
-            except ValueError as e:
-                self.get_logger().warn(
-                    "Value error, likely due to missing fields in the NMEA message. Error was: %s. " % e)
-
+            sentence = data.sentence
             parsed_sentence = parser.parse_nmea_sentence(sentence)
             if not parsed_sentence:
                 self.get_logger().debug("Failed to parse NMEA sentence. Sentence was: %s" % sentence)
@@ -145,6 +135,7 @@ class NMEASerialDriver(Node):
                 gga_msg.data = sentence.replace('$', '')
                 self.current_gga = gga_msg
                 fix_msg = NavSatFix()
+                fix_msg.header.stamp = self.get_clock().now().to_msg()
                 fix_msg.header.frame_id = self.get_parameter('frame_id').value
                 fix_msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_APPROXIMATED
 
@@ -199,16 +190,9 @@ class NMEASerialDriver(Node):
                 self.lon_std_dev = data['lon_std_dev']
                 self.lat_std_dev = data['lat_std_dev']
                 self.alt_std_dev = data['alt_std_dev']
-            
-            if self.get_parameter('pub_sentence').value:
-                sentence_msg = String()
-                sentence.data = sentence
-                self.sentence_publisher.publish(sentence_msg)
 
         except KeyboardInterrupt:
-            if self.serial:
-                self.serial.close()
-                sys.exit()
+            sys.exit()
                 
 def main():
     rclpy.init()
@@ -220,7 +204,6 @@ def main():
     try:
         executor.spin()
     finally:
-        nmea_serial_driver.serial.close()
         nmea_serial_driver.destroy_node()
         executor.shutdown()
         rclpy.shutdown()

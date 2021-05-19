@@ -15,7 +15,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
-        (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
+        (os.path.join('share', package_name, 'config'), glob('config/*')),
     ],
     install_requires=['setuptools',
                       'pyserial',
@@ -29,7 +29,10 @@ setup(
     entry_points={
         'console_scripts': [
             'nmea_navsat_driver = tms_ss_gnss.nmea_navsat_driver:main',
-            'dummy_pub_node = tms_ss_gnss.dummy_pub:main'
+            'nmea_serial_reader = tms_ss_gnss.nmea_serial_reader:main',
+            'dummy_pub_node = tms_ss_gnss.dummy_pub:main',
+            'ntrip_hub_node = tms_ss_gnss.ntrip_hub_node:main',
+            'rtcm_server_node = tms_ss_gnss.rtcm_server_node:main'
         ],
     },
 )

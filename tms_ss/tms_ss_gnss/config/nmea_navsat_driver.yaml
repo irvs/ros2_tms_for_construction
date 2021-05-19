@@ -1,12 +1,15 @@
-nmea_serial_driver:
+nmea_serial_reader:
   ros__parameters:
-    port: "/dev/ttyACM0"
+    port: "/dev/pts/3"
     baud_rate: 115200
+    sentence_topic_name: "nmea_sentence"
+    frame_id: "gnss"
+
+nmea_navsat_driver:
+  ros__parameters:
     fix_topic_name: "fix"
     gga_topic_name: "gga"
-    sentence_topic_name: "sentence"
+    sentence_topic_name: "nmea_sentence"
     frame_id: "gnss"
     timer_preriod_fix: 0.1
     timer_preriod_gga: 0.1
-    timer_preriod_serial: 0.001
-    pub_sentense: False

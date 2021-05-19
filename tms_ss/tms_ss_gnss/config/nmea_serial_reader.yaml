@@ -1,0 +1,6 @@
+nmea_serial_reader:
+  ros__parameters:
+    port: "/dev/pts/3"
+    baud_rate: 115200
+    sentence_topic_name: "nmea_sentence"
+    frame_id: "gnss"
