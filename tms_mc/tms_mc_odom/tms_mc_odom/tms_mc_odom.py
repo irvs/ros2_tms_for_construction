@@ -10,7 +10,7 @@ import tms_db_manager.tms_db_util as db_util
 
 
 NODE_NAME = 'tms_mc_odom'
-DATA_ID   = 11000
+DATA_ID   = 11001
 DATA_TYPE = 'machine'
 
 class TmsMcOdom(Node):
