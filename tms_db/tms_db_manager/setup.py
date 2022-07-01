@@ -37,6 +37,7 @@ setup(
             'tms_db_reader = tms_db_manager.tms_db_reader:main',
             'tms_db_reader_debug = tms_db_manager.tms_db_reader_debug:main',
             'tms_db_writer = tms_db_manager.tms_db_writer:main',
+            'tms_db_writer_gridfs = tms_db_manager.tms_db_writer_gridfs:main',
             'tms_db_publisher = tms_db_manager.tms_db_publisher:main'
         ],
     },
