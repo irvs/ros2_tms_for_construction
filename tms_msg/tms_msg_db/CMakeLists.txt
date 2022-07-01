@@ -36,6 +36,7 @@ ament_lint_auto_find_test_dependencies()
 ################################################
 rosidl_generate_interfaces(tms_msg_db
   "msg/Tmsdb.msg"
+  "msg/TmsdbGridFS.msg"
   "msg/TmsdbStamped.msg"
   "msg/TmsData.msg"
   "msg/TmsDataStamped.msg"
