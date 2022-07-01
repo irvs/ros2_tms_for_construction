@@ -10,7 +10,7 @@ import tms_db_manager.tms_db_util as db_util
 
 
 NODE_NAME = 'tms_ss_ground'
-DATA_ID   = 3001    # TODO Search availabl number.
+DATA_ID   = 3031 
 DATA_TYPE = 'sensor'
 
 class TmsSsGround(Node):
@@ -18,8 +18,6 @@ class TmsSsGround(Node):
 
     def __init__(self):
         super().__init__(NODE_NAME)
-
-        # TODO Need to verify name
         self.declare_parameter('ground_name', 'ground_name')
         self.ground_name = self.get_parameter('ground_name').get_parameter_value().string_value
 
