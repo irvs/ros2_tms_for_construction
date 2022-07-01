@@ -12,7 +12,7 @@ from tms_ss.tms_ss_ground.tms_ss_ground.tms_ss_ground import DATA_ID, DATA_TYPE
 
 
 NODE_NAME = 'pointcloud2_to_pcd'
-DATA_ID   = 3001     # TODO Search available number.
+DATA_ID   = 3030 
 DATA_TYPE = 'sensor'
 # TOPIC_NAME = 'terrain_pcd'
 
