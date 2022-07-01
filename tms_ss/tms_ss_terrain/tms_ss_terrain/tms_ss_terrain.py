@@ -7,21 +7,19 @@ import open3d as o3d
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs_py import point_cloud2
 from tms_msg_db.msg import TmsdbGridFS
-from tms_ss.tms_ss_ground.tms_ss_ground.tms_ss_ground import DATA_ID, DATA_TYPE
-
 
 
 NODE_NAME = 'pointcloud2_to_pcd'
 DATA_ID   = 3030 
 DATA_TYPE = 'sensor'
-# TOPIC_NAME = 'terrain_pcd'
-
-# CREATE_FILE_NAME = 'tmp_terrain.pcd'
 
 class TmsSsTerrain(Node):
+    """Write PointCloud2 msg to file and sent the file name to tms_db_writer_gridfs."""
 
     def __init__(self):
         super().__init__(NODE_NAME)
+
+        # declare parameter
         self.declare_parameter('file_name', 'file_name')
         self.file_name = self.get_parameter('file_name').get_parameter_value().string_value
 
