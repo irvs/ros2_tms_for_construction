@@ -2,7 +2,7 @@ from glob import glob
 import os
 from setuptools import setup
 
-package_name = 'tms_ss_terrain'
+package_name = 'tms_sd_terrain'
 
 setup(
     name=package_name,
@@ -23,7 +23,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'tms_ss_terrain = tms_ss_terrain.tms_ss_terrain:main',
+            'tms_sd_terrain = tms_sd_terrain.tms_sd_terrain:main',
         ],
     },
 )

@@ -11,9 +11,9 @@ def generate_launch_description():
         'file_name', default_value='file_name'
     )
 
-    tms_ss_terrain_node = Node(
-        package='tms_ss_terrain',
-        executable='tms_ss_terrain',
+    tms_sd_terrain_node = Node(
+        package='tms_sd_terrain',
+        executable='tms_sd_terrain',
         output='screen',
         remappings=[
             ('~/input/pointcloud2', LaunchConfiguration('input/pointcloud2')),
@@ -26,5 +26,5 @@ def generate_launch_description():
     return LaunchDescription([
         input_pointcloud2,
         file_name,
-        tms_ss_terrain_node,
+        tms_sd_terrain_node,
     ])
