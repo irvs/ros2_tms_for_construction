@@ -2,7 +2,7 @@ from glob import glob
 import os
 from setuptools import setup
 
-package_name = 'tms_ss_ground'
+package_name = 'tms_sd_ground'
 
 setup(
     name=package_name,
@@ -23,7 +23,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'tms_ss_ground = tms_ss_ground.tms_ss_ground:main',
+            'tms_sd_ground = tms_sd_ground.tms_sd_ground:main',
         ],
     },
 )

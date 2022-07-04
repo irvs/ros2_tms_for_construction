@@ -11,9 +11,9 @@ def generate_launch_description():
         'ground_name', default_value='ground_name'
     )
 
-    tms_ss_ground_node = Node(
-        package='tms_ss_ground',
-        executable='tms_ss_ground',
+    tms_sd_ground_node = Node(
+        package='tms_sd_ground',
+        executable='tms_sd_ground',
         output='screen',
         remappings=[
             ('~/input/occupancy_grid', LaunchConfiguration('input/occupancy_grid')),
@@ -26,5 +26,5 @@ def generate_launch_description():
     return LaunchDescription([
         input_occupancy_grid,
         ground_name,
-        tms_ss_ground_node,
+        tms_sd_ground_node,
     ])

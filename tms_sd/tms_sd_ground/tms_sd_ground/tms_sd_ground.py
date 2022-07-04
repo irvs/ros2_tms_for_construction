@@ -9,11 +9,11 @@ from tms_msg_db.msg import Tmsdb
 import tms_db_manager.tms_db_util as db_util
 
 
-NODE_NAME = 'tms_ss_ground'
+NODE_NAME = 'tms_sd_ground'
 DATA_ID   = 3031 
 DATA_TYPE = 'sensor'
 
-class TmsSsGround(Node):
+class TmsSdGround(Node):
     """Convert OccupancyGrid msg to Tmsdb msg and sent to tms_db_writer."""
 
     def __init__(self):
@@ -71,11 +71,11 @@ class TmsSsGround(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    tms_ss_ground = TmsSsGround()
+    tms_sd_ground = TmsSdGround()
 
-    rclpy.spin(tms_ss_ground)
+    rclpy.spin(tms_sd_ground)
 
-    tms_ss_ground.destroy_node()
+    tms_sd_ground.destroy_node()
     rclpy.shutdown()
 
 
