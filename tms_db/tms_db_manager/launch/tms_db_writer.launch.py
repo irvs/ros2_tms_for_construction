@@ -10,6 +10,9 @@ def generate_launch_description():
       db_port = DeclareLaunchArgument(
             'db_port', default_value='27017'
       )
+      init_db = DeclareLaunchArgument(
+            'init_db', default_value='False'
+      )
 
       tms_db_writer_node = Node(
             package='tms_db_manager',
@@ -18,6 +21,7 @@ def generate_launch_description():
             parameters=[{
                   'db_host': LaunchConfiguration('db_host'),
                   'db_port': LaunchConfiguration('db_port'),
+                  'init_db': LaunchConfiguration('init_db'),
             }]
       )
       tms_db_writer_gridfs_node = Node(
@@ -32,6 +36,7 @@ def generate_launch_description():
       return LaunchDescription([
             db_host,
             db_port,
+            init_db,
             tms_db_writer_node,
             tms_db_writer_gridfs_node,
       ])
