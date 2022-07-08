@@ -37,26 +37,9 @@ ament_lint_auto_find_test_dependencies()
 rosidl_generate_interfaces(tms_msg_db
   "msg/Tmsdb.msg"
   "msg/TmsdbGridFS.msg"
-  "msg/TmsdbStamped.msg"
-  "msg/TmsData.msg"
-  "msg/TmsDataStamped.msg"
 
   "srv/TmsdbGetData.srv"
-  "srv/Tmsdbgetfurnituresinfo.srv"
-  "srv/Tmsdbgetmovablefurnituresinfo.srv"
-  "srv/Tmsdbgetobjectsinfo.srv"
-  "srv/Tmsdbgetpersoninfo.srv"
-  "srv/Tmsdbgetrobotsinfo.srv"
-  "srv/Tmsdbgetrobotinfo.srv"
-  "srv/Tmsdbgetpersonbehaviorinfo.srv"
-  "srv/Tmsdbgetpcdinfo.srv"
-  "srv/Tmsdbgettasklist.srv"
-  "srv/Tmsdbmissingobjectschecker.srv"
-  "srv/Tmsdbobjdt.srv"
-  "srv/TmsdbPlanning.srv"
-  "srv/Tmsdbfileconservation.srv"
-  "srv/TmsdbObjectsdata.srv"
-  "srv/Tmsdbgetunknownobject.srv"
+  "srv/TmsdbGridFSGetData.srv"
 
   DEPENDENCIES 
   std_msgs
