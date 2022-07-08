@@ -10,7 +10,6 @@ import array
 import numpy
 import rclpy
 import pymongo
-from bson import Binary
 
 
 def connect_db(db_name: str, db_host: str = 'localhost', db_port: int = 27017) -> pymongo.database.Database:
@@ -32,13 +31,13 @@ def connect_db(db_name: str, db_host: str = 'localhost', db_port: int = 27017) -
     return db
 
 
-def msg_to_document(msg):
+def msg_to_document(msg: object) -> dict:
     """
     Convert supplied ROS msg to dictionary.
 
     Parameters
     ----------
-    msg : Any
+    msg : object
         ROS msg.
 
     Returns
@@ -47,20 +46,13 @@ def msg_to_document(msg):
         Dictionary converted from supplied ROS msg.
     """
     msg_dict = {}
-    slot_types = []
-    
-    if hasattr(msg, 'slot_types'):
-        slot_types = msg.slot_types
-    else:
-        slot_types = [None] * len(msg.__slots__)
-
-    for (attr, type) in zip(msg.__slots__, slot_types):
-        msg_dict[attr[1:]] = sanitize_value(getattr(msg, attr), type)
+    for attr in msg.__slots__:
+        msg_dict[attr[1:]] = sanitize_value(getattr(msg, attr))
         
     return msg_dict
     
 
-def sanitize_value(v, type):
+def sanitize_value(val):
     """
     Sanitize supplied value.
 
@@ -74,26 +66,19 @@ def sanitize_value(v, type):
     Any
         Sanitized value.
     """
+    if isinstance(val, object) and hasattr(val, '__slots__'):
+        return msg_to_document(val)
 
-    if isinstance(v, str) and type == 'uint8[]':
-        return Binary(v)
+    if isinstance(val, numpy.ndarray) or isinstance(val, array.array):
+        val = val.tolist()
 
-    if isinstance(v, object) and hasattr(v, '__slots__'):
-        return msg_to_document(v)
-
-    if isinstance(v, numpy.ndarray) or isinstance(v, array.array):
-        v = v.tolist()
-
-    if isinstance(v, list):
+    if isinstance(val, list):
         result = []
-        for t in v:
-            if hasattr(t, '_type'):
-                result.append(sanitize_value(t, t._type))
-            else:
-                result.append(sanitize_value(t, None))
+        for t in val:
+            result.append(sanitize_value(t))
         return result
         
-    return v
+    return val
 
 
 def check_connection(db_host: str, db_port: int) -> bool:
@@ -120,112 +105,47 @@ def check_connection(db_host: str, db_port: int) -> bool:
         return False
 
 
-# TODO fix for using json.
-def document_to_msg(document, TYPE):
+def document_to_msg(document: dict, TYPE: object) -> object:
+    """
+    Convert document to ROS msg.
+
+    Parameters
+    ----------
+    document : dict
+        Data fetched from MongoDB.
+    TYPE : object
+        ROS msg type.
+
+    Returns
+    -------
+    object
+        ROS msg.
+    """
     msg = TYPE()
     _fill_msg(msg, document)
     return msg
 
 
-# TODO fix for using json.
-def _fill_msg(msg, dic):
-    for i in dic:
-        if isinstance(dic[i], dict):
-            
-            _fill_msg(getattr(msg, i), dic[i])
-
-
-        else:
-            if i == "time":
-                 dic[i] = str(dic[i])
-            elif i == "id":
-                dic[i] = int(dic[i])
-            elif i == "name":
-                dic[i] = str(dic[i])
-            elif i == "x":
-                dic[i] = float(dic[i])
-            elif i == "y":
-                dic[i] = float(dic[i])
-            elif i == "z":
-                dic[i] = float(dic[i])
-            elif i == "rr":
-                dic[i] = float(dic[i])
-            elif i == "rp":
-                dic[i] = float(dic[i])
-            elif i == "ry":
-                dic[i] = float(dic[i])
-            elif i == "offset_x":
-                dic[i] = float(dic[i])
-            elif i == "offset_y":
-                dic[i] = float(dic[i])
-            elif i == "offset_z":
-                dic[i] = float(dic[i])
-            elif i == "joint":
-                dic[i] = str(dic[i])
-            elif i == "weight":
-                dic[i] = float(dic[i])
-            elif i == "rfid":
-                dic[i] = str(dic[i])
-            elif i == "etcdata":
-                dic[i] = str(dic[i])
-            elif i == "place":
-                dic[i] = int(dic[i])
-            elif i == "extfile":
-                dic[i] = str(dic[i])
-            elif i == "sensor":
-                dic[i] = int(dic[i])
-            elif i == "probability":
-                dic[i] = float(dic[i])
-            elif i == "state":
-                dic[i] = int(dic[i])
-            elif i == "task":
-                dic[i] = str(dic[i])
-            elif i == "note":
-                dic[i] = str(dic[i])
-            elif i == "tag":
-                dic[i] = str(dic[i])
-            elif i == "announce":
-                dic[i] = str(dic[i])
-
-            if i != "require_tag" and i != "noun" and i != "error_announce" and i != "tokens":
-                setattr(msg, i, dic[i])
-
-
-def get_collection_by_id(db: pymongo.database.Database, id: int) -> pymongo.collection.Collection:
+def _fill_msg(msg: object, dic: dict) -> None:
     """
-    Get collection based on ID.
+    Filling ROS msg by given dictionary.
 
     Parameters
     ----------
-    db : pymongo.database.Database
-        Targent MongoDB database.
-    id : int
-        Target ID.
-
-    Returns
-    -------
-    pymongo.collection.Collection
-        MongoDB collection.
+    msg : object
+        ROS msg type.
+    dic : dict
+        dictionary data.
     """
-    if id >= 11000:
-        return db['machine']
-    elif id >= 10000:
-        return db['state']
-    elif id >= 9000:
-        return db['subtask']
-    elif id >= 8000:
-        return db['task']
-    elif id >= 7000:
-        return db['object']
-    elif id >= 6000:
-        return db['furniture']
-    elif id >= 5000:
-        return db['space']
-    elif id >= 4000:
-        return db['structure']
-    elif id >= 3000:
-        return db['sensor']
-    elif id >= 2000:
-        return db['robot']
-    else:
-        return db['person']
+    for i in dic:
+        if isinstance(dic[i], dict):
+            _fill_msg(getattr(msg, i), dic[i])
+        else:
+            attr = getattr(msg, i)
+            attr_type = type(attr)
+            if attr_type in [type(dic[i]), array.array]:
+                setattr(msg, i, dic[i])
+            elif attr_type is numpy.ndarray:
+                setattr(msg, i, numpy.asarray(dic[i], dtype=attr.dtype))
+            else:
+                setattr(msg, i, attr_type(dic[i]))
