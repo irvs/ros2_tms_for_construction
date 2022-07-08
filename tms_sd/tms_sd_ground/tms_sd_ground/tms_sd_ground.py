@@ -32,7 +32,7 @@ class TmsSdGround(Node):
         """
         Send topics to tms_db_writer (Write the received OccupancyGrid data to DB).
 
-        parameters
+        Parameters
         ----------
         msg : OccupancyGrid
             Target Object's OccupancyGrid.
