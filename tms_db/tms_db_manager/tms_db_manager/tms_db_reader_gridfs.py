@@ -13,8 +13,10 @@ class TmsDbReaderGridFS(Node):
 
         # declare parameter
         self.declare_parameter('db_host', 'localhost')
-        self.db_host = self.get_parameter('db_host').get_parameter_value().string_value
         self.declare_parameter('db_port', 27017)
+
+        # get parameter
+        self.db_host = self.get_parameter('db_host').get_parameter_value().string_value
         self.db_port = self.get_parameter('db_port').get_parameter_value().integer_value
 
         self.db  = db_util.connect_db('rostmsdb', self.db_host, self.db_port)
