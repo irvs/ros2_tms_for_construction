@@ -20,8 +20,8 @@ class TmsUrConstructionTerrainClient(Node):
         super().__init__(NODE_NAME)
 
         # declare_parameter
-        self.declare_parameter('file_name', 'file_name')
-        self.file_name = self.get_parameter('file_name').get_parameter_value().string_value
+        self.declare_parameter('filename', 'filename')
+        self.filename = self.get_parameter('filename').get_parameter_value().string_value
 
         self.cli = self.create_client(TmsdbGridFSGetData, 'tms_db_reader_gridfs')
         while not self.cli.wait_for_service(timeout_sec=1.0):
@@ -40,7 +40,7 @@ class TmsUrConstructionTerrainClient(Node):
         """
         self.req.type      = DATA_TYPE
         self.req.id        = DATA_ID
-        self.req.file_name = self.file_name
+        self.req.filename  = self.filename
         self.future        = self.cli.call_async(self.req)
         rclpy.spin_until_future_complete(self, self.future)
         return self.future.result()
@@ -53,15 +53,15 @@ class TmsUrConstructionTerrainPublisher(Node):
         super().__init__(NODE_NAME)
 
         # declare parameter
-        self.declare_parameter('file_name', 'file_name')
+        self.declare_parameter('filename', 'filename')
         self.declare_parameter('voxel_size', '0.0')
 
         # get parameter
-        self.file_name = self.get_parameter('file_name').get_parameter_value().string_value
+        self.filename = self.get_parameter('filename').get_parameter_value().string_value
         self.voxel_size = self.get_parameter('voxel_size').get_parameter_value().double_value
 
         self.publisher_ = self.create_publisher(PointCloud2, '~/output/pointcloud2', 10)
-        timer_period = 0.1
+        timer_period = 5
         self.msg = self.create_msg()
         self.timer = self.create_timer(timer_period, self.publish_pointcloud2)
 
@@ -98,7 +98,7 @@ class TmsUrConstructionTerrainPublisher(Node):
         o3d.geometry.PointCloud
             Point cloud data.
         """
-        pcd = o3d.io.read_point_cloud(self.file_name)
+        pcd = o3d.io.read_point_cloud(self.filename)
 
         # downsampling
         if self.voxel_size > 0:
@@ -165,7 +165,7 @@ def run_client(args=None) -> Tuple[bool, str]:
     tms_ur_construction_terrain_client.destroy_node()
     rclpy.shutdown()
 
-    return response.result, tms_ur_construction_terrain_client.file_name
+    return response.result, tms_ur_construction_terrain_client.filename
 
 
 def run_publisher() -> None:
@@ -183,10 +183,10 @@ def run_publisher() -> None:
 
 def main(args=None):
     # client
-    result, file_name = run_client(args=args)
+    result, filename = run_client(args=args)
 
     if result == False:
-        print(f'Failed to fetch file data. Maybe the file name ({file_name}) was wrong.')
+        print(f'Failed to fetch file data. Maybe the file name ({filename}) was wrong.')
         return
 
     # publisher

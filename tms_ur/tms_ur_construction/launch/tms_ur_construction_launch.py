@@ -18,8 +18,8 @@ def generate_launch_description():
     latest = DeclareLaunchArgument(
         'latest', default_value='False'
     )
-    file_name = DeclareLaunchArgument(
-        'file_name', default_value='file_name'
+    filename = DeclareLaunchArgument(
+        'filename', default_value='filename'
     )
     voxel_size = DeclareLaunchArgument(
         'voxel_size', default_value='0.0'
@@ -56,7 +56,7 @@ def generate_launch_description():
             ('~/output/pointcloud2', LaunchConfiguration('output/pointcloud2')),
         ],
         parameters=[{
-            'file_name': LaunchConfiguration('file_name'),
+            'filename': LaunchConfiguration('filename'),
             'voxel_size': LaunchConfiguration('voxel_size'),
         }]
     )
@@ -66,7 +66,7 @@ def generate_launch_description():
         output_odom,
         output_pointcloud2,
         latest,
-        file_name,
+        filename,
         voxel_size,
         tms_ur_construction_ground_node,
         tms_ur_cv_odom_node,

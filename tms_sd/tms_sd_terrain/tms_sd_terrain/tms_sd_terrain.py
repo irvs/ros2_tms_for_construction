@@ -20,8 +20,8 @@ class TmsSdTerrain(Node):
         super().__init__(NODE_NAME)
 
         # declare parameter
-        self.declare_parameter('file_name', 'file_name')
-        self.file_name = self.get_parameter('file_name').get_parameter_value().string_value
+        self.declare_parameter('filename', 'filename')
+        self.filename = self.get_parameter('filename').get_parameter_value().string_value
 
         self.publisher_ = self.create_publisher(TmsdbGridFS, 'tms_db_gridfs_data', 10)
         self.subscription = self.create_subscription(
@@ -45,7 +45,7 @@ class TmsSdTerrain(Node):
         tmsdb_gridfs_msg.time      = datetime.now().isoformat()
         tmsdb_gridfs_msg.type      = DATA_TYPE
         tmsdb_gridfs_msg.id        = DATA_ID
-        tmsdb_gridfs_msg.file_name = self.file_name
+        tmsdb_gridfs_msg.filename = self.filename
 
         self.publisher_.publish(tmsdb_gridfs_msg)
 
@@ -73,7 +73,7 @@ class TmsSdTerrain(Node):
         o3d_cloud.points = o3d.utility.Vector3dVector(np.array(points))
         o3d_cloud.colors = o3d.utility.Vector3dVector(np.array(colors))
 
-        o3d.io.write_point_cloud(self.file_name, o3d_cloud)
+        o3d.io.write_point_cloud(self.filename, o3d_cloud)
 
 def main(args=None):
     rclpy.init(args=args)

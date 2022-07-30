@@ -37,15 +37,15 @@ class TmsDbWriterGridFS(Node):
         msg : TmsdbGridFS
             An instance of a ROS2 custom message to store file data.
         """
-        file_name = msg.file_name
+        filename = msg.filename
         
-        f = open(file_name, 'rb')
+        f = open(filename, 'rb')
 
         fs = gridfs.GridFS(self.db)
-        fs.put(f.read(), file_name=file_name, time=msg.time, type=msg.type, id=msg.id)
+        fs.put(f.read(), filename=filename, time=msg.time, type=msg.type, id=msg.id)
 
         f.close()
-        os.remove(file_name)
+        os.remove(filename)
 
         self.get_logger().info('ok')
 

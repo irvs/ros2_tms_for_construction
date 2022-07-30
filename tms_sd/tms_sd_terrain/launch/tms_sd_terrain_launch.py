@@ -7,8 +7,8 @@ def generate_launch_description():
     input_pointcloud2 = DeclareLaunchArgument(
         'input/pointcloud2', default_value='input/pointcloud2'
     )
-    file_name = DeclareLaunchArgument(
-        'file_name', default_value='file_name'
+    filename = DeclareLaunchArgument(
+        'filename', default_value='filename'
     )
 
     tms_sd_terrain_node = Node(
@@ -19,12 +19,12 @@ def generate_launch_description():
             ('~/input/pointcloud2', LaunchConfiguration('input/pointcloud2')),
         ],
         parameters=[{
-            'file_name': LaunchConfiguration('file_name'),
+            'filename': LaunchConfiguration('filename'),
         }]
     )
 
     return LaunchDescription([
         input_pointcloud2,
-        file_name,
+        filename,
         tms_sd_terrain_node,
     ])

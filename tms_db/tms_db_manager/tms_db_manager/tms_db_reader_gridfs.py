@@ -40,12 +40,12 @@ class TmsDbReaderGridFS(Node):
             Response to client node.
         """
         fs = gridfs.GridFS(self.db)
-        file_obj = fs.find_one({'filename': request.file_name})
+        file_obj = fs.find_one({'filename': request.filename})
         if file_obj is None:
             response.result = False
             return response
 
-        f = open(request.file_name, 'wb')
+        f = open(request.filename, 'wb')
         f.write(file_obj.read())
         f.close()
 
