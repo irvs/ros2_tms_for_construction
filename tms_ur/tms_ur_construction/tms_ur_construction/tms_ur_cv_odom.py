@@ -2,6 +2,8 @@ from datetime import datetime
 import json
 from time import sleep
 import rclpy
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.node import Node
 
 from nav_msgs.msg import Odometry
@@ -14,7 +16,8 @@ NODE_NAME = 'tms_ur_cv_odom'
 DATA_ID   = 11001
 DATA_TYPE = 'machine'
 
-class TmsUrCvOdomClient(Node):
+
+class TmsUrCvOdomNode(Node):
     """Get construction vehicle's Odometry data from tms_db_reader."""
 
     def __init__(self):
@@ -24,11 +27,29 @@ class TmsUrCvOdomClient(Node):
         self.declare_parameter('latest', 'False')
         self.latest = self.get_parameter('latest').get_parameter_value().bool_value
 
-        self.cli = self.create_client(TmsdbGetData, 'tms_db_reader')
+        # callback group
+        client_cb_group = MutuallyExclusiveCallbackGroup()
+        timer_cb_group = MutuallyExclusiveCallbackGroup()
+
+        self.cli = self.create_client(TmsdbGetData, 'tms_db_reader', callback_group=client_cb_group)
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
         self.req = TmsdbGetData.Request()
 
+        self.publisher_ = self.create_publisher(Odometry, '~/output/odom', 10)
+        timer_period = 0.1
+        self.call_timer = self.create_timer(timer_period, self.timer_callback, callback_group=timer_cb_group)
+
+    def timer_callback(self):
+        """
+        Get Odometry data from tms_db_reader and publish them.
+        """
+        response = None
+        while response is None:
+            response = self.send_request()
+
+        self.tmsdbs = response.tmsdbs
+        self.publish_odom()
 
     def send_request(self):
         """
@@ -42,28 +63,19 @@ class TmsUrCvOdomClient(Node):
         self.req.type        = DATA_TYPE
         self.req.id          = DATA_ID
         self.req.latest_only = self.latest
-        self.future = self.cli.call_async(self.req)
-        rclpy.spin_until_future_complete(self, self.future)
-        return self.future.result()
-
-
-class TmsUrCvOdomPublisher(Node):
-    """Publish construction vehicle's Odometry."""
-
-    def __init__(self, tmsdbs: list, latest: bool):
-        super().__init__(NODE_NAME)
-        self.tmsdbs = tmsdbs
-        self.latest = latest
-        self.publisher_ = self.create_publisher(Odometry, '~/output/odom', 10)
-        timer_period = 0.1
-        self.timer = self.create_timer(timer_period, self.publish_odom)
+        return self.cli.call(self.req)
 
     def publish_odom(self) -> None:
         """
         Publish odom's Odometry topics.
         """
         if self.latest:
-            dict_msg = json.loads(self.tmsdbs[0].msg)
+            try:
+                dict_msg = json.loads(self.tmsdbs[0].msg)
+            except:
+                self.get_logger().info("no data")
+                return
+
             msg: Odometry = db_util.document_to_msg(dict_msg, Odometry)
             self.publisher_.publish(msg)
         else:
@@ -89,29 +101,14 @@ class TmsUrCvOdomPublisher(Node):
 
 
 def main(args=None):
-    # client
     rclpy.init(args=args)
 
-    tms_ur_cv_odom_client = TmsUrCvOdomClient()
-    response = tms_ur_cv_odom_client.send_request()
-    latest = tms_ur_cv_odom_client.latest
+    tms_ur_cv_odom_node = TmsUrCvOdomNode()
+    executer = MultiThreadedExecutor()
+    executer.add_node(tms_ur_cv_odom_node)
+    executer.spin()
 
-    tms_ur_cv_odom_client.destroy_node()
-    rclpy.shutdown()
-
-    # publisher
-    rclpy.init()
-
-    if latest:
-        # publish latest data
-        tms_ur_cv_odom_publisher = TmsUrCvOdomPublisher(response.tmsdbs, True)
-        rclpy.spin(tms_ur_cv_odom_publisher)
-    else:
-        # debugging
-        tms_ur_cv_odom_publisher = TmsUrCvOdomPublisher(response.tmsdbs, False)
-        rclpy.spin_once(tms_ur_cv_odom_publisher)
-
-    tms_ur_cv_odom_publisher.destroy_node()
+    tms_ur_cv_odom_node.destroy_node()
     rclpy.shutdown()
 
 
