@@ -45,6 +45,8 @@ class TmsDbReader(Node):
 
         if request.latest_only:
             latest_data = self.get_latest_data(request, collection)
+            if latest_data == None:
+                return response
             response.tmsdbs.append(self.allocate_tmsdb(latest_data))
             return response
         else:
