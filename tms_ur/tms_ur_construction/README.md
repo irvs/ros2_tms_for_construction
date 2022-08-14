@@ -8,6 +8,8 @@ tms_ur_construction is a package for getting construction data (ex. machine's lo
 
 Detail description is [here](https://github.com/irvs/ros2_tms_for_construction/tree/main/tms_db).
 
+Receive requests from clients and return data in ROS2-TMS database to the clients.
+
 ### Reader
 
 ```
@@ -23,6 +25,8 @@ ros2 launch tms_db_manager tms_db_manager.launch.py db_host:=localhost db_port:=
 ## 2. Run tms_ur_construction
 
 ### 1. cv_odom, construction_ground, construction_terrain
+
+After the below command, nodes are executed that request data to a service node and publish response data.
 
 ```
 ros2 launch tms_ur_construction tms_ur_construction_launch.py output/occupancy_grid:=/topic/of/occupancy_grid latest:=true file_name:=cloud.pcd voxel_size:=0.5
@@ -54,6 +58,8 @@ ros2 launch tms_ur_construction tms_ur_construction_launch.py output/occupancy_g
 | `voxel_size` | float  | `0.0`         | voxel size of downsampling                 |
 
 ### 2. construction_terrain_mesh
+
+After the below command, a node is executed that requests .pcd file info to a service node and publishes Mesh converted from the file.
 
 ```
 ros2 launch tms_ur_construction tms_ur_construction_terrain_mesh_launch.py output/mesh:=/topic/of/mesh file_name:=cloud.pcd voxel_size:=0.5 alpha:=3.0

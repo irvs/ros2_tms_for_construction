@@ -10,6 +10,8 @@ Received Odometry msg is the location data of the construction machine.
 
 Detail description is [here](https://github.com/irvs/ros2_tms_for_construction/tree/main/tms_db).
 
+Receive Tmsdb from tms_mc_odom and store them in ROS2-TMS database.
+
 ### Writer
 
 ```
@@ -23,6 +25,8 @@ ros2 launch tms_db_manager tms_db_manager.launch.py db_host:=localhost db_port:=
 ```
 
 ## 2. Run tms_mc_odom
+
+After the below command, a node is executed that subscribes Odometry and publishes Tmsdb including the Odometry.
 
 ```
 ros2 launch tms_mc_odom tms_mc_odom_launch.py input/odom:=/topic/of/odom machine_name:=crawler

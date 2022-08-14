@@ -10,6 +10,8 @@ Received OccupancyGrid msg is a heatmap showing the hardness of the ground.
 
 Detail description is [here](https://github.com/irvs/ros2_tms_for_construction/tree/main/tms_db).
 
+Receive Tmsdb from tms_sd_ground and store them in ROS2-TMS database.
+
 ### Writer
 
 ```
@@ -23,6 +25,8 @@ ros2 launch tms_db_manager tms_db_manager.launch.py db_host:=localhost db_port:=
 ```
 
 ## 2. Run tms_sd_ground
+
+After the below command, a node is executed that subscribes OccupancyGrid and publishes Tmsdb including the OccupancyGrid.
 
 ```
 ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/topic/of/occupancy_grid ground_name:=construction_ground
