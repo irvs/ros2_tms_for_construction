@@ -6,13 +6,11 @@ ROS2-TMS database manager.
 
 ## Reader
 
-Get data from ROS2-TMS database.
+After the below command, service nodes are executed that get requested data in ROS2-TMS database and respond to them.
 
 ```
 ros2 launch tms_db_manager tms_db_reader.launch.py db_host:=localhost db_port:=27017
 ```
-
-After the above command, service nodes are executed that get requested data in ROS2-TMS database and respond to them.
 
 ### Servers
 
@@ -23,13 +21,11 @@ After the above command, service nodes are executed that get requested data in R
 
 ## Writer
 
-Store data to ROS2-TMS database.
+After the below command, subscriber nodes are executed that store received data in ROS2-TMS database.
 
 ```
 ros2 launch tms_db_manager tms_db_writer.launch.py db_host:=localhost db_port:=27017 init_db:=true
 ```
-
-After the above command, subscriber nodes are executed that store received data in ROS2-TMS database.
 
 ### Inputs
 

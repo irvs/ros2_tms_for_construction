@@ -12,30 +12,44 @@ ROS2-TMS is being developed as a part of "**MyIoT Store**" in "**MyIoT Project**
 
 ## Install
 
-- ROS2 Foxy: https://index.ros.org/doc/ros2/Installation/Foxy/
-- Git: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
-- mongodb: https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/
-- related packages for ROS2-TMS-FOR-CONSTRUCTION
-    - pymongo 4.1.1
-    - open3d
-    - numpy
+### ROS2 Foxy
 
-    ```
-    python3 -m pip install pymongo==4.1.1 open3d numpy
-    ```
+https://index.ros.org/doc/ros2/Installation/Foxy/
+
+### Git
+
+https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
+
+### MongoDB
+
+https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/
+
+### Related packages for ROS2-TMS-FOR-CONSTRUCTION
+- pymongo 4.1.1
+- open3d
+- numpy
+
+```
+python3 -m pip install pymongo==4.1.1 open3d numpy
+```
 
 
 ## Setup
 
-### Clone
+### Create a workspace
 
 ```
 mkdir -p ~/ros2-tms-for-constructoin_ws/src
+```
+
+### Clone this repository
+
+```
 cd ~/ros2-tms-for-constructoin_ws/src/
 git clone　https://github.com/irvs/ros2_tms_for_construction.git
 ```
 
-### Build
+### Build the workspace
 
 ```
 cd ~/ros2-tms-for-constructoin_ws
