@@ -1,6 +1,6 @@
 # ROS2-TMS-FOR-CONSTRUCTION
 
-ROS2-TMS-FOR-CONSTRUCTION is an application of ROS2-TMS to construction.
+ROS2-TMS-FOR-CONSTRUCTION is an IoRT library for construction applications based on ROS2-TMS.
 
 ## ROS2-TMS
 
