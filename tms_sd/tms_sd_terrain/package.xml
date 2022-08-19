@@ -3,9 +3,17 @@
 <package format="3">
   <name>tms_sd_terrain</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="uryu44213@gmail.com">maeda</maintainer>
-  <license>TODO: License declaration</license>
+  <description>The tms_sd_terrain package</description>
+
+  <maintainer email="kawamura@ait.kyushu-u.ac.jp">Akihiro Kawamura</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://irvs.github.io/ros_tms/</url>
+  <url type="repository">https://github.com/irvs/ros2_tms_for_construction</url>
+  <url type="bugtracker">https://github.com/irvs/ros2_tms_for_construction/issues</url>
+  
+  <author email="maeda@irvs.ait.kyushu-u.ac.jp">Ryuichi Maeda</author>
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>ros2launch</exec_depend>
