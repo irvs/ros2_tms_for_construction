@@ -16,10 +16,20 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='maeda',
-    maintainer_email='uryu44213@gmail.com',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    author='Ryuichi Maeda',
+    author_email='maeda@irvs.ait.kyushu-u.ac.jp',
+    maintainer='kawamura',
+    maintainer_email='Kawamura@irvs.ait.kyushu-u.ac,jp',
+    keywords=['ROS'],
+    classifiers=[
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python',
+        'Topic :: Software Development',
+    ],
+    description=('Package containing examples of how to use the rclpy API.'
+    ),
+    license='Apache License, Version 2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
