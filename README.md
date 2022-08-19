@@ -26,11 +26,11 @@ https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/
 
 ### Related packages for ROS2-TMS-FOR-CONSTRUCTION
 - pymongo 4.1.1
-- open3d
-- numpy
+- open3d 0.13.0
+- numpy 1.22.3
 
 ```
-python3 -m pip install pymongo==4.1.1 open3d numpy
+python3 -m pip install pymongo==4.1.1 open3d==0.13.0 numpy==1.22.3
 ```
 
 
@@ -58,7 +58,7 @@ colcon build
 
 ## Version Information
 
-* Date : 2022.8.14 (since 2022.8.14 ROS2-TMS-FOR-CONSTRUCTION / since 2019.2.14 ROS2-TMS / since 2012.5.1 ROS-TMS / since 2005.11.1 TMS)  
+* Date : 2022.8.19 (since 2022.8.19 ROS2-TMS-FOR-CONSTRUCTION / since 2019.2.14 ROS2-TMS / since 2012.5.1 ROS-TMS / since 2005.11.1 TMS)  
   
 * Url : https://index.ros.org/doc/ros2/Installation/Foxy/     
 
@@ -66,10 +66,10 @@ colcon build
 
 * ROS2 Foxy Fitzroy  
 
-* mongodb 4.0  
+* mongodb 5.0  
 
 * pymongo 4.1.1  
 
-* numpy
+* open3d 0.13.0
 
-* open3d
+* numpy 1.22.3
