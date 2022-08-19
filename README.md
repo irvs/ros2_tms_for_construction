@@ -64,13 +64,13 @@ colcon build
 
 ## How to use
 
-ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see descriptions from the links.
+ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descriptions from the links.
 
 ### tms_db
 
 -  [tms_db_manager](https://github.com/irvs/ros2_tms_for_construction/tree/main/tms_db/tms_db_manager)
 
-   ROS2-TMS database manager. This package has tms_db_reader and tms_db_writer nodes.
+   ROS2-TMS database manager. This package has tms_db_reader(_gridfs) and tms_db_writer(_gridfs) nodes.
 
 ### tms_mc
 
