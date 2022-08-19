@@ -12,7 +12,7 @@ ROS2-TMS is being developed as a part of "**MyIoT Store**" in "**MyIoT Project**
 
 ## ROS2-TMS-FOR-CONSTRUCTION
 
-ROS2-TMS-FOR-CONSTRUCTION is developed for construction applications based on ROS2-TMS with the support of JST Moonshot R&D, Grant Number JPMJPS2032 entitled “Collaborative AI robots for adaptation of diverse environments and innovation of infrastructure construction” in “Moonshot Goal 3: Realization of Artificial Intelligence (AI) robots that autonomously learn, adapt to their environment, evolve itself in intelligence, and act alongside human beings, by 2050.”
+ROS2-TMS-FOR-CONSTRUCTION is developed as an IoRT library for construction applications based on ROS2-TMS with the support of JST Moonshot R&D, Grant Number JPMJPS2032 entitled “Collaborative AI robots for adaptation of diverse environments and innovation of infrastructure construction” in “Moonshot Goal 3: Realization of Artificial Intelligence (AI) robots that autonomously learn, adapt to their environment, evolve itself in intelligence, and act alongside human beings, by 2050.”
 
 Project page: [https://moonshot-cafe-project.org/en/](https://moonshot-cafe-project.org/en/)
 
