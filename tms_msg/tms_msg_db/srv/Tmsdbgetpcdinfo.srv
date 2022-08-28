@@ -1,9 +1,0 @@
-uint32 id
----
-uint64 rostime
-string pcd_file
-sensor_msgs/PointCloud2 cloud
-float32 get_x
-float32 get_y
-float32 get_z
-float32 get_theta
