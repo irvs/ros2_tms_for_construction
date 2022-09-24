@@ -68,13 +68,13 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
 ### tms_db
 
--  [tms_db_manager](https://github.com/irvs/ros2_tms_for_construction/tree/main/tms_db/tms_db_manager)
+-  [tms_db_manager](tms_db/tms_db_manager)
 
    ROS2-TMS database manager. This package has tms_db_reader(_gridfs) and tms_db_writer(_gridfs) nodes.
 
 ### tms_mc
 
-- [tms_mc_odom](https://github.com/irvs/ros2_tms_for_construction/tree/main/tms_mc/tms_mc_odom)
+- [tms_mc_odom](tms_mc/tms_mc_odom)
 
   tms_mc_odom is a package for formatting Odometry msg to Tmsdb msg and sending it to tms_db_writer.
 
@@ -82,13 +82,13 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
 ### tms_sd
 
-- [tms_sd_ground](https://github.com/irvs/ros2_tms_for_construction/tree/main/tms_sd/tms_sd_ground)
+- [tms_sd_ground](tms_sd/tms_sd_ground)
 
   tms_sd_ground is a package for formatting OccupancyGrid msg to Tmsdb msg and sending it to tms_db_writer.
 
   The received OccupancyGrid msg is a heatmap showing the hardness of the ground.
 
-- [tms_sd_terrain](https://github.com/irvs/ros2_tms_for_construction/tree/main/tms_sd/tms_sd_terrain)
+- [tms_sd_terrain](tms_sd/tms_sd_terrain)
 
   tms_sd_terrain is a package for converting PointCloud2 msg to .pcd file and sending the file info to tms_db_writer_gridfs.
 
@@ -96,7 +96,7 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
 ### tms_ur
 
-- [tms_ur_construction](https://github.com/irvs/ros2_tms_for_construction/tree/main/tms_ur/tms_ur_construction)
+- [tms_ur_construction](tms_ur/tms_ur_construction)
 
   tms_ur_construction is a package for getting construction data (ex. machine's location, terrain, hardness of ground) from tms_db_reader(_gridfs) and publishing them.
 
