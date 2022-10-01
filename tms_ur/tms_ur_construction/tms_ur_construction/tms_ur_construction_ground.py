@@ -1,9 +1,8 @@
 from datetime import datetime
+from functools import partial
 import json
 from time import sleep
 import rclpy
-from rclpy.executors import MultiThreadedExecutor
-from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.node import Node
 
 from nav_msgs.msg import OccupancyGrid
@@ -27,28 +26,20 @@ class TmsUrConstructionGroundNode(Node):
         self.declare_parameter('latest', 'False')
         self.latest = self.get_parameter('latest').get_parameter_value().bool_value
 
-        # callback group
-        client_cb_group = MutuallyExclusiveCallbackGroup()
-        timer_cb_group = MutuallyExclusiveCallbackGroup()
-
-        self.cli = self.create_client(TmsdbGetData, 'tms_db_reader', callback_group=client_cb_group)
-        while not self.cli.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('service not available, waiting again...')
-        self.req = TmsdbGetData.Request()
-
         self.publisher_ = self.create_publisher(OccupancyGrid, '~/output/occupancy_grid', 10)
         timer_period = 0.1
-        self.call_timer = self.create_timer(timer_period, self.timer_callback, callback_group=timer_cb_group)
+        self.call_timer = self.create_timer(timer_period, self.timer_callback)
 
     def timer_callback(self):
         """
         Get OccupancyGrid data from tms_db_reader and publish them.
         """
-        response = None
-        while response is None:
-            response = self.send_request()
+        self.send_request()
 
-        self.tmsdbs = response.tmsdbs
+        try:
+            self.tmsdbs = self.res.tmsdbs
+        except:
+            return
         self.publish_occupancy_grid()
 
     def send_request(self):
@@ -60,10 +51,22 @@ class TmsUrConstructionGroundNode(Node):
         Any
             Result of request to tms_db_reader.
         """
+        self.cli = self.create_client(TmsdbGetData, 'tms_db_reader')
+        while not self.cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service not available, waiting again...')
+
+        self.req = TmsdbGetData.Request()
         self.req.type        = DATA_TYPE
         self.req.id          = DATA_ID
         self.req.latest_only = self.latest
-        return self.cli.call(self.req)
+        future = self.cli.call_async(self.req)
+        future.add_done_callback(partial(self.callback_set_response))
+
+    def callback_set_response(self, future):
+        """
+        Set response from tms_db_reader.
+        """
+        self.res = future.result()
 
     def publish_occupancy_grid(self) -> None:
         """
@@ -104,9 +107,7 @@ def main(args=None):
     rclpy.init(args=args)
 
     tms_ur_construction_ground_node = TmsUrConstructionGroundNode()
-    executer = MultiThreadedExecutor()
-    executer.add_node(tms_ur_construction_ground_node)
-    executer.spin()
+    rclpy.spin(tms_ur_construction_ground_node)
 
     tms_ur_construction_ground_node.destroy_node()
     rclpy.shutdown()
