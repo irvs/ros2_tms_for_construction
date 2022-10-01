@@ -29,7 +29,7 @@ ros2 launch tms_db_manager tms_db_manager.launch.py db_host:=localhost db_port:=
 After the below command, nodes are executed that request data to a service node and publish response data.
 
 ```
-ros2 launch tms_ur_construction tms_ur_construction_launch.py output/occupancy_grid:=/topic/of/occupancy_grid latest:=true file_name:=cloud.pcd voxel_size:=0.5
+ros2 launch tms_ur_construction tms_ur_construction_launch.py output/occupancy_grid:=/topic/of/occupancy_grid latest:=true filename:=cloud.pcd voxel_size:=0.5
 ```
 
 #### Servers / Outputs
@@ -62,7 +62,7 @@ ros2 launch tms_ur_construction tms_ur_construction_launch.py output/occupancy_g
 After the below command, a node is executed that requests .pcd file info to a service node and publishes Mesh converted from the file.
 
 ```
-ros2 launch tms_ur_construction tms_ur_construction_terrain_mesh_launch.py output/mesh:=/topic/of/mesh file_name:=cloud.pcd voxel_size:=0.5 alpha:=3.0
+ros2 launch tms_ur_construction tms_ur_construction_terrain_mesh_launch.py output/mesh:=/topic/of/mesh filename:=cloud.pcd voxel_size:=0.5 alpha:=3.0
 ```
 
 #### Servers / Outputs
