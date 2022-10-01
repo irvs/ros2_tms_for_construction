@@ -104,9 +104,9 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
 Three demonstration are presented here.
 
-1. [Store data](#1.-Store-data)
-2. [Get stored data](#2.-Get-stored-data)
-3. [Store data and get them](#3.-Store-data-and-get-them)
+1. [Store data](#1-store-data)
+2. [Get stored data](#2-get-stored-data)
+3. [Store and get data](#3-store-and-get-data)
 
 Before demonstration, change directory and setup this workspace.
 
@@ -116,6 +116,8 @@ source install/setup.bash
 ```
 
 ### 1. Store data
+
+Run the following commands to save data in MongoDB.
 
 #### Launch
 
@@ -149,7 +151,9 @@ Here is an example. It may be a little different than yours, but as long as it i
 
 ### 2. Get stored data
 
-Please try this demonstration after [1. Store data](#1.-Store-data).
+Please try this demonstration after [1. Store data](#1-store-data).
+
+Run the following commands to get data from MongoDB.
 
 #### Launch
 
@@ -171,7 +175,9 @@ Rviz2 will show Odometry, OccupancyGrid and PointCloud2 topics.
 
 ![](demo/demo_rviz2.png)
 
-### 3. Store data and get them
+### 3. Store and get data
+
+Run the following commands to store data in MongoDB and get the data.
 
 #### Launch
 
@@ -201,7 +207,7 @@ rviz2 -d ./src/ros2_tms_for_construction/demo/demo.rviz
 ros2 bag play ./src/ros2_tms_for_construction/demo/rosbag
 ```
 
-### Launch tms_ur_construction
+#### Launch tms_ur_construction
 
 After the tms_sd_terrain node was finished (PointCloud2 was stored to MongoDB), run the following command. 
 
