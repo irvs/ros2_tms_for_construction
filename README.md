@@ -28,7 +28,7 @@ https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
 
 ### MongoDB
 
-https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/
+https://www.mongodb.com/docs/v5.0/tutorial/install-mongodb-on-ubuntu/
 
 ### Related packages for ROS2-TMS-FOR-CONSTRUCTION
 - pymongo 4.2.0
