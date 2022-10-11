@@ -20,7 +20,7 @@ Project page: [https://moonshot-cafe-project.org/en/](https://moonshot-cafe-proj
 
 ### ROS2 Foxy
 
-https://index.ros.org/doc/ros2/Installation/Foxy/
+https://docs.ros.org/en/foxy/Installation/Alternatives/Ubuntu-Development-Setup.html
 
 ### Git
 
