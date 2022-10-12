@@ -2,7 +2,7 @@
 
 tms_sd_ground is a package for formatting OccupancyGrid msg to Tmsdb msg and sending it to tms_db_writer.
 
-Received OccupancyGrid msg is a heatmap showing the hardness of the ground.
+Though OccupancyGrid msg is originally used to store the probability of grid occupancy, this msg can be used for various 2D grid maps such as ground stiffness.
 
 # Usecase
 
