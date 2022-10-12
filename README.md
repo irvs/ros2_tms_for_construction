@@ -109,7 +109,7 @@ Three demonstration are presented here.
 
 1. [Store data](#1-store-data)
 2. [Get stored data](#2-get-stored-data)
-3. [Store and get data](#3-store-and-get-data)
+3. [Store and get data simultaneously in real-time](#3-store-and-get-data-simultaneously-in-real-time)
 
 Before demonstration, change directory and setup this workspace.
 
@@ -176,9 +176,9 @@ rviz2 -d ./src/ros2_tms_for_construction/demo/demo.rviz
 
 Rviz2 will show Odometry, OccupancyGrid and PointCloud2 topics.
 
-![](demo/demo_rviz2.png)
+https://user-images.githubusercontent.com/63947554/195261634-8c17fedf-5998-4ba5-a900-b8b12f99ff9b.mp4
 
-### 3. Store and get data
+### 3. Store and get data simultaneously in real-time
 
 Run the following commands to store data in MongoDB and get the data.
 
@@ -218,9 +218,7 @@ After the tms_sd_terrain node was finished (PointCloud2 was stored to MongoDB), 
 ros2 launch tms_ur_construction tms_ur_construction_launch.py filename:=demo.pcd voxel_size:=0.5 latest:=true
 ```
 
-Rviz2 will show Odometry, OccupancyGrid and PointCloud2 topics.
-
-![](demo/demo_rviz2.png)
+Rviz2 will show Odometry, OccupancyGrid and PointCloud2 topics like a example of [2. Get stored data](#2-get-stored-data).
 
 After the end of rosbag, please check whether the data is stored to fs.chunks, fs.files, machine and sensor collection in your MongoDB.
 
