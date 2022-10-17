@@ -2,6 +2,8 @@
 
 ROS2-TMS-FOR-CONSTRUCTION is an IoRT library for construction applications based on ROS2-TMS.
 
+https://user-images.githubusercontent.com/63947554/196080381-49ada296-7f3d-4e4c-99d0-8ecb51d449b6.mp4
+
 ## ROS2-TMS
 
 ROS2-TMS is an IoRT (Internet of Robotic Things) library for TMS (Town Management System), which is the management system of an informationally structured environment (ISE). ROS2-TMS is newly constructed on the basis of [ROS-TMS](https://github.com/irvs/ros_tms/wiki) and adopts the state-of-the-art robot middleware, ROS2. This system integrates various information gathered by distributed sensors, stores them to an on-line database, plans proper service tasks, and manages and executes robot motion.
