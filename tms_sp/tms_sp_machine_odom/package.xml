@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>tms_mc_odom</name>
+  <name>tms_sp_machine_odom</name>
   <version>0.0.0</version>
-  <description>The tms_mc_odom package</description>
+  <description>The tms_sp_machine_odom package</description>
 
   <maintainer email="kawamura@ait.kyushu-u.ac.jp">Akihiro Kawamura</maintainer>
 

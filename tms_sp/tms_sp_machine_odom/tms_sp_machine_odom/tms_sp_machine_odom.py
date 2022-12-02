@@ -9,11 +9,11 @@ from tms_msg_db.msg import Tmsdb
 import tms_db_manager.tms_db_util as db_util
 
 
-NODE_NAME = 'tms_mc_odom'
-DATA_ID   = 11001
+NODE_NAME = 'tms_sp_machine_odom'
+DATA_ID   = 2012
 DATA_TYPE = 'machine'
 
-class TmsMcOdom(Node):
+class TmsSpMachineOdom(Node):
     """Convert Odometry msg to Tmsdb msg and sent to tms_db_writer."""
 
     def __init__(self):
@@ -71,11 +71,11 @@ class TmsMcOdom(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    tms_mc_odom = TmsMcOdom()
+    tms_sp_machine_odom = TmsSpMachineOdom()
 
-    rclpy.spin(tms_mc_odom)
+    rclpy.spin(tms_sp_machine_odom)
 
-    tms_mc_odom.destroy_node()
+    tms_sp_machine_odom.destroy_node()
     rclpy.shutdown()
 
 
