@@ -77,14 +77,6 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
    ROS2-TMS database manager. This package has tms_db_reader(_gridfs) and tms_db_writer(_gridfs) nodes.
 
-### tms_mc
-
-- [tms_mc_odom](tms_mc/tms_mc_odom)
-
-  tms_mc_odom is a package for formatting Odometry msg to Tmsdb msg and sending it to tms_db_writer.
-
-  The received Odometry msg is the location data of the construction machine.
-
 ### tms_sd
 
 - [tms_sd_ground](tms_sd/tms_sd_ground)
@@ -98,6 +90,14 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
   tms_sd_terrain is a package for converting PointCloud2 msg to .pcd file and sending the file info to tms_db_writer_gridfs.
 
   The received PointCloud2 msg is a point cloud data of terrain.
+
+### tms_sp
+
+- [tms_sp_machine_odom](tms_sp/tms_sp_machine_odom)
+
+  tms_sp_machine_odom is a package for formatting Odometry msg to Tmsdb msg and sending it to tms_db_writer.
+
+  The received Odometry msg is the estimated location data of the construction machine.
 
 ### tms_ur
 
@@ -131,7 +131,7 @@ Run the following commands to save data in MongoDB.
 ros2 launch tms_db_manager tms_db_writer.launch.py init_db:=true
 
 # Odometry
-ros2 launch tms_mc_odom tms_mc_odom_launch.py input/odom:=/demo/odom machine_name:=demo_machine
+ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/demo/odom machine_name:=demo_machine
 
 # OccupancyGrid
 ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo/occupancy_grid ground_name:=demo_ground
@@ -191,7 +191,7 @@ Run the following commands to store data in MongoDB and get the data.
 ros2 launch tms_db_manager tms_db_manager.launch.py init_db:=true
 
 # Odometry
-ros2 launch tms_mc_odom tms_mc_odom_launch.py input/odom:=/demo/odom machine_name:=demo_machine
+ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/demo/odom machine_name:=demo_machine
 
 # OccupancyGrid
 ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo/occupancy_grid ground_name:=demo_ground
