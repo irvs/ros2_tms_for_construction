@@ -12,7 +12,7 @@ import tms_db_manager.tms_db_util as db_util
 
 
 NODE_NAME = 'tms_ur_cv_odom' 
-DATA_ID   = 11001
+DATA_ID   = 2012
 DATA_TYPE = 'machine'
 
 
