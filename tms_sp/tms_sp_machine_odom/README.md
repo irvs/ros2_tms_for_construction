@@ -1,6 +1,6 @@
-# tms_mc_odom
+# tms_sp_machine_odom
 
-tms_mc_odom is a package for formatting Odometry msg to Tmsdb msg and sending it to tms_db_writer.
+tms_sp_machine_odom is a package for formatting Odometry msg to Tmsdb msg and sending it to tms_db_writer.
 
 Received Odometry msg is the location data of the construction machine.
 
@@ -10,7 +10,7 @@ Received Odometry msg is the location data of the construction machine.
 
 Detail description is [here](https://github.com/irvs/ros2_tms_for_construction/tree/main/tms_db).
 
-Receive Tmsdb from tms_mc_odom and store them in ROS2-TMS database.
+Receive Tmsdb from tms_sp_machine_odom and store them in ROS2-TMS database.
 
 ### Writer
 
@@ -24,12 +24,12 @@ ros2 launch tms_db_manager tms_db_writer.launch.py db_host:=localhost db_port:=2
 ros2 launch tms_db_manager tms_db_manager.launch.py db_host:=localhost db_port:=27017 init_db:=true
 ```
 
-## 2. Run tms_mc_odom
+## 2. Run tms_sp_machine_odom
 
 After the below command, a node is executed that subscribes Odometry and publishes Tmsdb including the Odometry.
 
 ```
-ros2 launch tms_mc_odom tms_mc_odom_launch.py input/odom:=/topic/of/odom machine_name:=crawler
+ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/topic/of/odom machine_name:=crawler
 ```
 
 ### Inputs / Outputs

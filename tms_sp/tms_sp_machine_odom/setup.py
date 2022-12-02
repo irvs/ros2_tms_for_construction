@@ -2,7 +2,7 @@ from glob import glob
 import os
 from setuptools import setup
 
-package_name = 'tms_mc_odom'
+package_name = 'tms_sp_machine_odom'
 
 setup(
     name=package_name,
@@ -33,7 +33,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'tms_mc_odom = tms_mc_odom.tms_mc_odom:main',
+            'tms_sp_machine_odom = tms_sp_machine_odom.tms_sp_machine_odom:main',
         ],
     },
 )

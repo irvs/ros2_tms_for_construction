@@ -11,9 +11,9 @@ def generate_launch_description():
         'machine_name', default_value='machine_name'
     )
 
-    tms_mc_odom_node = Node(
-        package='tms_mc_odom',
-        executable='tms_mc_odom',
+    tms_sp_machine_odom_node = Node(
+        package='tms_sp_machine_odom',
+        executable='tms_sp_machine_odom',
         output='screen',
         remappings=[
             ('~/input/odom', LaunchConfiguration('input/odom')),
@@ -26,5 +26,5 @@ def generate_launch_description():
     return LaunchDescription([
         input_odom,
         machine_name,
-        tms_mc_odom_node,
+        tms_sp_machine_odom_node,
     ])
