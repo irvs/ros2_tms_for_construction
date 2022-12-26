@@ -35,6 +35,8 @@ ament_lint_auto_find_test_dependencies()
 ## Declare ROS messages, services and actions ##
 ################################################
 rosidl_generate_interfaces(tms_msg_db
+  "action/TmsdbGridFS.action"
+
   "msg/Tmsdb.msg"
   "msg/TmsdbGridFS.msg"
 
