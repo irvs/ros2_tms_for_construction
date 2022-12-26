@@ -33,7 +33,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'tms_sd_static_terrain = tms_sd_terrain.tms_sd_static_terrain:main',
+            'tms_sd_terrain_static = tms_sd_terrain.tms_sd_terrain_static:main',
+            'tms_sd_terrain_dynamic = tms_sd_terrain.tms_sd_terrain_dynamic:main',
         ],
     },
 )

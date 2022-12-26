@@ -1,27 +1,30 @@
 from datetime import datetime
-import rclpy
-from rclpy.node import Node
-
 import numpy as np
 import open3d as o3d
+
+import rclpy
+from rclpy.node import Node
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs_py import point_cloud2
+
 from tms_msg_db.msg import TmsdbGridFS
 
 
-NODE_NAME = 'tms_sd_static_terrain'
+NODE_NAME = 'tms_sd_terrain_static'
 DATA_ID   = 3030 
-DATA_TYPE = 'sensor'
+DATA_TYPE = 'static'
 
-class TmsSdStaticTerrain(Node):
+class TmsSdTerrainStatic(Node):
     """Write PointCloud2 msg to file and sent the file name to tms_db_writer_gridfs."""
 
     def __init__(self):
         super().__init__(NODE_NAME)
 
-        # declare parameter
+        # Declare parameters
         self.declare_parameter('filename', 'filename')
-        self.filename = self.get_parameter('filename').get_parameter_value().string_value
+
+        # Get parameters
+        self.filename: str = self.get_parameter('filename').get_parameter_value().string_value
 
         self.publisher_ = self.create_publisher(TmsdbGridFS, 'tms_db_gridfs_data', 10)
         self.subscription = self.create_subscription(
@@ -78,11 +81,10 @@ class TmsSdStaticTerrain(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    tms_sd_static_terrain = TmsSdStaticTerrain()
+    tms_sd_terrain_static = TmsSdTerrainStatic()
+    rclpy.spin_once(tms_sd_terrain_static)
 
-    rclpy.spin_once(tms_sd_static_terrain)
-
-    tms_sd_static_terrain.destroy_node()
+    tms_sd_terrain_static.destroy_node()
     rclpy.shutdown()
 
 
