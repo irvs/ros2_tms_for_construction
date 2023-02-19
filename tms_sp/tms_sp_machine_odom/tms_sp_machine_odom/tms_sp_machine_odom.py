@@ -59,7 +59,6 @@ class TmsSpMachineOdom(Node):
         tms_db_msg.type                 = DATA_TYPE
         tms_db_msg.id                   = DATA_ID
         tms_db_msg.name                 = self.machine_name
-        tms_db_msg.is_insert            = True
 
         # Convert Odometry msg to dictionary and then to json.
         doc: dict = db_util.msg_to_document(msg)
