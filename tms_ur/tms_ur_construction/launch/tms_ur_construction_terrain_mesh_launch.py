@@ -6,16 +6,10 @@ from launch_ros.actions import Node
 def generate_launch_description():
     # Arguments
     output_mesh = DeclareLaunchArgument(
-        'output/mesh', default_value='output/mesh'
+        'output/terrain/mesh_srv', default_value='output/terrain/mesh_srv'
     )
-    filename = DeclareLaunchArgument(
-        'filename', default_value='filename'
-    )
-    voxel_size = DeclareLaunchArgument(
-        'voxel_size', default_value='0.0'
-    )
-    alpha = DeclareLaunchArgument(
-        'alpha', default_value='1.0'
+    filename_mesh = DeclareLaunchArgument(
+        'filename_mesh', default_value='filename_mesh'
     )
 
     # Nodes
@@ -24,19 +18,15 @@ def generate_launch_description():
         executable='tms_ur_construction_terrain_mesh',
         output='screen',
         remappings=[
-            ('~/output/mesh', LaunchConfiguration('output/mesh')),
+            ('~/output/terrain/mesh_srv', LaunchConfiguration('output/terrain/mesh_srv')),
         ],
         parameters=[{
-            'filename': LaunchConfiguration('filename'),
-            'voxel_size': LaunchConfiguration('voxel_size'),
-            'alpha': LaunchConfiguration('alpha'),
+            'filename_mesh': LaunchConfiguration('filename_mesh'),
         }]
     )
 
     return LaunchDescription([
         output_mesh,
-        filename,
-        voxel_size,
-        alpha,
+        filename_mesh,
         tms_ur_construction_terrain_mesh_node,
     ])
