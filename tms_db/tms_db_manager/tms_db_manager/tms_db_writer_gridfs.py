@@ -40,6 +40,8 @@ class TmsDbWriterGridFS(Node):
         """
         if msg.type == 'static':
             self.save_static_terrain(msg)
+        elif msg.type == 'mesh':
+            self.save_static_terrain_mesh(msg)
         elif msg.type == 'dynamic':
             self.save_dynamic_terrain(msg)
         else:
@@ -56,6 +58,25 @@ class TmsDbWriterGridFS(Node):
         """
         filename: str = msg.filename
         
+        f = open(filename, 'rb')
+
+        fs = gridfs.GridFS(self.db)
+        fs.put(f.read(), filename=filename, time=msg.time, type=msg.type, id=msg.id)
+
+        f.close()
+        os.remove(filename)
+
+    def save_static_terrain_mesh(self, msg: TmsdbGridFS) -> None:
+        """
+        Save mesh of static terrain using GridFS.
+
+        Parameters
+        ----------
+        msg : TmsdbGridFS
+            An instance of a ROS2 custom message to store data using GridFS.
+        """
+        filename: str = msg.filename
+
         f = open(filename, 'rb')
 
         fs = gridfs.GridFS(self.db)
