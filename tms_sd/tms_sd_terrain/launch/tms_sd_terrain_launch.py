@@ -10,9 +10,6 @@ def generate_launch_description():
     input_terrain_dynamic_pointcloud2 = DeclareLaunchArgument(
         'input/terrain/dynamic/pointcloud2', default_value='input/terrain/dynamic/pointcloud2'
     )
-    filename = DeclareLaunchArgument(
-        'filename', default_value='filename'
-    )
     terrain_name = DeclareLaunchArgument(
         'terrain_name', default_value='terrain'
     )
@@ -24,9 +21,6 @@ def generate_launch_description():
         remappings=[
             ('~/input/terrain/static/pointcloud2', LaunchConfiguration('input/terrain/static/pointcloud2')),
         ],
-        parameters=[{
-            'filename': LaunchConfiguration('filename'),
-        }]
     )
     tms_sd_terrain_dynamic_node = Node(
         package='tms_sd_terrain',
@@ -43,7 +37,6 @@ def generate_launch_description():
     return LaunchDescription([
         input_terrain_static_pointcloud2,
         input_terrain_dynamic_pointcloud2,
-        filename,
         terrain_name,
         tms_sd_terrain_static_node,
         tms_sd_terrain_dynamic_node,
