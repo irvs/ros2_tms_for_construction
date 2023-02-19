@@ -56,16 +56,16 @@ class TmsDbReaderGridFSActionServer(Node):
         self.request = goal_handle.request
         self.fs = gridfs.GridFS(self.db)
 
-        if goal_handle.request.type == 'static':
-            return self.static_terrain_handler(goal_handle)
+        if goal_handle.request.type == 'static' or goal_handle.request.type == 'mesh':
+            return self.static_or_mesh_terrain_handler(goal_handle)
         elif goal_handle.request.type == 'dynamic':
             return self.dynamic_terrain_handler(goal_handle)
         else:
             self.get_logger().info("Please set a terrain type 'static' or 'dynamic'")
 
-    def static_terrain_handler(self, goal_handle):
+    def static_or_mesh_terrain_handler(self, goal_handle):
         """
-        Handler of static terrain.
+        Handler of static or mesh terrain.
 
         Parameters
         ----------
@@ -88,8 +88,8 @@ class TmsDbReaderGridFSActionServer(Node):
             feedback_msg = TmsdbGridFS.Feedback()
             goal_handle.publish_feedback(feedback_msg)
 
-        # Create .pcd file of static terrain
-        self.get_logger().info('create a static terrain file')
+        # Create file
+        self.get_logger().info(f'Create a {goal_handle.request.type} terrain file')
         f = open(self.request.filename, 'wb')
         f.write(file_obj.read())
         f.close()
