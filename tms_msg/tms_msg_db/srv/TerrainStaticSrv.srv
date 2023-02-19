@@ -1,0 +1,3 @@
+string type
+---
+sensor_msgs/PointCloud2 pointcloud2
