@@ -32,23 +32,28 @@ After the below command, nodes are executed that request data to a service node 
 ros2 launch tms_ur_construction tms_ur_construction_launch.py output/occupancy_grid:=/topic/of/occupancy_grid latest:=true filename:=cloud.pcd voxel_size:=0.5
 ```
 
-#### Servers / Outputs
+#### Services / Actions / Outputs
 
-**Servers**
+**Services**
 
 | Name                   | Type                                  | Description                                 |
 | ---------------------- | ------------------------------------- | ------------------------------------------- |
 | `tms_db_reader`        | `tms_msg_db::srv::TmsdbGetData`       | get data stored in ROS2-TMS database        |
-| `tms_db_reader_gridfs` | `tms_msg_db::srv::TmsdbGridFSGetData` | get GridFS data stored in ROS2-TMS database |
+
+**Actions**
+
+| Name                   | Type                              | Description                                 |
+| ---------------------- | --------------------------------- | ------------------------------------------- |
+| `tms_db_reader_gridfs` | `tms_msg_db::action::TmsdbGridFS` | get GridFS data stored in ROS2-TMS database |
 
 **Outputs**
 
-| Name                                  | Type                            | Description                                |
-| ------------------------------------- | ------------------------------- | ------------------------------------------ |
-| `/output/occupancy_grid`              | `nav_msgs::msg::OccupancyGrid`  | heatmap showing the hardness of the ground |
-| `/output/terrain/static/pointcloud2`  | `sensor_msgs::msg::PointCloud2` | point cloud data of static terrain         |
-| `/output/terrain/dynamic/pointcloud2` | `sensor_msgs::msg::PointCloud2` | point cloud data of dynamic terrain        |
-| `/output/odom`                        | `nav_msgs::msg::Odometry`       | location of machine                        |
+| Name                                  | Type                                | Description                                                 |
+| ------------------------------------- | ----------------------------------- | ----------------------------------------------------------- |
+| `/output/occupancy_grid`              | `nav_msgs::msg::OccupancyGrid`      | heatmap showing the hardness of the ground                  |
+| `/output/terrain/static_srv`          | `tms_msg_db::srv::TerrainStaticSrv` | return point cloud data of static terrain to service client |
+| `/output/terrain/dynamic/pointcloud2` | `sensor_msgs::msg::PointCloud2`     | point cloud data of dynamic terrain                         |
+| `/output/odom`                        | `nav_msgs::msg::Odometry`           | location of machine                                         |
 
 #### Parameters
 
@@ -60,25 +65,25 @@ ros2 launch tms_ur_construction tms_ur_construction_launch.py output/occupancy_g
 
 ### 2. construction_terrain_mesh
 
-After the below command, a node is executed that requests .pcd file info to a service node and publishes Mesh converted from the file.
+After the below command, a node is executed that requests mesh's .ply file info to a action service node and publishes Mesh converted from the file.
 
 ```
-ros2 launch tms_ur_construction tms_ur_construction_terrain_mesh_launch.py output/mesh:=/topic/of/mesh filename:=cloud.pcd voxel_size:=0.5 alpha:=3.0
+ros2 launch tms_ur_construction tms_ur_construction_terrain_mesh_launch.py output/terrain/mesh_srv:=/srv/of/mesh filename_mesh:=mesh.ply
 ```
 
-#### Servers / Outputs
+#### Actions / Outputs
 
-**Servers**
+**Actions**
 
-| Name                   | Type                                  | Description                             |
-| ---------------------- | ------------------------------------- | --------------------------------------- |
-| `tms_db_reader_gridfs` | `tms_msg_db::srv::TmsdbGridFSGetData` | GridFS data stored in ROS2-TMS database |
+| Name                   | Type                              | Description                                 |
+| ---------------------- | --------------------------------- | ------------------------------------------- |
+| `tms_db_reader_gridfs` | `tms_msg_db::action::TmsdbGridFS` | get GridFS data stored in ROS2-TMS database |
 
 **Outputs**
 
-| Name           | Type                  | Description     |
-| -------------- | --------------------- | --------------- |
-| `/output/mesh` | shape_msgs::msg::Mesh | mesh of terrain |
+| Name                       | Type                            | Description                                          |
+| -------------------------- | ------------------------------- | ---------------------------------------------------- |
+| `/output/terrain/mesh_srv` | `tms_msg_db::srv::ColoredMeshSrv` | return mesh data of static terrain to service client |
 
 #### Parameters
 
