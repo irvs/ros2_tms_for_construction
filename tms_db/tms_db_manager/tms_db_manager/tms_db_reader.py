@@ -1,10 +1,12 @@
 import json
+import pymongo
+
+import rclpy
 from rclpy.node import Node
+
+import tms_db_manager.tms_db_util as db_util
 from tms_msg_db.msg import Tmsdb
 from tms_msg_db.srv import TmsdbGetData
-import rclpy
-import pymongo
-import tms_db_manager.tms_db_util as db_util
 
 
 class TmsDbReader(Node):
@@ -13,15 +15,15 @@ class TmsDbReader(Node):
     def __init__(self):
         super().__init__('tms_db_reader')
 
-        # declare parameter
+        # Declare parameters
         self.declare_parameter('db_host', 'localhost')
         self.declare_parameter('db_port', 27017)
 
-        # get parameter
-        self.db_host = self.get_parameter('db_host').get_parameter_value().string_value
-        self.db_port = self.get_parameter('db_port').get_parameter_value().integer_value
+        # Get parameters
+        self.db_host: str = self.get_parameter('db_host').get_parameter_value().string_value
+        self.db_port: int = self.get_parameter('db_port').get_parameter_value().integer_value
 
-        self.db  = db_util.connect_db('rostmsdb', self.db_host, self.db_port)
+        self.db: pymongo.database.Database  = db_util.connect_db('rostmsdb', self.db_host, self.db_port)
         self.srv = self.create_service(TmsdbGetData, 'tms_db_reader', self.db_reader_srv_callback)
 
 
@@ -41,23 +43,23 @@ class TmsDbReader(Node):
         response
             Response to client node.
         """
-        collection = self.db[request.type]
+        collection: pymongo.collection.Collection = self.db[request.type]
 
         if request.latest_only:
-            latest_data = self.get_latest_data(request, collection)
+            latest_data: dict = self.get_latest_data(request, collection)
             if latest_data == None:
                 return response
             response.tmsdbs.append(self.allocate_tmsdb(latest_data))
             return response
         else:
-            all_data = self.get_all_data(request, collection)
+            all_data: pymongo.cursor.Cursor = self.get_all_data(request, collection)
             for data in all_data:
-                msg = self.allocate_tmsdb(data)
+                msg: Tmsdb = self.allocate_tmsdb(data)
                 response.tmsdbs.append(msg)
             return response
 
     
-    def get_latest_data(self, request, collection) -> dict:
+    def get_latest_data(self, request, collection: pymongo.collection.Collection) -> dict:
         """
         Get latest data only.
 
@@ -96,7 +98,7 @@ class TmsDbReader(Node):
         pymongo.cursor.Cursor
             Requested all data.
         """
-        all_data = collection.find({'id': request.id}).sort([('time', pymongo.ASCENDING)])
+        all_data: pymongo.cursor.Cursor = collection.find({'id': request.id}).sort([('time', pymongo.ASCENDING)])
         return all_data
 
 
@@ -119,7 +121,6 @@ class TmsDbReader(Node):
         tmsdb.type      = data['type']
         tmsdb.id        = data['id']
         tmsdb.name      = data['name']
-        tmsdb.is_insert = data['is_insert']
         tmsdb.msg       = json.dumps(data['msg'])
         return tmsdb
 

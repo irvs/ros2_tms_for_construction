@@ -1,16 +1,16 @@
 from datetime import datetime
 import json
+
 import rclpy
 from rclpy.node import Node
-
 from nav_msgs.msg import OccupancyGrid
-from tms_msg_db.msg import Tmsdb
 
 import tms_db_manager.tms_db_util as db_util
+from tms_msg_db.msg import Tmsdb
 
 
 NODE_NAME = 'tms_sd_ground'
-DATA_ID   = 3031 
+DATA_ID   = 3032 
 DATA_TYPE = 'sensor'
 
 class TmsSdGround(Node):
@@ -18,8 +18,12 @@ class TmsSdGround(Node):
 
     def __init__(self):
         super().__init__(NODE_NAME)
+
+        # Declare parameters
         self.declare_parameter('ground_name', 'ground_name')
-        self.ground_name = self.get_parameter('ground_name').get_parameter_value().string_value
+
+        # Get parameters
+        self.ground_name: str = self.get_parameter('ground_name').get_parameter_value().string_value
 
         self.publisher_   = self.create_publisher(Tmsdb, 'tms_db_data', 10)
         self.subscription = self.create_subscription(
@@ -37,7 +41,7 @@ class TmsSdGround(Node):
         msg : OccupancyGrid
             Target Object's OccupancyGrid.
         """
-        db_msg = self.create_db_msg(msg)
+        db_msg: Tmsdb = self.create_db_msg(msg)
         self.publisher_.publish(db_msg)
 
     def create_db_msg(self, msg: OccupancyGrid) -> Tmsdb:
@@ -59,7 +63,6 @@ class TmsSdGround(Node):
         tms_db_msg.type      = DATA_TYPE
         tms_db_msg.id        = DATA_ID
         tms_db_msg.name      = self.ground_name
-        tms_db_msg.is_insert = True
 
         # Convert OccupancyGrid msg to dictionary and then to json.
         doc: dict           = db_util.msg_to_document(msg)
@@ -72,7 +75,6 @@ def main(args=None):
     rclpy.init(args=args)
 
     tms_sd_ground = TmsSdGround()
-
     rclpy.spin(tms_sd_ground)
 
     tms_sd_ground.destroy_node()
