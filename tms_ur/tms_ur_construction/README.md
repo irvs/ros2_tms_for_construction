@@ -43,11 +43,12 @@ ros2 launch tms_ur_construction tms_ur_construction_launch.py output/occupancy_g
 
 **Outputs**
 
-| Name                     | Type                            | Description                                |
-| ------------------------ | ------------------------------- | ------------------------------------------ |
-| `/output/occupancy_grid` | `nav_msgs::msg::OccupancyGrid`  | heatmap showing the hardness of the ground |
-| `/output/pointcloud2`    | `sensor_msgs::msg::PointCloud2` | point cloud data of terrain                |
-| `/output/odom`           | `nav_msgs::msg::Odometry`       | location of machine                        |
+| Name                                  | Type                            | Description                                |
+| ------------------------------------- | ------------------------------- | ------------------------------------------ |
+| `/output/occupancy_grid`              | `nav_msgs::msg::OccupancyGrid`  | heatmap showing the hardness of the ground |
+| `/output/terrain/static/pointcloud2`  | `sensor_msgs::msg::PointCloud2` | point cloud data of static terrain         |
+| `/output/terrain/dynamic/pointcloud2` | `sensor_msgs::msg::PointCloud2` | point cloud data of dynamic terrain        |
+| `/output/odom`                        | `nav_msgs::msg::Odometry`       | location of machine                        |
 
 #### Parameters
 
