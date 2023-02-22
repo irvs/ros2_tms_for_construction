@@ -18,6 +18,10 @@ ROS2-TMS-FOR-CONSTRUCTION is developed as an IoRT library for construction appli
 
 Project page: [https://moonshot-cafe-project.org/en/](https://moonshot-cafe-project.org/en/)
 
+### Architecture
+
+![](docs/ros2-tms-for-construction_archtecture.png)
+
 ## Install
 
 ### ROS2 Foxy
@@ -57,7 +61,7 @@ mkdir -p ~/ros2-tms-for-constructoin_ws/src
 
 ```
 cd ~/ros2-tms-for-constructoin_ws/src/
-git clone　https://github.com/irvs/ros2_tms_for_construction.git
+git clone https://github.com/irvs/ros2_tms_for_construction.git
 ```
 
 ### Build the workspace
@@ -87,9 +91,11 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
 - [tms_sd_terrain](tms_sd/tms_sd_terrain)
 
-  tms_sd_terrain is a package for converting PointCloud2 msg to .pcd file and sending the file info to tms_db_writer_gridfs.
+  tms_sd_terrain is a package for handling point cloud data of static and dynamic terrain.
 
   The received PointCloud2 msg is a point cloud data of terrain.
+
+  Static terrain refers to terrain that does not change during construction operations. And dynamic terrain refers to terrain that changes during construction work.
 
 ### tms_sp
 
@@ -98,6 +104,14 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
   tms_sp_machine_odom is a package for formatting Odometry msg to Tmsdb msg and sending it to tms_db_writer.
 
   The received Odometry msg is the estimated location data of the construction machine.
+
+### tms_ss
+
+- [tms_ss_terrain_static](tms_ss/tms_ss_terrain_static)
+
+  tms_ss_terrain_static is a package for handling point cloud data of static terrain.
+
+  The received PointCloud2 msg is a point cloud data of terrain.
 
 ### tms_ur
 
@@ -137,9 +151,9 @@ ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/demo/
 ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo/occupancy_grid ground_name:=demo_ground
 
 # PointCloud2
-ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/pointcloud2:=/demo/pointcloud2 filename:=demo.pcd
+ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/terrain/static/pointcloud2:=/demo/pointcloud2 input/terrain/dynamic/pointcloud2:=/pod_1/points filename:=demo.pcd
 ```
-
+# TODO prepare demo data of dynamic terrain
 #### Play rosbag
 
 ```
@@ -197,7 +211,7 @@ ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/demo/
 ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo/occupancy_grid ground_name:=demo_ground
 
 # PointCloud2
-ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/pointcloud2:=/demo/pointcloud2 filename:=demo.pcd
+ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/terrain/static/pointcloud2:=/demo/pointcloud2 input/terrain/dynamic/pointcloud2:=/pod_1/points filename:=demo.pcd
 ```
 
 #### Rviz2
