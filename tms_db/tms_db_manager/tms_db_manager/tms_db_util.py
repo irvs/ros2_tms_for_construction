@@ -11,6 +11,8 @@ import numpy
 import rclpy
 import pymongo
 
+from sensor_msgs.msg import PointCloud2, PointField
+
 
 def connect_db(db_name: str, db_host: str = 'localhost', db_port: int = 27017) -> pymongo.database.Database:
     """
@@ -143,8 +145,14 @@ def _fill_msg(msg: object, dic: dict) -> None:
         else:
             attr = getattr(msg, i)
             attr_type = type(attr)
+
             if attr_type in [type(dic[i]), array.array]:
-                setattr(msg, i, dic[i])
+                if i == 'fields' and type(msg) is PointCloud2:
+                    # this is used for sensor_msgs.msg.PointField
+                    fields = [PointField(name=field['name'], offset=field['offset'], datatype=field['datatype'], count=field['count']) for field in dic[i]]
+                    setattr(msg, i, fields)
+                else:
+                    setattr(msg, i, dic[i])
             elif attr_type is numpy.ndarray:
                 setattr(msg, i, numpy.asarray(dic[i], dtype=attr.dtype))
             else:

@@ -11,8 +11,11 @@ def generate_launch_description():
     output_odom = DeclareLaunchArgument(
         'output/odom', default_value='output/odom'
     )
-    output_pointcloud2 = DeclareLaunchArgument(
-        'output/pointcloud2', default_value='output/pointcloud2'
+    output_terrain_static_pointcloud2 = DeclareLaunchArgument(
+        'output/terrain/static/pointcloud2', default_value='output/terrain/static/pointcloud2'
+    )
+    output_terrain_dynamic_pointcloud2 = DeclareLaunchArgument(
+        'output/terrain/dynamic/pointcloud2', default_value='output/terrain/dynamic/pointcloud2'
     )
     
     latest = DeclareLaunchArgument(
@@ -48,27 +51,40 @@ def generate_launch_description():
             'latest': LaunchConfiguration('latest'),
         }]
     )
-    tms_ur_construction_terrain_node = Node(
+    tms_ur_construction_terrain_static_node = Node(
         package='tms_ur_construction',
-        executable='tms_ur_construction_terrain',
+        executable='tms_ur_construction_terrain_static',
         output='screen',
         remappings=[
-            ('~/output/pointcloud2', LaunchConfiguration('output/pointcloud2')),
+            ('~/output/terrain/static/pointcloud2', LaunchConfiguration('output/terrain/static/pointcloud2')),
         ],
         parameters=[{
             'filename': LaunchConfiguration('filename'),
             'voxel_size': LaunchConfiguration('voxel_size'),
         }]
     )
+    tms_ur_construction_terrain_dynamic_node = Node(
+        package='tms_ur_construction',
+        executable='tms_ur_construction_terrain_dynamic',
+        output='screen',
+        remappings=[
+            ('~/output/terrain/dynamic/pointcloud2', LaunchConfiguration('output/terrain/dynamic/pointcloud2')),
+        ],
+         parameters=[{
+            'latest': LaunchConfiguration('latest'),
+         }]
+    )
 
     return LaunchDescription([
         output_occupancy_grid,
         output_odom,
-        output_pointcloud2,
+        output_terrain_static_pointcloud2,
+        output_terrain_dynamic_pointcloud2,
         latest,
         filename,
         voxel_size,
         tms_ur_construction_ground_node,
         tms_ur_cv_odom_node,
-        tms_ur_construction_terrain_node,
+        tms_ur_construction_terrain_static_node,
+        tms_ur_construction_terrain_dynamic_node,
     ])
