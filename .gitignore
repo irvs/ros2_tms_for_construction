@@ -1,2 +1,5 @@
 .vscode
 __pycache__
+
+# demo data for development
+demo_dev

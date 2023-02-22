@@ -21,6 +21,7 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(shape_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(ament_lint_auto REQUIRED)
 ament_lint_auto_find_test_dependencies()
@@ -35,15 +36,21 @@ ament_lint_auto_find_test_dependencies()
 ## Declare ROS messages, services and actions ##
 ################################################
 rosidl_generate_interfaces(tms_msg_db
+  "action/TmsdbGridFS.action"
+
   "msg/Tmsdb.msg"
   "msg/TmsdbGridFS.msg"
+  "msg/ColoredMesh.msg"
 
   "srv/TmsdbGetData.srv"
   "srv/TmsdbGridFSGetData.srv"
+  "srv/ColoredMeshSrv.srv"
+  "srv/TerrainStaticSrv.srv"
 
   DEPENDENCIES 
   std_msgs
   sensor_msgs
+  shape_msgs
   geometry_msgs
 )
 

@@ -12,7 +12,7 @@ import tms_db_manager.tms_db_util as db_util
 
 
 NODE_NAME = 'tms_ur_cv_odom' 
-DATA_ID   = 11001
+DATA_ID   = 2012
 DATA_TYPE = 'machine'
 
 
@@ -22,9 +22,11 @@ class TmsUrCvOdomNode(Node):
     def __init__(self):
         super().__init__(NODE_NAME)
 
-        # declare_parameter
+        # Declare parameters
         self.declare_parameter('latest', 'False')
-        self.latest = self.get_parameter('latest').get_parameter_value().bool_value
+
+        # Get parameters
+        self.latest: bool = self.get_parameter('latest').get_parameter_value().bool_value
 
         self.publisher_ = self.create_publisher(Odometry, '~/output/odom', 10)
         timer_period = 0.1
@@ -40,6 +42,7 @@ class TmsUrCvOdomNode(Node):
             self.tmsdbs = self.res.tmsdbs
         except:
             return
+
         self.publish_odom()
 
     def send_request(self):
@@ -54,6 +57,7 @@ class TmsUrCvOdomNode(Node):
         self.req.type        = DATA_TYPE
         self.req.id          = DATA_ID
         self.req.latest_only = self.latest
+
         future = self.cli.call_async(self.req)
         future.add_done_callback(partial(self.callback_set_response))
 
@@ -65,13 +69,12 @@ class TmsUrCvOdomNode(Node):
 
     def publish_odom(self) -> None:
         """
-        Publish odom's Odometry topics.
+        Publish Odometry topics.
         """
         if self.latest:
             try:
-                dict_msg = json.loads(self.tmsdbs[0].msg)
+                dict_msg: dict = json.loads(self.tmsdbs[0].msg)
             except:
-                self.get_logger().info("no data")
                 return
 
             msg: Odometry = db_util.document_to_msg(dict_msg, Odometry)
@@ -80,17 +83,16 @@ class TmsUrCvOdomNode(Node):
             try:
                 pre_time = datetime.strptime(self.tmsdbs[0].time, '%Y-%m-%dT%H:%M:%S.%f')
             except:
-                self.get_logger().info("no data")
                 return
 
             for tmsdb in self.tmsdbs:
-                dict_msg = json.loads(tmsdb.msg)
+                dict_msg: dict = json.loads(tmsdb.msg)
                 msg: Odometry = db_util.document_to_msg(dict_msg, Odometry)
 
-                # convert string to datetime
+                # Convert string to datetime
                 now_time = datetime.strptime(tmsdb.time, '%Y-%m-%dT%H:%M:%S.%f')
 
-                # time delta
+                # Time delta
                 td = now_time - pre_time
                 sleep(td.total_seconds())
                 pre_time = now_time

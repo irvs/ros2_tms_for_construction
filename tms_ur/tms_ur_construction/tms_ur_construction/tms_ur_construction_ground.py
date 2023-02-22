@@ -12,7 +12,7 @@ import tms_db_manager.tms_db_util as db_util
 
 
 NODE_NAME = 'tms_ur_construction_ground' 
-DATA_ID   = 3031 
+DATA_ID   = 3032
 DATA_TYPE = 'sensor'
 
 
@@ -22,9 +22,11 @@ class TmsUrConstructionGroundNode(Node):
     def __init__(self):
         super().__init__(NODE_NAME)
 
-        # parameter
+        # Declare parameters
         self.declare_parameter('latest', 'False')
-        self.latest = self.get_parameter('latest').get_parameter_value().bool_value
+
+        # Get parameters
+        self.latest: bool = self.get_parameter('latest').get_parameter_value().bool_value
 
         self.publisher_ = self.create_publisher(OccupancyGrid, '~/output/occupancy_grid', 10)
         timer_period = 0.1
@@ -40,6 +42,7 @@ class TmsUrConstructionGroundNode(Node):
             self.tmsdbs = self.res.tmsdbs
         except:
             return
+
         self.publish_occupancy_grid()
 
     def send_request(self):
@@ -59,6 +62,7 @@ class TmsUrConstructionGroundNode(Node):
         self.req.type        = DATA_TYPE
         self.req.id          = DATA_ID
         self.req.latest_only = self.latest
+
         future = self.cli.call_async(self.req)
         future.add_done_callback(partial(self.callback_set_response))
 
@@ -74,9 +78,9 @@ class TmsUrConstructionGroundNode(Node):
         """
         if self.latest:
             try:
-                dict_msg = json.loads(self.tmsdbs[0].msg)
+                dict_msg: dict = json.loads(self.tmsdbs[0].msg)
             except:
-                self.get_logger().info("no data")
+                # No ground data
                 return
                 
             msg: OccupancyGrid = db_util.document_to_msg(dict_msg, OccupancyGrid)
@@ -85,17 +89,17 @@ class TmsUrConstructionGroundNode(Node):
             try:
                 pre_time = datetime.strptime(self.tmsdbs[0].time, '%Y-%m-%dT%H:%M:%S.%f')
             except:
-                self.get_logger().info("no data")
+                # No ground data
                 return
 
             for tmsdb in self.tmsdbs:
-                dict_msg = json.loads(tmsdb.msg)
+                dict_msg: dict = json.loads(tmsdb.msg)
                 msg: OccupancyGrid = db_util.document_to_msg(dict_msg, OccupancyGrid)
 
-                # convert string to datetime
+                # Convert string to datetime
                 now_time = datetime.strptime(tmsdb.time, '%Y-%m-%dT%H:%M:%S.%f')
 
-                # time delta
+                # Time delta
                 td = now_time - pre_time
                 sleep(td.total_seconds())
                 pre_time = now_time
