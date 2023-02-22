@@ -22,9 +22,9 @@ class TmsSsTerrainStaticMesh(Node):
 
         # Declare parameters
         self.declare_parameter('filename_mesh', 'filename_mesh.ply')
-        self.declare_parameter('voxel_size', '0.0')
-        self.declare_parameter('octree_depth', '2')
-        self.declare_parameter('density_th', '0.1')
+        self.declare_parameter('voxel_size', 0.0)
+        self.declare_parameter('octree_depth', 2)
+        self.declare_parameter('density_th', 0.1)
 
         # Get parameters
         self.filename_mesh: str = self.get_parameter('filename_mesh').get_parameter_value().string_value
