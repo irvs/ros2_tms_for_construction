@@ -185,7 +185,7 @@ Run the following commands to get data from MongoDB.
 ros2 launch tms_db_manager tms_db_reader.launch.py
 
 # Service Client and Publisher nodes for static terrain data
-ros2 launch tms_ur_construction tms_ur_test_launch.py
+ros2 launch tms_ur_test tms_ur_test_launch.py
 
 # Get odometry, ground 2D map and terrain data
 ros2 launch tms_ur_construction tms_ur_construction_launch.py filename:=demo.pcd voxel_size:=0.5
