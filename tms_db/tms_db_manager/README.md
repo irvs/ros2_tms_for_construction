@@ -12,12 +12,17 @@ After the below command, service nodes are executed that get requested data in R
 ros2 launch tms_db_manager tms_db_reader.launch.py db_host:=localhost db_port:=27017
 ```
 
-### Servers
+### Services
 
 | Name                   | Type                                  | Description                                 |
 | ---------------------- | ------------------------------------- | ------------------------------------------- |
 | `tms_db_reader`        | `tms_msg_db::srv::TmsdbGetData`       | get data stored in ROS2-TMS database        |
-| `tms_db_reader_gridfs` | `tms_msg_db::srv::TmsdbGridFSGetData` | get GridFS data stored in ROS2-TMS database |
+
+### Actions
+
+| Name                   | Type                              | Description                                 |
+| ---------------------- | --------------------------------- | ------------------------------------------- |
+| `tms_db_reader_gridfs` | `tms_msg_db::action::TmsdbGridFS` | get GridFS data stored in ROS2-TMS database |
 
 ## Writer
 
