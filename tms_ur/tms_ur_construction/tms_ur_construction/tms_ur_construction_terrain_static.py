@@ -9,12 +9,12 @@ from rclpy.node import Node
 from sensor_msgs.msg import PointCloud2, PointField
 from std_msgs.msg import Header
 from tms_msg_db.action import TmsdbGridFS
+from tms_msg_db.srv import TerrainStaticSrv
 
 
 NODE_NAME = 'tms_ur_construction_terrain_static' 
 DATA_ID   = 3030 
 DATA_TYPE = 'static'
-CALLBACK_TIME = 0.5
 
 
 class TmsUrConstructionTerrainStaticClient(Node):
@@ -31,7 +31,7 @@ class TmsUrConstructionTerrainStaticClient(Node):
         self.filename: str     = self.get_parameter('filename').get_parameter_value().string_value
         self.voxel_size: float = self.get_parameter('voxel_size').get_parameter_value().double_value
 
-        self.publisher_ = self.create_publisher(PointCloud2, '~/output/terrain/static/pointcloud2', 10)
+        # Action client
         self._action_client = ActionClient(self, TmsdbGridFS, 'tms_db_reader_gridfs')
 
     def send_goal(self) -> None:
@@ -81,9 +81,21 @@ class TmsUrConstructionTerrainStaticClient(Node):
         # Create PointCloud2 msg
         self.msg: PointCloud2 = self.create_msg()
 
-        while True:
-            self.publisher_.publish(self.msg)
-            sleep(CALLBACK_TIME)
+        # Service server
+        self.srv = self.create_service(TerrainStaticSrv, '~/output/terrain/static_srv', self.terrain_static_srv_callback)
+
+    def terrain_static_srv_callback(self, request, response):
+        """
+        Callback function.
+
+        Returns
+        -------
+        response
+            Service callback response
+        """
+        response.pointcloud2 = self.msg
+        self.get_logger().info('Return a response of PointCloud2')
+        return response
 
     def feedback_callback(self, feedback_msg) -> None:
         """
