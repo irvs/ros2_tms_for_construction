@@ -2,7 +2,7 @@ from glob import glob
 import os
 from setuptools import setup
 
-package_name = 'tms_ur_construction'
+package_name = 'tms_ur_test'
 
 setup(
     name=package_name,
@@ -33,11 +33,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'tms_ur_construction_ground = tms_ur_construction.tms_ur_construction_ground:main',
-            'tms_ur_cv_odom = tms_ur_construction.tms_ur_cv_odom:main',
-            'tms_ur_construction_terrain_static = tms_ur_construction.tms_ur_construction_terrain_static:main',
-            'tms_ur_construction_terrain_dynamic = tms_ur_construction.tms_ur_construction_terrain_dynamic:main',
-            'tms_ur_construction_terrain_mesh = tms_ur_construction.tms_ur_construction_terrain_mesh:main',
+            'tms_ur_construction_terrain_mesh_test = tms_ur_test.terrain_mesh_cli_pub:main',
+            'tms_ur_construction_terrain_static_test = tms_ur_test.terrain_static_cli_pub:main',
         ],
     },
 )
