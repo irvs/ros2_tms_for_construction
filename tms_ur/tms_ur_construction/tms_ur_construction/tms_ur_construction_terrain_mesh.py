@@ -1,131 +1,146 @@
 from typing import Tuple
 import numpy as np
 import open3d as o3d
+from time import sleep
 import rclpy
+from rclpy.action import ActionClient
 from rclpy.node import Node
 
-from shape_msgs.msg import Mesh, MeshTriangle
-from geometry_msgs.msg import Point
-from tms_msg_db.srv import TmsdbGridFSGetData
+from shape_msgs.msg import MeshTriangle
+from geometry_msgs.msg import Point, Vector3
+from std_msgs.msg import ColorRGBA
+
+from tms_msg_db.msg import ColoredMesh
+from tms_msg_db.srv import ColoredMeshSrv
+from tms_msg_db.action import TmsdbGridFS
 
 
 NODE_NAME = 'tms_ur_construction_terrain_mesh'
 DATA_ID = 3030
-DATA_TYPE = 'sensor'
+DATA_TYPE = 'mesh'
+
 
 class TmsUrConstructionTerrainMeshClient(Node):
-    """Get ground's data from tms_db_reader_gridfs."""
+    """Get terrain's mesh data from tms_db_reader_gridfs."""
 
     def __init__(self):
         super().__init__(NODE_NAME)
 
-        # declare_parameter
-        self.declare_parameter('filename', 'filename')
-        self.filename = self.get_parameter('filename').get_parameter_value().string_value
+        # Declare parameters
+        self.declare_parameter('filename_mesh', 'filename_mesh')
 
-        self.cli = self.create_client(TmsdbGridFSGetData, 'tms_db_reader_gridfs')
-        while not self.cli.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('service not available, waiting again...')
-        self.req = TmsdbGridFSGetData.Request()
+        # Get parameters
+        self.filename_mesh: str = self.get_parameter('filename_mesh').get_parameter_value().string_value
 
+        # Action Client
+        self._action_client = ActionClient(self, TmsdbGridFS, 'tms_db_reader_gridfs')
 
-    def send_request(self):
+    def send_goal(self) -> None:
         """
-        Send request to tms_db_reader_gridfs to get ground data.
-        
+        Send goal to action server.
+        """
+        self.goal_msg = TmsdbGridFS.Goal()
+        self.goal_msg.type     = DATA_TYPE
+        self.goal_msg.id       = DATA_ID
+        self.goal_msg.filename = self.filename_mesh
+
+        self._action_client.wait_for_server()
+        self._send_goal_future = self._action_client.send_goal_async(self.goal_msg, feedback_callback=self.feedback_callback)
+        self._send_goal_future.add_done_callback(self.goal_response_callback)
+
+    def feedback_callback(self, feedback_msg) -> None:
+        """
+        Callback function for feedback associated with the goal.
+
+        Parameters
+        ----------
+        feedback_msg
+            Feedback message.
+        """
+        pass
+
+    def goal_response_callback(self, future) -> None:
+        """
+        Get goal response call back from action server.
+
+        Parameters
+        ----------
+        future
+            Outcome of a task in the future.
+        """
+        goal_handle = future.result()
+        if not goal_handle.accepted:
+            # Goal denied
+            return
+
+        # Goal accepted
+        self._get_result_future = goal_handle.get_result_async()
+        self._get_result_future.add_done_callback(self.get_result_callback)
+
+    def get_result_callback(self, future) -> None:
+        """
+        Publish Mesh msg responded from tms_db_reader_gridfs as a result.
+
+        Parameters
+        ----------
+        future
+            Outcome of a task in the future.
+        """
+        result = future.result().result
+        if not result.result:
+            return
+
+        # Create ColoredMesh msg
+        self.msg: ColoredMesh = self.create_msg()
+
+        # Service server
+        self.srv = self.create_service(ColoredMeshSrv, '~/output/terrain/mesh_srv', self.terrain_mesh_srv_callback)
+
+    def terrain_mesh_srv_callback(self, request, response):
+        """
+        Callback function.
+
         Returns
         -------
-        Any
-            Result of request to tms_db_reader_gridfs.
+        response
+            Service callback response.
         """
-        self.req.type      = DATA_TYPE
-        self.req.id        = DATA_ID
-        self.req.filename  = self.filename
-        self.future        = self.cli.call_async(self.req)
-        rclpy.spin_until_future_complete(self, self.future)
-        return self.future.result()
+        response.colored_mesh = self.msg
+        self.get_logger().info('Return a response of ColoredMesh')
+        return response
 
-
-
-class TmsUrConstructionTerrainMeshPublisher(Node):
-    """Publish ground's Mesh."""
-
-    def __init__(self):
-        super().__init__(NODE_NAME)
-
-        # declare parameter
-        self.declare_parameter('filename', 'filename')
-        self.declare_parameter('voxel_size', '0.0')
-        self.declare_parameter('alpha', '1.0')
-
-        # get parameter
-        self.filename = self.get_parameter('filename').get_parameter_value().string_value
-        self.voxel_size = self.get_parameter('voxel_size').get_parameter_value().double_value
-        self.alpha = self.get_parameter('alpha').get_parameter_value().double_value
-
-        self.publisher_ = self.create_publisher(Mesh, '~/output/mesh', 10)
-        timer_period = 5
-        self.msg = self.create_msg()
-        self.timer = self.create_timer(timer_period, self.publish_mesh)
-
-    def create_msg(self) -> Mesh:
+    def create_msg(self) -> ColoredMesh:
         """
         Create Mesh msg from a .pcd file.
 
         Returns
         -------
-        PointCluod2
+        msg : PointCluod2
             Point cloud data.
         """
-        pcd = self.get_downsampled_pcd()
-        msg = self.create_mesh(pcd)
+        self.mesh: o3d.geometry.TriangleMesh = o3d.io.read_triangle_mesh(self.filename_mesh)
+        msg: ColoredMesh = self.convert_triangle_mesh_to_colored_mesh()
+
         return msg
 
-    def publish_mesh(self):
+    def convert_triangle_mesh_to_colored_mesh(self) -> ColoredMesh:
         """
-        Publish terrain's Mesh topics.
-        """
-        self.publisher_.publish(self.msg)
-
-    def get_downsampled_pcd(self) -> o3d.geometry.PointCloud:
-        """
-        Get a .pcd file and downsampling it.
+        Convert open3d.geometry.TriangleMesh to ColoredMesh msg.
 
         Returns
         -------
-        o3d.geometry.PointCloud
-            Point cloud data.
+        msg : ColoredMesh
+            ColoredMesh msg.
         """
-        pcd = o3d.io.read_point_cloud(self.filename)
+        msg: ColoredMesh = ColoredMesh()
+        msg.triangles: list      = self.get_triangles(np.asarray(self.mesh.triangles).astype(np.uint32))
+        msg.vertices: list       = self.get_vertices(np.asarray(self.mesh.vertices))
+        msg.vertex_colors: list  = self.get_vertex_colors(np.asarray(self.mesh.vertex_colors))
+        msg.vertex_normals: list = self.get_vertex_normals(np.asarray(self.mesh.vertex_normals))
 
-        # downsampling
-        if self.voxel_size > 0:
-            pcd = pcd.voxel_down_sample(voxel_size=self.voxel_size)
-        return pcd
-
-    def create_mesh(self, pcd):
-        """
-        Generate ground mesh data.
-
-        Parameters
-        ----------
-        pcd : o3d.geometry.PointCloud
-            Point cloud data.
-
-        Returns
-        -------
-        Mesh
-            Mesh data.
-        """
-        mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, self.alpha)
-        mesh.compute_vertex_normals
-
-        msg = Mesh()
-        msg.triangles = self.get_triangles(np.asarray(mesh.triangles).astype(np.uint32))
-        msg.vertices  = self.get_vertices(np.asarray(mesh.vertices))
         return msg
 
-    def get_triangles(self, mesh_triangles: np.ndarray):
+    def get_triangles(self, mesh_triangles: np.ndarray) -> list:
         """
         Get triangles of mesh.
 
@@ -146,7 +161,7 @@ class TmsUrConstructionTerrainMeshPublisher(Node):
             triangles.append(triangle)
         return triangles
 
-    def get_vertices(self, mesh_vertices: np.ndarray):
+    def get_vertices(self, mesh_vertices: np.ndarray) -> list:
         """
         Get vertices of mesh.
 
@@ -169,57 +184,62 @@ class TmsUrConstructionTerrainMeshPublisher(Node):
             vertices.append(point)
         return vertices
 
+    def get_vertex_colors(self, mesh_vertex_colors: np.ndarray) -> list:
+        """
+        Get vertex colors.
 
-def run_client(args=None) -> Tuple[bool, str]:
-    """
-    Run a client node.
+        Parameters
+        ----------
+        mesh_vertex_colors : numpy.ndarray
+            Mesh vertex colors.
 
-    Parameters
-    ----------
-    args : List[str]
-        List of command line arguments.
+        Returns
+        -------
+        List[ColorRGBA]
+            Vertex colores.
+        """
+        vertex_colors = []
+        for mesh_vertex_color in mesh_vertex_colors:
+            vertex_color = ColorRGBA()
+            vertex_color.r = mesh_vertex_color[0]
+            vertex_color.g = mesh_vertex_color[1]
+            vertex_color.b = mesh_vertex_color[2]
+            vertex_colors.append(vertex_color)
+        return vertex_colors
 
-    Returns
-    -------
-    bool
-        Result of request to service node.
-    str
-        Target's file name.
-    """
-    rclpy.init(args=args)
+    def get_vertex_normals(self, mesh_vertex_normals: np.ndarray) -> list:
+        """
+        Get vertex normals.
 
-    tms_ur_construction_terrain_mesh_client = TmsUrConstructionTerrainMeshClient()
-    response = tms_ur_construction_terrain_mesh_client.send_request()
+        Parameters
+        ----------
+        mesh_vertex_normals : numpy.ndarray
+            Mesh vertex normals.
 
-    tms_ur_construction_terrain_mesh_client.destroy_node()
-    rclpy.shutdown()
-
-    return response.result, tms_ur_construction_terrain_mesh_client.filename
-
-
-def run_publisher() -> None:
-    """
-    Run a publisher node.
-    """
-    rclpy.init()
-
-    tms_ur_construction_terrain_publisher = TmsUrConstructionTerrainMeshPublisher()
-    rclpy.spin(tms_ur_construction_terrain_publisher)
-
-    tms_ur_construction_terrain_publisher.destroy_node()
-    rclpy.shutdown()
+        Returns
+        -------
+        List[Vector3]
+            Vertex normals.
+        """
+        vertex_normals = []
+        for mesh_vertex_normal in mesh_vertex_normals:
+            vertex_normal = Vector3()
+            vertex_normal.x = mesh_vertex_normal[0]
+            vertex_normal.y = mesh_vertex_normal[1]
+            vertex_normal.z = mesh_vertex_normal[2]
+            vertex_normals.append(vertex_normal)
+        return vertex_normals
 
 
 def main(args=None):
-    # client
-    result, filename = run_client(args=args)
+    rclpy.init(args=args)
 
-    if result == False:
-        print(f'Failed to fetch file data. Maybe the file name ({filename}) was wrong.')
-        return
+    action_client = TmsUrConstructionTerrainMeshClient()
+    action_client.send_goal()
+    rclpy.spin(action_client)
 
-    # publisher
-    run_publisher()
+    action_client.destroy_node()
+    rclpy.shutdown()
 
 
 if __name__ == '__main__':
