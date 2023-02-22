@@ -145,19 +145,23 @@ Run the following commands to save data in MongoDB.
 ros2 launch tms_db_manager tms_db_writer.launch.py init_db:=true
 
 # Odometry
-ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/demo/odom machine_name:=demo_machine
+ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/demo2/odom machine_name:=demo_machine
 
-# OccupancyGrid
-ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo/occupancy_grid ground_name:=demo_ground
+# Ground 2D map
+ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo2/map_2d ground_name:=demo_ground
 
-# PointCloud2
-ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/terrain/static/pointcloud2:=/demo/pointcloud2 input/terrain/dynamic/pointcloud2:=/pod_1/points filename:=demo.pcd
+# Terrain
+ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/terrain/static/pointcloud2:=/demo2/terrain/static input/terrain/dynamic/pointcloud2:=/demo2/terrain/dynamic
+
+# Static terrain
+ros2 launch tms_ss_terrain_static tms_ss_terrain_static_launch.py filename:=demo.pcd filename_mesh:=demo.ply voxel_size:=0.1 octree_depth:=8 density_th:=0.1
 ```
-# TODO prepare demo data of dynamic terrain
+
 #### Play rosbag
 
 ```
-ros2 bag play ./src/ros2_tms_for_construction/demo/rosbag
+ros2 bag play -l ./src/ros2_tms_for_construction/demo/demo2/rosbag2_1
+ros2 bag play ./src/ros2_tms_for_construction/demo/demo2/rosbag2_2
 ```
 
 After the end of rosbag, please check whether the data is stored to fs.chunks, fs.files, machine and sensor collection in your MongoDB.
@@ -166,7 +170,7 @@ GUI tool of MongoDB like a MongoDB Compass is easy to check them.
 
 Here is an example. It may be a little different than yours, but as long as it is roughly the same, you should be fine.
 
-![](demo/demo_mongodb_compass.png)
+![](demo/demo2/demo_mongodb_compass.png)
 
 ### 2. Get stored data
 
@@ -180,23 +184,28 @@ Run the following commands to get data from MongoDB.
 # MongoDB manager
 ros2 launch tms_db_manager tms_db_reader.launch.py
 
-# Get Odometry, OccupancyGrid and PointCloud2 message
+# Service Client and Publisher nodes for static terrain data
+ros2 launch tms_ur_construction tms_ur_test_launch.py
+
+# Get odometry, ground 2D map and terrain data
 ros2 launch tms_ur_construction tms_ur_construction_launch.py filename:=demo.pcd voxel_size:=0.5
 ```
 
 #### Rviz2
 
 ```
-rviz2 -d ./src/ros2_tms_for_construction/demo/demo.rviz
+rviz2 -d ./src/ros2_tms_for_construction/demo/demo2/demo2.rviz
 ```
 
-Rviz2 will show Odometry, OccupancyGrid and PointCloud2 topics.
+Rviz2 will show odometry, ground 2D map and terrain data.
 
-https://user-images.githubusercontent.com/63947554/195261634-8c17fedf-5998-4ba5-a900-b8b12f99ff9b.mp4
+https://user-images.githubusercontent.com/63947554/220530548-b2e1c23c-2938-4b8f-b8f7-60b93b46f702.mp4
 
 ### 3. Store and get data simultaneously in real-time
 
 Run the following commands to store data in MongoDB and get the data.
+
+Static terrain data is not included because it does not need to be acquired in real-time.
 
 #### Launch
 
@@ -205,25 +214,19 @@ Run the following commands to store data in MongoDB and get the data.
 ros2 launch tms_db_manager tms_db_manager.launch.py init_db:=true
 
 # Odometry
-ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/demo/odom machine_name:=demo_machine
+ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/demo2/odom machine_name:=demo_machine
 
-# OccupancyGrid
-ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo/occupancy_grid ground_name:=demo_ground
+# Ground 2D map
+ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo2/map_2d ground_name:=demo_ground
 
-# PointCloud2
-ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/terrain/static/pointcloud2:=/demo/pointcloud2 input/terrain/dynamic/pointcloud2:=/pod_1/points filename:=demo.pcd
+# Terrain
+ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/terrain/dynamic/pointcloud2:=/demo2/terrain/dynamic
 ```
 
 #### Rviz2
 
 ```
-rviz2 -d ./src/ros2_tms_for_construction/demo/demo.rviz
-```
-
-#### Play rosbag
-
-```
-ros2 bag play ./src/ros2_tms_for_construction/demo/rosbag
+rviz2 -d ./src/ros2_tms_for_construction/demo/demo2/demo2.rviz
 ```
 
 #### Launch tms_ur_construction
@@ -234,7 +237,13 @@ After the tms_sd_terrain node was finished (PointCloud2 was stored to MongoDB), 
 ros2 launch tms_ur_construction tms_ur_construction_launch.py filename:=demo.pcd voxel_size:=0.5 latest:=true
 ```
 
-Rviz2 will show Odometry, OccupancyGrid and PointCloud2 topics like a example of [2. Get stored data](#2-get-stored-data).
+#### Play rosbag
+
+```
+ros2 bag play ./src/ros2_tms_for_construction/demo/demo2/rosbag2_2
+```
+
+Rviz2 will show odometry, ground 2D map and dynamic terrain data like a example of [2. Get stored data](#2-get-stored-data), excluding static terrain.
 
 After the end of rosbag, please check whether the data is stored to fs.chunks, fs.files, machine and sensor collection in your MongoDB.
 
@@ -242,7 +251,7 @@ GUI tool of MongoDB like a MongoDB Compass is easy to check them.
 
 Here is an example. It may be a little different than yours, but as long as it is roughly the same, you should be fine.
 
-![](demo/demo_mongodb_compass.png)
+![](demo/demo2/demo_mongodb_compass.png)
 
 ## Version Information
 
