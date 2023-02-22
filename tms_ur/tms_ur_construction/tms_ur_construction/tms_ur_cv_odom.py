@@ -23,7 +23,7 @@ class TmsUrCvOdomNode(Node):
         super().__init__(NODE_NAME)
 
         # Declare parameters
-        self.declare_parameter('latest', 'False')
+        self.declare_parameter('latest', False)
 
         # Get parameters
         self.latest: bool = self.get_parameter('latest').get_parameter_value().bool_value
