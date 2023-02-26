@@ -29,6 +29,7 @@ class TmsSdTerrainStatic(Node):
         msg : PointCloud2
             Point cloud data.
         """
+        self.get_logger().info('Static terrain info was received!')
         self.publisher_.publish(msg)
 
 def main(args=None):
