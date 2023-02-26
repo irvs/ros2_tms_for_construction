@@ -68,8 +68,12 @@ class TmsSsTerrainStaticMesh(Node):
         msg : PointCloud2
             Point cloud data.
         """
+        self.get_logger().info("Creating a file of static terrain's mesh ...")
+
         self.pcd: o3d.geometry.PointCloud    = self.convert_pointcloud2_to_pcd()
         self.mesh: o3d.geometry.TriangleMesh = self.convert_pcd_to_mesh()
+
+        self.get_logger().info("The static terrain's mesh file was created!")
 
         o3d.io.write_triangle_mesh(self.filename_mesh, self.mesh)
 

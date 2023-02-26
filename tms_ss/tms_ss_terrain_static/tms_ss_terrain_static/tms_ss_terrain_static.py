@@ -42,7 +42,9 @@ class TmsSsTerrainStatic(Node):
         msg : PointCloud2
             Point cloud data.
         """
+        self.get_logger().info("Creating a file of static terrain ...")
         self.convert_pointcloud2_to_pcd(msg)
+        self.get_logger().info("The static terrain's file was created!")
 
         tmsdb_gridfs_msg          = TmsdbGridFS()
         tmsdb_gridfs_msg.time     = datetime.now().isoformat()
