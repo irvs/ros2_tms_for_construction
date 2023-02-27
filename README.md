@@ -28,6 +28,15 @@ Project page: [https://moonshot-cafe-project.org/en/](https://moonshot-cafe-proj
 
 https://docs.ros.org/en/foxy/Installation/Alternatives/Ubuntu-Development-Setup.html
 
+**sensor-msgs-py**
+
+Please install ros-\<distro>-sensor-msgs-py.
+
+```
+sudo apt install ros-foxy-sensor-msgs-py
+```
+
+
 ### Git
 
 https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
@@ -43,9 +52,10 @@ https://www.mongodb.com/docs/v6.0/tutorial/install-mongodb-on-ubuntu/
 - catkin-pkg 0.5.2
 - empy 3.3.4
 - lark 1.1.3
+- setuptools 58.2.0
 
 ```
-python3 -m pip install pymongo==4.3.3 open3d==0.16.0 numpy==1.22.3 catkin-pkg==0.5.2 empy==3.3.4 lark==1.1.3
+python3 -m pip install pymongo==4.3.3 open3d==0.16.0 numpy==1.22.3 catkin-pkg==0.5.2 empy==3.3.4 lark==1.1.3 setuptools==58.2.0
 ```
 
 
@@ -276,3 +286,5 @@ Here is an example. It may be a little different than yours, but as long as it i
 * empy 3.3.4
 
 * lark 1.1.3
+
+* setuptools 58.2.0
