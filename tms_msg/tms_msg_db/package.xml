@@ -3,7 +3,7 @@
 <package format="3">
   <name>tms_msg_db</name>
   <version>1.0.2</version>
-  <license>BSD</license>
+  <license>Apache License, Version 2.0</license>
   <description>The tms_msg_db package</description>
 
  
