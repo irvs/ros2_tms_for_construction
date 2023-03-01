@@ -7,7 +7,7 @@
 
   <maintainer email="kawamura@ait.kyushu-u.ac.jp">Akihiro Kawamura</maintainer>
 
-  <license>BSD</license>
+  <license>Apache License, Version 2.0</license>
 
   <url type="website">http://irvs.github.io/ros_tms/</url>
   <url type="repository">https://github.com/irvs/ros2_tms_for_construction</url>
