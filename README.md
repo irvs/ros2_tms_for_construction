@@ -273,7 +273,7 @@ Here is an example. It may be a little different than yours, but as long as it i
 
 * ROS2 Foxy Fitzroy  
 
-* mongodb 5.0  
+* mongodb 6.0  
 
 * pymongo 4.3.3
 
