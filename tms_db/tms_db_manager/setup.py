@@ -19,8 +19,8 @@ setup(
     zip_safe=True,
     author='Esteve Fernandez',
     author_email='esteve@osrfoundation.org',
-    maintainer='kawamura',
-    maintainer_email='Kawamura@irvs.ait.kyushu-u.ac,jp',
+    maintainer='maeda',
+    maintainer_email='maeda@irvs.ait.kyushu-u.ac.jp',
     keywords=['ROS'],
     classifiers=[
         'Intended Audience :: Developers',
