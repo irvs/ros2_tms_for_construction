@@ -82,43 +82,9 @@ class TmsSsTerrainStaticDem(Node):
             points.append([x, y, z])
         cloud = np.array(points)
 
-        # # Generate DEM
-        # x_min, x_max = np.min(cloud[:, 0]), np.max(cloud[:, 0])
-        # y_min, y_max = np.min(cloud[:, 1]), np.max(cloud[:, 1])
+        dem = self.generate_dem(cloud)
 
-        # # Calculate the num of cell
-        # x_num = int(np.ceil((x_max - x_min) / self.resolution))
-        # y_num = int(np.ceil((y_max - y_min) / self.resolution))
-
-        # # Calculate the average height in each cell
-        # dem = np.empty((y_num, x_num), dtype=np.float32)
-        # dem.fill(np.nan)
-        # for x, y, z in cloud:
-        #     ix = int((x - x_min) / self.resolution)
-        #     iy = int((y - y_min) / self.resolution)
-        #     if 0 <= ix and ix < x_num and 0 <= iy and iy < y_num:
-        #         if np.isnan(dem[iy, ix]):
-        #             dem[iy, ix] = z
-        #         else:
-        #             dem[iy, ix] = (dem[iy, ix] + z) / 2
-
-        # if (self.fill_nan_type == 'avg'):
-        #     # Fill NaN with the average value of surrounding cells
-        #     for i in range(1, y_num):
-        #         for j in range(1, x_num):
-        #             if np.isnan(dem[i, j]):
-        #                 surrounding_cells = dem[i-1:i+2, j-1:j+2]
-        #                 dem[i, j] = np.nanmean(surrounding_cells)
-        # elif (self.fill_nan_type == 'median'):
-        #     # Fill NaN with median value
-        #     dem[np.isnan(dem)] = np.nanmedian(dem)
-
-        # dem_normalized = cv2.normalize(
-        #     dem, None, -128, 127, cv2.NORM_MINMAX, cv2.CV_8UC1)
-
-        dem_normalized = self.generate_dem(cloud)
-
-        return dem_normalized
+        return dem
     
     def generate_dem(self, cloud: np.ndarray) -> np.ndarray:
         """
