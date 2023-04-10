@@ -24,9 +24,9 @@ Project page: [https://moonshot-cafe-project.org/en/](https://moonshot-cafe-proj
 
 ## Install
 
-### ROS2 Foxy
+### ROS2 Humble
 
-https://docs.ros.org/en/foxy/Installation/Alternatives/Ubuntu-Development-Setup.html
+https://docs.ros.org/en/humble/Installation/Alternatives/Ubuntu-Development-Setup.html
 
 **sensor-msgs-py**
 
@@ -266,12 +266,10 @@ Here is an example. It may be a little different than yours, but as long as it i
 ## Version Information
 
 * Date : 2022.8.19 (since 2022.8.19 ROS2-TMS-FOR-CONSTRUCTION / since 2019.2.14 ROS2-TMS / since 2012.5.1 ROS-TMS / since 2005.11.1 TMS)  
-  
-* Url : https://index.ros.org/doc/ros2/Installation/Foxy/     
 
-* Ubuntu 20.04 LTS 64BIT  
+* Ubuntu 22.04 LTS 64BIT  
 
-* ROS2 Foxy Fitzroy  
+* ROS2 Humble Hawksbill : https://docs.ros.org/en/humble/Installation.html   
 
 * mongodb 6.0  
 

@@ -25,7 +25,7 @@ class TmsUrConstructionTerrainStaticClient(Node):
 
         # Declare parameters
         self.declare_parameter('filename', 'filename')
-        self.declare_parameter('voxel_size', '0.0')
+        self.declare_parameter('voxel_size', 0.0)
 
         # Get parameters
         self.filename: str     = self.get_parameter('filename').get_parameter_value().string_value
