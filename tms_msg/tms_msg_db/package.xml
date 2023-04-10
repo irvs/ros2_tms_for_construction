@@ -3,11 +3,11 @@
 <package format="3">
   <name>tms_msg_db</name>
   <version>1.0.2</version>
-  <license>BSD</license>
+  <license>Apache License, Version 2.0</license>
   <description>The tms_msg_db package</description>
 
  
-  <maintainer email="kawamura@ait.kyushu-u.ac.jp">Akihiro Kawamura</maintainer>
+  <maintainer email="maeda@ait.kyushu-u.ac.jp">Ryuichi Maeda</maintainer>
 
   <url type="website">http://robotics.ait.kyushu-u.ac.jp/index-e.html</url>
   <url type="git">https://github.com/irvs/ros_tms</url>
