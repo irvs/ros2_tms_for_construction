@@ -35,6 +35,7 @@ setup(
         'console_scripts': [
             'tms_ss_terrain_static = tms_ss_terrain_static.tms_ss_terrain_static:main',
             'tms_ss_terrain_static_mesh = tms_ss_terrain_static.tms_ss_terrain_static_mesh:main',
+            'tms_ss_terrain_static_dem = tms_ss_terrain_static.tms_ss_terrain_static_dem:main',
         ],
     },
 )

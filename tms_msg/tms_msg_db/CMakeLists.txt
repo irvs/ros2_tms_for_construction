@@ -23,6 +23,7 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(shape_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(ament_lint_auto REQUIRED)
 ament_lint_auto_find_test_dependencies()
 #find_package(message_package REQUIRED)
@@ -46,12 +47,14 @@ rosidl_generate_interfaces(tms_msg_db
   "srv/TmsdbGridFSGetData.srv"
   "srv/ColoredMeshSrv.srv"
   "srv/TerrainStaticSrv.srv"
+  "srv/DemSrv.srv"
 
   DEPENDENCIES 
   std_msgs
   sensor_msgs
   shape_msgs
   geometry_msgs
+  nav_msgs
 )
 
 

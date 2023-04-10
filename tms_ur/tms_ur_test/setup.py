@@ -34,6 +34,7 @@ setup(
     entry_points={
         'console_scripts': [
             'tms_ur_construction_terrain_mesh_test = tms_ur_test.terrain_mesh_cli_pub:main',
+            'tms_ur_construction_terrain_dem_test = tms_ur_test.terrain_dem_cli_pub:main',
             'tms_ur_construction_terrain_static_test = tms_ur_test.terrain_static_cli_pub:main',
         ],
     },
