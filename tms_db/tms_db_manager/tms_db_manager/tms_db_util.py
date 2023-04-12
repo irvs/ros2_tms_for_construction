@@ -157,3 +157,20 @@ def _fill_msg(msg: object, dic: dict) -> None:
                 setattr(msg, i, numpy.asarray(dic[i], dtype=attr.dtype))
             else:
                 setattr(msg, i, attr_type(dic[i]))
+
+def set_time_index(collection: pymongo.collection.Collection) -> None:
+    """
+    Set time index for collection.
+
+    Parameters
+    ----------
+    collection : pymongo.collection.Collection
+        Target collection.
+    """
+    time_index = [('time', pymongo.DESCENDING)]
+    index_list = collection.list_indexes()
+    for index in index_list:
+        if index['key'] == time_index:
+            return
+        
+    collection.create_index(time_index)
