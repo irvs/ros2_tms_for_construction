@@ -40,7 +40,7 @@ class TmsSdTerrainDynamic(Node):
             Target Object's PointCloud2.
         """
         tmsdb_gridfs_msg             = TmsdbGridFS()
-        tmsdb_gridfs_msg.time        = datetime.fromtimestamp(msg.header.stamp.sec + msg.header.stamp.nanosec * 10 ** (-9)).isoformat()
+        tmsdb_gridfs_msg.time        = datetime.now().isoformat()
         tmsdb_gridfs_msg.type        = DATA_TYPE
         tmsdb_gridfs_msg.id          = DATA_ID
         tmsdb_gridfs_msg.pointcloud2 = msg

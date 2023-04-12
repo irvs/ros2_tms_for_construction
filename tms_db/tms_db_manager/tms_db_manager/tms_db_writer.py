@@ -48,6 +48,9 @@ class TmsDbWriter(Node):
         doc['msg'] = json.loads(msg.msg)
 
         collection: pymongo.collection.Collection = self.db[doc['type']]
+
+        db_util.set_time_index(collection)
+
         collection.insert_one(doc)
 
     def reset_db(self) -> None:
