@@ -38,6 +38,9 @@ class TmsDbWriterGridFS(Node):
         msg : TmsdbGridFS
             An instance of a ROS2 custom message to store data using GridFS.
         """
+        self.fs = gridfs.GridFS(self.db)
+        db_util.set_time_index(self.db["fs.files"])
+
         if msg.type == 'static':
             self.save_static_terrain(msg)
         elif msg.type == 'mesh':
@@ -60,8 +63,7 @@ class TmsDbWriterGridFS(Node):
         
         f = open(filename, 'rb')
 
-        fs = gridfs.GridFS(self.db)
-        fs.put(f.read(), filename=filename, time=msg.time, type=msg.type, id=msg.id)
+        self.fs.put(f.read(), filename=filename, time=msg.time, type=msg.type, id=msg.id)
 
         f.close()
         os.remove(filename)
@@ -79,8 +81,7 @@ class TmsDbWriterGridFS(Node):
 
         f = open(filename, 'rb')
 
-        fs = gridfs.GridFS(self.db)
-        fs.put(f.read(), filename=filename, time=msg.time, type=msg.type, id=msg.id)
+        self.fs.put(f.read(), filename=filename, time=msg.time, type=msg.type, id=msg.id)
 
         f.close()
         os.remove(filename)
@@ -94,9 +95,7 @@ class TmsDbWriterGridFS(Node):
         msg : TmsdbGridFS
             An instance of a ROS2 custom message to store data using GridFS.
         """
-        fs = gridfs.GridFS(self.db)
-
-        fs.put(
+        self.fs.put(
             ','.join(str(i) for i in msg.pointcloud2.data).encode(),
             time=msg.time,
             type=msg.type,
