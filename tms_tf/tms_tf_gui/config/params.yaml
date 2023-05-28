@@ -1,0 +1,13 @@
+ground_tf:
+  ground_tf_broadcaster:
+    ros__parameters:
+      from_frame: laser_link
+      to_frame: world
+      config_file: ./src/ros2_tms_for_construction/tms_tf/tms_tf_gui/config/tf_config.json
+machine_odom_tf:
+  machine_odom_tf_broadcaster:
+    ros__parameters:
+      from_frame: map
+      to_frame: world
+      config_file: ./src/ros2_tms_for_construction/tms_tf/tms_tf_gui/config/tf_config.json
+     
