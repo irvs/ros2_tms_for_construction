@@ -53,6 +53,8 @@ class TmsSpMachineOdom(Node):
             Odometry, f"tf_machine/{self.machine_name}", 10
         )
 
+        self.is_received = False
+
     def send_odom_to_db_writer(self, msg: Odometry) -> None:
         """
         Send topics to tms_db_writer (Write the received Odometry data to DB).
@@ -62,6 +64,11 @@ class TmsSpMachineOdom(Node):
         msg : Odometry
             Target Object's Odometry.
         """
+        # Log
+        if not self.is_received:
+            self.get_logger().info(f"Received {self.machine_name}'s Odometry msg")
+            self.is_received = True
+
         # Transform
         msg = self.transform(msg)
 
