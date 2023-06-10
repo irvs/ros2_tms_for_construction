@@ -53,6 +53,8 @@ class TmsSdGround(Node):
         # This publisher is to check the transformation.
         self.publisher = self.create_publisher(OccupancyGrid, "tf_ground", 10)
 
+        self.is_received = False
+
     def send_occupancy_grid_to_db_writer(self, msg: OccupancyGrid) -> None:
         """
         Send topics to tms_db_writer (Write the received OccupancyGrid data to DB).
@@ -62,6 +64,11 @@ class TmsSdGround(Node):
         msg : OccupancyGrid
             Target Object's OccupancyGrid.
         """
+        # Log
+        if not self.is_received:
+            self.get_logger().info(f"Received OccupancyGrid msg")
+            self.is_received = True
+
         # Transform
         msg = self.transform_msg(msg)
 
