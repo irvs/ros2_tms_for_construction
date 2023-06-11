@@ -1,6 +1,3 @@
-string type
-int32  id
-bool   latest_only
 tms_msg_db/Tmsdb  tmsdb
 ---
-tms_msg_db/Tmsdb[]  tmsdbs
+tms_msg_db/Tmsdb[]  tmsdb

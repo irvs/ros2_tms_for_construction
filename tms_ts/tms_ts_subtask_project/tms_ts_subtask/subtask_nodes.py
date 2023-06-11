@@ -43,13 +43,7 @@ class SubtaskMove(SubtaskNodeBase):
         if not self.action_client.wait_for_server(timeout_sec=5.0):
             response.message = "Abort"
             return response
-        goal_msg = NavigateToPose.Goal()
-        goal_msg.pose.header.frame_id = "map"
-        goal_msg.pose.pose.position.x = position[0]
-        goal_msg.pose.pose.position.y = position[1]
-        goal_msg.pose.pose.position.z = position[2]
-        goal_msg.pose.pose.orientation.x = orientation[0]
-        goal_msg.pose.pose.orientation.y = orientation[1]
+        goal_msg =apose.pose.orientation.y = orientation[1]
         goal_msg.pose.pose.orientation.z = orientation[2]
         goal_msg.pose.pose.orientation.w = orientation[3]
         self.move_goalhandle = await self.action_client.send_goal_async(goal_msg)
@@ -150,7 +144,7 @@ class SubtaskWait(SubtaskNodeBase):
         return 9900
     
     async def service_callback(self, request, response, goal_handle):
-        self.get_logger().info(f'{request["wait_sec"]}')
+        self.get_alogger().info(f'{request["wait_sec"]}')
         time.sleep(request["wait_sec"])
         response.message = "Success"
         return response

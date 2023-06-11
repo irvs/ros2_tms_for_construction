@@ -1,5 +1,0 @@
-string type
-int32  id
-string filename
----
-bool   result

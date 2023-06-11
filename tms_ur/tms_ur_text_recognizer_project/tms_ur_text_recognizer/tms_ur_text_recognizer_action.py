@@ -29,21 +29,20 @@ class TmsUrTextRecognizer(Node):
         tags = self.tokenize(request.data)
         self.arg_data = {}
         tms_objects = self.tms_objects_search(tags)
-        self.get_logger().info("CCCCCCCCCCCCCCCCCCCCCCCC"+str(tms_objects))
         tags = set(tags)  # タグが重複しないように一旦setにする
-        for tms_object in tms_objects:
-            self.get_logger().info("BBBBBBBBBBBBBBBBBBBBBB"+str(tms_object))
+        for tms_object in tms_objects:  # Mongodbの1行分のデータがtms_objectに対応
+            self.get_logger().info(str(tms_object))
             del tms_object["_id"]
             self.arg_data[tms_object["type"]] = tms_object
-            self.get_logger().info("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"+str(tms_object))
+            self.get_logger().info(str(tms_object))
             tags.add("("+tms_object["type"]+")")
-        self.get_logger().info("AAAAAAAAAAAAAAAA"+str(tags))
+        self.get_logger().info(str(tags))
         tags = list(tags)  # setからlistに戻す
 
         if "キャンセル" in tags:
             futures = []
             for gh in self.goal_handles.values():
-                self.get_logger().info("QQQQQQQQQQQQQQQQQQQQQQQQQQ"+str(gh.status))
+                self.get_logger().info(str(gh.status))
                 futures.append(gh.cancel_goal_async())
             text = "キャンセルしました"
             response.data = text
@@ -99,7 +98,7 @@ class TmsUrTextRecognizer(Node):
         tokens = t.tokenize(sentence)
         i = 0
         for token in tokens:
-            self.get_logger().info("HHHHHHHHHHHHHHHHHHHHHHHHHHHH"+str(token))
+            self.get_logger().info(str(token))
             if token.part_of_speech.split(',')[0] == u'動詞':
                 search_tags.append(token.base_form)
             elif token.part_of_speech.split(',')[0] == u'名詞' and token.part_of_speech.split(',')[1] == u'接尾':
@@ -112,8 +111,8 @@ class TmsUrTextRecognizer(Node):
             i += 1
         search_tags.append(sentence)
         for search_tag in search_tags:
-            self.get_logger().info("LLLLLLLLLLLLLLLLLLLL"+str(search_tag))
-        self.get_logger().info("GGGGGGGGGGGGGGGGGGGGGGGG"+str(search_tags))
+            self.get_logger().info(str(search_tag))
+        self.get_logger().info(str(search_tags))
         return search_tags
     
 
@@ -135,7 +134,7 @@ class TmsUrTextRecognizer(Node):
             {"$group": {                        # $group : ドキュメントをグループ化("_id","id","name","tag","require_tag_count","count"を条件指定してグループ化)
                 "_id": "$_id",
                 "id": {"$first": "$id"},        # $first : グループ化したドキュメントの最初の値を指定
-                "name": {"$first": "$name"}
+                "name": {"$first": "$name"},
                 "tag": {"$first": "$tag"},
                 "require_tag_count": {"$first": "$require_tag_count"},
                 "count": {"$sum": 1},           # $sum : グループ化したドキュメントの合計値を指定
@@ -192,6 +191,7 @@ class TmsUrTextRecognizer(Node):
         return task
     
 
+    #オブジェクトの判別 + データ取得用関数(143:bed, 145:entrance, 146:kitchen, 147:TV room, 150:sensor)
     def tms_objects_search(self,tags):
         client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client.rostmsdb
