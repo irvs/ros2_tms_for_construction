@@ -14,12 +14,8 @@ find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(tms_msg_ts
-  "msg/Arg.msg"
-  "srv/TmsSaFindObjects.srv"
-  "srv/TsReq.srv"
-  "srv/TsStateControl.srv"
-  "srv/TsDoTask.srv"
   "srv/TaskTextRecognize.srv"
+  "srv/TsDoTask.srv"
   "action/TsDoSubtask.action"
   "action/TsDoTask.action"
   "action/TsReq.action"

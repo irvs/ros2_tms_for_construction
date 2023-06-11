@@ -1,9 +1,9 @@
-# Goal (TsReq.Goal() , goal_handle.request)
+# Goal
 int32 task_id
 string arg_json
 ---
-# Result (TsReq.Result())
+# Result
 string message
 ---
-# Feedback (TsReq.Feedback()
+# Feedback
 string message

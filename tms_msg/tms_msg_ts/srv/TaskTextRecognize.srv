@@ -1,6 +1,4 @@
-# request(ex:request.data)
 string data
 bool is_announce
 ---
-# response(ex:response.data)
 string data

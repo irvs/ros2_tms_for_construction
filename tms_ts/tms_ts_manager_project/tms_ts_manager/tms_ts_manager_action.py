@@ -13,7 +13,6 @@ import time
 class TaskNode(Node):   #タスクを実行するノード(受け取ったサブタスクツリーによって，再帰的にTaskNodeを生成する)
     _task_num = 0
     tasks = []
-
     def __init__(self, task_tree, name_prefix=""):
         self.node_type = task_tree[0]
         print("KKKKKKKKKKKKKKKKK"+str(task_tree[0]))
@@ -24,8 +23,7 @@ class TaskNode(Node):   #タスクを実行するノード(受け取ったサブ
         TaskNode._task_num += 1
         TaskNode.tasks.append(self)
         self.cb_group = ReentrantCallbackGroup()
-        self.child_task_nodes = []
-        self.child_clients = []  # Action Client
+        self.child_task_nodes = [ros2 service call /tms_ts_text_recognizer tms_msg_ts/srv/TaskTextRecognize '{data: "チュートリアル", is_announce: False}' # Action Client
         self.goal_handles = []  # Goal Handle
     
         super().__init__(self.name)
