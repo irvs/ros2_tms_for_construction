@@ -13,8 +13,9 @@ import quaternion
 
 NODE_NAME: str = "ground_tf_broadcaster"
 WINDOW_TITLE: str = "Ground TF Broadcaster"
-WINDOW_WIDTH: int = 400
-WINDOW_HEIGHT: int = 500
+WINDOW_WIDTH: int = 500
+WINDOW_HEIGHT: int = 440
+WINDOW_BG_COLOR: str = "white"
 
 
 class GroundTFBroadcaster(tk.Frame):
@@ -30,10 +31,13 @@ class GroundTFBroadcaster(tk.Frame):
             to=100,
             orient=tk.HORIZONTAL,
             resolution=0.1,
-            length=300,
+            length=500,
             tickinterval=20,
             digits=3,
             label="Translation X",
+            background="white",
+            troughcolor="blue",
+            font=("", 15),
         )
         self.translation_y = tk.Scale(
             self,
@@ -41,10 +45,13 @@ class GroundTFBroadcaster(tk.Frame):
             to=100,
             orient=tk.HORIZONTAL,
             resolution=0.1,
-            length=300,
+            length=500,
             tickinterval=20,
             digits=3,
             label="Translation Y",
+            background="white",
+            troughcolor="blue",
+            font=("", 15),
         )
         self.translation_z = tk.Scale(
             self,
@@ -52,10 +59,13 @@ class GroundTFBroadcaster(tk.Frame):
             to=100,
             orient=tk.HORIZONTAL,
             resolution=0.1,
-            length=300,
+            length=500,
             tickinterval=20,
             digits=3,
             label="Translation Z",
+            background="white",
+            troughcolor="blue",
+            font=("", 15),
         )
         # self.rotation_x = tk.Scale(
         #     self,
@@ -63,7 +73,7 @@ class GroundTFBroadcaster(tk.Frame):
         #     to=180,
         #     orient=tk.HORIZONTAL,
         #     resolution=1,
-        #     length=300,
+        #     length=500,
         #     tickinterval=30,
         #     digits=3,
         #     label="Rotation X",
@@ -74,7 +84,7 @@ class GroundTFBroadcaster(tk.Frame):
         #     to=180,
         #     orient=tk.HORIZONTAL,
         #     resolution=1,
-        #     length=300,
+        #     length=500,
         #     tickinterval=30,
         #     digits=3,
         #     label="Rotation Y",
@@ -85,15 +95,19 @@ class GroundTFBroadcaster(tk.Frame):
             to=180,
             orient=tk.HORIZONTAL,
             resolution=1,
-            length=300,
+            length=500,
             tickinterval=30,
             digits=3,
             label="Rotation Z",
+            background="white",
+            troughcolor="blue",
+            font=("", 15),
         )
         self.save_button = tk.Button(
             self,
             text="Save",
             command=self.save,
+            background="white",
         )
 
         self.translation_x.pack()
@@ -190,6 +204,7 @@ class GroundTFBroadcaster(tk.Frame):
 def main():
     window = tk.Tk()
     window.title(WINDOW_TITLE)
+    window.configure(bg=WINDOW_BG_COLOR)
     window.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
     app = GroundTFBroadcaster(window)
     app.mainloop()
