@@ -37,6 +37,19 @@ class TmsUrGroundMesh(Node):
         )
 
         self.publisher_ = self.create_publisher(ColoredMesh, "~/output/ground_mesh", 10)
+
+        # Tmsdb Srv for ground data
+        self.tmsdb_srv_cli = self.create_client(TmsdbGetData, "tms_db_reader")
+        while not self.tmsdb_srv_cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("service for ground not available, waiting again...")
+
+        # Colored Mesh Srv for terrain mesh data
+        self.coloredmesh_srv_cli = self.create_client(
+            ColoredMeshSrv, "/output/terrain/mesh_srv"
+        )
+        while not self.coloredmesh_srv_cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("service for mesh not available, waiting again...")
+
         self.call_timer = self.create_timer(self.timer_period, self.timer_callback)
 
     def timer_callback(self):
@@ -46,7 +59,7 @@ class TmsUrGroundMesh(Node):
         self.send_request_for_ground()
 
         try:
-            self.tmsdbs = self.res.tmsdbs
+            self.tmsdbs = self.tmsdb_srv_res.tmsdbs
         except:
             return
 
@@ -59,8 +72,6 @@ class TmsUrGroundMesh(Node):
 
         self.publish_colored_mesh()
 
-        self.called = True
-
     def send_request_for_ground(self):
         """
         Send request to tms_db_reader to get ground data.
@@ -70,23 +81,19 @@ class TmsUrGroundMesh(Node):
         Any
             Result of request to tms_db_reader.
         """
-        self.cli = self.create_client(TmsdbGetData, "tms_db_reader")
-        while not self.cli.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info("service for ground not available, waiting again...")
-
         self.req = TmsdbGetData.Request()
         self.req.type = DATA_TYPE
         self.req.id = DATA_ID
         self.req.latest_only = True
 
-        future = self.cli.call_async(self.req)
+        future = self.tmsdb_srv_cli.call_async(self.req)
         future.add_done_callback(partial(self.callback_set_response_for_ground))
 
     def callback_set_response_for_ground(self, future):
         """
         Set response from tms_db_reader.
         """
-        self.res = future.result()
+        self.tmsdb_srv_res = future.result()
 
     def send_request_for_static_mesh(self):
         """
