@@ -15,7 +15,6 @@ class TaskNode(Node):   #タスクを実行するノード(受け取ったサブ
     tasks = []
     def __init__(self, task_tree, name_prefix=""):
         self.node_type = task_tree[0]
-        print("KKKKKKKKKKKKKKKKK"+str(task_tree[0]))
         self.task_tree = task_tree
         if name_prefix != "":
             name_prefix += "_"
@@ -23,7 +22,8 @@ class TaskNode(Node):   #タスクを実行するノード(受け取ったサブ
         TaskNode._task_num += 1
         TaskNode.tasks.append(self)
         self.cb_group = ReentrantCallbackGroup()
-        self.child_task_nodes = [ros2 service call /tms_ts_text_recognizer tms_msg_ts/srv/TaskTextRecognize '{data: "チュートリアル", is_announce: False}' # Action Client
+        self.child_task_nodes = []
+        self.child_clients = []
         self.goal_handles = []  # Goal Handle
     
         super().__init__(self.name)
@@ -309,7 +309,6 @@ class TaskSchedulerManager(Node):   #TaskNodeを管理するマネージャノ�
         data_str = goal_handle.request.arg_json
         if data_str != '':
             self.arg_data = json.loads(data_str)
-            self.get_logger().info("XXXXXXXXXXXXXXXXXXXXXXXX"+str(self.arg_data))
         else:
             self.arg_data = {}
 
@@ -369,10 +368,7 @@ class TaskSchedulerManager(Node):   #TaskNodeを管理するマネージャノ�
 
         subtask_list = []
         tmsdb_data = await self.call_dbreader(task_id) 
-        print(tmsdb_data[0])
         subtask_str = tmsdb_data[0]['etcdata']
-        print(f"[{self.name}] >> find task '{tmsdb_data[0]['name']}'")
-        print(f"[{self.name}] >> read task '{subtask_str}'")
         subtask_raw_list = re.findall(r'[0-9]+\$\{.*?\}|[0-9]+|\+|\|', subtask_str)
 
         self._is_valid_subtask_replace = True
