@@ -15,14 +15,14 @@ def generate_launch_description():
         executable="tms_ur_cv_odom",
         output="screen",
         remappings=[
-            ("~/output/odom", "/output/machine1/odom"),
+            ("~/output/odom", "/output/backhow1/odom"),
         ],
         parameters=[
             {
                 "latest": LaunchConfiguration("latest"),
             },
             {
-                "machine_name": "machine1",
+                "machine_name": "backhow1",
             },
         ],
     )
@@ -32,14 +32,14 @@ def generate_launch_description():
         executable="tms_ur_cv_odom",
         output="screen",
         remappings=[
-            ("~/output/odom", "/output/machine2/odom"),
+            ("~/output/odom", "/output/wheel_loader1/odom"),
         ],
         parameters=[
             {
                 "latest": LaunchConfiguration("latest"),
             },
             {
-                "machine_name": "machine2",
+                "machine_name": "wheel_loader1",
             },
         ],
     )
@@ -49,14 +49,14 @@ def generate_launch_description():
         executable="tms_ur_cv_odom",
         output="screen",
         remappings=[
-            ("~/output/odom", "/output/machine3/odom"),
+            ("~/output/odom", "/output/crawler_dump1/odom"),
         ],
         parameters=[
             {
                 "latest": LaunchConfiguration("latest"),
             },
             {
-                "machine_name": "machine3",
+                "machine_name": "crawler_dump1",
             },
         ],
     )
@@ -66,14 +66,14 @@ def generate_launch_description():
         executable="tms_ur_cv_odom",
         output="screen",
         remappings=[
-            ("~/output/odom", "/output/machine4/odom"),
+            ("~/output/odom", "/output/crawler_dump2/odom"),
         ],
         parameters=[
             {
                 "latest": LaunchConfiguration("latest"),
             },
             {
-                "machine_name": "machine4",
+                "machine_name": "crawler_dump2",
             },
         ],
     )
@@ -83,14 +83,14 @@ def generate_launch_description():
         executable="tms_ur_cv_odom",
         output="screen",
         remappings=[
-            ("~/output/odom", "/output/machine5/odom"),
+            ("~/output/odom", "/output/crawler_dump3/odom"),
         ],
         parameters=[
             {
                 "latest": LaunchConfiguration("latest"),
             },
             {
-                "machine_name": "machine5",
+                "machine_name": "crawler_dump3",
             },
         ],
     )
