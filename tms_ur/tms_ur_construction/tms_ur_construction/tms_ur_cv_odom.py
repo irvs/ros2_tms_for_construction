@@ -35,30 +35,18 @@ class TmsUrCvOdomNode(Node):
         )
 
         self.publisher_ = self.create_publisher(Odometry, "~/output/odom", 10)
+
+        self.cli = self.create_client(TmsdbGetData, "tms_db_reader")
+        while not self.cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("service not available, waiting again...")
+
         timer_period = 0.5
-        self.call_timer = self.create_timer(timer_period, self.timer_callback)
-
-    def timer_callback(self):
-        """
-        Get Odometry data from tms_db_reader and publish them.
-        """
-        self.send_request()
-
-        try:
-            self.tmsdbs = self.res.tmsdbs
-        except:
-            return
-
-        self.publish_odom()
+        self.call_timer = self.create_timer(timer_period, self.send_request)
 
     def send_request(self):
         """
         Send request to tms_db_reader to get Odometry data.
         """
-        self.cli = self.create_client(TmsdbGetData, "tms_db_reader")
-        while not self.cli.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info("service not available, waiting again...")
-
         self.req = TmsdbGetData.Request()
         self.req.type = DATA_TYPE
         self.req.id = DATA_ID
@@ -66,13 +54,18 @@ class TmsUrCvOdomNode(Node):
         self.req.name = self.machine_name
 
         future = self.cli.call_async(self.req)
-        future.add_done_callback(partial(self.callback_set_response))
+        future.add_done_callback(partial(self.callback_response))
 
-    def callback_set_response(self, future):
+    def callback_response(self, future):
         """
         Set response from tms_db_reader.
         """
-        self.res = future.result()
+        try:
+            self.res = future.result()
+            self.tmsdbs = self.res.tmsdbs
+            self.publish_odom()
+        except:
+            return
 
     def publish_odom(self) -> None:
         """
