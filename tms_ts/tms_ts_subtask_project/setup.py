@@ -31,8 +31,7 @@ setup(
     entry_points={
         'console_scripts': [
             'subtask_nodes = tms_ts_subtask.subtask_nodes:main',
-            'subtask_nodes_bed = tms_ts_subtask.subtask_nodes_bed:main',
-            'subtask_nodes_roomlight = tms_ts_subtask.subtask_nodes_roomlight:main',
+            'subtask_nodes_sample_construction = tms_ts_subtask.subtask_nodes_sample_construction:main',
         ],
     },
 )

@@ -29,14 +29,12 @@ class TmsUrTextRecognizer(Node):
         tags = self.tokenize(request.data)
         self.arg_data = {}
         tms_objects = self.tms_objects_search(tags)
+        self.get_logger().info("SSSSSSSSSSSS"+str(tms_objects))
         tags = set(tags)  # タグが重複しないように一旦setにする
         for tms_object in tms_objects:  # Mongodbの1行分のデータがtms_objectに対応
-            self.get_logger().info(str(tms_object))
             del tms_object["_id"]
             self.arg_data[tms_object["type"]] = tms_object
-            self.get_logger().info(str(tms_object))
             tags.add("("+tms_object["type"]+")")
-        self.get_logger().info(str(tags))
         tags = list(tags)  # setからlistに戻す
 
         if "キャンセル" in tags:
@@ -63,7 +61,7 @@ class TmsUrTextRecognizer(Node):
                 if self.arg_data:
                     req.arg_json = json.dumps(self.arg_data)
                 text = task["announce"]
-                text = re.sub(r"\((.*?)\)", self.re_func, text)
+                text = re.sub(r"\((.*?)\)", self.re_func, text) # textの正規表現部分を取り出して、re_funcの戻り値で置換
                 goal_handle = await self.cli_ts_req.send_goal_async(req)
                 self.goal_handles[goal_handle.goal_id.uuid.tostring()] = goal_handle
                 goal_handle.get_result_async().add_done_callback(self.done_callback)
@@ -97,6 +95,7 @@ class TmsUrTextRecognizer(Node):
             self.get_logger().info(str(token))
         tokens = t.tokenize(sentence)
         i = 0
+        #base_form: 基本形, surface: 表層形, part_of_speech: 品詞
         for token in tokens:
             self.get_logger().info(str(token))
             if token.part_of_speech.split(',')[0] == u'動詞':
@@ -112,7 +111,7 @@ class TmsUrTextRecognizer(Node):
         search_tags.append(sentence)
         for search_tag in search_tags:
             self.get_logger().info(str(search_tag))
-        self.get_logger().info(str(search_tags))
+        self.get_logger().info("AAAAAAAAAAAAAAAAAAA"+str(search_tags))
         return search_tags
     
 
@@ -145,7 +144,7 @@ class TmsUrTextRecognizer(Node):
                     "_id": 1,
                     "id": 1,
                     "name": 1,
-                    "tag": {"$ifNull": ["$tag", []]},
+                    "tag": {"$ifNull": ["$tag", []]},  # $ifNull : $tagが存在する場合には"$tag"を、そうでない場合には[]を返す
                     "m_tag": {"$ifNull": ["$tag", []]},
             }},
             {"$unwind": {
@@ -202,7 +201,6 @@ class TmsUrTextRecognizer(Node):
         document_array = []
         for doc in cursor:
             document_array.append(doc)
-        pprint.pprint(document_array)
         return document_array
 
 
