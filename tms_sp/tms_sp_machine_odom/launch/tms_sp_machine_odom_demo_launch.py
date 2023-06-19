@@ -19,7 +19,7 @@ def generate_launch_description():
         ],
         parameters=[
             {
-                "machine_name": "machine1",
+                "machine_name": "backhow1",
             },
             {
                 "to_frame": LaunchConfiguration("to_frame"),
@@ -36,7 +36,7 @@ def generate_launch_description():
         ],
         parameters=[
             {
-                "machine_name": "machine2",
+                "machine_name": "wheel_loader1",
             },
             {
                 "to_frame": LaunchConfiguration("to_frame"),
@@ -53,7 +53,7 @@ def generate_launch_description():
         ],
         parameters=[
             {
-                "machine_name": "machine3",
+                "machine_name": "crawler_dump1",
             },
             {
                 "to_frame": LaunchConfiguration("to_frame"),
@@ -70,7 +70,7 @@ def generate_launch_description():
         ],
         parameters=[
             {
-                "machine_name": "machine4",
+                "machine_name": "crawler_dump2",
             },
             {
                 "to_frame": LaunchConfiguration("to_frame"),
@@ -87,7 +87,7 @@ def generate_launch_description():
         ],
         parameters=[
             {
-                "machine_name": "machine5",
+                "machine_name": "crawler_dump3",
             },
             {
                 "to_frame": LaunchConfiguration("to_frame"),
