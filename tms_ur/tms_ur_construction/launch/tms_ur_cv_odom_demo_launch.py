@@ -10,7 +10,7 @@ def generate_launch_description():
 
     # Nodes
     tms_ur_cv_odom_node1 = Node(
-        name="tms_ur_cv_odom1",
+        # name="tms_ur_cv_odom1",
         package="tms_ur_construction",
         executable="tms_ur_cv_odom",
         output="screen",
@@ -27,7 +27,7 @@ def generate_launch_description():
         ],
     )
     tms_ur_cv_odom_node2 = Node(
-        name="tms_ur_cv_odom2",
+        # name="tms_ur_cv_odom2",
         package="tms_ur_construction",
         executable="tms_ur_cv_odom",
         output="screen",
@@ -44,7 +44,7 @@ def generate_launch_description():
         ],
     )
     tms_ur_cv_odom_node3 = Node(
-        name="tms_ur_cv_odom3",
+        # name="tms_ur_cv_odom3",
         package="tms_ur_construction",
         executable="tms_ur_cv_odom",
         output="screen",
@@ -61,7 +61,7 @@ def generate_launch_description():
         ],
     )
     tms_ur_cv_odom_node4 = Node(
-        name="tms_ur_cv_odom4",
+        # name="tms_ur_cv_odom4",
         package="tms_ur_construction",
         executable="tms_ur_cv_odom",
         output="screen",
@@ -78,7 +78,7 @@ def generate_launch_description():
         ],
     )
     tms_ur_cv_odom_node5 = Node(
-        name="tms_ur_cv_odom5",
+        # name="tms_ur_cv_odom5",
         package="tms_ur_construction",
         executable="tms_ur_cv_odom",
         output="screen",
