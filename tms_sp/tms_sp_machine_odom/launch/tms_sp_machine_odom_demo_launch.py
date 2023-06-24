@@ -15,7 +15,7 @@ def generate_launch_description():
         executable="tms_sp_machine_odom",
         output="screen",
         remappings=[
-            ("~/input/odom", "/cd_0/odom"),
+            ("~/input/odom", "/bh/status/odom"),
         ],
         parameters=[
             {
@@ -32,7 +32,7 @@ def generate_launch_description():
         executable="tms_sp_machine_odom",
         output="screen",
         remappings=[
-            ("~/input/odom", "/cd_1/odom"),
+            ("~/input/odom", "/wl/status/odom"),
         ],
         parameters=[
             {
@@ -49,7 +49,7 @@ def generate_launch_description():
         executable="tms_sp_machine_odom",
         output="screen",
         remappings=[
-            ("~/input/odom", "/cd_2/odom"),
+            ("~/input/odom", "/cd_0/status/odom"),
         ],
         parameters=[
             {
@@ -66,7 +66,7 @@ def generate_launch_description():
         executable="tms_sp_machine_odom",
         output="screen",
         remappings=[
-            ("~/input/odom", "/cd_3/odom"),
+            ("~/input/odom", "/cd_1/status/odom"),
         ],
         parameters=[
             {
@@ -83,7 +83,7 @@ def generate_launch_description():
         executable="tms_sp_machine_odom",
         output="screen",
         remappings=[
-            ("~/input/odom", "/cd_4/odom"),
+            ("~/input/odom", "/cd_2/status/odom"),
         ],
         parameters=[
             {
