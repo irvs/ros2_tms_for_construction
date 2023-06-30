@@ -358,8 +358,10 @@ class TaskSchedulerManager(Node):   #TaskNodeを管理するマネージャノ�
             arg_str = m.groups()[0] # m.groups()はマッチした部分を文字列として取得
             args = arg_str.split('.')
             answer = arg_data.copy()
+            self.get_logger().info(f"answer: {answer}")
             for arg in args:
                 answer = answer.get(arg, {})
+                self.get_logger().info(f"answer: {answer}")
             if answer == {}:
                 self._is_valid_subtask_replace = False
                 return '"ARGUMENT ERROR"'
@@ -370,6 +372,7 @@ class TaskSchedulerManager(Node):   #TaskNodeを管理するマネージャノ�
         tmsdb_data = await self.call_dbreader(task_id) 
         subtask_str = tmsdb_data[0]['etcdata']
         subtask_raw_list = re.findall(r'[0-9]+\$\{.*?\}|[0-9]+|\+|\|', subtask_str)
+        self.get_logger().info(f"subtask_raw_list: {subtask_raw_list}")
 
         self._is_valid_subtask_replace = True
         for subtask_raw in subtask_raw_list:
@@ -378,11 +381,12 @@ class TaskSchedulerManager(Node):   #TaskNodeを管理するマネージャノ�
             for elem in subtask:
                 elem = re.sub(r"\((.*?)\)",func,elem)
                 generated_subtask.append(elem)
+                self.get_logger().info(f"generated_subtask: {generated_subtask}")
             subtask_list.append(generated_subtask)
 
         print(f"subtask_list: {subtask_list}")
         if self._is_valid_subtask_replace == False:
-            print(f"[{seflf.name}] >> argument error!")
+            print(f"[{self.name}] >> argument error!")
             return []
         
         # 構文解析
