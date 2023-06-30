@@ -65,8 +65,12 @@ class SubtaskControlZx120Boom(SubtaskNodeBase):
         #初期姿勢で関節角を20度以上にしてしまうとバケットが地面に付き、zx120自体を持ち上げてしまうので注意
         self.publisher = self.create_publisher(Float64, '/zx120/boom/cmd', 10)
         self.msg = Float64()
-        self.initial_position = 0  #max:44[deg]
-        self.target_position = -35  #min:-70[deg]
+        #position_data = float(request["position"].split(","))
+        #self.get_logger().info(f'{position_data}')
+        self.initial_position = 0
+        self.target_position = -35
+        #self.initial_position = float(request["position"][0])  #max:44[deg]
+        #self.target_position = float(request["position"][1])  #min:-70[deg]
         self.deg = self.initial_position
         self.response = response
         self.timer = self.create_timer(0.5, self.timer_callback)
@@ -80,7 +84,7 @@ class SubtaskControlZx120Boom(SubtaskNodeBase):
         self.deg += self.target_position/20
         self.msg.data = math.radians(self.deg)
         self.publisher.publish(self.msg)
-        #self.get_logger().info("boom position : %f [deg]" % self.deg)
+        self.get_logger().info("boom position : %f [deg]" % self.deg)
         if self.deg <= self.target_position:
             self.timer.cancel()
             
@@ -97,8 +101,8 @@ class SubtaskControlZx120Swing(SubtaskNodeBase):
         #swing joint (degrees: continuous)
         self.publisher = self.create_publisher(Float64, '/zx120/swing/cmd', 10)
         self.msg = Float64()
-        self.initial_position = 0  #max: continuous
-        self.target_position = 90  #min: continuous
+        self.initial_position = request["position"][0]  #max: continuous
+        self.target_position = request["position"][1]  #min: continuous
         self.deg = self.initial_position
         #self.response = response
         self.timer = self.create_timer(0.5, self.timer_callback)
@@ -131,8 +135,8 @@ class SubtaskControlZx120Arm(SubtaskNodeBase):
     #arm joint (degrees : 30 to 152)
         self.publisher = self.create_publisher(Float64, '/zx120/arm/cmd', 10)
         self.msg = Float64()
-        self.initial_position = 90  #min:30[deg]
-        self.target_position = 30  #max:152[deg]
+        self.initial_position = request["position"][0]  #min:30[deg]
+        self.target_position = request["position"][1]  #max:152[deg]
         self.deg = self.initial_position
         self.response = response
         self.timer = self.create_timer(0.5, self.timer_callback)
@@ -163,8 +167,8 @@ class SubtaskControlZx120Bucket(SubtaskNodeBase):
         #bucket joint (degrees : -33 to 143)
         self.publisher = self.create_publisher(Float64, '/zx120/bucket/cmd', 10)
         self.msg = Float64()
-        self.initial_position = 0  #min:-33[deg]
-        self.target_position = -30  #max:143[deg]
+        self.initial_position = request["position"][0]  #min:-33[deg]
+        self.target_position = request["position"][1]  #max:143[deg]
         self.deg = self.initial_position
         self.response = response
         self.timer = self.create_timer(0.5, self.timer_callback)
