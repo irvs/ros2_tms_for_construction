@@ -29,7 +29,7 @@ class TmsUrTextRecognizer(Node):
         tags = self.tokenize(request.data)
         self.arg_data = {}
         tms_objects = self.tms_objects_search(tags)
-        self.get_logger().info("SSSSSSSSSSSS"+str(tms_objects))
+        self.get_logger().info(str(tms_objects))
         tags = set(tags)  # タグが重複しないように一旦setにする
         for tms_object in tms_objects:  # Mongodbの1行分のデータがtms_objectに対応
             del tms_object["_id"]
