@@ -380,6 +380,7 @@ class TaskSchedulerManager(Node):   #TaskNodeを管理するマネージャノ�
             generated_subtask = []
             for elem in subtask:
                 elem = re.sub(r"\((.*?)\)",func,elem)
+                self.get_logger().info(f"elem: {elem}")
                 generated_subtask.append(elem)
                 self.get_logger().info(f"generated_subtask: {generated_subtask}")
             subtask_list.append(generated_subtask)
