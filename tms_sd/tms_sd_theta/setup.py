@@ -1,13 +1,13 @@
 from glob import glob
 import os
-from setuptools import setup
+from setuptools import find_packages, setup
 
-package_name = "tms_ur_construction"
+package_name = "tms_sd_theta"
 
 setup(
     name=package_name,
     version="0.0.0",
-    packages=[package_name],
+    packages=find_packages(exclude=["test"]),
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
@@ -31,13 +31,7 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "tms_ur_construction_ground = tms_ur_construction.tms_ur_construction_ground:main",
-            "tms_ur_cv_odom = tms_ur_construction.tms_ur_cv_odom:main",
-            "tms_ur_construction_terrain_static = tms_ur_construction.tms_ur_construction_terrain_static:main",
-            "tms_ur_construction_terrain_dynamic = tms_ur_construction.tms_ur_construction_terrain_dynamic:main",
-            "tms_ur_construction_terrain_mesh = tms_ur_construction.tms_ur_construction_terrain_mesh:main",
-            "tms_ur_ground_mesh = tms_ur_construction.tms_ur_ground_mesh:main",
-            "tms_ur_construction_theta_compressed = tms_ur_construction.tms_ur_construction_theta_compressed:main",
+            "tms_sd_theta_compressed = tms_sd_theta.tms_sd_theta_compressed:main"
         ],
     },
 )
