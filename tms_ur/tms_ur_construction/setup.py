@@ -37,6 +37,7 @@ setup(
             "tms_ur_construction_terrain_dynamic = tms_ur_construction.tms_ur_construction_terrain_dynamic:main",
             "tms_ur_construction_terrain_mesh = tms_ur_construction.tms_ur_construction_terrain_mesh:main",
             "tms_ur_ground_mesh = tms_ur_construction.tms_ur_ground_mesh:main",
+            "tms_ur_construction_theta_compressed = tms_ur_construction.tms_ur_construction_theta_compressed:main",
         ],
     },
 )
