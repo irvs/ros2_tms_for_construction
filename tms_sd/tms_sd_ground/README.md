@@ -4,6 +4,8 @@ tms_sd_ground is a package for formatting OccupancyGrid msg to Tmsdb msg and sen
 
 Though OccupancyGrid msg is originally used to store the probability of grid occupancy, this msg can be used for various 2D grid maps such as ground stiffness.
 
+OccupancyGrid msg topic is transformed by [ground_tf_broadcaster node](../../tms_tf/tms_tf_gui/tms_tf_gui/ground_tf_broadcaster.py).
+
 # Usecase
 
 ## 1. Run tms_db_writer or tms_db_manager
@@ -29,7 +31,7 @@ ros2 launch tms_db_manager tms_db_manager.launch.py db_host:=localhost db_port:=
 After the below command, a node is executed that subscribes OccupancyGrid and publishes Tmsdb including the OccupancyGrid.
 
 ```
-ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/topic/of/occupancy_grid ground_name:=construction_ground
+ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/topic/of/occupancy_grid ground_name:=construction_ground to_frame:=world
 ```
 
 ### Inputs / Outputs
@@ -48,6 +50,7 @@ ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/topic/o
 
 ### Parameters
 
-| Name                   | Type   | Default Value            | Description                                               |
-| ---------------------- | ------ | ------------------------ | --------------------------------------------------------- |
-| `ground_name`          | string | `ground_name`            | ground name to identify ground from the ROS2-TMS database |
+| Name          | Type   | Default Value | Description                                               |
+| ------------- | ------ | ------------- | --------------------------------------------------------- |
+| `ground_name` | string | `ground_name` | ground name to identify ground from the ROS2-TMS database |
+| `to_frame`    | string | `world`       | target frame_id                                           |

@@ -4,6 +4,8 @@ tms_sp_machine_odom is a package for formatting Odometry msg to Tmsdb msg and se
 
 Received Odometry msg is the location data of the construction machine.
 
+Odometry msg topic is transformed by [machine_odom_tf_broadcaster node](../../tms_tf/tms_tf_gui/tms_tf_gui/machine_odom_tf_broadcaster.py).
+
 # Usecase
 
 ## 1. Run tms_db_writer or tms_db_manager
@@ -29,7 +31,7 @@ ros2 launch tms_db_manager tms_db_manager.launch.py db_host:=localhost db_port:=
 After the below command, a node is executed that subscribes Odometry and publishes Tmsdb including the Odometry.
 
 ```
-ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/topic/of/odom machine_name:=crawler
+ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/topic/of/odom machine_name:=crawler to_frame:=world
 ```
 
 ### Inputs / Outputs
@@ -51,3 +53,4 @@ ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/topic
 | Name           | Type   | Default Value  | Description                                                   |
 | -------------- | ------ | -------------- | ------------------------------------------------------------- |
 | `machine_name` | string | `machine_name` | machine name to identify a machine from the ROS2-TMS database |
+| `to_frame`     | string | `world`        | target frame_id                                               |
