@@ -10,6 +10,7 @@ from nav_msgs.msg import OccupancyGrid
 from tf2_ros import TransformException
 from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
+from tf2_geometry_msgs import do_transform_pose
 
 import tms_db_manager.tms_db_util as db_util
 from tms_msg_db.msg import Tmsdb
@@ -89,6 +90,8 @@ class TmsSdGround(Node):
         msg : OccupancyGrid
             Transformed OccupancyGrid msg.
         """
+        prev_origin = msg.info.origin
+
         from_frame = msg.header.frame_id
 
         try:
@@ -106,30 +109,10 @@ class TmsSdGround(Node):
             return msg
 
         msg.header.frame_id = self.to_frame
-        msg.info.origin.position.x += tf.transform.translation.x
-        msg.info.origin.position.y += tf.transform.translation.y
-        msg.info.origin.position.z += tf.transform.translation.z
 
-        pose_quat = np.quaternion(
-            msg.info.origin.orientation.w,
-            msg.info.origin.orientation.x,
-            msg.info.origin.orientation.y,
-            msg.info.origin.orientation.z,
-        )
-        tf_quat = np.quaternion(
-            tf.transform.rotation.w,
-            tf.transform.rotation.x,
-            tf.transform.rotation.y,
-            tf.transform.rotation.z,
-        )
-
-        new_quat = pose_quat * tf_quat
-        new_quat = new_quat.normalized()
-
-        msg.info.origin.orientation.x = new_quat.x
-        msg.info.origin.orientation.y = new_quat.y
-        msg.info.origin.orientation.z = new_quat.z
-        msg.info.origin.orientation.w = new_quat.w
+        # Apply translation
+        transformed_origin = do_transform_pose(prev_origin, tf)
+        msg.info.origin = transformed_origin
 
         self.publisher.publish(msg)
 
