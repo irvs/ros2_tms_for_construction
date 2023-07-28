@@ -1,16 +1,13 @@
 from datetime import datetime
 import json
-import math
 import rclpy
 from rclpy.node import Node
-
-import numpy as np
-import quaternion
 
 from nav_msgs.msg import Odometry
 from tf2_ros import TransformException
 from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
+from tf2_geometry_msgs import do_transform_pose
 
 from tms_msg_db.msg import Tmsdb
 import tms_db_manager.tms_db_util as db_util
@@ -76,7 +73,6 @@ class TmsSpMachineOdom(Node):
         self.publisher_.publish(db_msg)
 
     def transform(self, msg: Odometry) -> Odometry:
-        # Euler to Quaternion
         """
         Transform Odometry msg to the specified frame.
 
@@ -90,6 +86,8 @@ class TmsSpMachineOdom(Node):
         msg : Odometry
             Transformed Odometry msg.
         """
+        prev_pose = msg.pose.pose
+
         from_frame = msg.header.frame_id
 
         try:
@@ -109,107 +107,12 @@ class TmsSpMachineOdom(Node):
         msg.header.frame_id = self.to_frame
 
         # Apply translation
-        # msg.pose.pose.position.x += tf.transform.translation.x
-        # msg.pose.pose.position.y += tf.transform.translation.y
-        # msg.pose.pose.position.z += tf.transform.translation.z
-
-        # Euler
-        # roll = math.radians(tf.transform.rotation.x)
-        # pitch = math.radians(tf.transform.rotation.y)
-        # yaw = math.radians(tf.transform.rotation.z)
-        # roll, pitch, yaw = self.quaternion_to_euler(
-        #     tf.transform.rotation.x,
-        #     tf.transform.rotation.y,
-        #     tf.transform.rotation.z,
-        #     tf.transform.rotation.w,
-        # )
-        roll, pitch, yaw = quaternion.as_euler_angles(
-            quaternion.quaternion(
-                tf.transform.rotation.w,
-                tf.transform.rotation.x,
-                tf.transform.rotation.y,
-                tf.transform.rotation.z,
-            )
-        )
-
-        x = msg.pose.pose.position.x + tf.transform.translation.x
-        y = msg.pose.pose.position.y + tf.transform.translation.y
-        z = msg.pose.pose.position.z + tf.transform.translation.z
-
-        # Apply rotation
-        sin_roll = math.sin(roll)
-        cos_roll = math.cos(roll)
-        sin_pitch = math.sin(pitch)
-        cos_pitch = math.cos(pitch)
-        sin_yaw = math.sin(yaw)
-        cos_yaw = math.cos(yaw)
-        msg.pose.pose.position.x = (
-            x * (cos_yaw * cos_pitch * cos_roll - sin_yaw * sin_roll)
-            + y * (-sin_yaw * cos_pitch * cos_roll - cos_yaw * sin_roll)
-            + z * (sin_pitch * cos_roll)
-        )
-        msg.pose.pose.position.y = (
-            x * (cos_yaw * cos_pitch * sin_roll + sin_yaw * cos_roll)
-            + y * (-sin_yaw * cos_pitch * sin_roll + cos_yaw * cos_roll)
-            + z * (sin_pitch * sin_roll)
-        )
-        msg.pose.pose.position.z = (
-            x * (-cos_yaw * sin_pitch) + y * (sin_yaw * sin_pitch) + z * (cos_pitch)
-        )
-
-        # Quaternion
-        tf_q = np.quaternion(
-            tf.transform.rotation.w,
-            tf.transform.rotation.x,
-            tf.transform.rotation.y,
-            tf.transform.rotation.z,
-        )
-
-        # Apply rotation
-        pose_quat = np.quaternion(
-            msg.pose.pose.orientation.w,
-            msg.pose.pose.orientation.x,
-            msg.pose.pose.orientation.y,
-            msg.pose.pose.orientation.z,
-        )
-
-        # Rotate the pose_quat by tf_quat
-        new_quat = pose_quat * tf_q
-        new_quat = new_quat.normalized()
-
-        # Assign the rotated quaternion to the message
-        msg.pose.pose.orientation.x = new_quat.x
-        msg.pose.pose.orientation.y = new_quat.y
-        msg.pose.pose.orientation.z = new_quat.z
-        msg.pose.pose.orientation.w = new_quat.w
+        transformed_pose = do_transform_pose(prev_pose, tf)
+        msg.pose.pose = transformed_pose
 
         self.publisher.publish(msg)
 
         return msg
-
-    # def quaternion_to_euler(self, x, y, z, w) -> tuple:
-    #     roll = math.atan2(2 * (w * x + y * z), w**2 - x**2 - y**2 + z**2)
-    #     pitch = math.asin(2 * (w * y - z * x))
-    #     yaw = math.atan2(2 * (w * z + x * y), w**2 + x**2 - y**2 - z**2)
-
-    #     return roll, pitch, yaw
-
-    # def euler_to_quaternion(self, roll, pitch, yaw) -> np.quaternion:
-    #     cr = math.cos(roll / 2)
-    #     sr = math.sin(roll / 2)
-    #     cp = math.cos(pitch / 2)
-    #     sp = math.sin(pitch / 2)
-    #     cy = math.cos(yaw / 2)
-    #     sy = math.sin(yaw / 2)
-
-    #     q = np.quaternion(
-    #         cr * cp * cy + sr * sp * sy,
-    #         sr * cp * cy - cr * sp * sy,
-    #         cr * sp * cy + sr * cp * sy,
-    #         cr * cp * sy - sr * sp * cy,
-    #     )
-
-    #     return q
 
     def create_db_msg(self, msg: Odometry) -> Tmsdb:
         """
