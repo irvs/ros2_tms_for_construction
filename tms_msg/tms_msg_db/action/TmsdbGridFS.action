@@ -1,0 +1,12 @@
+string type
+int32  id
+string filename
+bool   latest_only
+---
+bool   result
+string msg
+sensor_msgs/PointCloud2 pointcloud2
+---
+bool   result
+string msg
+sensor_msgs/PointCloud2 pointcloud2
