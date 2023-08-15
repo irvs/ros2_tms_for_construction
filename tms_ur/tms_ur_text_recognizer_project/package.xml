@@ -5,8 +5,10 @@
   <version>1.0.0</version>
   <description>The tms_ur_text_recognizer package</description>
 
-  <maintainer email="kawamura@ait.kyushu-u.ac.jp">Akihiro Kawamura</maintainer>
-  <license>BSD</license>
+  <maintainer email="kasahara@irvs.ait.kyushu-u.ac.jp">Yuichiro Kasahara</maintainer>
+  <license>Apache License, Version 2.0</license>
+
+  <author email="kawamura@ait.kyushu-u.ac.jp">Akihiro Kawamura</author>
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
