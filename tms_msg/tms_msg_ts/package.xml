@@ -3,7 +3,7 @@
 <package format="3">
   <name>tms_msg_ts</name>
   <version>1.0.0</version>
-  <license>BSD</license>
+  <license>Apache License, Version 2.0</license>
   <description>The tms_msg_ss package</description>
 
   <maintainer email="kawamura@ait.kyushu-u.ac.jp">Akihiro Kawamura</maintainer>

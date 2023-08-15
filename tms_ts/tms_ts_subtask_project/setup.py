@@ -15,8 +15,8 @@ setup(
     zip_safe=True,
     author='Itsuka Tomoya',
     author_email='itsuka@irvs.ait.kyushu-u.ac.jp',
-    maintainer='kawamura',
-    maintainer_email='Kawamura@irvs.ait.kyushu-u.ac,jp',
+    maintainer='kasahara',
+    maintainer_email='kasahara@irvs.ait.kyushu-u.ac,jp',
     keywords=['ROS'],
     classifiers=[
         'Intended Audience :: Developers',
