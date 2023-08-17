@@ -308,6 +308,8 @@ To run the task scheduler, make sure that the default collection and now collect
 Once you have verified that MongoDB looks like the image above, execute the following command.
 
 ```
+cd ~/ros2-tms-for-constructoin_ws
+source install/setup.bash
 ros2 launch tms_ts_launch tms_ts_action.launch.py
 ```
 
