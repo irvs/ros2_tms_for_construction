@@ -39,6 +39,9 @@ rosidl_generate_interfaces(tms_msg_db
   "action/TmsdbGridFS.action"
 
   "msg/Tmsdb.msg"
+  "msg/TmsdbStamped.msg"
+  "msg/TmsData.msg"
+  "msg/TmsDataStamped.msg"
   "msg/TmsdbGridFS.msg"
   "msg/ColoredMesh.msg"
 
@@ -46,6 +49,21 @@ rosidl_generate_interfaces(tms_msg_db
   "srv/TmsdbGridFSGetData.srv"
   "srv/ColoredMeshSrv.srv"
   "srv/TerrainStaticSrv.srv"
+  "srv/Tmsdbgetfurnituresinfo.srv"
+  "srv/Tmsdbgetmovablefurnituresinfo.srv"
+  "srv/Tmsdbgetobjectsinfo.srv"
+  "srv/Tmsdbgetpersoninfo.srv"
+  "srv/Tmsdbgetrobotsinfo.srv"
+  "srv/Tmsdbgetrobotinfo.srv"
+  "srv/Tmsdbgetpersonbehaviorinfo.srv"
+  "srv/Tmsdbgetpcdinfo.srv"
+  "srv/Tmsdbgettasklist.srv"
+  "srv/Tmsdbmissingobjectschecker.srv"
+  "srv/Tmsdbobjdt.srv"
+  "srv/TmsdbPlanning.srv"
+  "srv/Tmsdbfileconservation.srv"
+  "srv/TmsdbObjectsdata.srv"
+  "srv/Tmsdbgetunknownobject.srv"
 
   DEPENDENCIES 
   std_msgs
