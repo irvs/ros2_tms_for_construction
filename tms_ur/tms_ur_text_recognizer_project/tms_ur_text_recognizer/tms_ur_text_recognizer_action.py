@@ -125,7 +125,6 @@ class TmsUrTextRecognizer(Node):
         search_tags.append(sentence)
         for search_tag in search_tags:
             self.get_logger().info(str(search_tag))
-        self.get_logger().info("AAAAAAAAAAAAAAAAAAA"+str(search_tags))
         return search_tags
     
 
