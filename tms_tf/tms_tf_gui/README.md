@@ -4,6 +4,8 @@ tms_ur_gui is a package for transforming construction data (ex. machine's locati
 
 # Usecase
 
+## Edit frame
+
 Edit [params_file](./params_file.yaml).
 
 ```
@@ -17,12 +19,60 @@ odom_tf_broadcaster:
      to_frame: world
 ```
 
-Run the following command.
+## Launch GUI tools
+
+Run the following command which launch GUI tool for transforming construction data.
 
 ```
-ros2 run tms_tf_gui ground_tf_broadcaster --ros-args --params-file params_file.yaml
-
-ros2 run tms_tf_gui odom_tf_broadcaster --ros-args --params-file params_file.yaml
+ros2 launch tms_tf_gui tms_tf_gui_launch.py
 ```
+
+The following GUI tools will be launched.
+
+![](../../docs/tms_tf_gui_tools.png)
+
+## Launch nodes
+
+Launch nodes which have to check transformed topics.
+
+```
+ros2 launch tms_sp_machine_odom tms_sp_machine_odom_demo_launch.py 
+ros2 launch tms_sp_machine_points tms_sp_machine_points_launch.py input/machine_points:=/merge_points
+ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo2/map_2d
+```
+
+## ros2 bag play
+
+Please play following rosbags Static terrain data is the alignment reference.
+
+- A topic of static terrain
+
+```
+ros2 bag play -l ./src/ros2_tms_for_construction/demo/demo3/rosbag2_static_terrain
+```
+
+- Topics that require coordinate transformation
+
+```
+ros2 bag play -l ./src/ros2_tms_for_construction/demo/demo3/rosbag2_tms_tf_gui
+```
+
+## Transforming
+
+Please launch the Rviz to transform.
+
+```
+rviz2 -d ./src/ros2_tms_for_construction/demo/demo3/tms_tf_gui.rviz
+```
+
+While checking the topic after coordinate transformation with Rviz, perform coordinate transformation with the GUI tools.
+
+![](../../docs/tms_tf_gui_rviz.png)
+
+<!-- 建機位置データPublish -->
+
+<!-- 地盤データPublish -->
+
+<!-- Rvizの立ち上げ、位置合わせ -->
 
 <!-- TODO: Update this README.md  -->
