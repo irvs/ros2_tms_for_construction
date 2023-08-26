@@ -29,8 +29,8 @@ import quaternion
 
 NODE_NAME: str = "machine_odom_tf_broadcaster"
 WINDOW_TITLE: str = "Machine Odom TF Broadcaster"
-WINDOW_WIDTH: int = 500
-WINDOW_HEIGHT: int = 650
+WINDOW_WIDTH: int = 560
+WINDOW_HEIGHT: int = 580
 WINDOW_BG_COLOR: str = "white"
 
 
@@ -47,13 +47,14 @@ class OdomTFBroadcaster(tk.Frame):
             to=20,
             orient=tk.HORIZONTAL,
             resolution=0.1,
-            length=500,
+            length=550,
             tickinterval=5,
             digits=3,
             label="Pose X",
-            background="white",
-            troughcolor="blue",
-            font=("", 15),
+            background="#cce0ff",
+            troughcolor="white",
+            highlightthickness=5,
+            activebackground="blue",
         )
         self.translation_y = tk.Scale(
             self,
@@ -61,13 +62,14 @@ class OdomTFBroadcaster(tk.Frame):
             to=20,
             orient=tk.HORIZONTAL,
             resolution=0.1,
-            length=500,
+            length=550,
             tickinterval=5,
             digits=3,
             label="Pose Y",
-            background="white",
-            troughcolor="blue",
-            font=("", 15),
+            background="#cce0ff",
+            troughcolor="white",
+            highlightthickness=5,
+            activebackground="blue",
         )
         self.translation_z = tk.Scale(
             self,
@@ -75,13 +77,14 @@ class OdomTFBroadcaster(tk.Frame):
             to=20,
             orient=tk.HORIZONTAL,
             resolution=0.1,
-            length=500,
+            length=550,
             tickinterval=5,
             digits=3,
             label="Pose Z",
-            background="white",
-            troughcolor="blue",
-            font=("", 15),
+            background="#cce0ff",
+            troughcolor="white",
+            highlightthickness=5,
+            activebackground="blue",
         )
         self.rotation_x = tk.Scale(
             self,
@@ -89,13 +92,14 @@ class OdomTFBroadcaster(tk.Frame):
             to=180,
             orient=tk.HORIZONTAL,
             resolution=1,
-            length=500,
+            length=550,
             tickinterval=30,
             digits=3,
             label="Rotation X",
-            background="white",
-            troughcolor="blue",
-            font=("", 15),
+            background="#cce0ff",
+            troughcolor="white",
+            highlightthickness=5,
+            activebackground="blue",
         )
         self.rotation_y = tk.Scale(
             self,
@@ -103,13 +107,14 @@ class OdomTFBroadcaster(tk.Frame):
             to=180,
             orient=tk.HORIZONTAL,
             resolution=1,
-            length=500,
+            length=550,
             tickinterval=30,
             digits=3,
             label="Rotation Y",
-            background="white",
-            troughcolor="blue",
-            font=("", 15),
+            background="#cce0ff",
+            troughcolor="white",
+            highlightthickness=5,
+            activebackground="blue",
         )
         self.rotation_z = tk.Scale(
             self,
@@ -117,19 +122,26 @@ class OdomTFBroadcaster(tk.Frame):
             to=180,
             orient=tk.HORIZONTAL,
             resolution=1,
-            length=500,
+            length=550,
             tickinterval=30,
             digits=3,
             label="Rotation Z",
-            background="white",
-            troughcolor="blue",
-            font=("", 15),
+            background="#cce0ff",
+            troughcolor="white",
+            highlightthickness=5,
+            activebackground="blue",
         )
         self.save_button = tk.Button(
             self,
             text="Save",
             command=self.save,
-            background="white",
+            background="blue",
+            activebackground="white",
+            foreground="white",
+            activeforeground="blue",
+            borderwidth=5,
+            highlightbackground="blue",
+            font=("", 10, "bold"),
         )
 
         self.translation_x.pack()
@@ -138,7 +150,7 @@ class OdomTFBroadcaster(tk.Frame):
         self.rotation_x.pack()
         self.rotation_y.pack()
         self.rotation_z.pack()
-        self.save_button.pack()
+        self.save_button.pack(fill="x", pady=5, padx=5)
 
         rclpy.init()
         self.node = Node(NODE_NAME)
@@ -249,7 +261,7 @@ class OdomTFBroadcaster(tk.Frame):
 def main():
     window = tk.Tk()
     window.title(WINDOW_TITLE)
-    window.configure(bg=WINDOW_BG_COLOR)
+    # window.configure(bg=WINDOW_BG_COLOR)
     window.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
     app = OdomTFBroadcaster(window)
     app.mainloop()
