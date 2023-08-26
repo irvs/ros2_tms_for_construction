@@ -151,3 +151,32 @@ ros2 launch tms_ur_construction tms_ur_ground_mesh_launch.py output/ground_mesh:
 | Name           | Type   | Default Value  | Description              |
 | -------------- | ------ | -------------- | ------------------------ |
 | `timer_period` | string | `timer_period` | publisher's timer_period |
+
+### 5. construction_terrain_dem
+
+After the below command, a node is executed that requests dem's .npy file info to a action service node and publishes DEM converted from the file.
+
+```
+ros2 launch tms_ur_construction tms_ur_construction_terrain_dem_launch.py output/terrain/dem_srv:=/srv/of/dem filename_dem:=dem.npy resolution:=1.0
+```
+
+#### Actions / Outputs
+
+**Actions**
+
+| Name                   | Type                              | Description                                 |
+| ---------------------- | --------------------------------- | ------------------------------------------- |
+| `tms_db_reader_gridfs` | `tms_msg_db::action::TmsdbGridFS` | get GridFS data stored in ROS2-TMS database |
+
+**Outputs**
+
+| Name                      | Type                      | Description                                         |
+| ------------------------- | ------------------------- | --------------------------------------------------- |
+| `/output/terrain/dem_srv` | `tms_msg_db::srv::DemSrv` | return DEM data of static terrain to service client |
+
+#### Parameters
+
+| Name           | Type   | Default Value      | Description                                |
+| -------------- | ------ | ------------------ | ------------------------------------------ |
+| `filename_dem` | string | `filename_dem.npy` | .npy file name stored in ROS2-TMS database |
+| `resolution`   | float  | `0.1`              | resolution of DEM                          |

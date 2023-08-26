@@ -9,9 +9,9 @@ from tms_msg_db.srv import DemSrv
 from tms_msg_db.action import TmsdbGridFS
 
 
-NODE_NAME = 'tms_ur_construction_terrain_dem'
-DATA_ID   = 3030
-DATA_TYPE = 'dem'
+NODE_NAME = "tms_ur_construction_terrain_dem"
+DATA_ID = 3030
+DATA_TYPE = "dem"
 
 
 class TmsUrConstructionTerrainDemClient(Node):
@@ -21,27 +21,33 @@ class TmsUrConstructionTerrainDemClient(Node):
         super().__init__(NODE_NAME)
 
         # Declare parameters
-        self.declare_parameter('filename_dem', 'filename_dem.npy')
-        self.declare_parameter('resolution', 0.1)  # [m]
+        self.declare_parameter("filename_dem", "filename_dem.npy")
+        self.declare_parameter("resolution", 0.1)  # [m]
 
         # Get parameters
-        self.filename_dem: str = self.get_parameter('filename_dem').get_parameter_value().string_value
-        self.resolution: float = self.get_parameter('resolution').get_parameter_value().double_value
+        self.filename_dem: str = (
+            self.get_parameter("filename_dem").get_parameter_value().string_value
+        )
+        self.resolution: float = (
+            self.get_parameter("resolution").get_parameter_value().double_value
+        )
 
         # Action Client
-        self._action_client = ActionClient(self, TmsdbGridFS, 'tms_db_reader_gridfs')
+        self._action_client = ActionClient(self, TmsdbGridFS, "tms_db_reader_gridfs")
 
     def send_goal(self) -> None:
         """
         Send goal to action server.
         """
         self.goal_msg = TmsdbGridFS.Goal()
-        self.goal_msg.type     = DATA_TYPE
-        self.goal_msg.id       = DATA_ID
+        self.goal_msg.type = DATA_TYPE
+        self.goal_msg.id = DATA_ID
         self.goal_msg.filename = self.filename_dem
 
         self._action_client.wait_for_server()
-        self._send_goal_future = self._action_client.send_goal_async(self.goal_msg, feedback_callback=self.feedback_callback)
+        self._send_goal_future = self._action_client.send_goal_async(
+            self.goal_msg, feedback_callback=self.feedback_callback
+        )
         self._send_goal_future.add_done_callback(self.goal_response_callback)
 
     def feedback_callback(self, feedback_msg) -> None:
@@ -76,7 +82,7 @@ class TmsUrConstructionTerrainDemClient(Node):
     def get_result_callback(self, future) -> None:
         """
         Get result call back from action server and create OccupancyGrid msg for service callback.
-        
+
         Parameters
         ----------
         future
@@ -85,30 +91,34 @@ class TmsUrConstructionTerrainDemClient(Node):
         result = future.result().result
         if not result.result:
             return
-        
+
         # Create OccupancyGrid msg
         self.msg: OccupancyGrid = self.create_msg()
 
+        self.get_logger().info("DEM service is ready")
+
         # Service server
-        self.srv = self.create_service(DemSrv, '~/output/terrain/dem_srv', self.terrain_dem_srv_callback)
+        self.srv = self.create_service(
+            DemSrv, "~/output/terrain/dem_srv", self.terrain_dem_srv_callback
+        )
 
     def terrain_dem_srv_callback(self, request, response):
         """
         Callback function.
-        
+
         Returns
         -------
         response
             Service callback response.
         """
         response.occupancy_grid = self.msg
-        self.get_logger().info('Return a response of DEM')
+        self.get_logger().info("Return a response of DEM")
         return response
-    
+
     def create_msg(self) -> OccupancyGrid:
         """
         Create OccupancyGrid msg from a .npy file.
-        
+
         Returns
         -------
         msg : OccupancyGrid
@@ -120,17 +130,18 @@ class TmsUrConstructionTerrainDemClient(Node):
         data = np.ravel(self.dem).tolist()  # 2D [[]] -> 1D []
 
         msg = OccupancyGrid()
-        msg.header.frame_id        = "map"
-        msg.data                   = data
-        msg.info.resolution        = self.resolution
-        msg.info.width             = dem_shape[1]
-        msg.info.height            = dem_shape[0]
-        msg.info.origin.position.x = -(dem_shape[1]*self.resolution)/2
-        msg.info.origin.position.y = -(dem_shape[0]*self.resolution)/2
+        msg.header.frame_id = "map"
+        msg.data = data
+        msg.info.resolution = self.resolution
+        msg.info.width = dem_shape[1]
+        msg.info.height = dem_shape[0]
+        msg.info.origin.position.x = -(dem_shape[1] * self.resolution) / 2
+        msg.info.origin.position.y = -(dem_shape[0] * self.resolution) / 2
         msg.info.origin.position.z = 0.0
 
         return msg
-    
+
+
 def main(args=None):
     rclpy.init(args=args)
 
@@ -142,5 +153,5 @@ def main(args=None):
     rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
