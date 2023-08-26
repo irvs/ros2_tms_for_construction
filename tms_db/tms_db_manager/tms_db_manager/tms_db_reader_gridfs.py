@@ -70,7 +70,7 @@ class TmsDbReaderGridFSActionServer(Node):
         self.request = goal_handle.request
         self.fs = gridfs.GridFS(self.db)
 
-        if goal_handle.request.type == 'static' or goal_handle.request.type == 'mesh':
+        if goal_handle.request.type == 'static' or goal_handle.request.type == 'mesh' or goal_handle.request.type == 'dem':
             return self.static_or_mesh_terrain_handler(goal_handle)
         elif goal_handle.request.type == 'dynamic':
             return self.dynamic_terrain_handler(goal_handle)
