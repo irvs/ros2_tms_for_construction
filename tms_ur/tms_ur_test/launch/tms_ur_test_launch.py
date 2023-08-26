@@ -29,8 +29,14 @@ def generate_launch_description():
         executable='tms_ur_construction_terrain_static_test',
         output='screen',
     )
+    terrain_dem_cli_pub_node = Node(
+        package='tms_ur_test',
+        executable='tms_ur_construction_terrain_dem_test',
+        output='screen',
+    )
 
     return LaunchDescription([
         terrain_mesh_cli_pub_node,
         terrain_static_cli_pub_node,
+        terrain_dem_cli_pub_node,
     ])
