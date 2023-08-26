@@ -1,3 +1,17 @@
+# Copyright 2023, IRVS Laboratory, Kyushu University, Japan.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from typing import Tuple
 import numpy as np
 import open3d as o3d
@@ -15,9 +29,9 @@ from tms_msg_db.srv import ColoredMeshSrv
 from tms_msg_db.action import TmsdbGridFS
 
 
-NODE_NAME = 'tms_ur_construction_terrain_mesh'
+NODE_NAME = "tms_ur_construction_terrain_mesh"
 DATA_ID = 3030
-DATA_TYPE = 'mesh'
+DATA_TYPE = "mesh"
 
 
 class TmsUrConstructionTerrainMeshClient(Node):
@@ -27,25 +41,29 @@ class TmsUrConstructionTerrainMeshClient(Node):
         super().__init__(NODE_NAME)
 
         # Declare parameters
-        self.declare_parameter('filename_mesh', 'filename_mesh')
+        self.declare_parameter("filename_mesh", "filename_mesh")
 
         # Get parameters
-        self.filename_mesh: str = self.get_parameter('filename_mesh').get_parameter_value().string_value
+        self.filename_mesh: str = (
+            self.get_parameter("filename_mesh").get_parameter_value().string_value
+        )
 
         # Action Client
-        self._action_client = ActionClient(self, TmsdbGridFS, 'tms_db_reader_gridfs')
+        self._action_client = ActionClient(self, TmsdbGridFS, "tms_db_reader_gridfs")
 
     def send_goal(self) -> None:
         """
         Send goal to action server.
         """
         self.goal_msg = TmsdbGridFS.Goal()
-        self.goal_msg.type     = DATA_TYPE
-        self.goal_msg.id       = DATA_ID
+        self.goal_msg.type = DATA_TYPE
+        self.goal_msg.id = DATA_ID
         self.goal_msg.filename = self.filename_mesh
 
         self._action_client.wait_for_server()
-        self._send_goal_future = self._action_client.send_goal_async(self.goal_msg, feedback_callback=self.feedback_callback)
+        self._send_goal_future = self._action_client.send_goal_async(
+            self.goal_msg, feedback_callback=self.feedback_callback
+        )
         self._send_goal_future.add_done_callback(self.goal_response_callback)
 
     def feedback_callback(self, feedback_msg) -> None:
@@ -93,8 +111,12 @@ class TmsUrConstructionTerrainMeshClient(Node):
         # Create ColoredMesh msg
         self.msg: ColoredMesh = self.create_msg()
 
+        self.get_logger().info("Colored Mesh service is ready")
+
         # Service server
-        self.srv = self.create_service(ColoredMeshSrv, '~/output/terrain/mesh_srv', self.terrain_mesh_srv_callback)
+        self.srv = self.create_service(
+            ColoredMeshSrv, "~/output/terrain/mesh_srv", self.terrain_mesh_srv_callback
+        )
 
     def terrain_mesh_srv_callback(self, request, response):
         """
@@ -106,7 +128,7 @@ class TmsUrConstructionTerrainMeshClient(Node):
             Service callback response.
         """
         response.colored_mesh = self.msg
-        self.get_logger().info('Return a response of ColoredMesh')
+        self.get_logger().info("Return a response of ColoredMesh")
         return response
 
     def create_msg(self) -> ColoredMesh:
@@ -118,7 +140,9 @@ class TmsUrConstructionTerrainMeshClient(Node):
         msg : PointCluod2
             Point cloud data.
         """
-        self.mesh: o3d.geometry.TriangleMesh = o3d.io.read_triangle_mesh(self.filename_mesh)
+        self.mesh: o3d.geometry.TriangleMesh = o3d.io.read_triangle_mesh(
+            self.filename_mesh
+        )
         msg: ColoredMesh = self.convert_triangle_mesh_to_colored_mesh()
 
         return msg
@@ -133,10 +157,16 @@ class TmsUrConstructionTerrainMeshClient(Node):
             ColoredMesh msg.
         """
         msg: ColoredMesh = ColoredMesh()
-        msg.triangles: list      = self.get_triangles(np.asarray(self.mesh.triangles).astype(np.uint32))
-        msg.vertices: list       = self.get_vertices(np.asarray(self.mesh.vertices))
-        msg.vertex_colors: list  = self.get_vertex_colors(np.asarray(self.mesh.vertex_colors))
-        msg.vertex_normals: list = self.get_vertex_normals(np.asarray(self.mesh.vertex_normals))
+        msg.triangles: list = self.get_triangles(
+            np.asarray(self.mesh.triangles).astype(np.uint32)
+        )
+        msg.vertices: list = self.get_vertices(np.asarray(self.mesh.vertices))
+        msg.vertex_colors: list = self.get_vertex_colors(
+            np.asarray(self.mesh.vertex_colors)
+        )
+        msg.vertex_normals: list = self.get_vertex_normals(
+            np.asarray(self.mesh.vertex_normals)
+        )
 
         return msg
 
@@ -242,5 +272,5 @@ def main(args=None):
     rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

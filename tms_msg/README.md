@@ -45,7 +45,7 @@ Tmsdb is subscribed by [tms_db_writer](../tms_db/tms_db_manager/tms_db_manager/t
 string time       # Time this msg was created.
 string type       # Data type (ex. sensor, machine).
 int32  id         # Data id.
-string name
+string name       # Name (ex. sensor name, machine name).
 bool   is_insert  # Whether inserting data or updating
 string msg        # JSON msg converted from ROS msg.
 ```
@@ -91,6 +91,7 @@ TmsdbGetData is used by [tms_db_reader](../tms_db/tms_db_manager/tms_db_manager/
 string type         # Data type (ex. sensor, machine).
 int32  id           # Data id.
 bool   latest_only  # Whether getting latest data or all stored data.
+string name         # Name (ex. sensor name, machine name).
 ---
 tms_msg_db/Tmsdb[]  tmsdbs
 ```

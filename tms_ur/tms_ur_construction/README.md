@@ -36,9 +36,9 @@ ros2 launch tms_ur_construction tms_ur_construction_launch.py output/occupancy_g
 
 **Services**
 
-| Name                   | Type                                  | Description                                 |
-| ---------------------- | ------------------------------------- | ------------------------------------------- |
-| `tms_db_reader`        | `tms_msg_db::srv::TmsdbGetData`       | get data stored in ROS2-TMS database        |
+| Name            | Type                            | Description                          |
+| --------------- | ------------------------------- | ------------------------------------ |
+| `tms_db_reader` | `tms_msg_db::srv::TmsdbGetData` | get data stored in ROS2-TMS database |
 
 **Actions**
 
@@ -81,8 +81,8 @@ ros2 launch tms_ur_construction tms_ur_construction_terrain_mesh_launch.py outpu
 
 **Outputs**
 
-| Name                       | Type                            | Description                                          |
-| -------------------------- | ------------------------------- | ---------------------------------------------------- |
+| Name                       | Type                              | Description                                          |
+| -------------------------- | --------------------------------- | ---------------------------------------------------- |
 | `/output/terrain/mesh_srv` | `tms_msg_db::srv::ColoredMeshSrv` | return mesh data of static terrain to service client |
 
 #### Parameters
@@ -92,3 +92,62 @@ ros2 launch tms_ur_construction tms_ur_construction_terrain_mesh_launch.py outpu
 | `filename`   | string | `filename`    | .pcd file name stored in ROS2-TMS database |
 | `voxel_size` | float  | `0.0`         | voxel size of downsampling                 |
 | `alpha`      | float  | `1.0`         | alpha shapes of mesh                       |
+
+### 3. construction_theta
+
+After the below command, a node is executed that requests jpeg image data to a service node and publish response data.
+
+```
+ros2 launch tms_ur_construction tms_ur_construction_theta_launch.py output/theta/compressed:=/topic/of/compressed_image latest:=true theta_name:=theta
+```
+
+#### Services / Outputs
+
+**Services**
+
+| Name            | Type                            | Description                          |
+| --------------- | ------------------------------- | ------------------------------------ |
+| `tms_db_reader` | `tms_msg_db::srv::TmsdbGetData` | get data stored in ROS2-TMS database |
+
+**Outputs**
+
+| Name                       | Type                                | Description                              |
+| -------------------------- | ----------------------------------- | ---------------------------------------- |
+| `/output/theta/compressed` | `sensor_msgs::msg::CompressedImage` | a jpeg imag taken by a 360-degree camera |
+
+#### Parameters
+
+| Name         | Type   | Default Value | Description                                                          |
+| ------------ | ------ | ------------- | -------------------------------------------------------------------- |
+| `latest`     | bool   | `False`       | whether to get the latest data                                       |
+| `theta_name` | string | `theta_name`  | 360-degree camera name to identify ground from the ROS2-TMS database |
+
+### 4. ground_mesh
+
+After the below command, a node is executed that requests ground and terrain mesh data to a service node and publish terrain mesh reflecting ground data.
+
+```
+ros2 launch tms_ur_construction tms_ur_construction_terrain_mesh_launch.py output/terrain/mesh_srv:=/srv/of/mesh filename_mesh:=mesh.ply
+ros2 launch tms_ur_construction tms_ur_ground_mesh_launch.py output/ground_mesh:=/topic/of/mesh timer_period:=10
+```
+
+#### Services / Outputs
+
+**Services**
+
+| Name                       | Type                              | Description                                          |
+| -------------------------- | --------------------------------- | ---------------------------------------------------- |
+| `tms_db_reader`            | `tms_msg_db::srv::TmsdbGetData`   | get data stored in ROS2-TMS database                 |
+| `/output/terrain/mesh_srv` | `tms_msg_db::srv::ColoredMeshSrv` | return mesh data of static terrain to service client |
+
+**Outputs**
+
+| Name                  | Type                           | Description                         |
+| --------------------- | ------------------------------ | ----------------------------------- |
+| `/output/ground_mesh` | `tms_msg_db::msg::ColoredMesh` | terrain mesh reflecting ground data |
+
+#### Parameters
+
+| Name           | Type   | Default Value  | Description              |
+| -------------- | ------ | -------------- | ------------------------ |
+| `timer_period` | string | `timer_period` | publisher's timer_period |
