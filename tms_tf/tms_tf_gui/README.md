@@ -57,7 +57,7 @@ ros2 bag play -l ./src/ros2_tms_for_construction/demo/demo3/rosbag2_static_terra
 ros2 bag play -l ./src/ros2_tms_for_construction/demo/demo3/rosbag2_tms_tf_gui
 ```
 
-## Transforming
+## Coordinate transformation
 
 Please launch the Rviz to transform.
 
@@ -68,11 +68,3 @@ rviz2 -d ./src/ros2_tms_for_construction/demo/demo3/tms_tf_gui.rviz
 While checking the topic after coordinate transformation with Rviz, perform coordinate transformation with the GUI tools.
 
 ![](../../docs/tms_tf_gui_rviz.png)
-
-<!-- 建機位置データPublish -->
-
-<!-- 地盤データPublish -->
-
-<!-- Rvizの立ち上げ、位置合わせ -->
-
-<!-- TODO: Update this README.md  -->
