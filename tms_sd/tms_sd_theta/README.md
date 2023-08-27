@@ -10,7 +10,7 @@ Received CompressedImage msg is the jpeg image taken by a 360-degree camera.
 
 Detail description is [here](https://github.com/irvs/ros2_tms_for_construction/tree/main/tms_db).
 
-Receive Tmsdb from tms_sp_machine_odom and store them in ROS2-TMS database.
+Receive Tmsdb from tms_sd_theta and store them in ROS2-TMS database.
 
 ### Writer
 

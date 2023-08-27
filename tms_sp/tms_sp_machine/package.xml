@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>tms_sp_machine_points</name>
+  <name>tms_sp_machine</name>
   <version>0.0.0</version>
-  <description>The tms_sp_machine_points package</description>
+  <description>The tms_sp_machine_odom package</description>
 
   <maintainer email="maeda@ait.kyushu-u.ac.jp">Ryuichi Maeda</maintainer>
 
@@ -16,6 +16,10 @@
   <author email="maeda@irvs.ait.kyushu-u.ac.jp">Ryuichi Maeda</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <build_depend>rclcpp</build_depend>
+  <build_depend>rclpy</build_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
