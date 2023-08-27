@@ -1,0 +1,26 @@
+{
+    "ground": {
+        "translation": {
+            "x": -24,
+            "y": 12,
+            "z": 0
+        },
+        "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": -90
+        }
+    },
+    "machine_odom": {
+        "translation": {
+            "x": 0.0,
+            "y": -4.0,
+            "z": -0.1
+        },
+        "rotation": {
+            "x": -90,
+            "y": -2,
+            "z": -90
+        }
+    }
+}
