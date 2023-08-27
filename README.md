@@ -134,7 +134,7 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
 - [tms_sp_machine_points](tms_sp/tms_sp_machine_points/)
 
-  tms_sp_machine_poitns is a package used to transform the coordinates of the machine odom using tms_tf_gui
+  tms_sp_machine_poitns is a package used to transform the coordinates of the machine odom using tms_tf_gui.
 
 ### tms_ss
 
@@ -173,7 +173,7 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
 ## Demo
 
-Three demonstration are presented here.
+The following demonstrations are presented here.
 
 1. [Store data](#1-store-data)
 2. [Get stored data](#2-get-stored-data)
@@ -220,7 +220,7 @@ If the following message appears on the terminal where tms_sd_terrain is execute
 Static terrain info was received!
 ```
 
-Then, run the following commands to store data (excluding static terrain) in MongoDB.
+Then, run the following commands to store other data in MongoDB.
 
 #### Launch
 
@@ -262,7 +262,7 @@ ros2 launch tms_db_manager tms_db_reader.launch.py
 # Get static terrain
 ros2 launch tms_ur_construction tms_ur_construction_terrain_static_launch.py filename:=demo.pcd voxel_size:=0.0
 
-# Service Client and Publisher nodes for static terrain data
+# Service Client and Publisher node for static terrain data
 ros2 run tms_ur_test tms_ur_construction_terrain_static_test
 
 # Get odometry, ground 2D map and terrain data
@@ -275,7 +275,7 @@ ros2 launch tms_ur_construction tms_ur_construction_launch.py machine_name:=demo
 rviz2 -d ./src/ros2_tms_for_construction/demo/demo2/demo2.rviz
 ```
 
-Rviz2 will show odometry, ground 2D map and terrain data.
+Rviz will show odometry, ground 2D map and terrain data.
 
 Since static terrain data is large, it's may be better to stop the terminal execting tms_ur_test if static terrain is displayed on Rviz.
 
@@ -311,7 +311,7 @@ rviz2 -d ./src/ros2_tms_for_construction/demo/demo2/demo2.rviz
 
 #### Launch tms_ur_construction
 
-After the tms_sd_terrain node was finished (PointCloud2 was stored to MongoDB), run the following command. 
+Run the following commands to get data from MongoDB.
 
 ```
 # Get static terrain
@@ -330,7 +330,7 @@ ros2 launch tms_ur_construction tms_ur_construction_launch.py machine_name:=demo
 ros2 bag play -l ./src/ros2_tms_for_construction/demo/demo2/rosbag2_2
 ```
 
-Rviz2 will show odometry, ground 2D map and dynamic terrain data like a example of [2. Get stored data](#2-get-stored-data), excluding static terrain.
+Rviz will show odometry, ground 2D map and dynamic terrain data like a example of [2. Get stored data](#2-get-stored-data), excluding static terrain.
 
 After the end of rosbag, please check whether the data is stored to fs.chunks, fs.files, machine and sensor collection in your MongoDB.
 
