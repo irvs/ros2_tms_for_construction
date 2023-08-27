@@ -1,0 +1,10 @@
+ground_tf:
+  ground_tf_broadcaster:
+    ros__parameters:
+      from_frame: moisture_grid
+      to_frame: world
+machine_odom_tf:
+  machine_odom_tf_broadcaster:
+    ros__parameters:
+      from_frame: map
+      to_frame: world

@@ -47,16 +47,16 @@ ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/terrain/static/pointcl
 After the following command, a node is executed that subscribes PointCloud2 and publishes TmsdbGridFS including the .pcd or .ply file info converted from the PointCloud2.
 
 ```
-ros2 launch tms_ss_terrain_static tms_ss_terrain_static_launch.py filename:=demo.pcd filename_mesh:=demo.ply voxel_size:=0.1 octree_depth:=8 density_th:=0.1
+ros2 launch tms_ss_terrain_static tms_ss_terrain_static_launch.py filename:=demo.pcd filename_mesh:=demo.ply filename_dem:=demo.npy voxel_size:=0.1 octree_depth:=8 density_th:=0.1 fill_nan_type:=avg resolution:=0.1
 ```
 
 ### Inputs / Outputs
 
 **Inputs**
 
-| Name                      | Type                            | Description                         |
-| ------------------------- | ------------------------------- | ----------------------------------- |
-| `/tms_sd_terrain_static`  | `sensor_msgs::msg::PointCloud2` | point cloud data of static terrain  |
+| Name                     | Type                            | Description                        |
+| ------------------------ | ------------------------------- | ---------------------------------- |
+| `/tms_sd_terrain_static` | `sensor_msgs::msg::PointCloud2` | point cloud data of static terrain |
 
 **Outputs**
 
@@ -66,10 +66,12 @@ ros2 launch tms_ss_terrain_static tms_ss_terrain_static_launch.py filename:=demo
 
 ### Parameters
 
-| Name            | Type   | Default Value       | Description                                                                |
-| --------------- | ------ | ------------------- | -------------------------------------------------------------------------- |
-| `filename`      | string | `filename.pcd`      | .pcd file name of static terrain converted from PointCloud2                |
-| `filename_mesh` | string | `filename_mesh.ply` | .ply file name of static terrain's mesh converted from PointCloud2         |
-| `voxel_size`    | float  | `0.0`               | voxel size of downsampling                                                 |
-| `octree_depth`  | int    | `2`                 | octree depth to generate mesh                                              |
-| `density_th`    | float  | `0.1`               | density threshold to remove vertices and triangles that have a low support |
+| Name            | Type   | Default Value       | Description                                                                        |
+| --------------- | ------ | ------------------- | ---------------------------------------------------------------------------------- |
+| `filename`      | string | `filename.pcd`      | .pcd file name of static terrain converted from PointCloud2                        |
+| `filename_mesh` | string | `filename_mesh.ply` | .ply file name of static terrain's mesh converted from PointCloud2                 |
+| `filename_dem`  | string | `filename_dem.npy`  | .npy file name of static terrain's DEM converted from PointCloud2                  |
+| `voxel_size`    | float  | `0.0`               | voxel size of downsampling                                                         |
+| `octree_depth`  | int    | `2`                 | octree depth to generate mesh                                                      |
+| `density_th`    | float  | `0.1`               | density threshold to remove vertices and triangles that have a low support         |
+| `fill_nan_type` | string | `none`              | type to fill nan (you can choose `avg`, `median`, or other which means don't fill) |
