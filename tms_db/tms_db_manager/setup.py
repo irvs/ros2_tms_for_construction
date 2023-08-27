@@ -39,6 +39,7 @@ setup(
             'tms_db_reader_task = tms_db_manager.tms_db_reader_task:main',
             'tms_db_writer = tms_db_manager.tms_db_writer:main',
             'tms_db_writer_gridfs = tms_db_manager.tms_db_writer_gridfs:main',
+            'tms_db_writer_task = tms_db_manager.tms_db_writer_task:main',
         ],
     },
 )
