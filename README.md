@@ -126,15 +126,9 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
 ### tms_sp
 
-- [tms_sp_machine_odom](tms_sp/tms_sp_machine_odom)
+- [tms_sp_machine](tms_sp/tms_sp_machine/)
 
-  tms_sp_machine_odom is a package for formatting Odometry msg to Tmsdb msg and sending it to tms_db_writer.
-
-  The received Odometry msg is the estimated location data of the construction machine.
-
-- [tms_sp_machine_points](tms_sp/tms_sp_machine_points/)
-
-  tms_sp_machine_poitns is a package used to transform the coordinates of the machine odom using tms_tf_gui.
+  tms_sp_machine is a package for handling data realated to construction machines.
 
 ### tms_ss
 
@@ -226,7 +220,7 @@ Then, run the following commands to store other data in MongoDB.
 
 ```
 # Odometry
-ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/demo2/odom machine_name:=demo_machine
+ros2 launch tms_sp_machine tms_sp_machine_odom_launch.py input/odom:=/demo2/odom machine_name:=demo_machine
 
 # Ground 2D map
 ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo2/map_2d ground_name:=demo_ground
@@ -294,7 +288,7 @@ Static terrain data is not included because it does not need to be acquired in r
 ros2 launch tms_db_manager tms_db_manager.launch.py
 
 # Odometry
-ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/demo2/odom machine_name:=demo_machine
+ros2 launch tms_sp_machine tms_sp_machine_odom_launch.py input/odom:=/demo2/odom machine_name:=demo_machine
 
 # Ground 2D map
 ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo2/map_2d ground_name:=demo_ground

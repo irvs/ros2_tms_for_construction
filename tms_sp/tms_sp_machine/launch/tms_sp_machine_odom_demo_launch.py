@@ -25,8 +25,8 @@ def generate_launch_description():
     # Nodes
     tms_sp_machine_odom_node1 = Node(
         name="tms_sp_machine_odom1",
-        package="tms_sp_machine_odom",
-        executable="tms_sp_machine_odom",
+        package="tms_sp_machine",
+        executable="tms_sp_machine_odom.py",
         output="screen",
         remappings=[
             ("~/input/odom", "/bh/status/odom"),
@@ -42,8 +42,8 @@ def generate_launch_description():
     )
     tms_sp_machine_odom_node2 = Node(
         name="tms_sp_machine_odom2",
-        package="tms_sp_machine_odom",
-        executable="tms_sp_machine_odom",
+        package="tms_sp_machine",
+        executable="tms_sp_machine_odom.py",
         output="screen",
         remappings=[
             ("~/input/odom", "/wl/status/odom"),
@@ -59,8 +59,8 @@ def generate_launch_description():
     )
     tms_sp_machine_odom_node3 = Node(
         name="tms_sp_machine_odom3",
-        package="tms_sp_machine_odom",
-        executable="tms_sp_machine_odom",
+        package="tms_sp_machine",
+        executable="tms_sp_machine_odom.py",
         output="screen",
         remappings=[
             ("~/input/odom", "/cd_0/status/odom"),
@@ -76,8 +76,8 @@ def generate_launch_description():
     )
     tms_sp_machine_odom_node4 = Node(
         name="tms_sp_machine_odom4",
-        package="tms_sp_machine_odom",
-        executable="tms_sp_machine_odom",
+        package="tms_sp_machine",
+        executable="tms_sp_machine_odom.py",
         output="screen",
         remappings=[
             ("~/input/odom", "/cd_1/status/odom"),
@@ -93,8 +93,8 @@ def generate_launch_description():
     )
     tms_sp_machine_odom_node5 = Node(
         name="tms_sp_machine_odom5",
-        package="tms_sp_machine_odom",
-        executable="tms_sp_machine_odom",
+        package="tms_sp_machine",
+        executable="tms_sp_machine_odom.py",
         output="screen",
         remappings=[
             ("~/input/odom", "/cd_2/status/odom"),
