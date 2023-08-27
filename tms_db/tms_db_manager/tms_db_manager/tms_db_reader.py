@@ -25,21 +25,28 @@ from tms_msg_db.srv import TmsdbGetData
 
 class TmsDbReader(Node):
     """Read data from MongoDB."""
-  
+
     def __init__(self):
-        super().__init__('tms_db_reader')
+        super().__init__("tms_db_reader")
 
         # Declare parameters
-        self.declare_parameter('db_host', 'localhost')
-        self.declare_parameter('db_port', 27017)
+        self.declare_parameter("db_host", "localhost")
+        self.declare_parameter("db_port", 27017)
 
         # Get parameters
-        self.db_host: str = self.get_parameter('db_host').get_parameter_value().string_value
-        self.db_port: int = self.get_parameter('db_port').get_parameter_value().integer_value
+        self.db_host: str = (
+            self.get_parameter("db_host").get_parameter_value().string_value
+        )
+        self.db_port: int = (
+            self.get_parameter("db_port").get_parameter_value().integer_value
+        )
 
-        self.db: pymongo.database.Database  = db_util.connect_db('rostmsdb', self.db_host, self.db_port)
-        self.srv = self.create_service(TmsdbGetData, 'tms_db_reader', self.db_reader_srv_callback)
-
+        self.db: pymongo.database.Database = db_util.connect_db(
+            "rostmsdb", self.db_host, self.db_port
+        )
+        self.srv = self.create_service(
+            TmsdbGetData, "tms_db_reader", self.db_reader_srv_callback
+        )
 
     def db_reader_srv_callback(self, request, response):
         """
@@ -72,8 +79,9 @@ class TmsDbReader(Node):
                 response.tmsdbs.append(msg)
             return response
 
-    
-    def get_latest_data(self, request, collection: pymongo.collection.Collection) -> dict:
+    def get_latest_data(
+        self, request, collection: pymongo.collection.Collection
+    ) -> dict:
         """
         Get latest data only.
 
@@ -89,12 +97,17 @@ class TmsDbReader(Node):
         dict
             Requested latest data.
         """
-        latest_data = collection.find_one(
-            {'id': request.id},
-            sort=[('time', pymongo.DESCENDING)]
-        )
-        return latest_data
+        if request.name != "":
+            latest_data: dict = collection.find_one(
+                {"id": request.id, "name": request.name},
+                sort=[("time", pymongo.DESCENDING)],
+            )
+        else:
+            latest_data: dict = collection.find_one(
+                {"id": request.id}, sort=[("time", pymongo.DESCENDING)]
+            )
 
+        return latest_data
 
     def get_all_data(self, request, collection) -> pymongo.cursor.Cursor:
         """
@@ -112,9 +125,15 @@ class TmsDbReader(Node):
         pymongo.cursor.Cursor
             Requested all data.
         """
-        all_data: pymongo.cursor.Cursor = collection.find({'id': request.id}).sort([('time', pymongo.ASCENDING)])
+        if request.name != "":
+            all_data: pymongo.cursor.Cursor = collection.find(
+                {"id": request.id, "name": request.name}
+            ).sort([("time", pymongo.ASCENDING)])
+        else:
+            all_data: pymongo.cursor.Cursor = collection.find({"id": request.id}).sort(
+                [("time", pymongo.ASCENDING)]
+            )
         return all_data
-
 
     def allocate_tmsdb(self, data: dict) -> Tmsdb:
         """
@@ -131,22 +150,22 @@ class TmsDbReader(Node):
             Tmsdb msg data.
         """
         tmsdb = Tmsdb()
-        tmsdb.time      = data['time']
-        tmsdb.type      = data['type']
-        tmsdb.id        = data['id']
-        tmsdb.name      = data['name']
-        tmsdb.msg       = json.dumps(data['msg'])
+        tmsdb.time = data["time"]
+        tmsdb.type = data["type"]
+        tmsdb.id = data["id"]
+        tmsdb.name = data["name"]
+        tmsdb.msg = json.dumps(data["msg"])
         return tmsdb
 
 
 def main(args=None):
     rclpy.init(args=args)
     tms_db_reader = TmsDbReader()
-    rclpy.spin(tms_db_reader) 
+    rclpy.spin(tms_db_reader)
 
     tms_db_reader.destroy_node()
     rclpy.shutdown()
 
 
-if __name__ == '__main__':
-	main()
+if __name__ == "__main__":
+    main()

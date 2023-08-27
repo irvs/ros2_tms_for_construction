@@ -25,9 +25,9 @@ from tms_msg_db.srv import TmsdbGetData
 import tms_db_manager.tms_db_util as db_util
 
 
-NODE_NAME = 'tms_ur_cv_odom' 
-DATA_ID   = 2012
-DATA_TYPE = 'machine'
+NODE_NAME = "tms_ur_cv_odom"
+DATA_ID = 2012
+DATA_TYPE = "machine"
 
 
 class TmsUrCvOdomNode(Node):
@@ -37,49 +37,49 @@ class TmsUrCvOdomNode(Node):
         super().__init__(NODE_NAME)
 
         # Declare parameters
-        self.declare_parameter('latest', False)
+        self.declare_parameter("latest", False)
+        self.declare_parameter("machine_name", "machine_name")
 
         # Get parameters
-        self.latest: bool = self.get_parameter('latest').get_parameter_value().bool_value
+        self.latest: bool = (
+            self.get_parameter("latest").get_parameter_value().bool_value
+        )
+        self.machine_name: str = (
+            self.get_parameter("machine_name").get_parameter_value().string_value
+        )
 
-        self.publisher_ = self.create_publisher(Odometry, '~/output/odom', 10)
+        self.publisher_ = self.create_publisher(Odometry, "~/output/odom", 10)
+
+        self.cli = self.create_client(TmsdbGetData, "tms_db_reader")
+        while not self.cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("service not available, waiting again...")
+
         timer_period = 0.1
-        self.call_timer = self.create_timer(timer_period, self.timer_callback)
-
-    def timer_callback(self):
-        """
-        Get Odometry data from tms_db_reader and publish them.
-        """
-        self.send_request()
-
-        try:
-            self.tmsdbs = self.res.tmsdbs
-        except:
-            return
-
-        self.publish_odom()
+        self.call_timer = self.create_timer(timer_period, self.send_request)
 
     def send_request(self):
         """
         Send request to tms_db_reader to get Odometry data.
         """
-        self.cli = self.create_client(TmsdbGetData, 'tms_db_reader')
-        while not self.cli.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('service not available, waiting again...')
-
         self.req = TmsdbGetData.Request()
-        self.req.type        = DATA_TYPE
-        self.req.id          = DATA_ID
+        self.req.type = DATA_TYPE
+        self.req.id = DATA_ID
         self.req.latest_only = self.latest
+        self.req.name = self.machine_name
 
         future = self.cli.call_async(self.req)
-        future.add_done_callback(partial(self.callback_set_response))
+        future.add_done_callback(partial(self.callback_response))
 
-    def callback_set_response(self, future):
+    def callback_response(self, future):
         """
         Set response from tms_db_reader.
         """
-        self.res = future.result()
+        try:
+            self.res = future.result()
+            self.tmsdbs = self.res.tmsdbs
+            self.publish_odom()
+        except:
+            return
 
     def publish_odom(self) -> None:
         """
@@ -95,7 +95,9 @@ class TmsUrCvOdomNode(Node):
             self.publisher_.publish(msg)
         else:
             try:
-                pre_time = datetime.strptime(self.tmsdbs[0].time, '%Y-%m-%dT%H:%M:%S.%f')
+                pre_time = datetime.strptime(
+                    self.tmsdbs[0].time, "%Y-%m-%dT%H:%M:%S.%f"
+                )
             except:
                 return
 
@@ -104,7 +106,7 @@ class TmsUrCvOdomNode(Node):
                 msg: Odometry = db_util.document_to_msg(dict_msg, Odometry)
 
                 # Convert string to datetime
-                now_time = datetime.strptime(tmsdb.time, '%Y-%m-%dT%H:%M:%S.%f')
+                now_time = datetime.strptime(tmsdb.time, "%Y-%m-%dT%H:%M:%S.%f")
 
                 # Time delta
                 td = now_time - pre_time
@@ -124,5 +126,5 @@ def main(args=None):
     rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
