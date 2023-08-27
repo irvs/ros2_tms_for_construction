@@ -29,4 +29,7 @@ def generate_launch_description():
             launch_ros.actions.Node(
             package='tms_ur_button_input', executable='tms_ur_button',
             output='screen'),
+            launch_ros.actions.Node(
+            package="tms_db_manager", executable="tms_db_reader_task",
+            output='screen'),
       ])

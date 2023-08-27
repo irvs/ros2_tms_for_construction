@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import rclpy
-from pymongo import MongoClient
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
@@ -21,7 +20,7 @@ from rclpy.action import ActionClient, ActionServer, CancelResponse, GoalRespons
 from tms_msg_ts.action import TsDoSubtask, TsDoTask, TsReq
 import json
 import re
-from tms_msg_db.srv import TmsdbGetData
+from tms_msg_db.srv import TmsdbGetTask
 import time
 
 class TaskNode(Node):   #タスクを実行するノード(受け取ったサブタスクツリーによって，再帰的にTaskNodeを生成する)
@@ -259,25 +258,6 @@ class TaskNode(Node):   #タスクを実行するノード(受け取ったサブ
         self.goal_handles.pop()
         time.sleep(0.1)
         return result
-    
-    async def call_dbreader(self, id):
-        self.cli_dbreader = self.create_client(TmsdbGetData, 'tms_db_reader', callback_group=self.cb_group)
-        while not self.cli_dbreader.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('service "tms_db_reader" not available, waiting again...')
-        req = TmsdbGetData.Request()
-        req.tmsdb.id = id + 100000  # TODO: why add 100000 ?
-        self.future_dbreader  = self.cli_dbreader.call_async(req)
-        await self.future_dbreader
-        if self.future_dbreader.result() is not None:
-            res = self.future_dbreader.result().tmsdb
-            return res
-        else:
-            self.get_logger().info('Service "tms_db_reader" call failed %r' % (self.future_dbreader.exception(),))
-    
-    async def read_name(self, id):
-        tmsdb = await self.call_dbreader(int(id))
-        return tmsdb[0].name
-
 
 
 class TaskSchedulerManager(Node):   #TaskNodeを管理するマネージャノード
@@ -383,8 +363,8 @@ class TaskSchedulerManager(Node):   #TaskNodeを管理するマネージャノ�
                 return str(answer)
 
         subtask_list = []
-        tmsdb_data = await self.call_dbreader(task_id) 
-        subtask_str = tmsdb_data[0]['etcdata']
+        task = await self.get_task(task_id) 
+        subtask_str = task['etcdata']
         subtask_raw_list = re.findall(r'[0-9]+\$\{.*?\}|[0-9]+|\+|\|', subtask_str)
         self.get_logger().info(f"subtask_raw_list: {subtask_raw_list}")
 
@@ -427,16 +407,23 @@ class TaskSchedulerManager(Node):   #TaskNodeを管理するマネージャノ�
 
         return syntax_tree[0]
     
-    async def call_dbreader(self, id):
-        client = MongoClient('localhost', 27017)
-        db = client['rostmsdb']
-        collection = db['default']
-        data=collection.find({"id": id})
-        return data
-    
-    async def read_name(self, id):
-        tmsdb = await self.call_dbreader(int(id))
-        return tmsdb[0].name
+    async def get_task(self, task_id):
+        # Get task object
+        self.cli_dbreader = self.create_client(TmsdbGetTask, 'tms_db_reader_task', callback_group=self.cb_group)
+        while not self.cli_dbreader.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service "tms_db_reader_task" not available, waiting again...')
+            
+        req = TmsdbGetTask.Request()
+        req.type = 'default'
+        req.id = task_id
+        
+        self.future_dbreader  = self.cli_dbreader.call_async(req)
+        await self.future_dbreader
+        if self.future_dbreader.result() is not None:
+            res = self.future_dbreader.result().task
+            return json.loads(res)
+        else:
+            self.get_logger().info('Service "tms_db_reader_task" call failed %r' % (self.future_dbreader.exception(),))
 
 
 def main(args=None):
