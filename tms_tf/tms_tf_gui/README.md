@@ -1,6 +1,6 @@
-# tms_ur_gui
+# tms_tf_gui
 
-tms_ur_gui is a package for transforming construction data (ex. machine's location, terrain and hardness of ground) using GUI tool.
+tms_tf_gui is a package for transforming construction data (ex. machine's location, terrain and hardness of ground) using GUI tool.
 
 # Usecase
 
