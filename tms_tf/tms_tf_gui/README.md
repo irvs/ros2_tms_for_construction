@@ -36,8 +36,8 @@ The following GUI tools will be launched.
 Launch nodes which have to check transformed topics.
 
 ```
-ros2 launch tms_sp_machine_odom tms_sp_machine_odom_demo_launch.py 
-ros2 launch tms_sp_machine_points tms_sp_machine_points_launch.py input/machine_points:=/merge_points
+ros2 launch tms_sp_machine tms_sp_machine_odom_demo_launch.py 
+ros2 launch tms_sp_machine tms_sp_machine_points_launch.py input/machine_points:=/merge_points
 ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo2/map_2d
 ```
 
