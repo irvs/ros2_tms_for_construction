@@ -2,7 +2,7 @@
 
 ROS2-TMS-FOR-CONSTRUCTION is an IoRT library for construction applications based on ROS2-TMS.
 
-https://user-images.githubusercontent.com/63947554/196080381-49ada296-7f3d-4e4c-99d0-8ecb51d449b6.mp4
+https://github.com/irvs/ros2_tms_for_construction/assets/63947554/d7fb02dd-37d9-4d72-aa2c-a2c2d6f7824a
 
 ## ROS2-TMS
 
@@ -20,22 +20,13 @@ Project page: [https://moonshot-cafe-project.org/en/](https://moonshot-cafe-proj
 
 ### Architecture
 
-![](docs/ros2-tms-for-construction_archtecture.png)
+![](docs/ros2-tms-for-construction_architecture.png)
 
 ## Install
 
 ### ROS2 Humble
 
 https://docs.ros.org/en/humble/Installation/Alternatives/Ubuntu-Development-Setup.html
-
-**sensor-msgs-py**
-
-Please install ros-\<distro>-sensor-msgs-py.
-
-```
-sudo apt install ros-foxy-sensor-msgs-py
-```
-
 
 ### Git
 
@@ -58,9 +49,10 @@ https://www.mongodb.com/docs/compass/current/install/
 - empy 3.3.4
 - lark 1.1.3
 - setuptools 58.2.0
+- numpy-quaternion 2022.4.3
 
 ```
-python3 -m pip install pymongo==4.3.3 open3d==0.16.0 numpy==1.22.3 catkin-pkg==0.5.2 empy==3.3.4 lark==1.1.3 setuptools==58.2.0
+python3 -m pip install -r requirements.txt
 ```
 
 ## Setup
@@ -126,6 +118,12 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
   Static terrain refers to terrain that does not change during construction operations. And dynamic terrain refers to terrain that changes during construction work.
 
+- [tms_sd_theta](tms_sd/tms_sd_theta/)
+
+  tms_sd_theta is a package for formatting CompressedImage msg to Tmsdb msg and sending it to tms_db_writer.
+
+  The received CompressedImage msg is the jpeg image taken by a 360-degree camera.  
+
 ### tms_sp
 
 - [tms_sp_machine_odom](tms_sp/tms_sp_machine_odom)
@@ -134,6 +132,10 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
   The received Odometry msg is the estimated location data of the construction machine.
 
+- [tms_sp_machine_points](tms_sp/tms_sp_machine_points/)
+
+  tms_sp_machine_poitns is a package used to transform the coordinates of the machine odom using tms_tf_gui
+
 ### tms_ss
 
 - [tms_ss_terrain_static](tms_ss/tms_ss_terrain_static)
@@ -141,6 +143,12 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
   tms_ss_terrain_static is a package for handling point cloud data of static terrain.
 
   The received PointCloud2 msg is a point cloud data of terrain.
+
+### tms_tf
+
+- [tms_tf_gui](tms_tf/tms_tf_gui/)
+
+  tms_tf_gui is a package for transforming construction data (ex. machine's location, terrain and hardness of ground) using GUI tools.
 
 ### tms_ts
 - [tms_ts_launch_project](tms_ts/tms_ts_launch_project/)
@@ -179,16 +187,44 @@ cd ~/ros2-tms-for-constructoin_ws
 source install/setup.bash
 ```
 
+You need to setup the workspace on each terminal before running the commands described in the following demonstrations.
+
 ### 1. Store data
 
-Run the following commands to save data in MongoDB.
+At first, you need to store static terrain data in MongoDB with running the following commands.
 
 #### Launch
+
+Please run the following commands in separate terminals.
 
 ```
 # MongoDB manager
 ros2 launch tms_db_manager tms_db_writer.launch.py init_db:=true
 
+# Terrain
+ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/terrain/static/pointcloud2:=/demo2/terrain/static
+
+# Static terrain
+ros2 launch tms_ss_terrain_static tms_ss_terrain_static_launch.py filename:=demo.pcd filename_mesh:=demo.ply filename_dem:=demo.npy voxel_size:=0.1 octree_depth:=8 density_th:=0.1 fill_nan_type:=avg resolution:=0.1
+```
+
+#### Play rosbag
+
+```
+ros2 bag play -l ./src/ros2_tms_for_construction/demo/demo2/rosbag2_1
+```
+
+If the following message appears on the terminal where tms_sd_terrain is executed, stop the terminal playing rosbag.
+
+```
+Static terrain info was received!
+```
+
+Then, run the following commands to store data (excluding static terrain) in MongoDB.
+
+#### Launch
+
+```
 # Odometry
 ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/demo2/odom machine_name:=demo_machine
 
@@ -196,16 +232,12 @@ ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/demo2
 ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo2/map_2d ground_name:=demo_ground
 
 # Terrain
-ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/terrain/static/pointcloud2:=/demo2/terrain/static input/terrain/dynamic/pointcloud2:=/demo2/terrain/dynamic
-
-# Static terrain
-ros2 launch tms_ss_terrain_static tms_ss_terrain_static_launch.py filename:=demo.pcd filename_mesh:=demo.ply voxel_size:=0.1 octree_depth:=8 density_th:=0.1
+ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/terrain/dynamic/pointcloud2:=/demo2/terrain/dynamic
 ```
 
 #### Play rosbag
 
 ```
-ros2 bag play -l ./src/ros2_tms_for_construction/demo/demo2/rosbag2_1
 ros2 bag play ./src/ros2_tms_for_construction/demo/demo2/rosbag2_2
 ```
 
@@ -219,8 +251,6 @@ Here is an example. It may be a little different than yours, but as long as it i
 
 ### 2. Get stored data
 
-Please try this demonstration after [1. Store data](#1-store-data).
-
 Run the following commands to get data from MongoDB.
 
 #### Launch
@@ -229,11 +259,14 @@ Run the following commands to get data from MongoDB.
 # MongoDB manager
 ros2 launch tms_db_manager tms_db_reader.launch.py
 
+# Get static terrain
+ros2 launch tms_ur_construction tms_ur_construction_terrain_static_launch.py filename:=demo.pcd voxel_size:=0.0
+
 # Service Client and Publisher nodes for static terrain data
-ros2 launch tms_ur_test tms_ur_test_launch.py
+ros2 run tms_ur_test tms_ur_construction_terrain_static_test
 
 # Get odometry, ground 2D map and terrain data
-ros2 launch tms_ur_construction tms_ur_construction_launch.py filename:=demo.pcd voxel_size:=0.5
+ros2 launch tms_ur_construction tms_ur_construction_launch.py machine_name:=demo_machine
 ```
 
 #### Rviz2
@@ -243,6 +276,8 @@ rviz2 -d ./src/ros2_tms_for_construction/demo/demo2/demo2.rviz
 ```
 
 Rviz2 will show odometry, ground 2D map and terrain data.
+
+Since static terrain data is large, it's may be better to stop the terminal execting tms_ur_test if static terrain is displayed on Rviz.
 
 https://user-images.githubusercontent.com/63947554/220530548-b2e1c23c-2938-4b8f-b8f7-60b93b46f702.mp4
 
@@ -256,7 +291,7 @@ Static terrain data is not included because it does not need to be acquired in r
 
 ```
 # MongoDB manager
-ros2 launch tms_db_manager tms_db_manager.launch.py init_db:=true
+ros2 launch tms_db_manager tms_db_manager.launch.py
 
 # Odometry
 ros2 launch tms_sp_machine_odom tms_sp_machine_odom_launch.py input/odom:=/demo2/odom machine_name:=demo_machine
@@ -279,13 +314,20 @@ rviz2 -d ./src/ros2_tms_for_construction/demo/demo2/demo2.rviz
 After the tms_sd_terrain node was finished (PointCloud2 was stored to MongoDB), run the following command. 
 
 ```
-ros2 launch tms_ur_construction tms_ur_construction_launch.py filename:=demo.pcd voxel_size:=0.5 latest:=true
+# Get static terrain
+ros2 launch tms_ur_construction tms_ur_construction_terrain_static_launch.py filename:=demo.pcd voxel_size:=0.0
+
+# Service Client and Publisher nodes for static terrain data
+ros2 run tms_ur_test tms_ur_construction_terrain_static_test
+
+# Get odometry, ground 2D map and terrain data
+ros2 launch tms_ur_construction tms_ur_construction_launch.py machine_name:=demo_machine latest:=true
 ```
 
 #### Play rosbag
 
 ```
-ros2 bag play ./src/ros2_tms_for_construction/demo/demo2/rosbag2_2
+ros2 bag play -l ./src/ros2_tms_for_construction/demo/demo2/rosbag2_2
 ```
 
 Rviz2 will show odometry, ground 2D map and dynamic terrain data like a example of [2. Get stored data](#2-get-stored-data), excluding static terrain.
@@ -346,3 +388,5 @@ After the above operation is executed, the corresponding task is called from Mon
 * lark 1.1.3
 
 * setuptools 58.2.0
+
+* numpy-quaternion 2022.4.3
