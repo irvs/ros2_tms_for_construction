@@ -55,6 +55,7 @@ rosidl_generate_interfaces(tms_msg_db
   "srv/Tmsdbgetpersoninfo.srv"
   "srv/Tmsdbgetrobotsinfo.srv"
   "srv/Tmsdbgetrobotinfo.srv"
+  "srv/TmsdbGetTask.srv"
   "srv/Tmsdbgetpersonbehaviorinfo.srv"
   "srv/Tmsdbgetpcdinfo.srv"
   "srv/Tmsdbgettasklist.srv"
