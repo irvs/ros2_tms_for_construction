@@ -87,11 +87,11 @@ ros2 launch tms_ur_construction tms_ur_construction_terrain_mesh_launch.py outpu
 
 #### Parameters
 
-| Name         | Type   | Default Value | Description                                |
-| ------------ | ------ | ------------- | ------------------------------------------ |
-| `filename`   | string | `filename`    | .pcd file name stored in ROS2-TMS database |
-| `voxel_size` | float  | `0.0`         | voxel size of downsampling                 |
-| `alpha`      | float  | `1.0`         | alpha shapes of mesh                       |
+| Name            | Type   | Default Value   | Description                                |
+| --------------- | ------ | --------------- | ------------------------------------------ |
+| `filename_mesh` | string | `filename_mesh` | .pcd file name stored in ROS2-TMS database |
+| `voxel_size`    | float  | `0.0`           | voxel size of downsampling                 |
+| `alpha`         | float  | `1.0`           | alpha shapes of mesh                       |
 
 ### 3. construction_theta
 
@@ -148,9 +148,9 @@ ros2 launch tms_ur_construction tms_ur_ground_mesh_launch.py output/ground_mesh:
 
 #### Parameters
 
-| Name           | Type   | Default Value  | Description              |
-| -------------- | ------ | -------------- | ------------------------ |
-| `timer_period` | string | `timer_period` | publisher's timer_period |
+| Name           | Type | Default Value | Description              |
+| -------------- | ---- | ------------- | ------------------------ |
+| `timer_period` | int  | `10`          | publisher's timer_period |
 
 ### 5. construction_terrain_dem
 
