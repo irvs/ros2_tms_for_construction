@@ -1,3 +1,17 @@
+# Copyright 2023, IRVS Laboratory, Kyushu University, Japan.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from typing import Tuple
 import numpy as np
 import open3d as o3d
@@ -12,9 +26,9 @@ from tms_msg_db.action import TmsdbGridFS
 from tms_msg_db.srv import TerrainStaticSrv
 
 
-NODE_NAME = 'tms_ur_construction_terrain_static' 
-DATA_ID   = 3030 
-DATA_TYPE = 'static'
+NODE_NAME = "tms_ur_construction_terrain_static"
+DATA_ID = 3030
+DATA_TYPE = "static"
 
 
 class TmsUrConstructionTerrainStaticClient(Node):
@@ -24,27 +38,33 @@ class TmsUrConstructionTerrainStaticClient(Node):
         super().__init__(NODE_NAME)
 
         # Declare parameters
-        self.declare_parameter('filename', 'filename')
-        self.declare_parameter('voxel_size', 0.0)
+        self.declare_parameter("filename", "filename")
+        self.declare_parameter("voxel_size", 0.0)
 
         # Get parameters
-        self.filename: str     = self.get_parameter('filename').get_parameter_value().string_value
-        self.voxel_size: float = self.get_parameter('voxel_size').get_parameter_value().double_value
+        self.filename: str = (
+            self.get_parameter("filename").get_parameter_value().string_value
+        )
+        self.voxel_size: float = (
+            self.get_parameter("voxel_size").get_parameter_value().double_value
+        )
 
         # Action client
-        self._action_client = ActionClient(self, TmsdbGridFS, 'tms_db_reader_gridfs')
+        self._action_client = ActionClient(self, TmsdbGridFS, "tms_db_reader_gridfs")
 
     def send_goal(self) -> None:
         """
         Send goal to action server.
         """
         self.goal_msg = TmsdbGridFS.Goal()
-        self.goal_msg.type     = DATA_TYPE
-        self.goal_msg.id       = DATA_ID
+        self.goal_msg.type = DATA_TYPE
+        self.goal_msg.id = DATA_ID
         self.goal_msg.filename = self.filename
 
         self._action_client.wait_for_server()
-        self._send_goal_future = self._action_client.send_goal_async(self.goal_msg, feedback_callback=self.feedback_callback)
+        self._send_goal_future = self._action_client.send_goal_async(
+            self.goal_msg, feedback_callback=self.feedback_callback
+        )
         self._send_goal_future.add_done_callback(self.goal_response_callback)
 
     def goal_response_callback(self, future) -> None:
@@ -81,8 +101,14 @@ class TmsUrConstructionTerrainStaticClient(Node):
         # Create PointCloud2 msg
         self.msg: PointCloud2 = self.create_msg()
 
+        self.get_logger().info("Terrain Static service is ready")
+
         # Service server
-        self.srv = self.create_service(TerrainStaticSrv, '~/output/terrain/static_srv', self.terrain_static_srv_callback)
+        self.srv = self.create_service(
+            TerrainStaticSrv,
+            "~/output/terrain/static_srv",
+            self.terrain_static_srv_callback,
+        )
 
     def terrain_static_srv_callback(self, request, response):
         """
@@ -94,7 +120,7 @@ class TmsUrConstructionTerrainStaticClient(Node):
             Service callback response
         """
         response.pointcloud2 = self.msg
-        self.get_logger().info('Return a response of PointCloud2')
+        self.get_logger().info("Return a response of PointCloud2")
         return response
 
     def feedback_callback(self, feedback_msg) -> None:
@@ -157,15 +183,16 @@ class TmsUrConstructionTerrainStaticClient(Node):
             Point cloud data.
         """
         ros_dtype = PointField.FLOAT32
-        dtype     = np.float32
-        itemsize  = np.dtype(dtype).itemsize
-        data      = points_colors.astype(dtype).tobytes()
-        fields    = [
-            PointField(name=n, offset=i*itemsize, datatype=ros_dtype, count=1) for i, n in enumerate(['x', 'y', 'z', 'r','g','b'])
+        dtype = np.float32
+        itemsize = np.dtype(dtype).itemsize
+        data = points_colors.astype(dtype).tobytes()
+        fields = [
+            PointField(name=n, offset=i * itemsize, datatype=ros_dtype, count=1)
+            for i, n in enumerate(["x", "y", "z", "r", "g", "b"])
         ]
 
         msg = PointCloud2(
-            header=Header(frame_id='map'),
+            header=Header(frame_id="map"),
             height=1,
             width=points_colors.shape[0],
             is_dense=False,
@@ -189,5 +216,5 @@ def main(args=None):
     rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

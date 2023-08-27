@@ -1,3 +1,17 @@
+# Copyright 2023, IRVS Laboratory, Kyushu University, Japan.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import gridfs
 import os
 
@@ -38,10 +52,15 @@ class TmsDbWriterGridFS(Node):
         msg : TmsdbGridFS
             An instance of a ROS2 custom message to store data using GridFS.
         """
+        self.fs = gridfs.GridFS(self.db)
+        db_util.set_time_index(self.db["fs.files"])
+
         if msg.type == 'static':
             self.save_static_terrain(msg)
         elif msg.type == 'mesh':
             self.save_static_terrain_mesh(msg)
+        elif msg.type == 'dem':
+            self.save_static_terrain_dem(msg)
         elif msg.type == 'dynamic':
             self.save_dynamic_terrain(msg)
         else:
@@ -60,8 +79,7 @@ class TmsDbWriterGridFS(Node):
         
         f = open(filename, 'rb')
 
-        fs = gridfs.GridFS(self.db)
-        fs.put(f.read(), filename=filename, time=msg.time, type=msg.type, id=msg.id)
+        self.fs.put(f.read(), filename=filename, time=msg.time, type=msg.type, id=msg.id)
 
         f.close()
         os.remove(filename)
@@ -70,6 +88,24 @@ class TmsDbWriterGridFS(Node):
         """
         Save mesh of static terrain using GridFS.
 
+        Parameters
+        ----------
+        msg : TmsdbGridFS
+            An instance of a ROS2 custom message to store data using GridFS.
+        """
+        filename: str = msg.filename
+
+        f = open(filename, 'rb')
+
+        self.fs.put(f.read(), filename=filename, time=msg.time, type=msg.type, id=msg.id)
+
+        f.close()
+        os.remove(filename)
+
+    def save_static_terrain_dem(self, msg: TmsdbGridFS) -> None:
+        """
+        Save DEM of static terrain using GridFS.
+        
         Parameters
         ----------
         msg : TmsdbGridFS
@@ -94,9 +130,7 @@ class TmsDbWriterGridFS(Node):
         msg : TmsdbGridFS
             An instance of a ROS2 custom message to store data using GridFS.
         """
-        fs = gridfs.GridFS(self.db)
-
-        fs.put(
+        self.fs.put(
             ','.join(str(i) for i in msg.pointcloud2.data).encode(),
             time=msg.time,
             type=msg.type,

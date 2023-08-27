@@ -1,3 +1,17 @@
+# Copyright 2023, IRVS Laboratory, Kyushu University, Japan.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 The Original Code is mongodb_store package's util.py
 http://www.ros.org/wiki/mongodb_store
@@ -157,3 +171,20 @@ def _fill_msg(msg: object, dic: dict) -> None:
                 setattr(msg, i, numpy.asarray(dic[i], dtype=attr.dtype))
             else:
                 setattr(msg, i, attr_type(dic[i]))
+
+def set_time_index(collection: pymongo.collection.Collection) -> None:
+    """
+    Set time index for collection.
+
+    Parameters
+    ----------
+    collection : pymongo.collection.Collection
+        Target collection.
+    """
+    time_index = [('time', pymongo.DESCENDING)]
+    index_list = collection.list_indexes()
+    for index in index_list:
+        if index['key'] == time_index:
+            return
+        
+    collection.create_index(time_index)

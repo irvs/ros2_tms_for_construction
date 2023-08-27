@@ -23,6 +23,7 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(shape_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(ament_lint_auto REQUIRED)
 ament_lint_auto_find_test_dependencies()
 #find_package(message_package REQUIRED)
@@ -39,6 +40,9 @@ rosidl_generate_interfaces(tms_msg_db
   "action/TmsdbGridFS.action"
 
   "msg/Tmsdb.msg"
+  "msg/TmsdbStamped.msg"
+  "msg/TmsData.msg"
+  "msg/TmsDataStamped.msg"
   "msg/TmsdbGridFS.msg"
   "msg/ColoredMesh.msg"
 
@@ -46,12 +50,29 @@ rosidl_generate_interfaces(tms_msg_db
   "srv/TmsdbGridFSGetData.srv"
   "srv/ColoredMeshSrv.srv"
   "srv/TerrainStaticSrv.srv"
+  "srv/DemSrv.srv"
+  "srv/Tmsdbgetfurnituresinfo.srv"
+  "srv/Tmsdbgetmovablefurnituresinfo.srv"
+  "srv/Tmsdbgetobjectsinfo.srv"
+  "srv/Tmsdbgetpersoninfo.srv"
+  "srv/Tmsdbgetrobotsinfo.srv"
+  "srv/Tmsdbgetrobotinfo.srv"
+  "srv/Tmsdbgetpersonbehaviorinfo.srv"
+  "srv/Tmsdbgetpcdinfo.srv"
+  "srv/Tmsdbgettasklist.srv"
+  "srv/Tmsdbmissingobjectschecker.srv"
+  "srv/Tmsdbobjdt.srv"
+  "srv/TmsdbPlanning.srv"
+  "srv/Tmsdbfileconservation.srv"
+  "srv/TmsdbObjectsdata.srv"
+  "srv/Tmsdbgetunknownobject.srv"
 
   DEPENDENCIES 
   std_msgs
   sensor_msgs
   shape_msgs
   geometry_msgs
+  nav_msgs
 )
 
 
