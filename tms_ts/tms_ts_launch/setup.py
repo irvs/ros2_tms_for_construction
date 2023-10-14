@@ -1,20 +1,24 @@
+import os
+from glob import glob
 from setuptools import setup
+from setuptools import find_packages
 
-package_name = 'tms_ur_text_recognizer'
+package_name = 'tms_ts_launch'
 setup(
     name=package_name,
     version='0.1.0',
+    # packages=find_packages(exclude=['test']),
     packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     author='Itsuka Tomoya',
     author_email='itsuka@irvs.ait.kyushu-u.ac.jp',
-    maintainer='Yuichiro Kasahara ',
+    maintainer='Yuichiro Kasahara',
     maintainer_email='kasahara@irvs.ait.kyushu-u.ac,jp',
     keywords=['ROS'],
     classifiers=[
@@ -29,9 +33,6 @@ setup(
     test_suite='pytest',
     entry_points={
         'console_scripts': [
-            'tms_ur_text_recognizer_test_client = tms_ur_text_recognizer.tms_ur_text_recognizer_test_client:main',
-            'tms_ur_text_recognizer = tms_ur_text_recognizer.tms_ur_text_recognizer:main',
-            'tms_ur_text_recognizer_action = tms_ur_text_recognizer.tms_ur_text_recognizer_action:main',
         ],
     },
 )
