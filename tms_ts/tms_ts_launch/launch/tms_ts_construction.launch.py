@@ -21,7 +21,7 @@ def generate_launch_description():
             package='tms_ts_subtask', executable='subtask_nodes',
             output='screen'),
             launch_ros.actions.Node(
-            package='tms_ur_button_input', executable='tms_ur_button_bt',
+            package='tms_ur_button_input', executable='tms_ur_button',
             output='screen'),
             launch_ros.actions.Node(
             package="tms_db_manager", executable="tms_db_reader_task",
