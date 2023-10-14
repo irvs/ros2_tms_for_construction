@@ -3,7 +3,7 @@ from glob import glob
 from setuptools import setup
 from setuptools import find_packages
 
-package_name = 'tms_db_manager'
+package_name = 'tms_ts_launch'
 setup(
     name=package_name,
     version='0.1.0',
@@ -12,15 +12,14 @@ setup(
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
-        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    author='Esteve Fernandez',
-    author_email='esteve@osrfoundation.org',
-    maintainer='maeda',
-    maintainer_email='maeda@irvs.ait.kyushu-u.ac.jp',
+    author='Itsuka Tomoya',
+    author_email='itsuka@irvs.ait.kyushu-u.ac.jp',
+    maintainer='Yuichiro Kasahara',
+    maintainer_email='kasahara@irvs.ait.kyushu-u.ac,jp',
     keywords=['ROS'],
     classifiers=[
         'Intended Audience :: Developers',
@@ -34,12 +33,6 @@ setup(
     test_suite='pytest',
     entry_points={
         'console_scripts': [
-            'tms_db_reader = tms_db_manager.tms_db_reader:main',
-            'tms_db_reader_gridfs = tms_db_manager.tms_db_reader_gridfs:main',
-            'tms_db_reader_task = tms_db_manager.tms_db_reader_task:main',
-            'tms_db_writer = tms_db_manager.tms_db_writer:main',
-            'tms_db_writer_gridfs = tms_db_manager.tms_db_writer_gridfs:main',
-            'tms_db_writer_task = tms_db_manager.tms_db_writer_task:main',
         ],
     },
 )
