@@ -1,0 +1,9 @@
+string[] keep_pos
+int32 parameter_id 
+int32 x
+int32 y
+int32 z
+int32 qx
+int32 qy
+int32 qz
+int32 qw
