@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "tms_sp_sensing_sample = tms_sp_sensing.tms_sp_sensing_sample:main",
+            "tms_sp_zx120_end_effector = tms_sp_sensing.tms_sp_zx120_end_effector:main",
         ],
     },
 )
