@@ -149,7 +149,7 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
   tms_tf_gui is a package for transforming construction data (ex. machine's location, terrain and hardness of ground) using GUI tools.
 
 ### tms_ts
-- [tms_ts_launch_project](tms_ts/tms_ts_launch_project/)
+- [tms_ts_launch](tms_ts/tms_ts_launch/)
   
   tms_ts_launch_ts is a  package for specifying and executing tasks to run the actual construction machinery.
   
