@@ -413,6 +413,10 @@ Now, if you follow the steps in chapter 4 to configure ROS2-TMS-for-construction
 Of course, you can also use Groot to monitor the tasks being performed by the Behavior Tree while the Task Scheduler is running, as shown in the following video.
 
 
+https://github.com/irvs/ros2_tms_for_construction/assets/130209264/8747df87-0dd9-42c4-9132-6454c15eeedf
+
+
+
 ### 6. Insert new data to tms_db
 
 ## Version Information
