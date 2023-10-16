@@ -33,7 +33,7 @@ DATA_NAME = 'data_name'
 
 class UpdateDB_Parameter(Node):
     def __init__(self):
-        super().__init__("tms_sp_sensing_sample")
+        super().__init__("tms_sp_zx120_end_effector")
         self.subscription = self.create_subscription(
             Zx120EndEffector,
             '/zx120/end_effector',
@@ -50,11 +50,11 @@ class UpdateDB_Parameter(Node):
         parameter_info = db.default.find_one(query)
         for keep_pos in msg.keep_pos:
             update_parameter_info[keep_pos] = parameter_info[keep_pos]
-        self.get_logger().info(f"BEFORE: parameter_info: {update_parameter_info}")
+        # self.get_logger().info(f"BEFORE: parameter_info: {update_parameter_info}")
         for update_val in update_parameter_info:
             if update_parameter_info[update_val] == None:
                 update_parameter_info[update_val] = eval(f"msg.{update_val}")
-        self.get_logger().info(f"AFTER: parameter_info: {update_parameter_info}")
+        # self.get_logger().info(f"AFTER: parameter_info: {update_parameter_info}")
         update_query = {"$set": update_parameter_info}
         collection.update_one(query, update_query)
 
