@@ -130,6 +130,10 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
   tms_sp_machine is a package for handling data realated to construction machines.
 
+  - [tms_sp_sensing](tms_sp/tms_sp_sensing/)
+
+  tms_sp_sensing is a package  to update dynamic parameters stored in mongoDB based on ros topic sent from another pc.
+
 ### tms_ss
 
 - [tms_ss_terrain_static](tms_ss/tms_ss_terrain_static)
@@ -145,25 +149,22 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
   tms_tf_gui is a package for transforming construction data (ex. machine's location, terrain and hardness of ground) using GUI tools.
 
 ### tms_ts
-- [tms_ts_launch_project](tms_ts/tms_ts_launch_project/)
+- [tms_ts_launch](tms_ts/tms_ts_launch/)
   
-  tms_ts_launch_ts is a package for launching the task schedular.
+  tms_ts_launch_ts is a  package for specifying and executing tasks to run the actual construction machinery.
   
-- [tms_ts_manager_project](tms_ts/tms_ts_manager_project/)
 
-  tms_ts_manager_project is a package included in the main task schedular programs.
+- [tms_ts_subtask](tms_ts/tms_ts_subtask/)
 
-- [tms_ts_subtask_project](tms_ts/tms_ts_subtask_project/)
-
-  tms_ts_subtask_project is a package included in subtasks.
+  tms_ts_subtask is a package included in subtasks.
   
   If you want to implement new subtasks, please refer programs in the tms_ts_subtask directory.
 
 ### tms_ur
 
-- [tms_ur_construction](tms_ur/tms_ur_construction)
+- [tms_ur_button_input](tms_ur/tms_ur_button_input)
 
-  tms_ur_construction is a package for getting construction data (ex. machine's location, terrain, hardness of ground) from tms_db_reader(_gridfs) and publishing them.
+  tms_ur_button_input is a package package that searches data in mongodb for the corresponding task when the GUI button is pressed, and passes the corresponding task sequence to the task scheduler.
 
 ## Demo
 
@@ -336,6 +337,12 @@ Here is an example. It may be a little different than yours, but as long as it i
 
 ### 4. Try running the task schedular
 
+To successfully run the task scheduler, mongodb must be started by executing the following command.
+
+```
+sudo systemctl start mongod
+``` 
+
 To run the task scheduler, make sure that the default collection and now collection are placed under rostmsdb database in MongoDB as shown in the following image.
 
 ![](docs/rostmsdb_ts.png)
@@ -346,18 +353,71 @@ Once you have verified that MongoDB looks like the image above, execute the foll
 ```
 cd ~/ros2-tms-for-constructoin_ws
 source install/setup.bash
-ros2 launch tms_ts_launch tms_ts_action.launch.py
+ros2 launch tms_ts_launch tms_ts_construction.launch.py
 ```
 
-If the above command have been properly executed, start a new terminal and execute the following command.
+The following GUI button will then be activated.
+
+![](docs/gui_button.png)
+
+When this button is pressed, the corresponding task is read from the mongodb and the Behavior Tree executes subtasks based on the corresponding task sequence.
+
+You can check the runtime and the structure of the Behavior Tree using Groot as follows. Groot displays the subtasks that have been completed with colors as follows.
+
+Follow the instructions on the official page below for how to start groot.
+
+> **Note**
+> 
+> Groot can only make the Tree visible when the Behavior Tree is running. The settings for use should be as follows.
+> 
+> ・ Sensing IP : localhost
+> 
+> ・ Publisher Port : 1666 
+> 
+> ・ Sever Port : 1667
+> 
+> After setting up, press the connect button to display the Behavior tree on Groot as shown in the figure below.
+
+![](docs/groot.png)
+
+### 5. Try running the task schedular with OperaSim-PhysX
+
+This chapter explain how to link ROS2-TMS-for-construction and OperaSim-PhysX , which is being developed by PWRI.
+
+Please follow the instructions in the ReadMe document on the official github page (URL: https://github.com/pwri-opera/OperaSim-PhysX) on how to set up windows PC for using OperaSimPhysX.
+
+The setup procedure for an Ubuntu22.04 PC is as follows.
+
+First, run the following commands to enable the ros-tcp-endpoint to run in your environment.
 
 ```
-cd ~/ros2-tms-for-constructoin_ws
-source install/setup.bash
-ros2 service call /tms_ts_text_recognizer tms_msg_ts/srv/TaskTextRecognize '{data: "zx120", is_announce: False}'
+cd ~/ros2-tms-for-constructoin_ws/src
+git clone -b dev-ros2 https://github.com/Unity-Technologies/ROS-TCP-Endpoint.git
+cd ..
+colcon build --packages-select ros_tcp_endpoint && source install/setup.bash
 ```
-After the above operation is executed, the corresponding task is called from MongoDB, and subtasks and parameters are called based on the task sequence, and these are executed according to the task sequence.
 
+Make sure there are no build errors and run ros_tcp_endpoint by executing the following command.
+
+```
+ros2 launch ros_tcp_endpoint endpoint.py
+```
+Then ros_tcp_ednpoint will start on ubuntu22.04 PC.
+
+Then follow the connection procedure in the OperaSim-Phyx ReadMe document (URL: https://github.com/pwri-opera/OperaSim-PhysX) to set up the ros-tcp-endpoint.
+
+Now, if you follow the steps in chapter 4 to configure ROS2-TMS-for-construction, you can see the zx120 on OperaSim-PhysX running as follows.
+
+
+
+Of course, you can also use Groot to monitor the tasks being performed by the Behavior Tree while the Task Scheduler is running, as shown in the following video.
+
+
+https://github.com/irvs/ros2_tms_for_construction/assets/130209264/8747df87-0dd9-42c4-9132-6454c15eeedf
+
+
+
+### 6. Insert new data to tms_db
 
 ## Version Information
 

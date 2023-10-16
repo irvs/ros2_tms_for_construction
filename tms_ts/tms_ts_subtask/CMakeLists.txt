@@ -15,7 +15,6 @@ find_package(std_msgs REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(rosidl_default_runtime REQUIRED)
-find_package(tms_msg_ts REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
 
@@ -24,7 +23,6 @@ set(dependencies
   rclcpp_action
   std_msgs
   behaviortree_cpp_v3
-  tms_msg_ts
   nlohmann_json
   geometry_msgs
   nav2_msgs)
