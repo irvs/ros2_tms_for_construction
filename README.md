@@ -366,6 +366,13 @@ You can check the runtime and the structure of the Behavior Tree using Groot as 
 
 Follow the instructions on the official page below for how to start groot.
 
+**Note**
+Groot can only make the Tree visible when the Behavior Tree is running. The settings for use should be as follows.
+・ Sensing IP : localhost
+・ Publisher Port : 1666 
+・ Sever Port : 1667
+After setting up, press the connect button to display the Behavior tree on Groot as shown in the figure below.
+
 ![](docs/groot.png)
 
 ### 5. Try running the task schedular with OperaSim-PhysX
@@ -397,6 +404,8 @@ Then follow the connection procedure in the OperaSim-Phyx ReadMe document (URL: 
 Now, if you follow the steps in chapter 4 to configure ROS2-TMS-for-construction, you can see the zx120 on OperaSim-PhysX running as follows.
 
 
+
+Of course, you can also use Groot to monitor the tasks being performed by the Behavior Tree while the Task Scheduler is running, as shown in the following video.
 
 
 ### 6. Insert new data to tms_db
