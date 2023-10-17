@@ -15,6 +15,7 @@
 using namespace BT;
 using namespace std::chrono_literals;
 
+#define XML_FILE_PATH  "/home/common/ros2_tms_for_construction_ws/src/ros2_tms_for_construction/tms_ts/tms_ts_subtask/config/subtask_construction_tree_parallel.xml";
 
 class SubtaskControlZx120Boom : public SyncActionNode{
 // boom joint (degrees : -70 to 44)
