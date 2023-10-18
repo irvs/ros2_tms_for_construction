@@ -26,19 +26,26 @@ set(dependencies_cpp
   rclcpp
   rclcpp_action
   std_msgs
+  ament_cmake
   behaviortree_cpp_v3
   nlohmann_json
   geometry_msgs
   nav2_msgs
-  ament_cmake_python
   rclpy)
 
-add_executable(subtask_nodes src/subtask_nodes.cpp)
-# target_include_directories(subtask_nodes PUBLIC include)
-ament_target_dependencies(subtask_nodes ${dependencies_cpp})
+
+add_library(zx120_subtasks SHARED src/zx120/subtasks.cpp)
+target_include_directories(zx120_subtasks PUBLIC include)
+ament_target_dependencies(zx120_subtasks ${dependencies_cpp})
+
+add_executable(zx120_task_schedular_manager src/zx120/task_schedular_manager.cpp)
+target_include_directories(zx120_task_schedular_manager PUBLIC include)
+target_link_libraries(zx120_task_schedular_manager zx120_subtasks)
+ament_target_dependencies(zx120_task_schedular_manager ${dependencies_cpp})
 
 install(TARGETS
-  subtask_nodes
+  zx120_subtasks
+  zx120_task_schedular_manager
   DESTINATION lib/${PROJECT_NAME}
 )
 
