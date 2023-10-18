@@ -18,7 +18,7 @@ import launch_ros.actions
 def generate_launch_description():
       return LaunchDescription([
             launch_ros.actions.Node(
-            package='tms_ts_subtask', executable='subtask_nodes',
+            package='tms_ts_subtask', executable='zx120_task_schedular_manager',
             output='screen'),
             launch_ros.actions.Node(
             package='tms_ur_button_input', executable='tms_ur_button',
