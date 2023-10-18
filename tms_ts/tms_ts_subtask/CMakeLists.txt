@@ -64,7 +64,8 @@ set(dependencies_py
 ament_python_install_package(scripts)
 
 install(PROGRAMS
-  scripts/format_task_sequence.py
+  scripts/task_generator.py
+  scripts/task_remover.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
