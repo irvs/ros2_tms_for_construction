@@ -27,7 +27,7 @@ class TaskRemover(Node):
         if result.deleted_count == 1:
             print(f"Successfully deleted document with task_id: {target_task_id}")
         else:
-            print(f"No document found with task_id: {target_task_id}. Nothing deleted.")
+            print(f"No task found with task_id: {target_task_id}.")
 
 
 def main(args=None):
