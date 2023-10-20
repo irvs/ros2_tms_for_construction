@@ -1,0 +1,21 @@
+<root>
+    <TreeNodesModel>
+        <Action ID="SubtaskControlZx120Arm">
+            <input_port name="goal_position"/>
+            <inout_port name="intial_position"/>
+        </Action>
+        <Action ID="SubtaskControlZx120Boom">
+            <input_port name="export_position"/>
+            <inout_port name="initial_position"/>
+        </Action>
+        <Action ID="SubtaskControlZx120Bucket">
+            <inout_port name="goal_position"/>
+            <inout_port name="iniitial_position"/>
+        </Action>
+        <Action ID="SubtaskControlZx120Swing">
+            <inout_port name="goal_position"/>
+            <inout_port name="initial_position"/>
+        </Action>
+    </TreeNodesModel>
+</root>
+

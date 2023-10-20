@@ -25,23 +25,25 @@ MONGODB_IPADDRESS = '127.0.0.1'
 MONGODB_PORTNUMBER = 27017
 
 
-task_id = 3
-
 class GUI_button(Node):
 
     def __init__(self):
         super().__init__('button_input_bt')
+
+        self.declare_parameter('task_id', 3)
+        self.task_id = self.get_parameter("task_id").get_parameter_value().integer_value
+
         self.publisher_ = self.create_publisher(String, '/task_sequence', 10)
         root = tk.Tk()
         root.title("CONTROL PANEL")
-        root.geometry("300x200")
-        button = tk.Button(root, text="demo_2024_3", command = self.button_click, width=20, height=10)
+        root.geometry("500x200")
+        button_txt = "task_id: " + str(self.task_id) + "\n" + "Execute the task corresponding to the specified task ID"
+        button = tk.Button(root, text="task_id :  " + str(self.task_id)+"\n" + "\n"+ "Execute the task corresponding to the specified task ID", command = self.button_click, width=50, height=8)
         button.pack()
         root.mainloop()
 
     # GUIボタンが押されたときに実行される関数
     def button_click(self):
-        print("Start the demo_2024_3 task")
         self.arg_data = {}
         self.search_task()
         if self._is_valid_taskid == True:
@@ -49,21 +51,21 @@ class GUI_button(Node):
             msg.data = self.task_sequence
             self.publisher_.publish(msg)
         else:
-            self.get_logger().error(f"Stop the Task Scheduler because of the invalid task ID({task_id})")
+            self.get_logger().error(f"Stop the Task Scheduler because of the invalid task ID({self.task_id})")
     
     # タスクIDに対応するタスクをTMS_DBから検索する関数
     def search_task(self):
         client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client['rostmsdb']
-        collection = db['default']
-        self.task_info = db.default.find_one({"task_id": task_id})
+        collection = db['task']
+        self.task_info = db.default.find_one({"task_id": self.task_id})
         if self.task_info != None:
             self._is_valid_taskid = True
             self.task_sequence = self.task_info["task_sequence"]
             self.set_parameters()
-            self.get_logger().info(f"Execute the task corresponding to the specified task ID({task_id})")
+            self.get_logger().info(f"Execute the task corresponding to the specified task ID({self.task_id})")
         else:
-            self.get_logger().info(f"The task corresponding to the specified task ID({task_id}) does not exist under the default collection in the rostmsdb database")
+            self.get_logger().info(f"The task corresponding to the specified task ID({self.task_id}) does not exist under the default collection in the rostmsdb database")
             self._is_valid_taskid = False
 
     # タスク列に動的にパラメータを埋め込むための関数
@@ -71,7 +73,7 @@ class GUI_button(Node):
         # 任意のパラメータ判別用記号(例: ${parameter})などをtask_sequenceの中に入れて、この部分を置き換えるプログラムを作成する
         client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client['rostmsdb']
-        collection = db['default']
+        collection = db['parameter']
         subtask_raw_list = re.findall(r'\$\[.*\]', self.task_sequence)
         if(len(subtask_raw_list) >= 1):
             for subtask_raw in subtask_raw_list:

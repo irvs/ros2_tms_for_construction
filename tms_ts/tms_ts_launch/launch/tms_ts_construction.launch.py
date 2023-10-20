@@ -13,20 +13,25 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-import launch_ros.actions
+from launch_ros.actions import Node
 
 def generate_launch_description():
       return LaunchDescription([
-            launch_ros.actions.Node(
-            package='tms_ts_subtask', executable='zx120_task_schedular_manager',
-            output='screen'),
-            launch_ros.actions.Node(
-            package='tms_ur_button_input', executable='tms_ur_button',
-            output='screen'),
-            launch_ros.actions.Node(
-            package='tms_sp_sensing', executable='tms_sp_zx120_end_effector',
-            output='screen'),
-            launch_ros.actions.Node(
-            package="tms_db_manager", executable="tms_db_reader_task",
-            output='screen'),
+            Node(
+                  package='tms_ts_subtask',
+                  executable='zx120_task_schedular_manager',
+                  output='screen'),
+            Node(
+                  package='tms_ur_button_input', 
+                  executable='tms_ur_button',
+                  output='screen', 
+                  parameters=[{"task_id": 2}]), # You must define task_id that you want to execute. Default task_id is 3.
+            Node(
+                  package='tms_sp_sensing', 
+                  executable='tms_sp_zx120_end_effector',
+                  output='screen'),
+            Node(
+                  package="tms_db_manager", 
+                  executable="tms_db_reader_task",
+                  output='screen'),
       ])

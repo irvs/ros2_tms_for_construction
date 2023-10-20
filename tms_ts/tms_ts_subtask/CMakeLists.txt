@@ -44,9 +44,13 @@ target_link_libraries(zx120_task_schedular_manager zx120_subtasks)
 ament_target_dependencies(zx120_task_schedular_manager ${dependencies_cpp})
 
 install(TARGETS
-  zx120_subtasks
   zx120_task_schedular_manager
   DESTINATION lib/${PROJECT_NAME}
+)
+
+install(TARGETS
+  zx120_subtasks
+  DESTINATION lib/
 )
 
 # -- end C++
