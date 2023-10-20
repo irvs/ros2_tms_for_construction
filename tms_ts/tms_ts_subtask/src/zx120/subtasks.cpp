@@ -26,12 +26,13 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
+#include "zx120/subtask_base_parts.hpp"
 #include "zx120/subtasks.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
 
-SubtaskControlZx120Boom::SubtaskControlZx120Boom(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config){
+SubtaskControlZx120Boom::SubtaskControlZx120Boom(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config), BaseClassZx120Subtasks(name){
     node_ = rclcpp::Node::make_shared("subtask_zx120_boom_sample");
     publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx120/boom/cmd",10);
   }
@@ -56,7 +57,7 @@ NodeStatus SubtaskControlZx120Boom::tick(){
 }
 
 
-SubtaskControlZx120Swing::SubtaskControlZx120Swing(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config){
+SubtaskControlZx120Swing::SubtaskControlZx120Swing(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config), BaseClassZx120Subtasks(name){
     node_ = rclcpp::Node::make_shared("subtask_zx120_swing_sample");
     publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx120/swing/cmd",10);
 }
@@ -80,7 +81,7 @@ PortsList SubtaskControlZx120Swing::providedPorts() { return { InputPort<float>(
 }
 
 
-SubtaskControlZx120Arm::SubtaskControlZx120Arm(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config){
+SubtaskControlZx120Arm::SubtaskControlZx120Arm(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config), BaseClassZx120Subtasks(name){
     node_ = rclcpp::Node::make_shared("subtask_zx120_arm_sample");
     publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx120/arm/cmd",10);
 }
@@ -104,7 +105,7 @@ NodeStatus SubtaskControlZx120Arm::tick(){
 }
 
 
-SubtaskControlZx120Bucket::SubtaskControlZx120Bucket(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config){
+SubtaskControlZx120Bucket::SubtaskControlZx120Bucket(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config), BaseClassZx120Subtasks(name){
     node_ = rclcpp::Node::make_shared("subtask_zx120_bucket_sample");
     publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx120/bucket/cmd",10);
   }
