@@ -33,12 +33,10 @@ using namespace std::chrono_literals;
 class BaseClassZx120Subtasks : public rclcpp::Node {
 public:
     BaseClassZx120Subtasks(const std::string& name);
-
-private:
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
     rclcpp::Node::SharedPtr node_;
 
-    virtual NodeStatus shutdown_node(const std_msgs::msg::String & msg) const;
+    NodeStatus shutdown_node(const std_msgs::msg::String & msg) const;
 };
 
 #endif

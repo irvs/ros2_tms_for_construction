@@ -15,9 +15,12 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from std_msgs.msg import Bool
 import tkinter as tk
 from pymongo import MongoClient
 import re
+import threading
+import time
 
 from rclpy.node import Node
 
@@ -32,15 +35,33 @@ class GUI_button(Node):
 
         self.declare_parameter('task_id', 3)
         self.task_id = self.get_parameter("task_id").get_parameter_value().integer_value
-
+        self.emergency_signal_publisher = self.create_publisher(String, '/emergency_signal', 10)
         self.publisher_ = self.create_publisher(String, '/task_sequence', 10)
         root = tk.Tk()
         root.title("CONTROL PANEL")
-        root.geometry("500x200")
-        button_txt = "task_id: " + str(self.task_id) + "\n" + "Execute the task corresponding to the specified task ID"
-        button = tk.Button(root, text="task_id :  " + str(self.task_id)+"\n" + "\n"+ "Execute the task corresponding to the specified task ID", command = self.button_click, width=50, height=8)
-        button.pack()
+        root.geometry("800x200")
+        self.emergency_button = tk.Button(root, text="EMERGENCY" + "\n" + "\n" + "Urgently stops a running task", command=self.emergency_button_click, width=50, height=8, bg="red")
+        self.emergency_button.pack(side="right")
+        self.ts_button = tk.Button(root, text="task_id :  " + str(self.task_id)+"\n" + "\n"+ "Execute the task corresponding to the specified task ID", command = self.button_click, width=50, height=8, bg="green")
+        self.ts_button.pack(side="right")
+        
         root.mainloop()
+
+    def emergency_button_click(self):
+        self.get_logger().info("EMERGENCY BUTTON CLICKED")
+        self.get_logger().info("Stop the Task Scheduler")
+        self.ts_button["state"] = "disabled"
+        self.ts_button.configure(bg="black")
+        self.emergency_thread = threading.Thread(target=self.pub_emergency_signal)
+        self.emergency_thread.start()
+
+    def pub_emergency_signal(self):
+        while True:
+            msg = String()
+            msg.data = "EMERGENCY"
+            self.emergency_signal_publisher.publish(msg)
+            time.sleep(0.01)
+
 
     # GUIボタンが押されたときに実行される関数
     def button_click(self):
