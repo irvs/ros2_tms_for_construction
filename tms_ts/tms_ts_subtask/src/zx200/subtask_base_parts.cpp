@@ -31,14 +31,14 @@ using std::placeholders::_1;
 using namespace BT;
 using namespace std::chrono_literals;
 
-#include "zx120/subtask_base_parts.hpp"
+#include "zx200/subtask_base_parts.hpp"
 
-BaseClassZx120Subtasks::BaseClassZx120Subtasks(const std::string& name) : rclcpp::Node(name){
+BaseClassZx200Subtasks::BaseClassZx200Subtasks(const std::string& name) : rclcpp::Node(name){
     subscription_ = this->create_subscription<std_msgs::msg::String>(
-        "topic", 10, std::bind(&BaseClassZx120Subtasks::shutdown_node, this, _1));
+        "topic", 10, std::bind(&BaseClassZx200Subtasks::shutdown_node, this, _1));
 }
 
-NodeStatus BaseClassZx120Subtasks::shutdown_node(const std_msgs::msg::String & msg) const {
+NodeStatus BaseClassZx200Subtasks::shutdown_node(const std_msgs::msg::String & msg) const {
     RCLCPP_INFO_STREAM(node_->get_logger(), "shutdown process is occured !");
     return NodeStatus::FAILURE;
 }

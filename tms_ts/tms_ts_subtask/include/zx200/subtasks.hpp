@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ZX120_SUBTASKS_HPP_
-#define ZX120_SUBTASKS_HPP_
+#ifndef ZX200_SUBTASKS_HPP_
+#define ZX200_SUBTASKS_HPP_
 
 #include <chrono>
 #include <functional>
@@ -28,14 +28,14 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-#include "zx120/subtask_base_parts.hpp"
+#include "zx200/subtask_base_parts.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
 
-class SubtaskControlZx120Boom : public SyncActionNode, public BaseClassZx120Subtasks {
+class SubtaskControlZx200Boom : public SyncActionNode, public BaseClassZx200Subtasks {
 public:
-  SubtaskControlZx120Boom(const std::string& name, const NodeConfiguration& config);
+  SubtaskControlZx200Boom(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
   NodeStatus tick() override;
 private:
@@ -46,9 +46,9 @@ private:
 };
 
 
-class SubtaskControlZx120Swing : public SyncActionNode, public BaseClassZx120Subtasks {
+class SubtaskControlZx200Swing : public SyncActionNode, public BaseClassZx200Subtasks {
 public:
-  SubtaskControlZx120Swing(const std::string& name, const NodeConfiguration& config);
+  SubtaskControlZx200Swing(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
   NodeStatus tick() override;
 private:
@@ -59,9 +59,9 @@ private:
 };
 
 
-class SubtaskControlZx120Arm : public SyncActionNode, public BaseClassZx120Subtasks {
+class SubtaskControlZx200Arm : public SyncActionNode, public BaseClassZx200Subtasks {
 public:
-  SubtaskControlZx120Arm(const std::string& name, const NodeConfiguration& config);
+  SubtaskControlZx200Arm(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
   NodeStatus tick() override;
 private:
@@ -73,9 +73,9 @@ private:
 
 
 
-class SubtaskControlZx120Bucket : public SyncActionNode, public BaseClassZx120Subtasks {
+class SubtaskControlZx200Bucket : public SyncActionNode, public BaseClassZx200Subtasks {
 public:
-  SubtaskControlZx120Bucket(const std::string& name, const NodeConfiguration& config);
+  SubtaskControlZx200Bucket(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
   NodeStatus tick() override;
 private:

@@ -33,6 +33,7 @@ set(dependencies_cpp
   nav2_msgs
   rclpy)
 
+
 # ic120
 add_library(ic120_subtask_base_parts  SHARED src/ic120/subtask_base_parts.cpp)
 target_include_directories(ic120_subtask_base_parts PUBLIC include)
@@ -40,7 +41,7 @@ ament_target_dependencies(ic120_subtask_base_parts ${dependencies_cpp})
 
 add_library(ic120_subtasks SHARED src/ic120/subtasks.cpp)
 target_include_directories(ic120_subtasks PUBLIC include)
-target_link_libraries(zx120_subtasks ic120_subtask_base_parts)
+target_link_libraries(ic120_subtasks ic120_subtask_base_parts)
 ament_target_dependencies(ic120_subtasks ${dependencies_cpp})
 
 add_executable(ic120_task_schedular_manager src/ic120/task_schedular_manager.cpp)
@@ -75,7 +76,7 @@ ament_target_dependencies(zx200_subtasks ${dependencies_cpp})
 
 add_executable(zx200_task_schedular_manager src/zx200/task_schedular_manager.cpp)
 target_include_directories(zx200_task_schedular_manager PUBLIC include)
-target_link_libraries(zx200_task_schedular_manager zx120_subtasks)
+target_link_libraries(zx200_task_schedular_manager zx200_subtasks)
 ament_target_dependencies(zx200_task_schedular_manager ${dependencies_cpp})
 
 
@@ -87,7 +88,12 @@ install(TARGETS
 )
 
 install(TARGETS
+  ic120_subtasks
+  ic120_subtask_base_parts
   zx120_subtasks
+  zx120_subtask_base_parts
+  zx200_subtasks
+  zx200_subtask_base_parts
   DESTINATION lib/
 )
 
