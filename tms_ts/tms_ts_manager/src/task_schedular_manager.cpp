@@ -26,7 +26,7 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
-#include "zx200/subtasks.hpp"
+#include "zx120/subtasks.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -36,10 +36,10 @@ public:
   ExecTaskSequence() : Node("exec_task_sequence"){
     std::string task_sequence;
     subscription_ = this->create_subscription<std_msgs::msg::String>("/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
-    factory.registerNodeType<SubtaskControlZx200Boom>("SubtaskControlZx200Boom");
-    factory.registerNodeType<SubtaskControlZx200Swing>("SubtaskControlZx200Swing");
-    factory.registerNodeType<SubtaskControlZx200Arm>("SubtaskControlZx200Arm");
-    factory.registerNodeType<SubtaskControlZx200Bucket>("SubtaskControlZx200Bucket");
+    factory.registerNodeType<SubtaskControlZx120Boom>("SubtaskControlZx120Boom");
+    factory.registerNodeType<SubtaskControlZx120Swing>("SubtaskControlZx120Swing");
+    factory.registerNodeType<SubtaskControlZx120Arm>("SubtaskControlZx120Arm");
+    factory.registerNodeType<SubtaskControlZx120Bucket>("SubtaskControlZx120Bucket");
     
   }
   void topic_callback(const std_msgs::msg::String::SharedPtr msg){

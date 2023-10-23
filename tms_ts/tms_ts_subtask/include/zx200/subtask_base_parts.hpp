@@ -9,8 +9,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ZX120_BASE_CLASS_SUBTASKS_HPP
-#define ZX120_BASE_CLASS_SUBTASKS_HPP
+#ifndef ZX200_BASE_CLASS_SUBTASKS_HPP
+#define ZX200_BASE_CLASS_SUBTASKS_HPP
 
 #include <chrono>
 #include <functional>
@@ -30,9 +30,9 @@ using std::placeholders::_1;
 using namespace BT;
 using namespace std::chrono_literals;
 
-class BaseClassZx120Subtasks : public rclcpp::Node {
+class BaseClassZx200Subtasks : public rclcpp::Node {
 public:
-    BaseClassZx120Subtasks(const std::string& name);
+    BaseClassZx200Subtasks(const std::string& name);
 
 private:
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
