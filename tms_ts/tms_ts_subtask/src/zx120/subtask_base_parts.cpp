@@ -33,15 +33,14 @@ using namespace std::chrono_literals;
 
 #include "zx120/subtask_base_parts.hpp"
 
-BaseClassZx120Subtasks::BaseClassZx120Subtasks(const std::string& name) : rclcpp::Node(name){
-    std::cout << "------------------" << std::endl;
-    subscription_ = this->create_subscription<std_msgs::msg::String>(
-        "/emergency_signal", 10, std::bind(&BaseClassZx120Subtasks::shutdown_node, this, _1));
+BaseClassZx120Subtasks::BaseClassZx120Subtasks(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config){
+    node_ = rclcpp::Node::make_shared(name);
+    std::cout << "subscriber is activating" << std::endl;
+    // subscription_ = node_->create_subscription<std_msgs::msg::String>(
+    //     "/emergency_signal", 10, std::bind(&BaseClassZx120Subtasks::shutdown_node, this, _1));
 }
 
-NodeStatus BaseClassZx120Subtasks::shutdown_node(const std_msgs::msg::String & msg) const {
-    std::cout << "&&&&&&&&&&&&&&&&&&&&&&&" << std::endl;
-    // RCLCPP_INFO_STREAM(node_->get_logger(), "shutdown process is occured !");
-    return NodeStatus::FAILURE;
+void BaseClassZx120Subtasks::shutdown_node(const std_msgs::msg::String & msg) const {
+    RCLCPP_INFO_STREAM(node_->get_logger(), "shutdown process is occured !");
 }
 

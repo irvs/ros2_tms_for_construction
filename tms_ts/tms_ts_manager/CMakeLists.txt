@@ -35,9 +35,8 @@ set(dependencies
   rclpy
   tms_ts_subtask)
 
-# add_executable(task_schedular_manager src/task_schedular_manager.cpp)
-# target_include_directories(task_schedular_manager PUBLIC include)
-# ament_target_dependencies(task_schedular_manager ${dependencies})
+add_executable(task_schedular_manager src/task_schedular_manager.cpp)
+ament_target_dependencies(task_schedular_manager ${dependencies})
 
 install(TARGETS
   # task_schedular_manager
