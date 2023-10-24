@@ -33,7 +33,7 @@
 using namespace BT;
 using namespace std::chrono_literals;
 
-class SubtaskControlZx120Boom : public SyncActionNode, public BaseClassZx120Subtasks {
+class SubtaskControlZx120Boom : public BaseClassZx120Subtasks {
 public:
   SubtaskControlZx120Boom(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
@@ -46,7 +46,7 @@ private:
 };
 
 
-class SubtaskControlZx120Swing : public SyncActionNode, public BaseClassZx120Subtasks {
+class SubtaskControlZx120Swing : public BaseClassZx120Subtasks {
 public:
   SubtaskControlZx120Swing(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
@@ -59,7 +59,7 @@ private:
 };
 
 
-class SubtaskControlZx120Arm : public SyncActionNode, public BaseClassZx120Subtasks {
+class SubtaskControlZx120Arm : public BaseClassZx120Subtasks {
 public:
   SubtaskControlZx120Arm(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
@@ -73,7 +73,7 @@ private:
 
 
 
-class SubtaskControlZx120Bucket : public SyncActionNode, public BaseClassZx120Subtasks {
+class SubtaskControlZx120Bucket : public BaseClassZx120Subtasks {
 public:
   SubtaskControlZx120Bucket(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
