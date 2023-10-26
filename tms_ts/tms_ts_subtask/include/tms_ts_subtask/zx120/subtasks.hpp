@@ -28,7 +28,7 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-#include "zx120/subtask_base_parts.hpp"
+#include "tms_ts_subtask/zx120/subtask_base_parts.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -39,7 +39,6 @@ public:
   static PortsList providedPorts();
   NodeStatus tick() override;
 private:
-  rclcpp::Node::SharedPtr node_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
   std_msgs::msg::Float64 msg_initial_position, msg_goal_position, msg_rad;
   float deg, radian;
@@ -52,7 +51,6 @@ public:
   static PortsList providedPorts();
   NodeStatus tick() override;
 private:
-  rclcpp::Node::SharedPtr node_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
   std_msgs::msg::Float64 msg_initial_position, msg_goal_position, msg_rad;
   float deg, radian;
@@ -65,7 +63,6 @@ public:
   static PortsList providedPorts();
   NodeStatus tick() override;
 private:
-  rclcpp::Node::SharedPtr node_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
   std_msgs::msg::Float64 msg_initial_position, msg_goal_position, msg_rad;
   float deg, radian;
@@ -79,7 +76,6 @@ public:
   static PortsList providedPorts();
   NodeStatus tick() override;
 private:
-  rclcpp::Node::SharedPtr node_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
   std_msgs::msg::Float64 msg_initial_position, msg_goal_position, msg_rad;
   float deg, radian;

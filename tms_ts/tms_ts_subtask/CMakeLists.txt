@@ -97,6 +97,10 @@ install(TARGETS
   DESTINATION lib/
 )
 
+install(DIRECTORY include/
+  DESTINATION include/
+)
+
 # -- end C++
 
 # -- for Python
@@ -123,5 +127,5 @@ install(DIRECTORY include config
   DESTINATION share/${PROJECT_NAME}
 )
 
-
+ament_export_include_directories(include)
 ament_package()
