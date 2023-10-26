@@ -36,8 +36,7 @@ public:
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
     rclcpp::Node::SharedPtr node_;
 
-    // NodeStatus shutdown_node(const std_msgs::msg::String & msg) const;
-    void shutdown_node(const std_msgs::msg::String & msg) const;
+    NodeStatus shutdown_node(const std_msgs::msg::String & msg) const;
 };
 
 #endif
