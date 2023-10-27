@@ -34,9 +34,8 @@ set(dependencies_cpp
   rclpy)
 
 add_library(${PROJECT_NAME} SHARED
-  src/zx120/subtask_base_parts.cpp
+  src/subtask_base.cpp
   src/zx120/subtasks.cpp
-  src/zx200/subtask_base_parts.cpp
   src/zx200/subtasks.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC

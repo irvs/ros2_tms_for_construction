@@ -31,15 +31,15 @@ using std::placeholders::_1;
 using namespace BT;
 using namespace std::chrono_literals;
 
-#include "tms_ts_subtask/zx120/subtask_base_parts.hpp"
+#include "tms_ts_subtask/subtask_base.hpp"
 
-BaseClassZx120Subtasks::BaseClassZx120Subtasks(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config){
+BaseClassSubtasks::BaseClassSubtasks(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config){
     node_ = rclcpp::Node::make_shared(name);
     subscription_ = node_->create_subscription<std_msgs::msg::String>(
-        "/emergency_signal", 10, std::bind(&BaseClassZx120Subtasks::shutdown_node, this, _1));
+        "/emergency_signal", 10, std::bind(&BaseClassSubtasks::shutdown_node, this, _1));
 }
 
-NodeStatus BaseClassZx120Subtasks::shutdown_node(const std_msgs::msg::String & msg) const {
+NodeStatus BaseClassSubtasks::shutdown_node(const std_msgs::msg::String & msg) const {
     RCLCPP_INFO_STREAM(node_->get_logger(), "shutdown process is occured !");
     return NodeStatus::FAILURE;
 }
