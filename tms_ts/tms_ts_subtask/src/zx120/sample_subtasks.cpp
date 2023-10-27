@@ -27,17 +27,17 @@
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
 #include "tms_ts_subtask/subtask_base.hpp"
-#include "tms_ts_subtask/zx200/subtasks.hpp"
+#include "tms_ts_subtask/zx120/sample_subtasks.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
 
-SubtaskControlZx200Boom::SubtaskControlZx200Boom(const std::string& name, const NodeConfiguration& config) : BaseClassSubtasks("subtask_zx200_boom_sample", config){
-    publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx200/boom/cmd",10);
+SubtaskControlZx120Boom::SubtaskControlZx120Boom(const std::string& name, const NodeConfiguration& config) : BaseClassSubtasks("subtask_zx120_boom_sample", config){
+    publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx120/boom/cmd",10);
   }
 
-PortsList SubtaskControlZx200Boom::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
-NodeStatus SubtaskControlZx200Boom::tick(){
+PortsList SubtaskControlZx120Boom::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
+NodeStatus SubtaskControlZx120Boom::tick(){
   Optional<float> initial_position = getInput<float>("initial_position");
   Optional<float> goal_position = getInput<float>("goal_position");
   RCLCPP_INFO_STREAM(node_->get_logger(),"Boom joint : initial_position: " << initial_position.value() << "   "<< "goal_position: " << goal_position.value());
@@ -56,11 +56,11 @@ NodeStatus SubtaskControlZx200Boom::tick(){
 }
 
 
-SubtaskControlZx200Swing::SubtaskControlZx200Swing(const std::string& name, const NodeConfiguration& config) : BaseClassSubtasks("subtask_zx200_swing_sample", config){
-    publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx200/swing/cmd",10);
+SubtaskControlZx120Swing::SubtaskControlZx120Swing(const std::string& name, const NodeConfiguration& config) : BaseClassSubtasks("subtask_zx120_swing_sample", config){
+    publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx120/swing/cmd",10);
 }
-PortsList SubtaskControlZx200Swing::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
-  NodeStatus SubtaskControlZx200Swing::tick(){
+PortsList SubtaskControlZx120Swing::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
+  NodeStatus SubtaskControlZx120Swing::tick(){
     Optional<float> initial_position = getInput<float>("initial_position"); // max:continuous 
     Optional<float> goal_position = getInput<float>("goal_position"); // min:continuous
     RCLCPP_INFO_STREAM(node_->get_logger(),"Swing joint : initial_position: " << initial_position.value() << "   "<< "goal_position: " << goal_position.value());
@@ -79,11 +79,11 @@ PortsList SubtaskControlZx200Swing::providedPorts() { return { InputPort<float>(
 }
 
 
-SubtaskControlZx200Arm::SubtaskControlZx200Arm(const std::string& name, const NodeConfiguration& config) : BaseClassSubtasks("subtask_zx200_arm_sample", config){
-    publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx200/arm/cmd",10);
+SubtaskControlZx120Arm::SubtaskControlZx120Arm(const std::string& name, const NodeConfiguration& config) : BaseClassSubtasks("subtask_zx120_arm_sample", config){
+    publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx120/arm/cmd",10);
 }
-PortsList SubtaskControlZx200Arm::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
-NodeStatus SubtaskControlZx200Arm::tick(){
+PortsList SubtaskControlZx120Arm::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
+NodeStatus SubtaskControlZx120Arm::tick(){
   Optional<float> initial_position = getInput<float>("initial_position");  // min:30[deg]
   Optional<float> goal_position = getInput<float>("goal_position"); // max:152[deg]
   RCLCPP_INFO_STREAM(node_->get_logger(),"Arm joint : initial_position: " << initial_position.value() << "   "<< "goal_position: " << goal_position.value());
@@ -102,11 +102,11 @@ NodeStatus SubtaskControlZx200Arm::tick(){
 }
 
 
-SubtaskControlZx200Bucket::SubtaskControlZx200Bucket(const std::string& name, const NodeConfiguration& config) : BaseClassSubtasks("subtask_zx200_bucket_sample", config){
-    publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx200/bucket/cmd",10);
+SubtaskControlZx120Bucket::SubtaskControlZx120Bucket(const std::string& name, const NodeConfiguration& config) : BaseClassSubtasks("subtask_zx120_bucket_sample", config){
+    publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx120/bucket/cmd",10);
   }
-PortsList SubtaskControlZx200Bucket::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
-NodeStatus SubtaskControlZx200Bucket::tick(){
+PortsList SubtaskControlZx120Bucket::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
+NodeStatus SubtaskControlZx120Bucket::tick(){
     Optional<float> initial_position = getInput<float>("initial_position"); // min:-33[deg]
     Optional<float> goal_position = getInput<float>("goal_position"); // max:143[deg]
     RCLCPP_INFO_STREAM(node_->get_logger(),"Bucket joint : initial_position: " << initial_position.value() << "   "<< "goal_position: " << goal_position.value());
