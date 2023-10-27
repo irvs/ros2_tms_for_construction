@@ -23,16 +23,16 @@ def generate_launch_description():
     return LaunchDescription([
 
         Node(
-            package="tms_ts_subtask",
-            executable="task_generator_from_task_sequence.py",
+            package="tms_ts_manager",
+            executable="task_generator.py",
             name="task_generator_from_task_sequence",
             output='screen',
             parameters=[{
-                'bt_tree_xml_file_name':'sample_construction_tree_parallel', # You must put the source xml file in tms_ts/tms_ts_subtask/config.
+                'bt_tree_xml_file_name':'sample_construction_tree_zx120_zx200', # You must put the source xml file in tms_ts/tms_ts_subtask/config.
                 "output_text_file_directory_path": tms_ts_subtask_package_dir + '/config',
                 "output_file_name":'task_sequence',
-                'output_txt_file':True,
-                'model_name':'zx120', # You must define construction machinery model name(zx120, zx200, ic120).
+                'output_txt_file':False,
+                'model_name':'zx120, zx200', # You must define construction machinery model name(zx120, zx200, ic120).
                 'description': 'No commented ...'} # Please define task description.
             ],
         ),

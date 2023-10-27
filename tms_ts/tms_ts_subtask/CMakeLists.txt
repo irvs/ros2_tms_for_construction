@@ -20,7 +20,6 @@ find_package(nav2_msgs REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 
-# -- for C++
 
 set(dependencies_cpp
   rclcpp
@@ -35,8 +34,8 @@ set(dependencies_cpp
 
 add_library(${PROJECT_NAME} SHARED
   src/subtask_base.cpp
-  src/zx120/subtasks.cpp
-  src/zx200/subtasks.cpp)
+  src/zx120/sample_subtasks.cpp
+  src/zx200/sample_subtasks.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -44,36 +43,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
 
-# -- end C++
-
-# -- for Python
-
-set(dependencies_py
-  rclpy
-  ament_cmake_python
-  rclpy_action
-  geometry_msgs
-  nav2_msgs
-  ament_cmake_python)
-
-ament_python_install_package(scripts)
-
-install(PROGRAMS
-  scripts/task_generator.py
-  scripts/task_remover.py
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-# -- end Python
-
 install(DIRECTORY include/
   DESTINATION include/
 )
-
-install(DIRECTORY config
-  DESTINATION share/${PROJECT_NAME}
-)
-
 
 install(
   TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}

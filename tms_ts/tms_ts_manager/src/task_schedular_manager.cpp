@@ -26,10 +26,9 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
-#include "tms_ts_subtask/zx120/subtask_base_parts.hpp"
-#include "tms_ts_subtask/zx120/subtasks.hpp"
-#include "tms_ts_subtask/zx200/subtask_base_parts.hpp"
-#include "tms_ts_subtask/zx200/subtasks.hpp"
+#include "tms_ts_subtask/subtask_base.hpp"
+#include "tms_ts_subtask/zx120/sample_subtasks.hpp"
+#include "tms_ts_subtask/zx200/sample_subtasks.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -39,6 +38,8 @@ public:
   ExecTaskSequence() : Node("exec_task_sequence"){
     std::string task_sequence;
     subscription_ = this->create_subscription<std_msgs::msg::String>("/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
+    // ic120
+    
     // zx120
     factory.registerNodeType<SubtaskControlZx120Boom>("SubtaskControlZx120Boom");
     factory.registerNodeType<SubtaskControlZx120Swing>("SubtaskControlZx120Swing");

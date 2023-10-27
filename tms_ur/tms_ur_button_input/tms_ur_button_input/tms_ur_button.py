@@ -79,7 +79,7 @@ class GUI_button(Node):
         client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client['rostmsdb']
         collection = db['task']
-        self.task_info = db.default.find_one({"task_id": self.task_id})
+        self.task_info = collection.find_one({"task_id": self.task_id})
         if self.task_info != None:
             self._is_valid_taskid = True
             self.task_sequence = self.task_info["task_sequence"]
@@ -105,7 +105,7 @@ class GUI_button(Node):
                 parameter_tag = subtask_raw.split(":")
                 parameter_id_tag = int(parameter_tag[0])
                 parameter_value_tag = str(parameter_tag[1])
-                self.parameter_info = db.default.find_one({"parameter_id": parameter_id_tag})
+                self.parameter_info = collection.find_one({"parameter_id": parameter_id_tag})
                 self.parameter_value = self.parameter_info[parameter_value_tag]
                 # self.get_logger().info(f"subtask_raw {subtask_raw}")
                 # self.get_logger().info(f"parameter_value {self.parameter_value}")

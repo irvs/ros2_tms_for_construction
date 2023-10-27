@@ -16,6 +16,24 @@
             <inout_port name="goal_position"/>
             <inout_port name="initial_position"/>
         </Action>
+
+
+        <Action ID="SubtaskControlZx200Arm">
+            <input_port name="goal_position"/>
+            <inout_port name="intial_position"/>
+        </Action>
+        <Action ID="SubtaskControlZx200Boom">
+            <input_port name="export_position"/>
+            <inout_port name="initial_position"/>
+        </Action>
+        <Action ID="SubtaskControlZx200Bucket">
+            <inout_port name="goal_position"/>
+            <inout_port name="iniitial_position"/>
+        </Action>
+        <Action ID="SubtaskControlZx200Swing">
+            <inout_port name="goal_position"/>
+            <inout_port name="initial_position"/>
+        </Action>
     </TreeNodesModel>
 </root>
 

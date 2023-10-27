@@ -7,7 +7,7 @@ from ament_index_python.packages import get_package_share_directory
 import xml.etree.ElementTree as ET
 import re
 
-package_name = 'tms_ts_subtask'
+package_name = 'tms_ts_manager'
 
 MONGODB_IPADDRESS = '127.0.0.1'
 MONGODB_PORTNUMBER = 27017
@@ -41,6 +41,7 @@ class TaskGenerator(Node):
 
         self.output_file_path = output_text_file_directory + "/" + output_file_name + '.txt'
         self.xml_file_path = tms_ts_subtask_package_directory + '/config/' + self.xml_file_name + '.xml'
+        self.get_logger().info(f"xml_file_path: {self.xml_file_path}")
 
         self.format_task_sequnece()
         if self.output_txt_file == True:
