@@ -30,15 +30,13 @@ using std::placeholders::_1;
 using namespace BT;
 using namespace std::chrono_literals;
 
-class BaseClassZx200Subtasks : public rclcpp::Node {
+class BaseClassZx200Subtasks : public SyncActionNode{
 public:
-    BaseClassZx200Subtasks(const std::string& name);
-
-private:
+    BaseClassZx200Subtasks(const std::string& name, const NodeConfiguration& config);
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
     rclcpp::Node::SharedPtr node_;
 
-    virtual NodeStatus shutdown_node(const std_msgs::msg::String & msg) const;
+    NodeStatus shutdown_node(const std_msgs::msg::String & msg) const;
 };
 
 #endif

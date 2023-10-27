@@ -26,14 +26,13 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
-#include "zx200/subtask_base_parts.hpp"
-#include "zx200/subtasks.hpp"
+#include "tms_ts_subtask/zx200/subtask_base_parts.hpp"
+#include "tms_ts_subtask/zx200/subtasks.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
 
-SubtaskControlZx200Boom::SubtaskControlZx200Boom(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config), BaseClassZx200Subtasks(name){
-    node_ = rclcpp::Node::make_shared("subtask_zx200_boom_sample");
+SubtaskControlZx200Boom::SubtaskControlZx200Boom(const std::string& name, const NodeConfiguration& config) : BaseClassZx200Subtasks("subtask_zx200_boom_sample", config){
     publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx200/boom/cmd",10);
   }
 
@@ -57,8 +56,7 @@ NodeStatus SubtaskControlZx200Boom::tick(){
 }
 
 
-SubtaskControlZx200Swing::SubtaskControlZx200Swing(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config), BaseClassZx200Subtasks(name){
-    node_ = rclcpp::Node::make_shared("subtask_zx200_swing_sample");
+SubtaskControlZx200Swing::SubtaskControlZx200Swing(const std::string& name, const NodeConfiguration& config) : BaseClassZx200Subtasks("subtask_zx200_swing_sample", config){
     publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx200/swing/cmd",10);
 }
 PortsList SubtaskControlZx200Swing::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
@@ -81,8 +79,7 @@ PortsList SubtaskControlZx200Swing::providedPorts() { return { InputPort<float>(
 }
 
 
-SubtaskControlZx200Arm::SubtaskControlZx200Arm(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config), BaseClassZx200Subtasks(name){
-    node_ = rclcpp::Node::make_shared("subtask_zx200_arm_sample");
+SubtaskControlZx200Arm::SubtaskControlZx200Arm(const std::string& name, const NodeConfiguration& config) : BaseClassZx200Subtasks("subtask_zx200_arm_sample", config){
     publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx200/arm/cmd",10);
 }
 PortsList SubtaskControlZx200Arm::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
@@ -105,8 +102,7 @@ NodeStatus SubtaskControlZx200Arm::tick(){
 }
 
 
-SubtaskControlZx200Bucket::SubtaskControlZx200Bucket(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config), BaseClassZx200Subtasks(name){
-    node_ = rclcpp::Node::make_shared("subtask_zx200_bucket_sample");
+SubtaskControlZx200Bucket::SubtaskControlZx200Bucket(const std::string& name, const NodeConfiguration& config) : BaseClassZx200Subtasks("subtask_zx200_bucket_sample", config){
     publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx200/bucket/cmd",10);
   }
 PortsList SubtaskControlZx200Bucket::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }

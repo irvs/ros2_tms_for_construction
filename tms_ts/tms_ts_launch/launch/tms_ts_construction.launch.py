@@ -18,8 +18,8 @@ from launch_ros.actions import Node
 def generate_launch_description():
       return LaunchDescription([
             Node(
-                  package='tms_ts_subtask',
-                  executable='zx120_task_schedular_manager',
+                  package='tms_ts_manager',
+                  executable='task_schedular_manager',
                   output='screen'),
             Node(
                   package='tms_ur_button_input', 

@@ -36,11 +36,10 @@ set(dependencies
   tms_ts_subtask)
 
 add_executable(task_schedular_manager src/task_schedular_manager.cpp)
-target_link_libraries(task_schedular_manager zx120_subtasks)
 ament_target_dependencies(task_schedular_manager ${dependencies})
 
 install(TARGETS
-  # task_schedular_manager
+  task_schedular_manager
   DESTINATION lib/${PROJECT_NAME}
 )
 

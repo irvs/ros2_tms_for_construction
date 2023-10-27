@@ -28,6 +28,8 @@
 
 #include "tms_ts_subtask/zx120/subtask_base_parts.hpp"
 #include "tms_ts_subtask/zx120/subtasks.hpp"
+#include "tms_ts_subtask/zx200/subtask_base_parts.hpp"
+#include "tms_ts_subtask/zx200/subtasks.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -37,10 +39,16 @@ public:
   ExecTaskSequence() : Node("exec_task_sequence"){
     std::string task_sequence;
     subscription_ = this->create_subscription<std_msgs::msg::String>("/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
+    // zx120
     factory.registerNodeType<SubtaskControlZx120Boom>("SubtaskControlZx120Boom");
     factory.registerNodeType<SubtaskControlZx120Swing>("SubtaskControlZx120Swing");
     factory.registerNodeType<SubtaskControlZx120Arm>("SubtaskControlZx120Arm");
     factory.registerNodeType<SubtaskControlZx120Bucket>("SubtaskControlZx120Bucket");
+    // zx200
+    factory.registerNodeType<SubtaskControlZx200Boom>("SubtaskControlZx200Boom");
+    factory.registerNodeType<SubtaskControlZx200Swing>("SubtaskControlZx200Swing");
+    factory.registerNodeType<SubtaskControlZx200Arm>("SubtaskControlZx200Arm");
+    factory.registerNodeType<SubtaskControlZx200Bucket>("SubtaskControlZx200Bucket");
     
   }
   void topic_callback(const std_msgs::msg::String::SharedPtr msg){
