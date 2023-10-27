@@ -28,44 +28,41 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-#include "zx120/subtask_base_parts.hpp"
+#include "tms_ts_subtask/zx120/subtask_base_parts.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
 
-class SubtaskControlZx120Boom : public SyncActionNode, public BaseClassZx120Subtasks {
+class SubtaskControlZx120Boom : public BaseClassZx120Subtasks {
 public:
   SubtaskControlZx120Boom(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
   NodeStatus tick() override;
 private:
-  rclcpp::Node::SharedPtr node_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
   std_msgs::msg::Float64 msg_initial_position, msg_goal_position, msg_rad;
   float deg, radian;
 };
 
 
-class SubtaskControlZx120Swing : public SyncActionNode, public BaseClassZx120Subtasks {
+class SubtaskControlZx120Swing : public BaseClassZx120Subtasks {
 public:
   SubtaskControlZx120Swing(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
   NodeStatus tick() override;
 private:
-  rclcpp::Node::SharedPtr node_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
   std_msgs::msg::Float64 msg_initial_position, msg_goal_position, msg_rad;
   float deg, radian;
 };
 
 
-class SubtaskControlZx120Arm : public SyncActionNode, public BaseClassZx120Subtasks {
+class SubtaskControlZx120Arm : public BaseClassZx120Subtasks {
 public:
   SubtaskControlZx120Arm(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
   NodeStatus tick() override;
 private:
-  rclcpp::Node::SharedPtr node_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
   std_msgs::msg::Float64 msg_initial_position, msg_goal_position, msg_rad;
   float deg, radian;
@@ -73,13 +70,12 @@ private:
 
 
 
-class SubtaskControlZx120Bucket : public SyncActionNode, public BaseClassZx120Subtasks {
+class SubtaskControlZx120Bucket : public BaseClassZx120Subtasks {
 public:
   SubtaskControlZx120Bucket(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
   NodeStatus tick() override;
 private:
-  rclcpp::Node::SharedPtr node_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
   std_msgs::msg::Float64 msg_initial_position, msg_goal_position, msg_rad;
   float deg, radian;
