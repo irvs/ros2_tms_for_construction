@@ -28,12 +28,12 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-#include "tms_ts_subtask/zx120/subtask_base_parts.hpp"
+#include "tms_ts_subtask/subtask_base.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
 
-class SubtaskControlZx120Boom : public BaseClassZx120Subtasks {
+class SubtaskControlZx120Boom : public BaseClassSubtasks {
 public:
   SubtaskControlZx120Boom(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
@@ -45,7 +45,7 @@ private:
 };
 
 
-class SubtaskControlZx120Swing : public BaseClassZx120Subtasks {
+class SubtaskControlZx120Swing : public BaseClassSubtasks {
 public:
   SubtaskControlZx120Swing(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
@@ -57,7 +57,7 @@ private:
 };
 
 
-class SubtaskControlZx120Arm : public BaseClassZx120Subtasks {
+class SubtaskControlZx120Arm : public BaseClassSubtasks {
 public:
   SubtaskControlZx120Arm(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
@@ -70,7 +70,7 @@ private:
 
 
 
-class SubtaskControlZx120Bucket : public BaseClassZx120Subtasks {
+class SubtaskControlZx120Bucket : public BaseClassSubtasks {
 public:
   SubtaskControlZx120Bucket(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();

@@ -32,7 +32,7 @@ using namespace std::chrono_literals;
 
 class BaseClassSubtasks : public SyncActionNode{
 public:
-    BaseClassZx120Subtasks(const std::string& name, const NodeConfiguration& config);
+    BaseClassSubtasks(const std::string& name, const NodeConfiguration& config);
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
     rclcpp::Node::SharedPtr node_;
 
