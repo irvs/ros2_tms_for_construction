@@ -15,9 +15,12 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from std_msgs.msg import Bool
 import tkinter as tk
 from pymongo import MongoClient
 import re
+import threading
+import time
 
 from rclpy.node import Node
 
@@ -25,23 +28,43 @@ MONGODB_IPADDRESS = '127.0.0.1'
 MONGODB_PORTNUMBER = 27017
 
 
-task_id = 3
-
 class GUI_button(Node):
 
     def __init__(self):
         super().__init__('button_input_bt')
+
+        self.declare_parameter('task_id', 3)
+        self.task_id = self.get_parameter("task_id").get_parameter_value().integer_value
+        self.emergency_signal_publisher = self.create_publisher(String, '/emergency_signal', 10)
         self.publisher_ = self.create_publisher(String, '/task_sequence', 10)
         root = tk.Tk()
         root.title("CONTROL PANEL")
-        root.geometry("300x200")
-        button = tk.Button(root, text="demo_2024_3", command = self.button_click, width=20, height=10)
-        button.pack()
+        root.geometry("800x200")
+        self.emergency_button = tk.Button(root, text="EMERGENCY" + "\n" + "\n" + "Urgently stops a running task", command=self.emergency_button_click, width=50, height=8, bg="red")
+        self.emergency_button.pack(side="right")
+        self.ts_button = tk.Button(root, text="task_id :  " + str(self.task_id)+"\n" + "\n"+ "Execute the task corresponding to the specified task ID", command = self.button_click, width=50, height=8, bg="green")
+        self.ts_button.pack(side="right")
+        
         root.mainloop()
+
+    def emergency_button_click(self):
+        self.get_logger().info("EMERGENCY BUTTON CLICKED")
+        self.get_logger().info("Stop the Task Scheduler")
+        self.ts_button["state"] = "disabled"
+        self.ts_button.configure(bg="black")
+        self.emergency_thread = threading.Thread(target=self.pub_emergency_signal)
+        self.emergency_thread.start()
+
+    def pub_emergency_signal(self):
+        while True:
+            msg = String()
+            msg.data = "EMERGENCY"
+            self.emergency_signal_publisher.publish(msg)
+            time.sleep(0.01)
+
 
     # GUIボタンが押されたときに実行される関数
     def button_click(self):
-        print("Start the demo_2024_3 task")
         self.arg_data = {}
         self.search_task()
         if self._is_valid_taskid == True:
@@ -49,21 +72,21 @@ class GUI_button(Node):
             msg.data = self.task_sequence
             self.publisher_.publish(msg)
         else:
-            self.get_logger().error(f"Stop the Task Scheduler because of the invalid task ID({task_id})")
+            self.get_logger().error(f"Stop the Task Scheduler because of the invalid task ID({self.task_id})")
     
     # タスクIDに対応するタスクをTMS_DBから検索する関数
     def search_task(self):
         client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client['rostmsdb']
-        collection = db['default']
-        self.task_info = db.default.find_one({"task_id": task_id})
+        collection = db['task']
+        self.task_info = collection.find_one({"task_id": self.task_id})
         if self.task_info != None:
             self._is_valid_taskid = True
             self.task_sequence = self.task_info["task_sequence"]
             self.set_parameters()
-            self.get_logger().info(f"Execute the task corresponding to the specified task ID({task_id})")
+            self.get_logger().info(f"Execute the task corresponding to the specified task ID({self.task_id})")
         else:
-            self.get_logger().info(f"The task corresponding to the specified task ID({task_id}) does not exist under the default collection in the rostmsdb database")
+            self.get_logger().info(f"The task corresponding to the specified task ID({self.task_id}) does not exist under the default collection in the rostmsdb database")
             self._is_valid_taskid = False
 
     # タスク列に動的にパラメータを埋め込むための関数
@@ -71,7 +94,7 @@ class GUI_button(Node):
         # 任意のパラメータ判別用記号(例: ${parameter})などをtask_sequenceの中に入れて、この部分を置き換えるプログラムを作成する
         client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client['rostmsdb']
-        collection = db['default']
+        collection = db['parameter']
         subtask_raw_list = re.findall(r'\$\[.*\]', self.task_sequence)
         if(len(subtask_raw_list) >= 1):
             for subtask_raw in subtask_raw_list:
@@ -82,7 +105,7 @@ class GUI_button(Node):
                 parameter_tag = subtask_raw.split(":")
                 parameter_id_tag = int(parameter_tag[0])
                 parameter_value_tag = str(parameter_tag[1])
-                self.parameter_info = db.default.find_one({"parameter_id": parameter_id_tag})
+                self.parameter_info = collection.find_one({"parameter_id": parameter_id_tag})
                 self.parameter_value = self.parameter_info[parameter_value_tag]
                 # self.get_logger().info(f"subtask_raw {subtask_raw}")
                 # self.get_logger().info(f"parameter_value {self.parameter_value}")
