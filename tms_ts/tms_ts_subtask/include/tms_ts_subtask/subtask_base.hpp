@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 #include <cmath>
+#include <thread>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -30,13 +31,12 @@ using std::placeholders::_1;
 using namespace BT;
 using namespace std::chrono_literals;
 
-class BaseClassSubtasks : public SyncActionNode{
+class BaseClassSubtasks : public CoroActionNode{
 public:
     BaseClassSubtasks(const std::string& name, const NodeConfiguration& config);
-    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
+    // rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
     rclcpp::Node::SharedPtr node_;
-
-    NodeStatus shutdown_node(const std_msgs::msg::String & msg) const;
+    // NodeStatus shutdown_node(const std_msgs::msg::String & msg) const;
 };
 
 #endif

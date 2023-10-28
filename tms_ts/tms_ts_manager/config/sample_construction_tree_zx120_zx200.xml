@@ -11,7 +11,7 @@
             </Sequence>
             <Sequence>
                 <Action ID="SubtaskControlZx200Boom" initial_position = "0"   goal_position="-40"/>
-                <Action ID="SubtaskControlZx200Swing" initial_position = "0"   goal_position="90"/>
+                <Action ID="SubtaskControlZx200Swing" initial_position = "0"   goal_position="-90"/>
                 <Action ID="SubtaskControlZx200Arm" initial_position = "80"   goal_position="70"/>
                 <Action ID="SubtaskControlZx200Bucket" initial_position = "30"   goal_position="20"/>
             </Sequence>

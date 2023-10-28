@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 #include <cmath>
+#include <thread>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -35,7 +36,6 @@ using namespace std::chrono_literals;
 SubtaskControlZx120Boom::SubtaskControlZx120Boom(const std::string& name, const NodeConfiguration& config) : BaseClassSubtasks("subtask_zx120_boom_sample", config){
     publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx120/boom/cmd",10);
   }
-
 PortsList SubtaskControlZx120Boom::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
 NodeStatus SubtaskControlZx120Boom::tick(){
   Optional<float> initial_position = getInput<float>("initial_position");
