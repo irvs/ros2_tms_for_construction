@@ -5,7 +5,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 20)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -20,7 +20,6 @@ find_package(nav2_msgs REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 
-# -- for C++
 
 set(dependencies_cpp
   rclcpp
@@ -33,47 +32,30 @@ set(dependencies_cpp
   nav2_msgs
   rclpy)
 
+add_library(${PROJECT_NAME} SHARED
+  src/subtask_base.cpp
+  src/zx120/sample_subtasks.cpp
+  src/zx200/sample_subtasks.cpp)
 
-add_library(zx120_subtasks SHARED src/zx120/subtasks.cpp)
-target_include_directories(zx120_subtasks PUBLIC include)
-ament_target_dependencies(zx120_subtasks ${dependencies_cpp})
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
 
-add_executable(zx120_task_schedular_manager src/zx120/task_schedular_manager.cpp)
-target_include_directories(zx120_task_schedular_manager PUBLIC include)
-target_link_libraries(zx120_task_schedular_manager zx120_subtasks)
-ament_target_dependencies(zx120_task_schedular_manager ${dependencies_cpp})
+ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
 
-install(TARGETS
-  zx120_subtasks
-  zx120_task_schedular_manager
-  DESTINATION lib/${PROJECT_NAME}
+install(DIRECTORY include/
+  DESTINATION include/
 )
 
-# -- end C++
-
-# -- for Python
-
-set(dependencies_py
-  rclpy
-  ament_cmake_python
-  rclpy_action
-  geometry_msgs
-  nav2_msgs
-  ament_cmake_python)
-
-ament_python_install_package(scripts)
-
-install(PROGRAMS
-  scripts/task_generator.py
-  scripts/task_remover.py
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-# -- end Python
-
-install(DIRECTORY include config
-  DESTINATION share/${PROJECT_NAME}
-)
+install(
+  TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
 
 
+ament_export_dependencies(${dependencies_cpp})
+ament_export_libraries(${PROJECT_NAME})
+ament_export_targets(${PROJECT_NAME})  
+ament_export_include_directories(include)
 ament_package()

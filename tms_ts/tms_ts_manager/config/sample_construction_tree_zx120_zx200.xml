@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Parallel failure_threshold="-1" success_threshold="2">
+            <Sequence>
+                <Action ID="SubtaskControlZx120Boom" initial_position = "0"   goal_position="-40"/>
+                <Action ID="SubtaskControlZx120Swing" initial_position = "0"   goal_position="90"/>
+                <Action ID="SubtaskControlZx120Arm" initial_position = "80"   goal_position="70"/>
+                <Action ID="SubtaskControlZx120Bucket" initial_position = "30"   goal_position="20"/>
+            </Sequence>
+            <Sequence>
+                <Action ID="SubtaskControlZx200Boom" initial_position = "0"   goal_position="-40"/>
+                <Action ID="SubtaskControlZx200Swing" initial_position = "0"   goal_position="-90"/>
+                <Action ID="SubtaskControlZx200Arm" initial_position = "80"   goal_position="70"/>
+                <Action ID="SubtaskControlZx200Bucket" initial_position = "30"   goal_position="20"/>
+            </Sequence>
+        </Parallel>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="SubtaskControlZx120Arm">
+            <input_port name="goal_position"/>
+            <inout_port name="initial_position"/>
+        </Action>
+        <Action ID="SubtaskControlZx120Boom">
+            <input_port name="goal_position"/>
+            <inout_port name="initial_position"/>
+        </Action>
+        <Action ID="SubtaskControlZx120Bucket">
+            <inout_port name="goal_position"/>
+            <inout_port name="initial_position"/>
+        </Action>
+        <Action ID="SubtaskControlZx120Swing">
+            <inout_port name="goal_position"/>
+            <inout_port name="initial_position"/>
+        </Action>
+        <Action ID="SubtaskControlZx200Arm">
+            <input_port name="goal_position"/>
+            <inout_port name="intial_position"/>
+        </Action>
+        <Action ID="SubtaskControlZx200Boom">
+            <input_port name="goal_position"/>
+            <inout_port name="initial_position"/>
+        </Action>
+        <Action ID="SubtaskControlZx200Bucket">
+            <inout_port name="goal_position"/>
+            <inout_port name="initial_position"/>
+        </Action>
+        <Action ID="SubtaskControlZx200Swing">
+            <inout_port name="goal_position"/>
+            <inout_port name="initial_position"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
