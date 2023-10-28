@@ -67,7 +67,7 @@ PortsList SubtaskControlZx200Swing::providedPorts() { return { InputPort<float>(
     if (!initial_position){ throw RuntimeError("missing required input [initial_position]: ", initial_position.error() ); }
     if (!initial_position){ throw RuntimeError("missing required input [goal_position]: ", goal_position.error() ); }
     deg = initial_position.value();
-    while(deg <= goal_position.value()){
+    while(deg >= goal_position.value()){
         deg += goal_position.value() / float(20.0);
         msg_rad.data = float(deg * float(M_PI / 180));
         publisher_->publish(msg_rad);

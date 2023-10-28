@@ -33,14 +33,14 @@ using namespace std::chrono_literals;
 
 #include "tms_ts_subtask/subtask_base.hpp"
 
-BaseClassSubtasks::BaseClassSubtasks(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config){
+BaseClassSubtasks::BaseClassSubtasks(const std::string& name, const NodeConfiguration& config) : CoroActionNode(name, config){
     node_ = rclcpp::Node::make_shared(name);
-    subscription_ = node_->create_subscription<std_msgs::msg::String>(
-        "/emergency_signal", 10, std::bind(&BaseClassSubtasks::shutdown_node, this, _1));
+    // subscription_ = node_->create_subscription<std_msgs::msg::String>(
+    //     "/emergency_signal", 10, std::bind(&BaseClassSubtasks::shutdown_node, this, _1));
 }
 
-NodeStatus BaseClassSubtasks::shutdown_node(const std_msgs::msg::String & msg) const {
-    RCLCPP_INFO_STREAM(node_->get_logger(), "shutdown process is occured !");
-    return NodeStatus::FAILURE;
-}
+// NodeStatus BaseClassSubtasks::shutdown_node(const std_msgs::msg::String & msg) const {
+//     RCLCPP_INFO_STREAM(node_->get_logger(), "shutdown process is occured !");
+//     return NodeStatus::FAILURE;
+// }
 

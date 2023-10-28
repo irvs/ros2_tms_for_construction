@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 #include <cmath>
+#include <thread>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -33,11 +34,13 @@
 using namespace BT;
 using namespace std::chrono_literals;
 
+bool shutdown_requested = false;
+
 class ExecTaskSequence : public rclcpp::Node{
 public:
   ExecTaskSequence() : Node("exec_task_sequence"){
-    std::string task_sequence;
     subscription_ = this->create_subscription<std_msgs::msg::String>("/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
+    
     // ic120
     
     // zx120
@@ -56,22 +59,54 @@ public:
     task_sequence = std::string(msg->data);
     tree = factory.createTreeFromText(task_sequence);
     BT::PublisherZMQ publisher_zmq(tree);
-    NodeStatus status = NodeStatus::RUNNING;
-    while(rclcpp::ok() && status == NodeStatus::RUNNING){ 
-        status = tree.tickRoot();
+    
+    std::thread behavior_tree_thread([this] {
+      while (rclcpp::ok() && status == NodeStatus::RUNNING && !shutdown_requested) {
+        NodeStatus status = tree.tickRoot();
         RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "status: " << status);
+      }
+    });
+    behavior_tree_thread.detach();
+
+    while(rclcpp::ok() && status == NodeStatus::RUNNING){ 
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        if(!rclcpp::ok() || shutdown_requested){
+          RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "shutdown process is occured !");
+          exit(0);
+        }
     }
   }
 private:
-    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_, shutdown_subscription;
     BehaviorTreeFactory factory;
     BT::Tree tree;
     std::string task_sequence;
+    NodeStatus status = NodeStatus::RUNNING;
+};
+
+class Emergency : public rclcpp::Node{
+public:
+  Emergency() : Node("emergency"){
+    shutdown_subscription = this->create_subscription<std_msgs::msg::String>("/emergency_signal", 10,std::bind(&Emergency::sample_callback, this, _1));
+  }
+private:
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr shutdown_subscription;
+  void sample_callback(const std_msgs::msg::String & msg) const{
+    if (msg.data == "EMERGENCY") {
+        //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Shutdown signal received!");
+        shutdown_requested = true;
+  };
+  };
 };
 
 int main(int argc, char **argv){
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<ExecTaskSequence>());
+  rclcpp::executors::MultiThreadedExecutor exec;
+  auto task_schedular_node = std::make_shared<ExecTaskSequence>();
+  exec.add_node(task_schedular_node);
+  auto emergency_node = std::make_shared<Emergency>();
+  exec.add_node(emergency_node);
+  exec.spin();
   rclcpp::shutdown();
   return 0;
 }
