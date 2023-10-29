@@ -31,6 +31,10 @@ def generate_launch_description():
                   executable='tms_sp_zx120_end_effector',
                   output='screen'),
             Node(
+                  package='tms_sp_sensing', 
+                  executable='sample',
+                  output='screen'),
+            Node(
                   package="tms_db_manager", 
                   executable="tms_db_reader_task",
                   output='screen'),
