@@ -20,7 +20,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import Pose
 from std_msgs.msg import String
 from pymongo import MongoClient
-from sensing_msgs.msg import Zx120EndEffector
+from sensing_msgs.msg import Sample
 
 import tms_db_manager.tms_db_util as db_util
 
@@ -33,23 +33,21 @@ DATA_NAME = 'data_name'
 
 class UpdateDB_Parameter(Node):
     def __init__(self):
-        super().__init__("tms_sp_zx120_end_effector")
+        super().__init__("sample")
         self.subscription = self.create_subscription(
-            Zx120EndEffector,
-            '/zx120/end_effector',
+            Sample,
+            '/sample',
             self.update_db_parameter,
             10) 
     
     # mondbの動的なパラメータを更新する関数(値の指定がない場合、その変数は更新しない(現状維持))
-    def update_db_parameter(self, msg: Zx120EndEffector) -> None:
+    def update_db_parameter(self, msg: Sample) -> None:
         client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client['rostmsdb']
         collection = db['parameter']
         query = {"parameter_id": msg.parameter_id}
-        update_parameter_info= {"x": None, "y": None, "z": None, "qx": None, "qy": None, "qz": None, "qw": None}
+        update_parameter_info= {"parameter_value": None}
         parameter_info = collection.find_one(query)
-        for keep_pos in msg.keep_pos:
-            update_parameter_info[keep_pos] = parameter_info[keep_pos]
         # self.get_logger().info(f"BEFORE: parameter_info: {update_parameter_info}")
         for update_val in update_parameter_info:
             if update_parameter_info[update_val] == None:

@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef ZX120_SUBTASKS_HPP_
+#define ZX120_SUBTASKS_HPP_
+
 #include <chrono>
 #include <functional>
 #include <memory>
 #include <string>
 #include <cmath>
-#include <mongodb/client/dbclient.h>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -25,23 +27,22 @@
 
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
-
-
-using std::placeholders::_1;
-using namespace BT;
-using namespace std::chrono_literals;
 
 #include "tms_ts_subtask/subtask_base.hpp"
 
-BaseClassSubtasks::BaseClassSubtasks(const std::string& name, const NodeConfiguration& config) : CoroActionNode(name, config){
-    node_ = rclcpp::Node::make_shared(name);
-    // subscription_ = node_->create_subscription<std_msgs::msg::String>(
-    //     "/emergency_signal", 10, std::bind(&BaseClassSubtasks::shutdown_node, this, _1));
-}
+using namespace BT;
+using namespace std::chrono_literals;
 
-// NodeStatus BaseClassSubtasks::shutdown_node(const std_msgs::msg::String & msg) const {
-//     RCLCPP_INFO_STREAM(node_->get_logger(), "shutdown process is occured !");
-//     return NodeStatus::FAILURE;
-// }
+class Sample : public BaseClassSubtasks {
+public:
+  Sample(const std::string& name, const NodeConfiguration& config);
+  static PortsList providedPorts();
+  NodeStatus tick() override;
+private:
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
+  std_msgs::msg::Float64 msg_initial_position, msg_goal_position, msg_rad;
+  float deg, radian;
+};
 
+
+#endif
