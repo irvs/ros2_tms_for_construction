@@ -187,7 +187,7 @@ The following demonstrations are presented here.
 3. [Store and get data simultaneously in real-time](#3-store-and-get-data-simultaneously-in-real-time)
 4. [Try running the task schedular](#4-try-running-the-task-schedular)
 5. [Try running the task schedular with OperaSim-PhysX](#5-Try-running-the-task-schedular-with-OperaSim-PhysX)
-6. [Insert new data to tms_db](#6-Insert-new-data-to-tms_db)
+6. [Insert new task data to tms_db](#6-Insert-new-task-data-to-tms_db)
 
 
 
@@ -446,11 +446,13 @@ Of course, you can also use Groot to monitor the tasks being performed by the Be
 https://github.com/irvs/ros2_tms_for_construction/assets/130209264/8747df87-0dd9-42c4-9132-6454c15eeedf
 
 
-### 6. Insert new data to tms_db
+### 6. Insert new task data to tms_db
 
 This section describes how to add new tasks to the database.
 
-1. First, generate a new task sequence using Groot. 
+1. First, generate a new task sequence using Groot. When using Groot to generate a task sequence, it is necessary to register subtasks. Load the following file to make each subtask configurable.
+
+![](docs/procedure_setting_groot_1.png)
 
 2. Please store the xml file of the task sequence generated using Groot under ros2_tms_for_construction/tms_ts/tms_ts_manager/config directory.
 
