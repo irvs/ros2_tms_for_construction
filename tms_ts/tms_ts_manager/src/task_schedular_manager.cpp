@@ -61,17 +61,14 @@ public:
     BT::PublisherZMQ publisher_zmq(tree);
     
     std::thread behavior_tree_thread([this] {
-      while (rclcpp::ok() && status == NodeStatus::RUNNING && !shutdown_requested) {
-        NodeStatus status = tree.tickRoot();
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "status: " << status);
-      }
+      NodeStatus status = tree.tickRoot();
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence"), "status: " << status);
     });
     behavior_tree_thread.detach();
 
     while(rclcpp::ok() && status == NodeStatus::RUNNING){ 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         if(!rclcpp::ok() || shutdown_requested){
-          RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "shutdown process is occured !");
           exit(0);
         }
     }
@@ -84,16 +81,15 @@ private:
     NodeStatus status = NodeStatus::RUNNING;
 };
 
-class Emergency : public rclcpp::Node{
+class ForceQuietNode : public rclcpp::Node{
 public:
-  Emergency() : Node("emergency"){
-    shutdown_subscription = this->create_subscription<std_msgs::msg::String>("/emergency_signal", 10,std::bind(&Emergency::sample_callback, this, _1));
+  ForceQuietNode() : Node("force_quiet_node"){
+    shutdown_subscription = this->create_subscription<std_msgs::msg::String>("/emergency_signal", 10,std::bind(&ForceQuietNode::sample_callback, this, _1));
   }
 private:
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr shutdown_subscription;
   void sample_callback(const std_msgs::msg::String & msg) const{
     if (msg.data == "EMERGENCY") {
-        //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Shutdown signal received!");
         shutdown_requested = true;
   };
   };
@@ -104,8 +100,8 @@ int main(int argc, char **argv){
   rclcpp::executors::MultiThreadedExecutor exec;
   auto task_schedular_node = std::make_shared<ExecTaskSequence>();
   exec.add_node(task_schedular_node);
-  auto emergency_node = std::make_shared<Emergency>();
-  exec.add_node(emergency_node);
+  auto force_quiet_node = std::make_shared<ForceQuietNode>();
+  exec.add_node(force_quiet_node);
   exec.spin();
   rclcpp::shutdown();
   return 0;
