@@ -359,38 +359,34 @@ To successfully run the task scheduler, mongodb must be started by executing the
 sudo systemctl start mongod
 ``` 
 
-> **Note**
-> Before running the task scheduler, make sure that the task collection and the parameter collection are placed under rostmsdb database in MongoDB. Database verification can be done using mongodb compass. The confirmation procedure is as follows.
-> 1. Start MongoDB Compass. The following screen will appear.
->
-> ![](docs/procedure_setting_mongodb_1.png)
-> 
-> 2. Confirm that the URI is entered as "mongodb://localhost:27017///" and press the "Connect" button. You will then see the following screen.
->
-> ![](docs/procedure_setting_mongodb_2.png)
->
-> 3. Click on the "rostmsdb" button in the above screen, and if the screen looks like the following, the database setup is complete.
->
-> ![](docs/procedure_setting_mongodb_3.png)
-> 
-> If the database or collections does not exist, please execute the following command to add the database
->
->```
-> cd ~/ros2-tms-for-constructoin_ws/src/ros2_tms_for_construction/demo
-> unzip rostmsdb_collections.zip
-> cd rostmsdb_collections/
-> mongoimport --db rostmsdb --collection default --file rostmsdb.default.json --jsonArray
-> mongoimport --db rostmsdb --collection fs.chunks  --file rostmsdb.fs.chunks.json --jsonArray
-> mongoimport --db rostmsdb --collection machine --file rostmsdb.machine.json --jsonArray
-> mongoimport --db rostmsdb --collection now --file rostmsdb.now.json --jsonArray
-> mongoimport --db rostmsdb --collection sensor --file rostmsdb.sensor.json --jsonArray
-> mongoimport --db rostmsdb --collection fs.files --file rostmsdb.fs.files.json --jsonArray
-> mongoimport --db rostmsdb --collection parameter --file rostmsdb.parameter.json --jsonArray
-> mongoimport --db rostmsdb --collection parameter --file rostmsdb.parameter.json --jsonArray
-> mongoimport --db rostmsdb --collection task --file rostmsdb.task.json --jsonArray
-> cd .. && rm -rf  rostmsdb_collections
-> ```
->
+ Before running the task scheduler, make sure that the task collection and the parameter collection are placed under rostmsdb database in MongoDB. Database verification can be done using mongodb compass. The confirmation procedure is as follows.
+1. Start MongoDB Compass. The following screen will appear.
+ ![](docs/procedure_setting_mongodb_1.png)
+
+2. Confirm that the URI is entered as "mongodb://localhost:27017///" and press the "Connect" button. You will then see the following screen.
+![](docs/procedure_setting_mongodb_2.png)
+
+ 3. Click on the "rostmsdb" button in the above screen, and if the screen looks like the following, the database setup is complete.
+![](docs/procedure_setting_mongodb_3.png)
+
+ If the database or collections does not exist, please execute the following command to add the database
+
+```
+cd ~/ros2-tms-for-constructoin_ws/src/ros2_tms_for_construction/demo
+unzip rostmsdb_collections.zip
+cd rostmsdb_collections/
+mongoimport --db rostmsdb --collection default --file rostmsdb.default.json --jsonArray
+ mongoimport --db rostmsdb --collection fs.chunks  --file rostmsdb.fs.chunks.json --jsonArray
+mongoimport --db rostmsdb --collection machine --file rostmsdb.machine.json --jsonArray
+mongoimport --db rostmsdb --collection now --file rostmsdb.now.json --jsonArray
+mongoimport --db rostmsdb --collection sensor --file rostmsdb.sensor.json --jsonArray
+mongoimport --db rostmsdb --collection fs.files --file rostmsdb.fs.files.json --jsonArray
+mongoimport --db rostmsdb --collection parameter --file rostmsdb.parameter.json --jsonArray
+mongoimport --db rostmsdb --collection parameter --file rostmsdb.parameter.json --jsonArray
+mongoimport --db rostmsdb --collection task --file rostmsdb.task.json --jsonArray
+cd .. && rm -rf  rostmsdb_collections
+```
+
 
 Once you have verified that MongoDB looks like the image above, execute the following command.
 
