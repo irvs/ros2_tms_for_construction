@@ -164,11 +164,19 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
   
   If you want to implement new subtasks, please refer programs in the tms_ts_subtask directory.
 
+- [tms_ts_manager](tms_ts/tms_ts_manager/)
+
+  tms_ts_manager is a package that contains the main program of task schedular.
+
+- [sensing_msgs](tms_ts/sensing_msgs/)
+  
+  sensing_msgs is a package that contains .msg files for sensing process.
+
 ### tms_ur
 
 - [tms_ur_button_input](tms_ur/tms_ur_button_input)
 
-  tms_ur_button_input is a package package that searches data in mongodb for the corresponding task when the GUI button is pressed, and passes the corresponding task sequence to the task scheduler.
+  tms_ur_button_input is a package that searches data in mongodb for the corresponding task when the GUI button is pressed, and passes the corresponding task sequence to the task scheduler.
 
 ## Demo
 
@@ -178,6 +186,10 @@ The following demonstrations are presented here.
 2. [Get stored data](#2-get-stored-data)
 3. [Store and get data simultaneously in real-time](#3-store-and-get-data-simultaneously-in-real-time)
 4. [Try running the task schedular](#4-try-running-the-task-schedular)
+5. [Try running the task schedular with OperaSim-PhysX](#5-Try-running-the-task-schedular-with-OperaSim-PhysX)
+6. [Insert new task data to tms_db](#6-Insert-new-task-data-to-tms_db)
+
+
 
 Before demonstration, change directory and setup this workspace.
 
@@ -347,9 +359,33 @@ To successfully run the task scheduler, mongodb must be started by executing the
 sudo systemctl start mongod
 ``` 
 
-To run the task scheduler, make sure that the default collection and now collection are placed under rostmsdb database in MongoDB as shown in the following image.
+ Before running the task scheduler, make sure that the task collection and the parameter collection are placed under rostmsdb database in MongoDB. Database verification can be done using mongodb compass. The confirmation procedure is as follows.
+1. Start MongoDB Compass. The following screen will appear.
+ ![](docs/procedure_setting_mongodb_1.png)
 
-![](docs/rostmsdb_ts.png)
+2. Confirm that the URI is entered as "mongodb://localhost:27017///" and press the "Connect" button. You will then see the following screen.
+![](docs/procedure_setting_mongodb_2.png)
+
+ 3. Click on the "rostmsdb" button in the above screen, and if the screen looks like the following, the database setup is complete.
+![](docs/procedure_setting_mongodb_3.png)
+
+ If the database or collections does not exist, please execute the following command to add the database
+
+```
+cd ~/ros2-tms-for-constructoin_ws/src/ros2_tms_for_construction/demo
+unzip rostmsdb_collections.zip
+cd rostmsdb_collections/
+mongoimport --db rostmsdb --collection default --file rostmsdb.default.json --jsonArray
+ mongoimport --db rostmsdb --collection fs.chunks  --file rostmsdb.fs.chunks.json --jsonArray
+mongoimport --db rostmsdb --collection machine --file rostmsdb.machine.json --jsonArray
+mongoimport --db rostmsdb --collection now --file rostmsdb.now.json --jsonArray
+mongoimport --db rostmsdb --collection sensor --file rostmsdb.sensor.json --jsonArray
+mongoimport --db rostmsdb --collection fs.files --file rostmsdb.fs.files.json --jsonArray
+mongoimport --db rostmsdb --collection parameter --file rostmsdb.parameter.json --jsonArray
+mongoimport --db rostmsdb --collection parameter --file rostmsdb.parameter.json --jsonArray
+mongoimport --db rostmsdb --collection task --file rostmsdb.task.json --jsonArray
+cd .. && rm -rf  rostmsdb_collections
+```
 
 
 Once you have verified that MongoDB looks like the image above, execute the following command.
@@ -364,7 +400,11 @@ The following GUI button will then be activated.
 
 ![](docs/gui_button.png)
 
-When this button is pressed, the corresponding task is read from the mongodb and the Behavior Tree executes subtasks based on the corresponding task sequence.
+When this green button is pressed, the corresponding task is read from the mongodb and the Behavior Tree executes subtasks based on the corresponding task sequence.
+
+The task to be executed at this time is the task data in the task collection of rostmsdb in mongodb. The number displayed to the right of the "task_id:" button is the task_id of the task data to be executed by task schedular.
+
+**Also, the red button is for emergency stop. Press this button if you want to stop the Task Scheduler in an emergency when it is executing a task.**
 
 You can check the runtime and the structure of the Behavior Tree using Groot as follows. Groot displays the subtasks that have been completed with colors as follows.
 
@@ -388,31 +428,17 @@ Follow the instructions on the official page below for how to start groot.
 
 This chapter explain how to link ROS2-TMS-for-construction and OperaSim-PhysX , which is being developed by PWRI.
 
-Please follow the instructions in the ReadMe document on the official github page (URL: https://github.com/pwri-opera/OperaSim-PhysX) on how to set up windows PC for using OperaSimPhysX.
+Please follow the instructions in the ReadMe document on the official github page (URL: https://github.com/pwri-opera/OperaSim-PhysX) on how to set up windows PC and ubuntu 22.04 PC for using OperaSimPhysX.
 
-The setup procedure for an Ubuntu22.04 PC is as follows.
-
-First, run the following commands to enable the ros-tcp-endpoint to run in your environment.
+Once the connection between OperaSim-PhysX and ROS2 Humble is established, run the following command to start ROS2-TMS-for-construction on Ubuntu22.04 PC.
 
 ```
-cd ~/ros2-tms-for-constructoin_ws/src
-git clone -b dev-ros2 https://github.com/Unity-Technologies/ROS-TCP-Endpoint.git
-cd ..
-colcon build --packages-select ros_tcp_endpoint && source install/setup.bash
+cd ~/ros2-tms-for-constructoin_ws
+source install/setup.bash
+ros2 launch tms_ts_launch tms_ts_construction.launch.py
 ```
 
-Make sure there are no build errors and run ros_tcp_endpoint by executing the following command.
-
-```
-ros2 launch ros_tcp_endpoint endpoint.py
-```
-Then ros_tcp_ednpoint will start on ubuntu22.04 PC.
-
-Then follow the connection procedure in the OperaSim-Phyx ReadMe document (URL: https://github.com/pwri-opera/OperaSim-PhysX) to set up the ros-tcp-endpoint.
-
-Now, if you follow the steps in chapter 4 to configure ROS2-TMS-for-construction, you can see the zx120 on OperaSim-PhysX running as follows.
-
-
+As explained in Chapter 4, you can execute the specified task using the task scheduler by clicking the green button that appears when starting rso2-tms-for-construction. If you want to make an emergency stop while executing a task, click on the red button.
 
 Of course, you can also use Groot to monitor the tasks being performed by the Behavior Tree while the Task Scheduler is running, as shown in the following video.
 
@@ -420,8 +446,30 @@ Of course, you can also use Groot to monitor the tasks being performed by the Be
 https://github.com/irvs/ros2_tms_for_construction/assets/130209264/8747df87-0dd9-42c4-9132-6454c15eeedf
 
 
+### 6. Insert new task data to tms_db
 
-### 6. Insert new data to tms_db
+This section describes how to add new tasks to the database.
+
+1. First, generate a new task sequence using Groot. When using Groot to generate a task sequence, it is necessary to register subtasks. Load the following file to make each subtask configurable.
+
+![](docs/procedure_setting_groot_1.png)
+
+2. Please store the xml file of the task sequence generated using Groot under ros2_tms_for_construction/tms_ts/tms_ts_manager/config directory.
+
+3. Execute the following command to save the created task data to the database Replace [file_name] in the command with the filename of the xml file you created.
+  ```
+  cd ~/ros2-tms-for-constructoin_ws
+  colcon build --packages-select tms_db_manager && source install/setup.bash
+  ros2 run tms_ts_manager task_generator.py --ros-args -p bt_tree_xml_file_name:=[file_name]
+  ```
+  For example, to store sample_construction_tree.xml in ros2_tms_for_construction/tms_ts/tms_ts_manager/config in the database as a task, run the following command.
+
+  ```
+  ros2 run tms_ts_manager task_generator.py --ros-args -p bt_tree_xml_file_name:=sample_construction_tree
+  ```
+
+4. You can see that the task just described has been added under the tasks collection in mongodb's rostmsdb database.
+
 
 ## Version Information
 

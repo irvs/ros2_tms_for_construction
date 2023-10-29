@@ -29,7 +29,6 @@ class TaskGenerator(Node):
         self.declare_parameter("output_text_file_directory_path", tms_ts_subtask_package_directory + '/config')
         self.declare_parameter("output_file_name", 'task_sequence')
         self.declare_parameter("output_txt_file", False)
-        self.declare_parameter("model_name", "zx120")
         self.declare_parameter("description", "No Commented ...")
 
         self.xml_file_name = self.get_parameter("bt_tree_xml_file_name").get_parameter_value().string_value
@@ -52,7 +51,7 @@ class TaskGenerator(Node):
             self.task_info["task_id"] = self.search_recommend_task_id()
             self.task_info["type"] = "task"
             self.task_info["task_sequence"] = self.task_sequence
-            self.task_info["model_name"] = self.get_parameter("model_name").get_parameter_value().string_value
+            self.task_info["model_name"] = self.model_name
             self.task_info["description"] = self.get_parameter("description").get_parameter_value().string_value
             self.set_task()
             self.get_logger().info(f"Completed Inseting task data into the rostmsdb database ! The task_id is {self.task_info['task_id']}.")
@@ -67,6 +66,10 @@ class TaskGenerator(Node):
         self.task_sequence = ET.tostring(root, encoding='unicode', method='xml')
         self.task_sequence = '\n'.join(line.strip() for line in self.task_sequence.split('\n'))
         self.task_sequence = re.sub(r'\n', '', self.task_sequence)
+        keyword_pattern = re.compile(r'(zx120|zx200|ic120)', re.I)
+        matches = keyword_pattern.findall(self.task_sequence)
+        unique_keywords = set(match.lower() for match in matches)
+        self.model_name = ",".join(unique_keywords)
         
     
     # 必要であればタスク列をテキストファイルとして出力する関数
