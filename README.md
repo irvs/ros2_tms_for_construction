@@ -362,12 +362,15 @@ sudo systemctl start mongod
 > **Note**
 > Before running the task scheduler, make sure that the task collection and the parameter collection are placed under rostmsdb database in MongoDB. Database verification can be done using mongodb compass. The confirmation procedure is as follows.
 > 1. Start MongoDB Compass. The following screen will appear.
+>
 > ![](docs/procedure_setting_mongodb_1.png)
 > 
 > 2. Confirm that the URI is entered as "mongodb://localhost:27017///" and press the "Connect" button. You will then see the following screen.
+>
 > ![](docs/procedure_setting_mongodb_2.png)
 >
 > 3. Click on the "rostmsdb" button in the above screen, and if the screen looks like the following, the database setup is complete.
+>
 > ![](docs/procedure_setting_mongodb_3.png)
 > 
 > If the database or collections does not exist, please execute the following command to add the database
