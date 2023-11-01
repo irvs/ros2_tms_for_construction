@@ -78,6 +78,11 @@ colcon build
 ```
 
 ### Setup MongoDB
+
+> **Note**
+> If a rostmsdb database already exists on mongodb, an error will occur during the execution of the following command. In such a case, delete the rostmsdb database in your environment and then execute the following command.
+
+
 ```
 sudo systemctl start mongod
 cd ~/ros2-tms-for-constructoin_ws/src/ros2_tms_for_construction/demo
@@ -90,11 +95,44 @@ mongoimport --db rostmsdb --collection now --file rostmsdb.now.json --jsonArray
 mongoimport --db rostmsdb --collection sensor --file rostmsdb.sensor.json --jsonArray
 mongoimport --db rostmsdb --collection fs.files --file rostmsdb.fs.files.json --jsonArray
 mongoimport --db rostmsdb --collection parameter --file rostmsdb.parameter.json --jsonArray
-mongoimport --db rostmsdb --collection parameter --file rostmsdb.parameter.json --jsonArray
 mongoimport --db rostmsdb --collection task --file rostmsdb.task.json --jsonArray
 cd .. && rm -rf  rostmsdb_collections
 ```
 
+### Setup mongocxx / bsoncxx
+
+```
+cd
+wget https://github.com/mongodb/mongo-c-driver/releases/download/1.24.4/mongo-c-driver-1.24.4.tar.gz
+cd mongo-c-driver-1.24.4
+mkdir cmake-build
+cd cmake-build
+cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF ..
+sudo make install
+
+curl -OL https://github.com/mongodb/mongo-cxx-driver/releases/download/r3.8.1/mongo-cxx-driver-r3.8.1.tar.gz
+tar -xzf mongo-cxx-driver-r3.8.1.tar.gz
+cd mongo-cxx-driver-r3.8.1/build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBSONCXX_POLY_USE_BOOST=1 -DMONGOCXX_OVERRIDE_DEFAULT_INSTALL_PREFIX=OFF
+cmake --build .
+sudo cmake --build . --target install
+
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+
+```
+
+### Setup Groot
+```
+sudo apt install qtbase5-dev libqt5svg5-dev libzmq3-dev libdw-dev
+git clone https://github.com/BehaviorTree/Groot.git
+cd Groot
+git submodule update --init --recursive
+mkdir build; cd build
+cmake ..
+make
+./Groot
+```
 
 ## How to use
 
@@ -406,23 +444,43 @@ The task to be executed at this time is the task data in the task collection of 
 
 **Also, the red button is for emergency stop. Press this button if you want to stop the Task Scheduler in an emergency when it is executing a task.**
 
-You can check the runtime and the structure of the Behavior Tree using Groot as follows. Groot displays the subtasks that have been completed with colors as follows.
 
-Follow the instructions on the official page below for how to start groot.
 
-> **Note**
-> 
-> Groot can only make the Tree visible when the Behavior Tree is running. The settings for use should be as follows.
+Groot can be started by executing the following command.
+
+```
+cd ~/Groot/build
+./Groot
+```
+After executing the above command, if Groot can be successfully started, the following screen will be output.
+
+![](docs/groot_2.png)
+
+In the above image, "Editor" is used to generate task sequence. On the other hand, "Monitor" is used to visualize the status of running tasks.
+
+In this section, we will show you how to visualize the status of running tasks using the "monitor" function.
+
+First, click on the "monitor" button of the previous screen to output the following screen.
+
+After opening the screen, check that the parameter settings on this screen are as follows
+
+
+> The settings for use should be as follows.
 > 
 > ・ Sensing IP : localhost
 > 
 > ・ Publisher Port : 1666 
 > 
 > ・ Sever Port : 1667
-> 
-> After setting up, press the connect button to display the Behavior tree on Groot as shown in the figure below.
+
+After setting each parameter, click the "connect" button to see how the task is running in the behavior tree, as shown in the image below.
 
 ![](docs/groot.png)
+
+> **Note**
+> 
+> The ability to visualize tasks being executed by Groot cannot be performed unless the task is being executed by the behavior tree. 
+>
 
 ### 5. Try running the task schedular with OperaSim-PhysX
 
@@ -451,10 +509,14 @@ https://github.com/irvs/ros2_tms_for_construction/assets/130209264/8747df87-0dd9
 This section describes how to add new tasks to the database.
 
 1. First, generate a new task sequence using Groot. When using Groot to generate a task sequence, it is necessary to register subtasks. Load the following file to make each subtask configurable.
-
 ![](docs/procedure_setting_groot_1.png)
+Then the subtasks will appear in the node list section of Groot as shown in the following image.
+![](docs/groot_4.png)
+Combining these nodes, we can create a task tree as shown below.
+![](docs/groot_5.png)
 
-2. Please store the xml file of the task sequence generated using Groot under ros2_tms_for_construction/tms_ts/tms_ts_manager/config directory.
+2. Please store the xml file of the task sequence generated using Groot under ros2_tms_for_construction/tms_ts/tms_ts_manager/config directory.The following is how to save the xml file of the task tree created in Groot.
+![](docs/groot_6.png)
 
 3. Execute the following command to save the created task data to the database Replace [file_name] in the command with the filename of the xml file you created.
   ```
