@@ -36,6 +36,7 @@ set(dependencies_cpp
 
 add_library(${PROJECT_NAME} SHARED
   src/subtask_base.cpp
+  src/sample/sample_subtasks.cpp
   src/zx120/sample_subtasks.cpp
   src/zx200/sample_subtasks.cpp)
 

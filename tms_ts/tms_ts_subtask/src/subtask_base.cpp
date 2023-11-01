@@ -45,7 +45,7 @@ BaseClassSubtasks::BaseClassSubtasks(const std::string& name, const NodeConfigur
     //     "/emergency_signal", 10, std::bind(&BaseClassSubtasks::shutdown_node, this, _1));
 }
 
-int GetParamFromDB(std::string parts_name, std::string param_name){
+int BaseClassSubtasks::GetParamFromDB(std::string parts_name, std::string param_name){
     mongocxx::instance instance{};
     mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
     mongocxx::database db = client["rostmsdb"];
