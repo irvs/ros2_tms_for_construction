@@ -32,9 +32,7 @@ set(dependencies_cpp
   behaviortree_cpp_v3
   nlohmann_json
   geometry_msgs
-  nav2_msgs
-  bsoncxx
-  mongocxx)
+  nav2_msgs)
 
 add_library(${PROJECT_NAME} SHARED
   src/subtask_base.cpp
@@ -46,6 +44,15 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>
   /usr/local/include/mongocxx/v_noabi
   /usr/local/include/bsoncxx/v_noabi)
+
+target_link_directories(${PROJECT_NAME} PUBLIC
+  /usr/local/lib)
+
+
+target_link_libraries(${PROJECT_NAME} 
+mongocxx
+bsoncxx)
+
 
 ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
 
@@ -61,7 +68,7 @@ install(
 
 
 ament_export_dependencies(${dependencies_cpp})
-ament_export_libraries(${PROJECT_NAME})
+ament_export_libraries(${PROJECT_NAME} mongocxx bsoncxx)
 ament_export_targets(${PROJECT_NAME})  
 ament_export_include_directories(include)
 ament_package()

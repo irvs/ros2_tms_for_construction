@@ -37,17 +37,21 @@ set(dependencies_cpp
   rclpy
   tms_ts_subtask)
 
+  link_directories(
+  /usr/local/lib)
+  
+  
+  link_libraries(
+  mongocxx
+  bsoncxx)
+  
+
 add_executable(task_schedular_manager src/task_schedular_manager.cpp)
 ament_target_dependencies(task_schedular_manager ${dependencies_cpp})
 
 add_executable(sample_task_schedular_manager src/sample_task_schedular_manager.cpp)
 ament_target_dependencies(sample_task_schedular_manager ${dependencies_cpp})
 
-target_include_directories(sample_task_schedular_manager PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
 
 # -- end C++
 
