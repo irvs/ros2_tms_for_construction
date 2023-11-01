@@ -5,7 +5,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set (CMAKE_CXX_STANDARD 20)
+set (CMAKE_CXX_STANDARD 17)
+set(CMAKE_PREFIX_PATH /user/local/lib)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -19,6 +20,8 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
+find_package(bsoncxx REQUIRED)
+find_package(mongocxx REQUIRED)
 
 
 set(dependencies_cpp
@@ -30,7 +33,8 @@ set(dependencies_cpp
   nlohmann_json
   geometry_msgs
   nav2_msgs
-  rclpy)
+  bsoncxx
+  mongocxx)
 
 add_library(${PROJECT_NAME} SHARED
   src/subtask_base.cpp
@@ -39,7 +43,9 @@ add_library(${PROJECT_NAME} SHARED
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
+  $<INSTALL_INTERFACE:include>
+  /usr/local/include/mongocxx/v_noabi
+  /usr/local/include/bsoncxx/v_noabi)
 
 ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
 

@@ -36,22 +36,18 @@ Sample::Sample(const std::string& name, const NodeConfiguration& config) : BaseC
     publisher_ = node_->create_publisher<std_msgs::msg::Float64>("/zx120/boom/cmd",10);
   }
 
-PortsList Sample::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
+PortsList Sample::providedPorts() { return { InputPort<float>("initial_position")}; }
 NodeStatus Sample::tick(){
   Optional<float> initial_position = getInput<float>("initial_position");
   Optional<float> goal_position = getInput<float>("goal_position");
-  RCLCPP_INFO_STREAM(node_->get_logger(),"Boom joint : initial_position: " << initial_position.value() << "   "<< "goal_position: " << goal_position.value());
-  if (!initial_position){ throw RuntimeError("missing required input [initial_position]: ", initial_position.error() ); }
-  if (!initial_position){ throw RuntimeError("missing required input [goal_position]: ", goal_position.error() ); }
-  deg = initial_position.value();
-  while(deg >= goal_position.value()){
-      deg += goal_position.value() / float(20.0);
-      msg_rad.data = float(deg * float(M_PI / 180));
-      publisher_->publish(msg_rad);
-      RCLCPP_INFO_STREAM(node_->get_logger(), "Publishing boom position: " << deg << " [deg]");
-      sleep(1);
+  int param_num;
+
+  while(true){
+    param_num = GetParamFromDB("sample", "parameter_value");
+    RCLCPP_INFO_STREAM(node_->get_logger(),"param_num: " << param_num << "  from sample_subtask");
+    sleep(1);
   }
-  RCLCPP_INFO_STREAM(node_->get_logger(), "Complete boom modification");
+  RCLCPP_INFO_STREAM(node_->get_logger(), "Complete sample subtask");
   return NodeStatus::SUCCESS;
 }
 
