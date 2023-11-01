@@ -29,6 +29,8 @@
 
 #include "tms_ts_subtask/subtask_base.hpp"
 #include "tms_ts_subtask/sample/sample_subtasks.hpp"
+#include "tms_ts_subtask/zx120/sample_subtasks.hpp"
+#include "tms_ts_subtask/zx200/sample_subtasks.hpp"
 
 #include <bsoncxx/json.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
@@ -44,11 +46,9 @@ class ExecTaskSequence : public rclcpp::Node{
 public:
   ExecTaskSequence() : Node("exec_sample_task_sequence"){
     subscription_ = this->create_subscription<std_msgs::msg::String>("/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
+
     
-    // ic120
-    
-    // zx120
-    factory.registerNodeType<Sample>("Smaple");
+    factory.registerNodeType<Sample>("Sample");
     
   }
   void topic_callback(const std_msgs::msg::String::SharedPtr msg){
