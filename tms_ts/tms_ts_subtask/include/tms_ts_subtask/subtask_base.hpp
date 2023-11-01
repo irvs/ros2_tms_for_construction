@@ -36,7 +36,7 @@ public:
     BaseClassSubtasks(const std::string& name, const NodeConfiguration& config);
     // rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
     rclcpp::Node::SharedPtr node_;
-    // NodeStatus shutdown_node(const std_msgs::msg::String & msg) const;
+    int GetParamFromDB(std::string parts_name, std::string param_name);
 };
 
 #endif
