@@ -43,8 +43,14 @@ NodeStatus Sample::tick(){
   int param_num;
 
   while(true){
-    param_num = GetParamFromDB("sample", "parameter_value");
-    RCLCPP_INFO_STREAM(node_->get_logger(),"param_num: " << param_num << "  from sample_subtask");
+    std::map<std::string, int> param_value = GetParamFromDB("end_effector");
+    RCLCPP_INFO_STREAM(node_->get_logger(),"x: " << param_value["x"] << "  from sample_subtask");
+    RCLCPP_INFO_STREAM(node_->get_logger(),"y: " << param_value["y"] << "  from sample_subtask");
+    RCLCPP_INFO_STREAM(node_->get_logger(),"z: " << param_value["z"] << "  from sample_subtask");
+    RCLCPP_INFO_STREAM(node_->get_logger(),"qx: " << param_value["qx"] << "  from sample_subtask");
+    RCLCPP_INFO_STREAM(node_->get_logger(),"qy: " << param_value["qy"] << "  from sample_subtask");
+    RCLCPP_INFO_STREAM(node_->get_logger(),"qz: " << param_value["qz"] << "  from sample_subtask");
+    RCLCPP_INFO_STREAM(node_->get_logger(),"qw: " << param_value["qw"] << "  from sample_subtask");
     sleep(1);
   }
   RCLCPP_INFO_STREAM(node_->get_logger(), "Complete sample subtask");

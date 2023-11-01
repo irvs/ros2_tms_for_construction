@@ -18,6 +18,7 @@
 #include <string>
 #include <cmath>
 #include <thread>
+#include <map>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -26,6 +27,12 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
+
+#include <bsoncxx/json.hpp>
+#include <bsoncxx/builder/stream/document.hpp>
+#include <mongocxx/client.hpp>
+#include <mongocxx/instance.hpp>
+
 
 using std::placeholders::_1;
 using namespace BT;
@@ -36,7 +43,9 @@ public:
     BaseClassSubtasks(const std::string& name, const NodeConfiguration& config);
     // rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
     rclcpp::Node::SharedPtr node_;
-    int GetParamFromDB(std::string parts_name, std::string param_name);
+    mongocxx::instance instance{};
+    std::map<std::string, int> GetParamFromDB(std::string parts_name);
+    
 };
 
 #endif
