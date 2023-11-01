@@ -19,8 +19,10 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
-
+find_package(bsoncxx REQUIRED)
+find_package(mongocxx REQUIRED)
 find_package(tms_ts_subtask REQUIRED)
+
 
 
 set(dependencies_cpp
@@ -35,8 +37,21 @@ set(dependencies_cpp
   rclpy
   tms_ts_subtask)
 
+  link_directories(
+  /usr/local/lib)
+  
+  
+  link_libraries(
+  mongocxx
+  bsoncxx)
+  
+
 add_executable(task_schedular_manager src/task_schedular_manager.cpp)
 ament_target_dependencies(task_schedular_manager ${dependencies_cpp})
+
+add_executable(sample_task_schedular_manager src/sample_task_schedular_manager.cpp)
+ament_target_dependencies(sample_task_schedular_manager ${dependencies_cpp})
+
 
 # -- end C++
 
@@ -62,6 +77,7 @@ install(PROGRAMS
 
 install(TARGETS
   task_schedular_manager
+  sample_task_schedular_manager
   DESTINATION lib/${PROJECT_NAME}
 )
 
