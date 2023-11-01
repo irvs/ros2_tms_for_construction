@@ -503,6 +503,14 @@ Of course, you can also use Groot to monitor the tasks being performed by the Be
 
 https://github.com/irvs/ros2_tms_for_construction/assets/130209264/8747df87-0dd9-42c4-9132-6454c15eeedf
 
+If you want to change the task to be executed, update the following parameter in ros2_tms_for_construction/tms_ts/tms_ts_launch/launch/tms_ts_construction.launch.py to the task_id value of the task you want to execute, and then execute the following.
+
+```
+cd ~/ros2-tms-for-constructoin_ws
+colcon build --packages-select tms_ts_launch && source install/setup.bash
+```
+
+![](docs/tms_ts_launch_1.png)
 
 ### 6. Insert new task data to tms_db
 
