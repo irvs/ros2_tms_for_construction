@@ -17,7 +17,7 @@
 #include <memory>
 #include <string>
 #include <cmath>
-#include <mongodb/client/dbclient.h>
+#include <iostream>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -26,6 +26,11 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
+
+#include <bsoncxx/json.hpp>
+#include <bsoncxx/builder/stream/document.hpp>
+#include <mongocxx/client.hpp>
+#include <mongocxx/instance.hpp>
 
 
 using std::placeholders::_1;
@@ -38,6 +43,24 @@ BaseClassSubtasks::BaseClassSubtasks(const std::string& name, const NodeConfigur
     node_ = rclcpp::Node::make_shared(name);
     // subscription_ = node_->create_subscription<std_msgs::msg::String>(
     //     "/emergency_signal", 10, std::bind(&BaseClassSubtasks::shutdown_node, this, _1));
+}
+
+int GetParamFromDB(std::string parts_name, std::string param_name){
+    mongocxx::instance instance{};
+    mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
+    mongocxx::database db = client["rostmsdb"];
+    mongocxx::collection collection = db["parameter"];
+    bsoncxx::builder::stream::document filter_builder;
+    filter_builder << "parts_name" << parts_name;
+    auto filter = filter_builder.view();
+    auto result = collection.find_one(filter);
+    if (result) {
+        int value = static_cast<float>(result->view()[param_name].get_int32()); 
+        return value;
+    } else {
+        std::cerr << "Data not found" << std::endl;
+        return 0;
+    }
 }
 
 // NodeStatus BaseClassSubtasks::shutdown_node(const std_msgs::msg::String & msg) const {

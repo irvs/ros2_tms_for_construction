@@ -30,6 +30,11 @@
 
 #include "tms_ts_subtask/subtask_base.hpp"
 
+#include <bsoncxx/json.hpp>
+#include <bsoncxx/builder/stream/document.hpp>
+#include <mongocxx/client.hpp>
+#include <mongocxx/instance.hpp>
+
 using namespace BT;
 using namespace std::chrono_literals;
 
