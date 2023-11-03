@@ -38,14 +38,26 @@ using std::placeholders::_1;
 using namespace BT;
 using namespace std::chrono_literals;
 
+class DatabaseManager {
+public:
+    static mongocxx::instance& getInstance() {
+        static mongocxx::instance instance{};
+        return instance;
+    }
+};
+
 class BaseClassSubtasks : public CoroActionNode{
 public:
     BaseClassSubtasks(const std::string& name, const NodeConfiguration& config);
-    // rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
-    rclcpp::Node::SharedPtr node_;
-    mongocxx::instance instance{};
     std::map<std::string, int> GetParamFromDB(std::string parts_name);
-    
+    // NodeStatus emergency();
+    // void StartEmergencyThread();
+    rclcpp::Node::SharedPtr node_;
+    // mongocxx::instance& db_instance = DatabaseManager::getInstance();
+    std::mutex db_instance_mutex;
+    // bool emergency_thread_running_ = false;
+    // std::thread emergency_thread_;
+    // std::string emergency_status_;
 };
 
 #endif
