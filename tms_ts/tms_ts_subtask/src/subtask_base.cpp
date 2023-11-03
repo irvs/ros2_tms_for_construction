@@ -20,9 +20,28 @@ using namespace std::chrono_literals;
 
 BaseClassSubtasks::BaseClassSubtasks(const std::string& name, const NodeConfiguration& config) : CoroActionNode(name, config){
     node_ = rclcpp::Node::make_shared(name);
+    DatabaseManager::getInstance();
+    // StartEmergencyThread();
 }
 
+// 実行中のサブタスクを強制終了するための関数
+// void BaseClassSubtasks::StartEmergencyThread() {
+//     if (!emergency_thread_running_) {
+//         emergency_thread_running_ = true;
+//         emergency_thread_ = std::thread([this]() {
+//             while (emergency_thread_running_) {
+//                 std::cout << "=================================================================" << std::endl;
+//                 sleep(1);
+//                 // return NodeStatus::SUCCESS;
+//             }
+//         });
+//     }
+// }
+
+
+// データベースから動的パラメータの値をとってくるための関数
 std::map<std::string, int> BaseClassSubtasks::GetParamFromDB(std::string parts_name){
+    //std::lock_guard<std::mutex> lock(db_instance_mutex);
     mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
     mongocxx::database db = client["rostmsdb"];
     mongocxx::collection collection = db["parameter"];
@@ -45,7 +64,7 @@ std::map<std::string, int> BaseClassSubtasks::GetParamFromDB(std::string parts_n
 
         return dataMap;
     } else {
-        std::cerr << "Data not found" << std::endl;
+        std::cout << "Dynamic parameter not found in your parameter collection" << std::endl;
         return std::map<std::string, int>();
     }
 }
