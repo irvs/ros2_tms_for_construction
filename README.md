@@ -113,9 +113,24 @@ sudo make install
 curl -OL https://github.com/mongodb/mongo-cxx-driver/releases/download/r3.8.1/mongo-cxx-driver-r3.8.1.tar.gz
 tar -xzf mongo-cxx-driver-r3.8.1.tar.gz
 cd mongo-cxx-driver-r3.8.1/build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBSONCXX_POLY_USE_BOOST=1 -DMONGOCXX_OVERRIDE_DEFAULT_INSTALL_PREFIX=OFF
-cmake --build .
-sudo cmake --build . --target install
+cmake .. -DCMAKE_BUILD_TYPE=Release -
+￼￼
+￼
+connected papers
+￼
+学生ポータル
+￼
+moodle
+￼
+ANPIC
+￼
+マンション管理
+￼
+chatgpt
+￼
+Bard
+Add shortcut
+
 
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
@@ -401,7 +416,7 @@ sudo systemctl start mongod
 1. Start MongoDB Compass. The following screen will appear.
  ![](docs/procedure_setting_mongodb_1.png)
 
-2. Confirm that the URI is entered as "mongodb://localhost:27017///" and press the "Connect" button. You will then see the following screen.
+2. Confirm that the URI is entered as "mongodb://localhost:27017/" and press the "Connect" button. You will then see the following screen.
 ![](docs/procedure_setting_mongodb_2.png)
 
  3. Click on the "rostmsdb" button in the above screen, and if the screen looks like the following, the database setup is complete.
@@ -419,7 +434,6 @@ mongoimport --db rostmsdb --collection machine --file rostmsdb.machine.json --js
 mongoimport --db rostmsdb --collection now --file rostmsdb.now.json --jsonArray
 mongoimport --db rostmsdb --collection sensor --file rostmsdb.sensor.json --jsonArray
 mongoimport --db rostmsdb --collection fs.files --file rostmsdb.fs.files.json --jsonArray
-mongoimport --db rostmsdb --collection parameter --file rostmsdb.parameter.json --jsonArray
 mongoimport --db rostmsdb --collection parameter --file rostmsdb.parameter.json --jsonArray
 mongoimport --db rostmsdb --collection task --file rostmsdb.task.json --jsonArray
 cd .. && rm -rf  rostmsdb_collections
