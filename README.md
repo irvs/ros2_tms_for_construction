@@ -110,6 +110,7 @@ cd cmake-build
 cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF ..
 sudo make install
 
+cd
 curl -OL https://github.com/mongodb/mongo-cxx-driver/releases/download/r3.8.1/mongo-cxx-driver-r3.8.1.tar.gz
 tar -xzf mongo-cxx-driver-r3.8.1.tar.gz
 cd mongo-cxx-driver-r3.8.1/build
@@ -172,7 +173,7 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
   tms_sp_machine is a package for handling data realated to construction machines.
 
-  - [tms_sp_sensing](tms_sp/tms_sp_sensing/)
+- [tms_sp_sensing](tms_sp/tms_sp_sensing/)
 
   tms_sp_sensing is a package  to update dynamic parameters stored in mongoDB based on ros topic sent from another pc.
 
@@ -414,7 +415,7 @@ cd ~/ros2-tms-for-constructoin_ws/src/ros2_tms_for_construction/demo
 unzip rostmsdb_collections.zip
 cd rostmsdb_collections/
 mongoimport --db rostmsdb --collection default --file rostmsdb.default.json --jsonArray
- mongoimport --db rostmsdb --collection fs.chunks  --file rostmsdb.fs.chunks.json --jsonArray
+mongoimport --db rostmsdb --collection fs.chunks  --file rostmsdb.fs.chunks.json --jsonArray
 mongoimport --db rostmsdb --collection machine --file rostmsdb.machine.json --jsonArray
 mongoimport --db rostmsdb --collection now --file rostmsdb.now.json --jsonArray
 mongoimport --db rostmsdb --collection sensor --file rostmsdb.sensor.json --jsonArray
