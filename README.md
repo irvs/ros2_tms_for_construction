@@ -531,7 +531,7 @@ Combining these nodes, we can create a task tree as shown below.
 3. Execute the following command to save the created task data to the database Replace [file_name] in the command with the filename of the xml file you created.
   ```
   cd ~/ros2-tms-for-constructoin_ws
-  colcon build --packages-select tms_db_manager && source install/setup.bash
+  colcon build --packages-select tms_ts_manager && source install/setup.bash
   ros2 run tms_ts_manager task_generator.py --ros-args -p bt_tree_xml_file_name:=[file_name]
   ```
   For example, to store sample_construction_tree.xml in ros2_tms_for_construction/tms_ts/tms_ts_manager/config in the database as a task, run the following command.
