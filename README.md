@@ -104,6 +104,7 @@ cd .. && rm -rf  rostmsdb_collections
 ```
 cd
 wget https://github.com/mongodb/mongo-c-driver/releases/download/1.24.4/mongo-c-driver-1.24.4.tar.gz
+tar -xzf mongo-c-driver-1.24.4.tar.gz
 cd mongo-c-driver-1.24.4
 mkdir cmake-build
 cd cmake-build
