@@ -8,22 +8,22 @@
 
   <maintainer email="kasahara@irvs.ait.kyushu-u.ac.jp">Yuichiro Kasahara</maintainer>
 
-  <url type="website">http://irvs.github.io/ros_tms/</url>
   <url type="repository">https://github.com/irvs/ros2_tms_for_construction</url>
   <url type="bugtracker">https://github.com/irvs/ros2_tms_for_construction/issues</url>
-
-  <author email="itsuka@irvs.ait.kyushu-u.ac.jp">Tomoya Itsuka</author>
-  <author email="kawamura@ait.kyushu-u.ac.jp">Akihiro Kawamura</author>
   
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>rclpy</build_depend>
-  <build_depend>builtin_interfaces</build_depend>
-  <build_depend>rosidl_default_generators</build_depend>
-  <exec_depend>rclpy</exec_depend>
-  <exec_depend>builtin_interfaces</exec_depend>
-  <exec_depend>rosidl_default_runtime</exec_depend>
+  <depend>builtin_interfaces</depend>
+  <depend>rosidl_default_generators</depend>
+  
+  <exec_depend>amnt_index_python</exec_depend>
+  <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
