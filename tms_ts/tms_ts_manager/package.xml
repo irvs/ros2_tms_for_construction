@@ -16,6 +16,7 @@
   <exec_depend>tms_ts_subtask</exec_depend>
   <exec_depend>bsoncxx</exec_depend>
   <exec_depend>mongocxx</exec_depend>
+  <exec_depend>nav2_msgs</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
