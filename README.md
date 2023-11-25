@@ -57,20 +57,21 @@ https://www.mongodb.com/docs/compass/current/install/
 ### Create a workspace
 
 ```
+cd
 mkdir -p ~/ros2-tms-for-constructoin_ws/src
 ```
 
 ### Clone this repository
 
 ```
-cd ~/ros2-tms-for-constructoin_ws/src/ros2_tms_for_construction
+cd ~/ros2-tms-for-constructoin_ws/src
 git clone https://github.com/irvs/ros2_tms_for_construction.git
 ```
 
 
 ### Install required python packages
 ```
-cd ~/ros2-tms-for-constructoin_ws/src/ros2_tms_for_construction_ws
+cd ~/ros2-tms-for-constructoin_ws/src/ros2_tms_for_construction
 python3 -m pip install -r requirements.txt
 ```
 
@@ -153,7 +154,7 @@ sudo apt install nlohmann-json3-dev
 
 ```
 cd ~/ros2-tms-for-constructoin_ws
-colcon build
+colcon build && source install/setup.bash
 ```
 
 
