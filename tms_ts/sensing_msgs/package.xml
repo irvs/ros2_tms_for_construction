@@ -3,9 +3,9 @@
 <package format="3">
   <name>sensing_msgs</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="kasahara.yuichiro.res@gmail.com">common</maintainer>
-  <license>TODO: License declaration</license>
+  <description>The sensing_msgs package</description>
+  <maintainer email="kasahara@irvs.ait.kyushu-u.ac.jp">Yuichiro Kasahara</maintainer>
+  <license>Apache License, Version 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
