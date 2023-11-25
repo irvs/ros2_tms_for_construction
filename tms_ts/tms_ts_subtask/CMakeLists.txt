@@ -17,7 +17,6 @@ find_package(nlohmann_json REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(rosidl_default_runtime REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(nav2_msgs REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(bsoncxx REQUIRED)
@@ -31,8 +30,7 @@ set(dependencies_cpp
   ament_cmake
   behaviortree_cpp_v3
   nlohmann_json
-  geometry_msgs
-  nav2_msgs)
+  geometry_msgs)
 
 add_library(${PROJECT_NAME} SHARED
   src/subtask_base.cpp

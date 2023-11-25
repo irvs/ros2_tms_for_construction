@@ -16,7 +16,6 @@ find_package(nlohmann_json REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(rosidl_default_runtime REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(nav2_msgs REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(bsoncxx REQUIRED)
@@ -33,7 +32,6 @@ set(dependencies_cpp
   behaviortree_cpp_v3
   nlohmann_json
   geometry_msgs
-  nav2_msgs
   rclpy
   tms_ts_subtask)
 
@@ -62,7 +60,6 @@ set(dependencies_py
   ament_cmake_python
   rclpy_action
   geometry_msgs
-  nav2_msgs
   ament_cmake_python)
 
 ament_python_install_package(scripts)
