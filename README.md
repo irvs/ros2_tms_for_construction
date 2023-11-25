@@ -51,9 +51,6 @@ https://www.mongodb.com/docs/compass/current/install/
 - setuptools 58.2.0
 - numpy-quaternion 2022.4.3
 
-```
-python3 -m pip install -r requirements.txt
-```
 
 ## Setup
 
@@ -66,15 +63,15 @@ mkdir -p ~/ros2-tms-for-constructoin_ws/src
 ### Clone this repository
 
 ```
-cd ~/ros2-tms-for-constructoin_ws/src/
+cd ~/ros2-tms-for-constructoin_ws/src/ros2_tms_for_construction
 git clone https://github.com/irvs/ros2_tms_for_construction.git
 ```
 
-### Build the workspace
 
+### Install required python packages
 ```
-cd ~/ros2-tms-for-constructoin_ws
-colcon build
+cd ~/ros2-tms-for-constructoin_ws/src/ros2_tms_for_construction_ws
+python3 -m pip install -r requirements.txt
 ```
 
 ### Setup MongoDB
@@ -99,6 +96,20 @@ mongoimport --db rostmsdb --collection task --file rostmsdb.task.json --jsonArra
 cd .. && rm -rf  rostmsdb_collections
 ```
 
+## Setup BehaviorTree.CPP
+
+```
+sudo apt install libzmq3-dev libboost-dev libncurses5-dev libncursesw5-dev
+cd
+git clone --branch v3.8 https://github.com/BehaviorTree/BehaviorTree.CPP.git
+cd BehaviorTree.CPP
+mkdir build; cd build
+cmake ..
+make
+sudo make install
+cd && rm -rf BehaviorTree.CPP
+```
+
 ### Setup mongocxx / bsoncxx
 
 ```
@@ -108,7 +119,7 @@ tar -xzf mongo-c-driver-1.24.4.tar.gz
 cd mongo-c-driver-1.24.4
 mkdir cmake-build
 cd cmake-build
-cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF ..
+cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF .. -DCMAKE_INSTALL_PREFIX=/usr/local
 sudo make install
 
 cd
@@ -121,20 +132,30 @@ sudo cmake --build . --target install
 ￼
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
-
+cd && rm -rf mongo-c-driver-1.24.4 mongo-c-driver-1.24.4.tar.gz mongo-cxx-driver-r3.8.1 mongo-cxx-driver-r3.8.1.tar.gz
 ```
 
 ### Setup Groot
 ```
 sudo apt install qtbase5-dev libqt5svg5-dev libzmq3-dev libdw-dev
-git clone https://github.com/BehaviorTree/Groot.git
-cd Groot
-git submodule update --init --recursive
-mkdir build; cd build
-cmake ..
-make
-./Groot
+cd ~/ros2-tms-for-constructoin_ws/src && git clone https://github.com/BehaviorTree/Groot.git
+cd .. && colcon build --packages-select groot
+./build/groot/Groot
 ```
+
+### Install nlohmann-json library
+
+```
+sudo apt install nlohmann-json3-dev
+```
+
+### Build the workspace
+
+```
+cd ~/ros2-tms-for-constructoin_ws
+colcon build
+```
+
 
 ## How to use
 
@@ -450,8 +471,8 @@ The task to be executed at this time is the task data in the task collection of 
 Groot can be started by executing the following command.
 
 ```
-cd ~/Groot/build
-./Groot
+cd ~/ros2-tms-for-constructoin_ws
+./build/groot/Groot
 ```
 After executing the above command, if Groot can be successfully started, the following screen will be output.
 
