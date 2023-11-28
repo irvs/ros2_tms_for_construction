@@ -65,7 +65,7 @@ mkdir -p ~/ros2-tms-for-constructoin_ws/src
 
 ```
 cd ~/ros2-tms-for-constructoin_ws/src
-git clone https://github.com/irvs/ros2_tms_for_construction.git
+git clone https://github.com/irvs/ros2_tms_for_construction.git -b develop/ts # modify if this is the other branch
 ```
 
 
