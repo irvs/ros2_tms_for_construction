@@ -8,7 +8,8 @@
   <license>Apache License, Version 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>tms_ts_subtask</buildtool_depend>
+  
+  <build_depend>tms_ts_subtask</build_depend>
 
   <exec_depend>rclcpp</exec_depend>
   <exec_depend>std_msgs</exec_depend>
