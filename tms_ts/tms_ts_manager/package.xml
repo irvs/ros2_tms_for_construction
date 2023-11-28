@@ -8,7 +8,8 @@
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>tms_ts_subtask</buildtool_depend>
+  
+  <build_depend>tms_ts_subtask</build_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
