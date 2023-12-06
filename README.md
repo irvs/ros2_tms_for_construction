@@ -78,6 +78,7 @@ python3 -m pip install -r requirements.txt
 ### Setup MongoDB
 
 > **Note**
+>
 > If a rostmsdb database already exists on mongodb, an error will occur during the execution of the following command. In such a case, delete the rostmsdb database in your environment and then execute the following command.
 
 
@@ -503,7 +504,13 @@ After setting each parameter, click the "connect" button to see how the task is 
 > **Note**
 > 
 > The ability to visualize tasks being executed by Groot cannot be performed unless the task is being executed by the behavior tree. 
+>　So, if you want to visualize the  task sequence on Groot, you have to follow  the step below.
 >
+>  ![](docs/groot_7.png)
+>
+>  If you click the above button in Groot without the behavior tree running, the following error will occur.
+>  
+>  ![](docs/groot_8.png)
 
 If you want to change the task to be executed, update the following parameter in ros2_tms_for_construction/tms_ts/tms_ts_launch/launch/tms_ts_construction.launch.py to the task_id value of the task you want to execute, and then execute the following.
 
