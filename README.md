@@ -526,7 +526,7 @@ colcon build --packages-select tms_ts_launch && source install/setup.bash
 
 This chapter explain how to link ROS2-TMS-for-construction and OperaSim-PhysX , which is being developed by PWRI.
 
-Please follow the instructions in the ReadMe document on the official github page (URL: https://github.com/pwri-opera/OperaSim-PhysX) on how to set up windows PC and ubuntu 22.04 PC for using OperaSimPhysX.
+Please follow the instructions in the ReadMe document on the official GitHub page (URL: https://github.com/pwri-opera/OperaSim-PhysX) on how to set up windows PC and ubuntu 22.04 PC for using OperaSimPhysX.
 
 Once the connection between OperaSim-PhysX and ROS2 Humble is established, run the following command to start ROS2-TMS-for-construction on Ubuntu22.04 PC.
 
@@ -536,7 +536,7 @@ source install/setup.bash
 ros2 launch tms_ts_launch tms_ts_construction.launch.py
 ```
 
-As explained in Chapter 4, you can execute the specified task using the task scheduler by clicking the green button that appears when starting rso2-tms-for-construction. If you want to make an emergency stop while executing a task, click on the red button.
+As explained in Chapter 4, you can execute the specified task using the task scheduler by clicking the green button that appears when starting ros2-tms-for-construction. If you want to make an emergency stop while executing a task, click on the red button.
 
 Of course, you can also use Groot to monitor the tasks being performed by the Behavior Tree while the Task Scheduler is running, as shown in the following video.
 
