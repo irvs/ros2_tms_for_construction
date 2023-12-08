@@ -58,20 +58,20 @@ https://www.mongodb.com/docs/compass/current/install/
 
 ```
 cd
-mkdir -p ~/ros2-tms-for-constructoin_ws/src
+mkdir -p ~/ros2-tms-for-construction_ws/src
 ```
 
 ### Clone this repository
 
 ```
-cd ~/ros2-tms-for-constructoin_ws/src
+cd ~/ros2-tms-for-construction_ws/src
 git clone https://github.com/irvs/ros2_tms_for_construction.git -b develop/ts # modify if this is the other branch
 ```
 
 
 ### Install required python packages
 ```
-cd ~/ros2-tms-for-constructoin_ws/src/ros2_tms_for_construction
+cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction
 python3 -m pip install -r requirements.txt
 ```
 
@@ -84,7 +84,7 @@ python3 -m pip install -r requirements.txt
 
 ```
 sudo systemctl start mongod
-cd ~/ros2-tms-for-constructoin_ws/src/ros2_tms_for_construction/demo
+cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction/demo
 unzip rostmsdb_collections.zip
 cd rostmsdb_collections/
 mongoimport --db rostmsdb --collection default --file rostmsdb.default.json --jsonArray
@@ -140,7 +140,7 @@ cd && rm -rf mongo-c-driver-1.24.4 mongo-c-driver-1.24.4.tar.gz mongo-cxx-driver
 ### Setup Groot
 ```
 sudo apt install qtbase5-dev libqt5svg5-dev libzmq3-dev libdw-dev
-cd ~/ros2-tms-for-constructoin_ws/src && git clone https://github.com/BehaviorTree/Groot.git
+cd ~/ros2-tms-for-construction_ws/src && git clone https://github.com/BehaviorTree/Groot.git
 cd .. && colcon build --packages-select groot
 ./build/groot/Groot
 ```
@@ -154,7 +154,7 @@ sudo apt install nlohmann-json3-dev
 ### Build the workspace
 
 ```
-cd ~/ros2-tms-for-constructoin_ws
+cd ~/ros2-tms-for-construction_ws
 colcon build && source install/setup.bash
 ```
 
@@ -257,7 +257,7 @@ The following demonstrations are presented here.
 Before demonstration, change directory and setup this workspace.
 
 ```
-cd ~/ros2-tms-for-constructoin_ws
+cd ~/ros2-tms-for-construction_ws
 source install/setup.bash
 ```
 
@@ -435,7 +435,7 @@ sudo systemctl start mongod
  If the database or collections does not exist, please execute the following command to add the database
 
 ```
-cd ~/ros2-tms-for-constructoin_ws/src/ros2_tms_for_construction/demo
+cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction/demo
 unzip rostmsdb_collections.zip
 cd rostmsdb_collections/
 mongoimport --db rostmsdb --collection default --file rostmsdb.default.json --jsonArray
@@ -453,7 +453,7 @@ cd .. && rm -rf  rostmsdb_collections
 Once you have verified that MongoDB looks like the image above, execute the following command.
 
 ```
-cd ~/ros2-tms-for-constructoin_ws
+cd ~/ros2-tms-for-construction_ws
 source install/setup.bash
 ros2 launch tms_ts_launch tms_ts_construction.launch.py
 ```
@@ -473,7 +473,7 @@ The task to be executed at this time is the task data in the task collection of 
 Groot can be started by executing the following command.
 
 ```
-cd ~/ros2-tms-for-constructoin_ws
+cd ~/ros2-tms-for-construction_ws
 ./build/groot/Groot
 ```
 After executing the above command, if Groot can be successfully started, the following screen will be output.
@@ -515,7 +515,7 @@ After setting each parameter, click the "connect" button to see how the task is 
 If you want to change the task to be executed, update the following parameter in ros2_tms_for_construction/tms_ts/tms_ts_launch/launch/tms_ts_construction.launch.py to the task_id value of the task you want to execute, and then execute the following.
 
 ```
-cd ~/ros2-tms-for-constructoin_ws
+cd ~/ros2-tms-for-construction_ws
 colcon build --packages-select tms_ts_launch && source install/setup.bash
 ```
 
@@ -531,7 +531,7 @@ Please follow the instructions in the ReadMe document on the official github pag
 Once the connection between OperaSim-PhysX and ROS2 Humble is established, run the following command to start ROS2-TMS-for-construction on Ubuntu22.04 PC.
 
 ```
-cd ~/ros2-tms-for-constructoin_ws
+cd ~/ros2-tms-for-construction_ws
 source install/setup.bash
 ros2 launch tms_ts_launch tms_ts_construction.launch.py
 ```
@@ -560,7 +560,7 @@ Combining these nodes, we can create a task tree as shown below.
 
 3. Execute the following command to save the created task data to the database Replace [file_name] in the command with the filename of the xml file you created.
   ```
-  cd ~/ros2-tms-for-constructoin_ws
+  cd ~/ros2-tms-for-construction_ws
   colcon build --packages-select tms_ts_manager && source install/setup.bash
   ros2 run tms_ts_manager task_generator.py --ros-args -p bt_tree_xml_file_name:=[file_name]
   ```
