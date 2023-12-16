@@ -21,20 +21,19 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "std_msgs/msg/float64.hpp"
+#include "std_msgs/msg/bool.hpp"
 
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
-#include "tms_ts_subtask/subtask_base.hpp"
-#include "tms_ts_subtask/zx120/sample_subtasks.hpp"
-#include "tms_ts_subtask/zx200/sample_subtasks.hpp"
+#include "tms_ts_subtask/crane/zx120/sample_subtasks.hpp"
+#include "tms_ts_subtask/crane/zx200/sample_subtasks.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
 
-bool shutdown_requested = false;
+bool cancelRequested = false;
 
 class ExecTaskSequence : public rclcpp::Node{
 public:
@@ -59,22 +58,36 @@ public:
     task_sequence = std::string(msg->data);
     tree = factory.createTreeFromText(task_sequence);
     BT::PublisherZMQ publisher_zmq(tree);
-    
-    std::thread behavior_tree_thread([this] {
-      NodeStatus status = tree.tickRoot();
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence"), "status: " << status);
-    });
-    behavior_tree_thread.detach();
-
-    while(rclcpp::ok() && status == NodeStatus::RUNNING){ 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        if(!rclcpp::ok() || shutdown_requested){
-          exit(0);
+    try{
+      while(rclcpp::ok() && status == NodeStatus::RUNNING) {
+        status = tree.tickRoot();
+        if (cancelRequested == true) {
+          tree.rootNode()->halt();
+          status = NodeStatus::FAILURE;
         }
+      };
+    }catch(const std::exception& e){
+        RCLCPP_ERROR(
+          rclcpp::get_logger("exec_task_sequence"),
+          "Behavior tree threw an exception");
+          status = NodeStatus::FAILURE;
     }
+
+    switch(status){
+      case NodeStatus::SUCCESS:
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence"), "Task is succesfully finished.");
+        break;
+
+      case NodeStatus::FAILURE:
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence"), "Task is canceled.");
+        break;
+    }
+
+    subscription_.reset();
   }
+
 private:
-    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_, shutdown_subscription;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
     BehaviorTreeFactory factory;
     BT::Tree tree;
     std::string task_sequence;
@@ -84,15 +97,17 @@ private:
 class ForceQuietNode : public rclcpp::Node{
 public:
   ForceQuietNode() : Node("force_quiet_node"){
-    shutdown_subscription = this->create_subscription<std_msgs::msg::String>("/emergency_signal", 10,std::bind(&ForceQuietNode::sample_callback, this, _1));
+    shutdown_subscription = this->create_subscription<std_msgs::msg::Bool>("/emergency_signal", 10,std::bind(&ForceQuietNode::callback, this, _1));
   }
+
+  void callback(const std_msgs::msg::Bool & msg) {
+    if (msg.data == true) {
+        cancelRequested = true;
+        shutdown_subscription.reset();
+    };
+  };
 private:
-  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr shutdown_subscription;
-  void sample_callback(const std_msgs::msg::String & msg) const{
-    if (msg.data == "EMERGENCY") {
-        shutdown_requested = true;
-  };
-  };
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr shutdown_subscription;
 };
 
 int main(int argc, char **argv){
