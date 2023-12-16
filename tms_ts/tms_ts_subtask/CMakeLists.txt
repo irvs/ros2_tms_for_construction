@@ -21,6 +21,7 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(bsoncxx REQUIRED)
 find_package(mongocxx REQUIRED)
+find_package(tms_msg_ts REQUIRED)
 
 
 set(dependencies_cpp
@@ -30,13 +31,13 @@ set(dependencies_cpp
   ament_cmake
   behaviortree_cpp_v3
   nlohmann_json
-  geometry_msgs)
+  geometry_msgs
+  tms_msg_ts)
+
 
 add_library(${PROJECT_NAME} SHARED
-  src/subtask_base.cpp
-  src/sample/sample_subtasks.cpp
-  src/zx120/sample_subtasks.cpp
-  src/zx200/sample_subtasks.cpp)
+  #src/action_node_base.cpp
+  src/action_node_base_2.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -54,6 +55,10 @@ bsoncxx)
 
 
 ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
+
+install(TARGETS
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 install(DIRECTORY include/
   DESTINATION include/

@@ -50,6 +50,8 @@ NodeStatus SubtaskControlZx120Boom::tick(){
       publisher_->publish(msg_rad);
       RCLCPP_INFO_STREAM(node_->get_logger(), "Publishing boom position: " << deg << " [deg]");
       sleep(1);
+      setStatusRunningAndYield();
+      // mco_yield(NodeStatus::RUNNING);
   }
   RCLCPP_INFO_STREAM(node_->get_logger(), "Complete boom modification");
   return NodeStatus::SUCCESS;
@@ -73,6 +75,7 @@ PortsList SubtaskControlZx120Swing::providedPorts() { return { InputPort<float>(
         publisher_->publish(msg_rad);
         RCLCPP_INFO_STREAM(node_->get_logger(), "Publishing swing position: " << deg << " [deg]");
         sleep(1);
+        setStatusRunningAndYield();
     }
     RCLCPP_INFO_STREAM(node_->get_logger(), "Complete swing modification");
     return NodeStatus::SUCCESS;
@@ -96,6 +99,7 @@ NodeStatus SubtaskControlZx120Arm::tick(){
       publisher_->publish(msg_rad);
       RCLCPP_INFO_STREAM(node_->get_logger(), "Publishing arm position: " << deg << " [deg]");
       sleep(1);
+      setStatusRunningAndYield();
   }
   RCLCPP_INFO_STREAM(node_->get_logger(), "Complete arm modification");
   return NodeStatus::SUCCESS;
@@ -119,6 +123,7 @@ NodeStatus SubtaskControlZx120Bucket::tick(){
         publisher_->publish(msg_rad);
         RCLCPP_INFO_STREAM(node_->get_logger(), "Publishing bucket position: " << deg << " [deg]");
         sleep(1);
+        setStatusRunningAndYield();
     }
     RCLCPP_INFO_STREAM(node_->get_logger(), "Complete bucket modification");
     return NodeStatus::SUCCESS;

@@ -21,22 +21,8 @@ using namespace std::chrono_literals;
 BaseClassSubtasks::BaseClassSubtasks(const std::string& name, const NodeConfiguration& config) : CoroActionNode(name, config){
     node_ = rclcpp::Node::make_shared(name);
     DatabaseManager::getInstance();
-    // StartEmergencyThread();
 }
 
-// 実行中のサブタスクを強制終了するための関数
-// void BaseClassSubtasks::StartEmergencyThread() {
-//     if (!emergency_thread_running_) {
-//         emergency_thread_running_ = true;
-//         emergency_thread_ = std::thread([this]() {
-//             while (emergency_thread_running_) {
-//                 std::cout << "=================================================================" << std::endl;
-//                 sleep(1);
-//                 // return NodeStatus::SUCCESS;
-//             }
-//         });
-//     }
-// }
 
 
 // データベースから動的パラメータの値をとってくるための関数
