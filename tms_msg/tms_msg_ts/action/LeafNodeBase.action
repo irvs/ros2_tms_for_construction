@@ -1,0 +1,8 @@
+# Goal
+string parameter_id
+---
+# Result
+bool result
+---
+# Feedback
+int32 current_pos

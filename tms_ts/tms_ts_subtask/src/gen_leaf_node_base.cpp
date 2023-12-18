@@ -27,15 +27,15 @@ LeafNodeBase::LeafNodeBase(const std::string& name, const NodeConfiguration& con
       rclcpp::CallbackGroupType::MutuallyExclusive,
       false);
     callback_group_executor_.add_callback_group(callback_group_, node_->get_node_base_interface());
-    goal_ = tms_msg_ts::action::ActionSample::Goal();
+    goal_ = tms_msg_ts::action::LeafNodeBase::Goal();
     goal_.goal_pos = -40; //action serverに送るgoalの値をここで設定
-    result_ = rclcpp_action::ClientGoalHandle<tms_msg_ts::action::ActionSample>::WrappedResult();
+    result_ = rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::WrappedResult();
     LeafNodeBase::createActionClient(action_name_);
 }
 
 // action clientを新たに作成する関数
 void LeafNodeBase::createActionClient(const std::string & action_name){
-    action_client_ = rclcpp_action::create_client<tms_msg_ts::action::ActionSample>(node_, action_name, callback_group_);
+    action_client_ = rclcpp_action::create_client<tms_msg_ts::action::LeafNodeBase>(node_, action_name, callback_group_);
 
     RCLCPP_DEBUG(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
     if (!action_client_->wait_for_action_server(5s)) {
@@ -51,11 +51,11 @@ void LeafNodeBase::createActionClient(const std::string & action_name){
 // action clientのgoal,feedback,resultに対応するcallback関数をこの関数内で定義
 void LeafNodeBase::send_new_goal(){
     goal_result_available_ = false;
-    auto send_goal_options = typename rclcpp_action::Client<tms_msg_ts::action::ActionSample>::SendGoalOptions();
+    auto send_goal_options = typename rclcpp_action::Client<tms_msg_ts::action::LeafNodeBasee>::SendGoalOptions();
     
     // actionのresultに対応するcallback関数をここで定義
     send_goal_options.result_callback =
-      [this](const typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::ActionSample>::WrappedResult & result) {
+      [this](const typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::WrappedResult & result) {
         if (this->goal_handle_->get_goal_id() == result.goal_id) {
           goal_result_available_ = true;
           result_ = result;
@@ -63,14 +63,14 @@ void LeafNodeBase::send_new_goal(){
       };
     // actionのfeedbackに対応するcallback関数をここで定義
     send_goal_options.feedback_callback =
-      [this](typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::ActionSample>::SharedPtr,
-        const std::shared_ptr<const typename tms_msg_ts::action::ActionSample::Feedback> feedback) {
+      [this](typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::SharedPtr,
+        const std::shared_ptr<const typename tms_msg_ts::action::LeafNodeBase::Feedback> feedback) {
         feedback_ = feedback;
       };
 
     //actionのgoalに対応するcallback関数をここで定義
     future_goal_handle_ = std::make_shared<
-      std::shared_future<typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::ActionSample>::SharedPtr>>(
+      std::shared_future<typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::SharedPtr>>(
       action_client_->async_send_goal(goal_, send_goal_options));
 
     // time_goal_sent_変数にactionのgoalを送信した時刻を格納
@@ -141,7 +141,6 @@ NodeStatus LeafNodeBase::tick() {
   if (status() == NodeStatus::IDLE) {
     setStatus(NodeStatus::RUNNING);
     should_send_goal_ = true;
-    LeafNodeBase::on_tick();
     if (!should_send_goal_) {
         return NodeStatus::FAILURE;
       }
@@ -167,7 +166,7 @@ NodeStatus LeafNodeBase::tick() {
 
     // action serverへgoalを送ってからresultを受け取るまでの間にif文の中が実行される
     if (rclcpp::ok() && !goal_result_available_) {
-      on_wait_for_result(feedback_); //この関数実行時にブロッキングが起きるため、長い処理はこの関数内で実行しない
+
       feedback_.reset();
       auto goal_status = goal_handle_->get_status();
       if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
@@ -209,6 +208,7 @@ NodeStatus LeafNodeBase::tick() {
   
   // サブタスク側のaction serverからactionのresultを受け取って、NodeStatusに変換しtick()の戻り値とする部分
   switch (result_.code) {
+    RCLCPP_INFO(node_->get_logger(), "======================================================");
     case rclcpp_action::ResultCode::SUCCEEDED:
       RCLCPP_INFO(node_->get_logger(), "Succeeded the Subtask");
       bt_status = NodeStatus::SUCCESS;

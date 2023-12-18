@@ -22,6 +22,3 @@ LeafNodeSampleZx120Boom::LeafNodeSampleZx120Boom(const std::string& name, const 
 };
 
 PortsList LeafNodeSampleZx120Boom::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
-
-
-void LeafNodeSampleZx120Boom::on_tick(){ }
