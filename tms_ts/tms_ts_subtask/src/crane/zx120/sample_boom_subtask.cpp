@@ -7,21 +7,21 @@
 #include "tms_msg_ts/action/action_sample.hpp"
 
 
-class Zx120SampleActionServer : public rclcpp::Node
+class Zx120SampleBoomActionServer : public rclcpp::Node
 {
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::ActionSample>;
 
 
-  Zx120SampleActionServer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions()): Node("zx120_sample_action_server", options)
+  Zx120SampleBoomActionServer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions()): Node("zx120_sample_boom_action_server", options)
   {
     publisher_ = this->create_publisher<std_msgs::msg::Float64>("/zx120/boom/cmd",10);
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::ActionSample>(
       this,
-      "zx120_sample",
-      std::bind(&Zx120SampleActionServer::handle_goal, this,std::placeholders::_1, std::placeholders::_2),
-      std::bind(&Zx120SampleActionServer::handle_cancel, this, std::placeholders::_1),
-      std::bind(&Zx120SampleActionServer::handle_accepted, this, std::placeholders::_1));
+      "sample_zx120_boom",
+      std::bind(&Zx120SampleBoomActionServer::handle_goal, this,std::placeholders::_1, std::placeholders::_2),
+      std::bind(&Zx120SampleBoomActionServer::handle_cancel, this, std::placeholders::_1),
+      std::bind(&Zx120SampleBoomActionServer::handle_accepted, this, std::placeholders::_1));
   }
 
 private:
@@ -31,7 +31,6 @@ private:
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const tms_msg_ts::action::ActionSample::Goal> goal)
   {
     RCLCPP_INFO(this->get_logger(), "Received goal request with order %d", goal->goal_pos);
-    if (goal->goal_pos > 9000) { return rclcpp_action::GoalResponse::REJECT; }
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   }
 
@@ -44,7 +43,7 @@ private:
   void handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
   {
     using namespace std::placeholders;
-    std::thread{std::bind(&Zx120SampleActionServer::execute, this, _1), goal_handle}.detach();
+    std::thread{std::bind(&Zx120SampleBoomActionServer::execute, this, _1), goal_handle}.detach();
   }
 
   void execute(const std::shared_ptr<GoalHandle> goal_handle)
@@ -84,7 +83,7 @@ private:
 int main(int argc, char *argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<Zx120SampleActionServer>());
+  rclcpp::spin(std::make_shared<Zx120SampleBoomActionServer>());
   rclcpp::shutdown();
   return 0;
 }

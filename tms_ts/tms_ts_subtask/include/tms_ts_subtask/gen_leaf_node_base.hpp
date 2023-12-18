@@ -50,9 +50,9 @@ public:
 };
 
 
-class BaseClassSubtasks : public CoroActionNode{
+class LeafNodeBase : public CoroActionNode{
 public:
-    BaseClassSubtasks(const std::string& name, const NodeConfiguration& config);
+    LeafNodeBase(const std::string& name, const NodeConfiguration& config);
     NodeStatus tick() override;
     std::map<std::string, int> GetParamFromDB(int parameter_id);
     std::map<std::string, int> GetParamFromDB(std::string parts_name);
@@ -60,14 +60,15 @@ public:
     bool should_send_goal_ = true;
     bool goal_result_available_ = false;
     bool goal_updated_ = false;
-    std::string action_name_ = "template_action_node_name"; // Please specify the action node name per corresponding subtasks
+    std::string action_name_ = "sample_zx120_boom"; // Please specify the action node name per corresponding subtasks
 
     void createActionClient(const std::string & action_name); 
     void send_new_goal();
     void halt() override;
-
-    virtual void on_tick();
+    virtual void on_tick(){};
     virtual void on_wait_for_result(std::shared_ptr<const typename tms_msg_ts::action::ActionSample::Feedback>){}; //feedbackを受け取ったときの処理はこの関数に実装
+    bool should_cancel_goal();
+    
     bool is_future_goal_handle_complete(std::chrono::milliseconds & elapsed);
 
     NodeStatus bt_status;
@@ -81,7 +82,6 @@ public:
     typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::ActionSample>::WrappedResult result_;
     std::shared_ptr<const typename tms_msg_ts::action::ActionSample::Feedback> feedback_;
 
-    std::string action_client_node_name = "action_client_node(Please specify unique action client node name.)";
 
     rclcpp::Node::SharedPtr node_;
     rclcpp::CallbackGroup::SharedPtr callback_group_;
