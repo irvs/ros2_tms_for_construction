@@ -38,8 +38,6 @@ public:
   LeafNodeSampleZx120Boom(const std::string& name, const NodeConfiguration& config);
   static PortsList providedPorts();
   //void halt() override;
-  void on_tick() override;
-  // action_name_ = "sample_zx120_boom";
 };
 
 #endif
