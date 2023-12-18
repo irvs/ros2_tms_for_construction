@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_subtask/action_node_base_2.hpp"
+#include "tms_ts_subtask/leaf_node_base.hpp"
 
 using std::placeholders::_1;
 using namespace BT;
 using namespace std::chrono_literals;
 
 
-BaseClassSubtasks::BaseClassSubtasks(const std::string& name, const NodeConfiguration& config) : CoroActionNode(name, config){
+LeafNodeBase::LeafNodeBase(const std::string& name, const NodeConfiguration& config) : CoroActionNode(name, config){
     node_ = rclcpp::Node::make_shared(name);
     DatabaseManager::getInstance();
     
@@ -30,11 +30,11 @@ BaseClassSubtasks::BaseClassSubtasks(const std::string& name, const NodeConfigur
     goal_ = tms_msg_ts::action::ActionSample::Goal();
     goal_.goal_pos = -40; //action serverに送るgoalの値をここで設定
     result_ = rclcpp_action::ClientGoalHandle<tms_msg_ts::action::ActionSample>::WrappedResult();
-    BaseClassSubtasks::createActionClient(action_name_);
+    LeafNodeBase::createActionClient(action_name_);
 }
 
 // action clientを新たに作成する関数
-void BaseClassSubtasks::createActionClient(const std::string & action_name){
+void LeafNodeBase::createActionClient(const std::string & action_name){
     action_client_ = rclcpp_action::create_client<tms_msg_ts::action::ActionSample>(node_, action_name, callback_group_);
 
     RCLCPP_DEBUG(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
@@ -49,7 +49,7 @@ void BaseClassSubtasks::createActionClient(const std::string & action_name){
 }
 
 // action clientのgoal,feedback,resultに対応するcallback関数をこの関数内で定義
-void BaseClassSubtasks::send_new_goal(){
+void LeafNodeBase::send_new_goal(){
     goal_result_available_ = false;
     auto send_goal_options = typename rclcpp_action::Client<tms_msg_ts::action::ActionSample>::SendGoalOptions();
     
@@ -78,7 +78,7 @@ void BaseClassSubtasks::send_new_goal(){
 }
 
 
-  bool BaseClassSubtasks::is_future_goal_handle_complete(std::chrono::milliseconds & elapsed)
+  bool LeafNodeBase::is_future_goal_handle_complete(std::chrono::milliseconds & elapsed)
   {
     auto remaining = server_timeout_ - elapsed;
     if (remaining <= std::chrono::milliseconds(0)) {
@@ -104,17 +104,48 @@ void BaseClassSubtasks::send_new_goal(){
     return false;
   }
 
+  void LeafNodeBase::halt()
+  {
+    if (should_cancel_goal()) {
+      auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
+      if (callback_group_executor_.spin_until_future_complete(future_cancel, server_timeout_) !=
+        rclcpp::FutureReturnCode::SUCCESS)
+      {
+        RCLCPP_ERROR(
+          node_->get_logger(),
+          "Failed to cancel action server for %s", action_name_.c_str());
+      }
+    }
 
-NodeStatus BaseClassSubtasks::tick() {
+    setStatus(BT::NodeStatus::IDLE);
+  }
+
+  bool LeafNodeBase::should_cancel_goal()
+  {
+    if (status() != BT::NodeStatus::RUNNING) {
+      return false;
+    }
+    if (!goal_handle_) {
+      return false;
+    }
+
+    callback_group_executor_.spin_some();
+    auto status = goal_handle_->get_status();
+
+    return status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
+           status == action_msgs::msg::GoalStatus::STATUS_EXECUTING;
+  }
+
+NodeStatus LeafNodeBase::tick() {
   // tick関数が呼び出された際にstatus()==NodeStatus::IDLEの場合はNodeStatus::RUNNINGに変更して、action serverへgoalを送信する
   if (status() == NodeStatus::IDLE) {
     setStatus(NodeStatus::RUNNING);
     should_send_goal_ = true;
-    BaseClassSubtasks::on_tick();
+    LeafNodeBase::on_tick();
     if (!should_send_goal_) {
         return NodeStatus::FAILURE;
       }
-    BaseClassSubtasks::send_new_goal();
+    LeafNodeBase::send_new_goal();
   }
 
   //action serverからの通信を受け取るまでの時間を計測し、server_timeout_を超えた場合にtick関数はNodeStatus::FAILUREを返す
@@ -136,7 +167,7 @@ NodeStatus BaseClassSubtasks::tick() {
 
     // action serverへgoalを送ってからresultを受け取るまでの間にif文の中が実行される
     if (rclcpp::ok() && !goal_result_available_) {
-      on_wait_for_result(feedback_);　//この関数実行時にブロッキングが起きるため、長い処理はこの関数内で実行しない
+      on_wait_for_result(feedback_); //この関数実行時にブロッキングが起きるため、長い処理はこの関数内で実行しない
       feedback_.reset();
       auto goal_status = goal_handle_->get_status();
       if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
@@ -202,7 +233,7 @@ NodeStatus BaseClassSubtasks::tick() {
 
 
 // データベースから動的パラメータの値をとってくるための関数
-std::map<std::string, int> BaseClassSubtasks::GetParamFromDB(int parameter_id){
+std::map<std::string, int> LeafNodeBase::GetParamFromDB(int parameter_id){
     //std::lock_guard<std::mutex> lock(db_instance_mutex);
     mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
     mongocxx::database db = client["rostmsdb"];

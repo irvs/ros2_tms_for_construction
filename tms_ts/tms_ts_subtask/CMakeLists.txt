@@ -34,10 +34,13 @@ set(dependencies_cpp
   geometry_msgs
   tms_msg_ts)
 
+add_executable(zx120_sample_boom_subtask src/crane/zx120/sample_boom_subtask.cpp)
+ament_target_dependencies(zx120_sample_boom_subtask ${dependencies_cpp})
 
 add_library(${PROJECT_NAME} SHARED
-  #src/action_node_base.cpp
-  src/action_node_base_2.cpp)
+  # src/leaf_node_base.cpp
+  src/gen_leaf_node_base.cpp
+  src/crane/zx120/sample_leaf_nodes.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -57,6 +60,7 @@ bsoncxx)
 ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
 
 install(TARGETS
+  zx120_sample_boom_subtask
   DESTINATION lib/${PROJECT_NAME}
 )
 

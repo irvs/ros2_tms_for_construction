@@ -27,8 +27,7 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
-#include "tms_ts_subtask/crane/zx120/sample_subtasks.hpp"
-#include "tms_ts_subtask/crane/zx200/sample_subtasks.hpp"
+#include "tms_ts_subtask/crane/zx120/sample_leaf_nodes.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -43,15 +42,15 @@ public:
     // ic120
     
     // zx120
-    factory.registerNodeType<SubtaskControlZx120Boom>("SubtaskControlZx120Boom");
-    factory.registerNodeType<SubtaskControlZx120Swing>("SubtaskControlZx120Swing");
-    factory.registerNodeType<SubtaskControlZx120Arm>("SubtaskControlZx120Arm");
-    factory.registerNodeType<SubtaskControlZx120Bucket>("SubtaskControlZx120Bucket");
+    factory.registerNodeType<LeafNodeSampleZx120Boom>("LeafNodeSampleZx120Boom");
+    // factory.registerNodeType<SubtaskControlZx120Swing>("SubtaskControlZx120Swing");
+    // factory.registerNodeType<SubtaskControlZx120Arm>("SubtaskControlZx120Arm");
+    // factory.registerNodeType<SubtaskControlZx120Bucket>("SubtaskControlZx120Bucket");
     // zx200
-    factory.registerNodeType<SubtaskControlZx200Boom>("SubtaskControlZx200Boom");
-    factory.registerNodeType<SubtaskControlZx200Swing>("SubtaskControlZx200Swing");
-    factory.registerNodeType<SubtaskControlZx200Arm>("SubtaskControlZx200Arm");
-    factory.registerNodeType<SubtaskControlZx200Bucket>("SubtaskControlZx200Bucket");
+    // factory.registerNodeType<SubtaskControlZx200Boom>("SubtaskControlZx200Boom");
+    // factory.registerNodeType<SubtaskControlZx200Swing>("SubtaskControlZx200Swing");
+    // factory.registerNodeType<SubtaskControlZx200Arm>("SubtaskControlZx200Arm");
+    // factory.registerNodeType<SubtaskControlZx200Bucket>("SubtaskControlZx200Bucket");
     
   }
   void topic_callback(const std_msgs::msg::String::SharedPtr msg){
