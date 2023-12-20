@@ -10,13 +10,13 @@
 #include <glog/logging.h>
 
 
-class Zx120SampleBoomActionServer : public tms_ts_subtask::BaseClassSubtasks
+class Zx120SampleBoomActionServer : public BaseClassSubtasks
 {
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
 
 
-  Zx120SampleBoomActionServer(): tms_ts_subtask::BaseClassSubtasks("zx120_sample_boom_action_server")
+  Zx120SampleBoomActionServer(): BaseClassSubtasks("zx120_sample_boom_action_server")
   {
     publisher_ = this->create_publisher<std_msgs::msg::Float64>("/zx120/boom/cmd",10);
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
