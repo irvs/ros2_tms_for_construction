@@ -19,6 +19,8 @@ using namespace std::chrono_literals;
 
 LeafNodeSampleZx120Boom::LeafNodeSampleZx120Boom(const std::string& name, const NodeConfiguration& config) : LeafNodeBase("leaf_sample_zx120_boom_sample", config){
   action_name_ = "sample_zx120_boom";
+  createActionClient(action_name_);
 };
+
 
 PortsList LeafNodeSampleZx120Boom::providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }

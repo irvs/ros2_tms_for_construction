@@ -31,20 +31,15 @@
 #include <mongocxx/instance.hpp>
 
 
-class DatabaseManager {
-public:
-    static mongocxx::instance& getInstance() {
-        static mongocxx::instance instance{};
-        return instance;
-    }
-};
 
 class BaseClassSubtasks : public rclcpp::Node{
 public:
-    BaseClassSubtasks(const std::string& node_name);
-    std::map<std::string, int> GetParamFromDB(std::string parts_name);
+    BaseClassSubtasks(const std::string& node_name_);
+    std::map<std::string, int> GetParamFromDB(std::string parts_name_);
+    static mongocxx::instance inst;
 private:
     std::string node_name_ = "base_class_subtasks";
+    
 };
 
 #endif
