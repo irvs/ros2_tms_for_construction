@@ -31,6 +31,7 @@
 #include <mongocxx/instance.hpp>
 
 
+namespace tms_ts_subtask{
 
 class BaseClassSubtasks : public rclcpp::Node{
 public:
@@ -41,5 +42,7 @@ private:
     std::string node_name_ = "base_class_subtasks";
     
 };
+
+}  // namespace tms_ts_subtask
 
 #endif

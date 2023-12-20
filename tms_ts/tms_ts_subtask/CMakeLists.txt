@@ -26,6 +26,7 @@ find_package(rclpy REQUIRED)
 find_package(bsoncxx REQUIRED)
 find_package(mongocxx REQUIRED)
 find_package(tms_msg_ts REQUIRED)
+find_package(glog REQUIRED)
 
 
 
@@ -76,7 +77,9 @@ target_link_directories(zx120_sample_boom_subtask PUBLIC
 target_link_libraries(zx120_sample_boom_subtask
   ${PROJECT_NAME}
   mongocxx
-  bsoncxx)
+  bsoncxx
+  glog::glog
+)
 
 ament_target_dependencies(zx120_sample_boom_subtask ${dependencies_cpp})
 
