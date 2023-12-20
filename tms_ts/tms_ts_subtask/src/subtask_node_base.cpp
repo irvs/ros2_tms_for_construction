@@ -16,21 +16,17 @@
 
 // BaseClassSubtasks::inst = mongocxx::instance{};
 
-namespace tms_ts_subtask{
 
-
-mongocxx::instance BaseClassSubtasks::inst{};
 
 BaseClassSubtasks::BaseClassSubtasks(const std::string& node_name_) : rclcpp::Node(node_name_) {
+    DatabaseManager::getInstance();
 };
 
 // データベースから動的パラメータの値をとってくるための関数
 std::map<std::string, int> BaseClassSubtasks::GetParamFromDB(std::string parts_name){
-    mongocxx::client db_client{mongocxx::uri{"mongodb://localhost:27017"}};
-    RCLCPP_INFO(this->get_logger(), "===========================================A");
-    db_client["rostmsdb"];
-    RCLCPP_INFO(this->get_logger(), "===========================================B");
-    mongocxx::database db = db_client["rostmsdb"];
+    //std::lock_guard<std::mutex> lock(db_instance_mutex);
+    mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
+    mongocxx::database db = client["rostmsdb"];
     mongocxx::collection collection = db["parameter"];
     bsoncxx::builder::stream::document filter_builder;
     filter_builder << "parts_name" << parts_name;
@@ -56,7 +52,6 @@ std::map<std::string, int> BaseClassSubtasks::GetParamFromDB(std::string parts_n
     }
 }
 
-
 // // データベースから動的パラメータの値をとってくるための関数
 // std::map<std::string, int> BaseClassSubtasks::GetParamFromDB(std::string parts_name){
 //     std::map<std::string, int> dataMap;
@@ -64,5 +59,3 @@ std::map<std::string, int> BaseClassSubtasks::GetParamFromDB(std::string parts_n
 
 //     return dataMap;
 // }
-
-}  // namespace tms_ts_subtask

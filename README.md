@@ -251,6 +251,7 @@ The following demonstrations are presented here.
 4. [Try running the task schedular](#4-try-running-the-task-schedular)
 5. [Try running the task schedular with OperaSim-PhysX](#5-Try-running-the-task-schedular-with-OperaSim-PhysX)
 6. [Insert new task data to tms_db](#6-Insert-new-task-data-to-tms_db)
+7. [How to update parameters in mongodb based on topics from sensing pc](#7-How-to-update-parameters-in-mongodb-based-on-topics-from-sensing-pc)
 
 
 
@@ -424,7 +425,7 @@ sudo systemctl start mongod
 
  Before running the task scheduler, make sure that the task collection and the parameter collection are placed under rostmsdb database in MongoDB. Database verification can be done using mongodb compass. The confirmation procedure is as follows.
 1. Start MongoDB Compass. The following screen will appear.
- ![](docs/procedure_setting_mongodb_1.png)
+ ![](docs/procedure_setting_mongodb_1.png)How to update parameters in mongodb from sensing pc
 
 2. Confirm that the URI is entered as "mongodb://localhost:27017/" and press the "Connect" button. You will then see the following screen.
 ![](docs/procedure_setting_mongodb_2.png)
@@ -571,6 +572,18 @@ Combining these nodes, we can create a task tree as shown below.
   ```
 
 4. You can see that the task just described has been added under the tasks collection in mongodb's rostmsdb database.
+
+### 7. How to update parameters in mongodb based on topics from sensing pc
+
+1. Place the .msg file directly under the ros2-tms-for-construction_ws/tms_ts/sensing_msgs/msg directory. This .msg file represents the type of data to be stored from the sensing pc to the parameter collection in mongodb via ros2 topic.
+2. After storing the .msg file in place, execute the following command.
+  ```
+  cd ~/ros2-tms-for-construction_ws
+  colcon build --packages-select sensing_msgs && source install/setup.bash
+  ros2 run tms_sp_sensing tms_sp_zx120_end_effector
+  ```
+3. 
+
 
 
 ## Version Information

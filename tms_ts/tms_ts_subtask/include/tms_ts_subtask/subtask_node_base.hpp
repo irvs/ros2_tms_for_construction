@@ -31,18 +31,23 @@
 #include <mongocxx/instance.hpp>
 
 
-namespace tms_ts_subtask{
+
+class DatabaseManager {
+public:
+    static mongocxx::instance& getInstance() {
+        static mongocxx::instance instance{};
+        return instance;
+    }
+};
 
 class BaseClassSubtasks : public rclcpp::Node{
 public:
     BaseClassSubtasks(const std::string& node_name_);
-    std::map<std::string, int> GetParamFromDB(std::string parts_name_);
-    static mongocxx::instance inst;
+    std::map<std::string, int> GetParamFromDB(std::string parts_name);
+    // static mongocxx::instance inst;
+    std::mutex db_instance_mutex;
 private:
-    std::string node_name_ = "base_class_subtasks";
     
 };
-
-}  // namespace tms_ts_subtask
 
 #endif
