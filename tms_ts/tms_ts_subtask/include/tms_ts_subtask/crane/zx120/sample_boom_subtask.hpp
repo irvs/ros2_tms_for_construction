@@ -8,7 +8,7 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "tms_ts_subtask/subtask_node_base.hpp"
 
-class Zx120SampleBoomActionServer : public BaseClassSubtasks
+class Zx120SampleBoomActionServer : public tms_ts_subtask::BaseClassSubtasks
 {
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
