@@ -1,5 +1,5 @@
 FROM ros:humble
-ARG OVERLAY_WS=/opt/ros2-ros2_tms_for_construction_ws
+ARG OVERLAY_WS=/opt/ros2_tms_for_construction_ws
 
 ARG OVERLAY_WS
 WORKDIR $OVERLAY_WS/src
