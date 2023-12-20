@@ -9,8 +9,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BASE_CLASS_SUBTASKS_HPP
-#define BASE_CLASS_SUBTASKS_HPP
+#ifndef LEAF_NODE_HPP
+#define LEAF_NODE_HPP
 
 #include <chrono>
 #include <functional>
@@ -34,20 +34,13 @@
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 
-#include "tms_msg_ts/action/action_sample.hpp"
+#include "tms_msg_ts/action/leaf_node_base.hpp"
 
 
 using std::placeholders::_1;
 using namespace BT;
 using namespace std::chrono_literals;
 
-class DatabaseManager {
-public:
-    static mongocxx::instance& getInstance() {
-        static mongocxx::instance instance{};
-        return instance;
-    }
-};
 
 
 class LeafNodeBase : public CoroActionNode{
@@ -65,10 +58,8 @@ public:
     void createActionClient(const std::string & action_name); 
     void send_new_goal();
     void halt() override;
-    virtual void on_tick(){};
-    virtual void on_wait_for_result(std::shared_ptr<const typename tms_msg_ts::action::ActionSample::Feedback>){}; //feedbackを受け取ったときの処理はこの関数に実装
+    // on_wait_for_result()はserverから返ってきたfeedbackを処理する関数。長くブロッキングが生じる処理は実装しないこと
     bool should_cancel_goal();
-    
     bool is_future_goal_handle_complete(std::chrono::milliseconds & elapsed);
 
     NodeStatus bt_status;
@@ -76,18 +67,19 @@ public:
     std::chrono::milliseconds bt_loop_duration_;
     std::chrono::milliseconds server_timeout_ = std::chrono::milliseconds(1000); // Please specify the timeout duration
 
-    std::shared_ptr<rclcpp_action::Client<tms_msg_ts::action::ActionSample>> action_client_;
-    typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::ActionSample>::SharedPtr goal_handle_;
-    typename tms_msg_ts::action::ActionSample::Goal goal_;
-    typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::ActionSample>::WrappedResult result_;
-    std::shared_ptr<const typename tms_msg_ts::action::ActionSample::Feedback> feedback_;
+    std::shared_ptr<rclcpp_action::Client<tms_msg_ts::action::LeafNodeBase>> action_client_;
+    typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::SharedPtr goal_handle_;
+    typename tms_msg_ts::action::LeafNodeBase::Goal goal_;
+    typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::WrappedResult result_;
+    std::shared_ptr<const typename tms_msg_ts::action::LeafNodeBase::Feedback> feedback_;
+    
 
 
     rclcpp::Node::SharedPtr node_;
     rclcpp::CallbackGroup::SharedPtr callback_group_;
     rclcpp::executors::SingleThreadedExecutor callback_group_executor_;
 
-    std::shared_ptr<std::shared_future<typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::ActionSample>::SharedPtr>> future_goal_handle_;
+    std::shared_ptr<std::shared_future<typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::SharedPtr>> future_goal_handle_;
 };
 
 #endif

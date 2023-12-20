@@ -28,7 +28,7 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-#include "tms_ts_subtask/gen_leaf_node_base.hpp"
+#include "tms_ts_subtask/leaf_node_base.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;

@@ -5,15 +5,16 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "tms_msg_ts/action/leaf_node_base.hpp"
+#include "tms_ts_subtask/subtask_node_base.hpp"
 
 
-class Zx120SampleBoomActionServer : public rclcpp::Node
+class Zx120SampleBoomActionServer : public BaseClassSubtasks
 {
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
 
 
-  Zx120SampleBoomActionServer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions()): Node("zx120_sample_boom_action_server", options)
+  Zx120SampleBoomActionServer(): BaseClassSubtasks("zx120_sample_boom_action_server")
   {
     publisher_ = this->create_publisher<std_msgs::msg::Float64>("/zx120/boom/cmd",10);
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
@@ -27,10 +28,17 @@ public:
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
+  std::map<std::string, int> parameters;
 
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
   {
-    RCLCPP_INFO(this->get_logger(), "Received goal request with order %s", goal->goal_pos.c_str());
+    RCLCPP_INFO(this->get_logger(), "Received goal request with parameter_id = %s", goal->parameter_id.c_str());
+    // parameters = GetParamFromDB(goal->parameter_id);
+    RCLCPP_INFO(this->get_logger(), "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+    GetParamFromDB("zx120_boom");
+    RCLCPP_INFO(this->get_logger(), "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
+    RCLCPP_INFO(this->get_logger(), "param = %d", parameters["zx120_boom_goal_pos"]);
+    std:: cout << parameters["zx120_boom_goal_pos"] << std::endl;
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   }
 
@@ -50,21 +58,21 @@ private:
   {
     RCLCPP_INFO(this->get_logger(), "subtask is executing...");
     rclcpp::Rate loop_rate(1);
-    const auto goal = goal_handle->get_goal();
+    const auto goal_pos = parameters["zx120_boom_goal_pos"];
     auto feedback = std::make_shared<tms_msg_ts::action::LeafNodeBase::Feedback>();
     auto & current_pos = feedback->current_pos;
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     int deg = 0;
     std_msgs::msg::Float64 msg_rad;
 
-    while(deg >= goal->goal_pos){
+    while(deg >= goal_pos){
         if (goal_handle->is_canceling()) {
             result->result = false;
             goal_handle->canceled(result);
             RCLCPP_INFO(this->get_logger(), "subtask execution is canceled");
             return;
         }
-        deg += goal->goal_pos / float(20.0);
+        deg += goal_pos / float(20.0);
         msg_rad.data = float(deg * float(M_PI / 180));
         current_pos = deg;
         goal_handle->publish_feedback(feedback); 
