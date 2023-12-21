@@ -35,12 +35,8 @@ private:
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
   {
     RCLCPP_INFO(this->get_logger(), "Received goal request with parameter_id = %s", goal->parameter_id.c_str());
-    // parameters = GetParamFromDB(goal->parameter_id);
-    RCLCPP_INFO(this->get_logger(), "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    GetParamFromDB("zx120_boom");
-    RCLCPP_INFO(this->get_logger(), "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");
+    parameters = GetParamFromDB(goal->parameter_id);
     RCLCPP_INFO(this->get_logger(), "param = %d", parameters["zx120_boom_goal_pos"]);
-    std:: cout << parameters["zx120_boom_goal_pos"] << std::endl;
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   }
 
@@ -61,6 +57,7 @@ private:
     RCLCPP_INFO(this->get_logger(), "subtask is executing...");
     rclcpp::Rate loop_rate(1);
     const auto goal_pos = parameters["zx120_boom_goal_pos"];
+    RCLCPP_INFO(this->get_logger(), "param2 = %d", parameters["zx120_boom_goal_pos"]);
     auto feedback = std::make_shared<tms_msg_ts::action::LeafNodeBase::Feedback>();
     auto & current_pos = feedback->current_pos;
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
