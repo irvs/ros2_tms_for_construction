@@ -21,8 +21,8 @@ RUN apt update && apt install -y \
     libncursesw5-dev \
     wget \
     libgoogle-glog-dev \ 
+    ros-humble-behaviortree-cpp-v3 \
     && rm -rf /var/lib/apt/lists/*
-
 
 RUN python3 -m pip install -r requirements.txt
 
@@ -34,15 +34,6 @@ RUN curl -fsSL https://pgp.mongodb.com/server-7.0.asc | \
 RUN echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
 RUN apt-get update && apt-get install -y mongodb-org \
     && rm -rf /var/lib/apt/lists/*
-
-
-# RUN apt install libzmq3-dev libboost-dev libncurses5-dev libncursesw5-dev
-RUN git clone --branch v3.8 https://github.com/BehaviorTree/BehaviorTree.CPP.git \
-    && cd BehaviorTree.CPP \
-    && mkdir build; cd build \
-    && cmake .. \
-    && make && make install
-
 
 RUN wget https://github.com/mongodb/mongo-c-driver/releases/download/1.24.4/mongo-c-driver-1.24.4.tar.gz \
     && tar -xzf mongo-c-driver-1.24.4.tar.gz \
