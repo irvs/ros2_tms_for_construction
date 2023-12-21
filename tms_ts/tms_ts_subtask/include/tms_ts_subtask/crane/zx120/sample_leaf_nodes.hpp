@@ -35,8 +35,9 @@ using namespace std::chrono_literals;
 
 class LeafNodeSampleZx120Boom : public LeafNodeBase {
 public:
-  LeafNodeSampleZx120Boom(const std::string& name, const NodeConfiguration& config);
-  static PortsList providedPorts();
+  inline LeafNodeSampleZx120Boom(const std::string& name, const NodeConfiguration& config) : LeafNodeBase("leaf_sample_zx120_boom_sample", config, "zx120_boom", "sample_zx120_boom"){};
+
+  inline static PortsList providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
   //void halt() override;
 };
 

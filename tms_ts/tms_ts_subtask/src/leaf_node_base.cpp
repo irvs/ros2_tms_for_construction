@@ -19,14 +19,16 @@ using namespace BT;
 using namespace std::chrono_literals;
 
 
-LeafNodeBase::LeafNodeBase(const std::string& name, const NodeConfiguration& config) : CoroActionNode(name, config){
+LeafNodeBase::LeafNodeBase(const std::string& name, const NodeConfiguration& config, std::string parts_name, std::string action_name) : CoroActionNode(name, config){
+    parts_name_ = parts_name;
+    action_name_ = action_name;
     node_ = rclcpp::Node::make_shared(name);
     callback_group_ = node_->create_callback_group(
       rclcpp::CallbackGroupType::MutuallyExclusive,
       false);
     callback_group_executor_.add_callback_group(callback_group_, node_->get_node_base_interface());
     goal_ = tms_msg_ts::action::LeafNodeBase::Goal();
-    goal_.parameter_id = "zx120_boom"; 
+    goal_.parameter_id = parts_name; 
     RCLCPP_INFO(node_->get_logger(), "LeafNodeBase constructor %s", goal_.parameter_id);
     result_ = rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::WrappedResult();
     LeafNodeBase::createActionClient(action_name_);
@@ -231,32 +233,3 @@ NodeStatus LeafNodeBase::tick() {
   return bt_status;
 };
 
-
-// データベースから動的パラメータの値をとってくるための関数
-std::map<std::string, int> LeafNodeBase::GetParamFromDB(int parameter_id){
-    mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
-    mongocxx::database db = client["rostmsdb"];
-    mongocxx::collection collection = db["parameter"];
-    bsoncxx::builder::stream::document filter_builder;
-    filter_builder << "parameter_id" << parameter_id;
-    auto filter = filter_builder.view();
-    auto result = collection.find_one(filter);
-    if (result) {
-        std::map<std::string, int> dataMap;
-
-        for (auto&& element : result->view()) {
-            std::string key = element.key().to_string();
-            if (key != "_id" && key != "type" && key != "description" && key != "parameter_id" && key != "parameter_type" && key != "parts_name") {
-                if (element.type() == bsoncxx::type::k_int32) {
-                    int value = element.get_int32();
-                    dataMap[key] = value;
-                }
-            }
-        }
-
-        return dataMap;
-    } else {
-        std::cout << "Dynamic parameter not found in your parameter collection" << std::endl;
-        return std::map<std::string, int>();
-    }
-}
