@@ -44,8 +44,7 @@ set(dependencies_cpp
 
 add_library(${PROJECT_NAME} SHARED
   src/leaf_node_base.cpp
-  src/subtask_node_base.cpp
-  src/crane/zx120/sample_leaf_nodes.cpp)
+  src/subtask_node_base.cpp)
 
 
 target_include_directories(${PROJECT_NAME} PUBLIC

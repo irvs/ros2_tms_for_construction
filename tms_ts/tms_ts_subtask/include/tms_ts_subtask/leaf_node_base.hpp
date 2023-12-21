@@ -45,17 +45,18 @@ using namespace std::chrono_literals;
 
 class LeafNodeBase : public CoroActionNode{
 public:
-    LeafNodeBase(const std::string& name, const NodeConfiguration& config);
+    LeafNodeBase(const std::string& name, const NodeConfiguration& config, std::string parts_name, std::string action_name_);
     NodeStatus tick() override;
-    std::map<std::string, int> GetParamFromDB(int parameter_id);
-    std::map<std::string, int> GetParamFromDB(std::string parts_name);
     std::mutex db_instance_mutex;
     bool should_send_goal_ = true;
     bool goal_result_available_ = false;
     bool goal_updated_ = false;
-    std::string action_name_ = "sample_zx120_boom"; // Please specify the action node name per corresponding subtasks
+    
+    std::string parts_name_ = "templete parts name (Please specify the parts name)"; // Please specify the parts name per corresponding parameter in mongodb
+    std::string action_name_ = "template"; // Please specify the action node name per corresponding subtasks
 
-    void createActionClient(const std::string & action_name); 
+    void createActionClient(const std::string & action_name_); 
+
     void send_new_goal();
     void halt() override;
     // on_wait_for_result()はserverから返ってきたfeedbackを処理する関数。長くブロッキングが生じる処理は実装しないこと

@@ -27,10 +27,10 @@ def generate_launch_description():
                   output='screen', 
                   parameters=[{"task_id": 5}]), # You must define task_id that you want to execute. Default task_id is 2.
             
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx120_sample_boom_subtask',
-                  output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx120_sample_boom_subtask',
+            #       output='screen'),
             Node(
                   package='tms_sp_sensing', 
                   executable='tms_sp_zx120_end_effector',
