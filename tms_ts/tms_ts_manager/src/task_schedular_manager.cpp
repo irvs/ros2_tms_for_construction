@@ -28,6 +28,7 @@
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
 #include "tms_ts_subtask/crane/zx120/sample_leaf_nodes.hpp"
+#include "tms_ts_subtask/crane/zx200/sample_leaf_nodes.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -47,10 +48,10 @@ public:
     factory.registerNodeType<LeafNodeSampleZx120Arm>("LeafNodeSampleZx120Arm");
     factory.registerNodeType<LeafNodeSampleZx120Bucket>("LeafNodeSampleZx120Bucket");
     // zx200
-    // factory.registerNodeType<SubtaskControlZx200Boom>("SubtaskControlZx200Boom");
-    // factory.registerNodeType<SubtaskControlZx200Swing>("SubtaskControlZx200Swing");
-    // factory.registerNodeType<SubtaskControlZx200Arm>("SubtaskControlZx200Arm");
-    // factory.registerNodeType<SubtaskControlZx200Bucket>("SubtaskControlZx200Bucket");
+    factory.registerNodeType<LeafNodeSampleZx120Boom>("LeafNodeSampleZx200Boom");
+    factory.registerNodeType<LeafNodeSampleZx120Swing>("LeafNodeSampleZx200Swing");
+    factory.registerNodeType<LeafNodeSampleZx120Arm>("LeafNodeSampleZx200Arm");
+    factory.registerNodeType<LeafNodeSampleZx120Bucket>("LeafNodeSampleZx200Bucket");
     
   }
   void topic_callback(const std_msgs::msg::String::SharedPtr msg){
