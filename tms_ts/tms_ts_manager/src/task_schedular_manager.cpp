@@ -43,9 +43,9 @@ public:
     
     // zx120
     factory.registerNodeType<LeafNodeSampleZx120Boom>("LeafNodeSampleZx120Boom");
-    // factory.registerNodeType<SubtaskControlZx120Swing>("SubtaskControlZx120Swing");
-    // factory.registerNodeType<SubtaskControlZx120Arm>("SubtaskControlZx120Arm");
-    // factory.registerNodeType<SubtaskControlZx120Bucket>("SubtaskControlZx120Bucket");
+    factory.registerNodeType<LeafNodeSampleZx120Swing>("LeafNodeSampleZx120Swing");
+    factory.registerNodeType<LeafNodeSampleZx120Arm>("LeafNodeSampleZx120Arm");
+    factory.registerNodeType<LeafNodeSampleZx120Bucket>("LeafNodeSampleZx120Bucket");
     // zx200
     // factory.registerNodeType<SubtaskControlZx200Boom>("SubtaskControlZx200Boom");
     // factory.registerNodeType<SubtaskControlZx200Swing>("SubtaskControlZx200Swing");

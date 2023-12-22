@@ -9,8 +9,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BASE_CLASS_SUBTASKS_HPP
-#define BASE_CLASS_SUBTASKS_HPP
+#ifndef SUBTASK_NODE_BASE_HPP
+#define SUBTASK_NODE_BASE_HPP
 
 #include <chrono>
 #include <functional>
@@ -32,9 +32,9 @@
 
 
 
-class BaseClassSubtasks : public rclcpp::Node{
+class SubtaskNodeBase : public rclcpp::Node{
 public:
-    BaseClassSubtasks(const std::string& node_name_);
+    SubtaskNodeBase(const std::string& node_name_);
     std::map<std::string, int> GetParamFromDB(std::string parts_name);
     static mongocxx::instance inst;
 private:

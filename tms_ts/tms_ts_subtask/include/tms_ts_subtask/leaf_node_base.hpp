@@ -9,8 +9,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LEAF_NODE_HPP
-#define LEAF_NODE_HPP
+#ifndef LEAF_NODE_BASE_HPP
+#define LEAF_NODE_BASE_HPP
 
 #include <chrono>
 #include <functional>
@@ -52,7 +52,7 @@ public:
     bool goal_result_available_ = false;
     bool goal_updated_ = false;
     
-    std::string parts_name_ = "templete parts name (Please specify the parts name)"; // Please specify the parts name per corresponding parameter in mongodb
+    std::string parts_name_ = "templete"; // Please specify the parts name per corresponding parameter in mongodb
     std::string action_name_ = "template"; // Please specify the action node name per corresponding subtasks
 
     void createActionClient(const std::string & action_name_); 

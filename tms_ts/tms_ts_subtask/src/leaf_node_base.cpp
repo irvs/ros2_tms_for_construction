@@ -29,7 +29,7 @@ LeafNodeBase::LeafNodeBase(const std::string& name, const NodeConfiguration& con
     callback_group_executor_.add_callback_group(callback_group_, node_->get_node_base_interface());
     goal_ = tms_msg_ts::action::LeafNodeBase::Goal();
     goal_.parameter_id = parts_name; 
-    RCLCPP_INFO(node_->get_logger(), "LeafNodeBase constructor %s", goal_.parameter_id);
+    RCLCPP_INFO(node_->get_logger(), "LeafNodeBase constructor %s", goal_.parameter_id.c_str());
     result_ = rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::WrappedResult();
     LeafNodeBase::createActionClient(action_name_);
 }
@@ -210,7 +210,6 @@ NodeStatus LeafNodeBase::tick() {
   
   // サブタスク側のaction serverからactionのresultを受け取って、NodeStatusに変換しtick()の戻り値とする部分
   switch (result_.code) {
-    RCLCPP_INFO(node_->get_logger(), "======================================================");
     case rclcpp_action::ResultCode::SUCCEEDED:
       RCLCPP_INFO(node_->get_logger(), "Succeeded the Subtask");
       bt_status = NodeStatus::SUCCESS;
