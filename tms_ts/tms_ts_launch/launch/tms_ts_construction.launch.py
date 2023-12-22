@@ -25,12 +25,23 @@ def generate_launch_description():
                   package='tms_ur_button_input', 
                   executable='tms_ur_button',
                   output='screen', 
-                  parameters=[{"task_id": 5}]), # You must define task_id that you want to execute. Default task_id is 2.
-            
-            # Node(
-            #       package='tms_ts_subtask', 
-            #       executable='zx120_sample_boom_subtask',
-            #       output='screen'),
+                  parameters=[{"task_id": 6}]), # You must define task_id that you want to execute. Default task_id is 2.
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='zx120_sample_boom_subtask',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='zx120_sample_swing_subtask',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='zx120_sample_arm_subtask',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='zx120_sample_bucket_subtask',
+                  output='screen'),
             Node(
                   package='tms_sp_sensing', 
                   executable='tms_sp_zx120_end_effector',

@@ -25,21 +25,21 @@
 
 using namespace std::chrono_literals;
 
-class SubtaskSampleZx120Boom : public SubtaskNodeBase
+class SubtaskSampleZx120Swing : public SubtaskNodeBase
 {
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
 
 
-  SubtaskSampleZx120Boom(): SubtaskNodeBase("subtask_sample_zx120_boom")
+  SubtaskSampleZx120Swing(): SubtaskNodeBase("subtask_sample_zx120_swing")
   {
-    publisher_ = this->create_publisher<std_msgs::msg::Float64>("/zx120/boom/cmd",10);
+    publisher_ = this->create_publisher<std_msgs::msg::Float64>("/zx120/swing/cmd",10);
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
       this,
-      "sample_zx120_boom",
-      std::bind(&SubtaskSampleZx120Boom::handle_goal, this,std::placeholders::_1, std::placeholders::_2),
-      std::bind(&SubtaskSampleZx120Boom::handle_cancel, this, std::placeholders::_1),
-      std::bind(&SubtaskSampleZx120Boom::handle_accepted, this, std::placeholders::_1));
+      "sample_zx120_swing",
+      std::bind(&SubtaskSampleZx120Swing::handle_goal, this,std::placeholders::_1, std::placeholders::_2),
+      std::bind(&SubtaskSampleZx120Swing::handle_cancel, this, std::placeholders::_1),
+      std::bind(&SubtaskSampleZx120Swing::handle_accepted, this, std::placeholders::_1));
   }
 
 private:
@@ -51,7 +51,7 @@ private:
   {
     RCLCPP_INFO(this->get_logger(), "Received goal request with parameter_id = %s", goal->parameter_id.c_str());
     parameters = GetParamFromDB(goal->parameter_id);
-    RCLCPP_INFO(this->get_logger(), "param = %d", parameters["zx120_boom_goal_pos"]);
+    RCLCPP_INFO(this->get_logger(), "param = %d", parameters["zx120_swing_goal_pos"]);
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   }
 
@@ -65,21 +65,21 @@ private:
   void handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
   {
     using namespace std::placeholders;
-    std::thread{std::bind(&SubtaskSampleZx120Boom::execute, this, _1), goal_handle}.detach();
+    std::thread{std::bind(&SubtaskSampleZx120Swing::execute, this, _1), goal_handle}.detach();
   }
 
   void execute(const std::shared_ptr<GoalHandle> goal_handle)
   {
     RCLCPP_INFO(this->get_logger(), "subtask is executing...");
     rclcpp::Rate loop_rate(1);
-    const auto goal_pos = parameters["zx120_boom_goal_pos"];
+    const auto goal_pos = parameters["zx120_swing_goal_pos"];
     auto feedback = std::make_shared<tms_msg_ts::action::LeafNodeBase::Feedback>();
     auto & current_pos = feedback->current_pos;
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     int deg = 0;
     std_msgs::msg::Float64 msg_rad;
 
-    while(deg >= goal_pos){
+    while(deg <= goal_pos){
         if (goal_handle->is_canceling()) {
             result->result = false;
             goal_handle->canceled(result);
@@ -91,7 +91,7 @@ private:
         current_pos = deg;
         goal_handle->publish_feedback(feedback); 
         publisher_->publish(msg_rad);
-        RCLCPP_INFO_STREAM(this->get_logger(), "Publishing boom position: " << deg << " [deg]");
+        RCLCPP_INFO_STREAM(this->get_logger(), "Publishing swing position: " << deg << " [deg]");
         sleep(1); 
     }
 
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 	google::InstallFailureSignalHandler();
   
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<SubtaskSampleZx120Boom>());
+  rclcpp::spin(std::make_shared<SubtaskSampleZx120Swing>());
   rclcpp::shutdown();
   return 0;
 }

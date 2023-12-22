@@ -63,8 +63,30 @@ bsoncxx)
 ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
 
 add_executable(zx120_sample_boom_subtask src/crane/zx120/sample_boom_subtask.cpp)
+add_executable(zx120_sample_swing_subtask src/crane/zx120/sample_swing_subtask.cpp)
+add_executable(zx120_sample_arm_subtask src/crane/zx120/sample_arm_subtask.cpp)
+add_executable(zx120_sample_bucket_subtask src/crane/zx120/sample_bucket_subtask.cpp)
+
 
 target_include_directories(zx120_sample_boom_subtask PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  /usr/local/include/mongocxx/v_noabi
+  /usr/local/include/bsoncxx/v_noabi)
+
+target_include_directories(zx120_sample_swing_subtask PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  /usr/local/include/mongocxx/v_noabi
+  /usr/local/include/bsoncxx/v_noabi)
+
+target_include_directories(zx120_sample_arm_subtask PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  /usr/local/include/mongocxx/v_noabi
+  /usr/local/include/bsoncxx/v_noabi)
+
+target_include_directories(zx120_sample_bucket_subtask PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
   /usr/local/include/mongocxx/v_noabi
@@ -73,6 +95,15 @@ target_include_directories(zx120_sample_boom_subtask PUBLIC
 target_link_directories(zx120_sample_boom_subtask PUBLIC
   /usr/local/lib)
 
+target_link_directories(zx120_sample_swing_subtask PUBLIC
+/usr/local/lib)
+
+target_link_directories(zx120_sample_arm_subtask PUBLIC
+/usr/local/lib)
+
+target_link_directories(zx120_sample_bucket_subtask PUBLIC
+/usr/local/lib)
+
 target_link_libraries(zx120_sample_boom_subtask
   ${PROJECT_NAME}
   mongocxx
@@ -80,10 +111,38 @@ target_link_libraries(zx120_sample_boom_subtask
   glog::glog
 )
 
+target_link_libraries(zx120_sample_swing_subtask
+  ${PROJECT_NAME}
+  mongocxx
+  bsoncxx
+  glog::glog
+)
+
+target_link_libraries(zx120_sample_arm_subtask
+  ${PROJECT_NAME}
+  mongocxx
+  bsoncxx
+  glog::glog
+)
+
+target_link_libraries(zx120_sample_bucket_subtask
+  ${PROJECT_NAME}
+  mongocxx
+  bsoncxx
+  glog::glog
+)
+
+
 ament_target_dependencies(zx120_sample_boom_subtask ${dependencies_cpp})
+ament_target_dependencies(zx120_sample_swing_subtask ${dependencies_cpp})
+ament_target_dependencies(zx120_sample_arm_subtask ${dependencies_cpp})
+ament_target_dependencies(zx120_sample_bucket_subtask ${dependencies_cpp})
 
 install(TARGETS
   zx120_sample_boom_subtask
+  zx120_sample_swing_subtask
+  zx120_sample_arm_subtask
+  zx120_sample_bucket_subtask
   DESTINATION lib/${PROJECT_NAME}
 )
 

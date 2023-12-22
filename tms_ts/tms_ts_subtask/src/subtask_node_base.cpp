@@ -14,13 +14,13 @@
 
 #include "tms_ts_subtask/subtask_node_base.hpp"
 
-mongocxx::instance BaseClassSubtasks::inst{};   
+mongocxx::instance SubtaskNodeBase::inst{};   
 
 
-BaseClassSubtasks::BaseClassSubtasks(const std::string& node_name_) : rclcpp::Node(node_name_) {};
+SubtaskNodeBase::SubtaskNodeBase(const std::string& node_name_) : rclcpp::Node(node_name_) {};
 
 // データベースから動的パラメータの値をとってくるための関数
-std::map<std::string, int> BaseClassSubtasks::GetParamFromDB(std::string parts_name){
+std::map<std::string, int> SubtaskNodeBase::GetParamFromDB(std::string parts_name){
     mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
     mongocxx::database db = client["rostmsdb"];
     mongocxx::collection collection = db["parameter"];
