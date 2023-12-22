@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ZX120_SAMPLE_LEAF_NODES_HPP_
-#define ZX120_SAMPLE_LEAF_NODES_HPP_
+#ifndef ZX200_SAMPLE_LEAF_NODES_HPP_
+#define ZX200_SAMPLE_LEAF_NODES_HPP_
 
 #include <chrono>
 #include <functional>
@@ -33,27 +33,27 @@
 using namespace BT;
 using namespace std::chrono_literals;
 
-class LeafNodeSampleZx120Boom : public LeafNodeBase {
+class LeafNodeSampleZx200Boom : public LeafNodeBase {
 public:
-  inline LeafNodeSampleZx120Boom(const std::string& name, const NodeConfiguration& config) : LeafNodeBase("leaf_sample_zx120_boom_sample", config, "zx120_boom", "sample_zx120_boom"){};
+  inline LeafNodeSampleZx200Boom(const std::string& name, const NodeConfiguration& config) : LeafNodeBase("leaf_sample_zx200_boom_sample", config, "zx200_boom", "sample_zx200_boom"){};
   inline static PortsList providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
 };
 
-class LeafNodeSampleZx120Swing : public LeafNodeBase {
+class LeafNodeSampleZx200Swing : public LeafNodeBase {
 public:
-  inline LeafNodeSampleZx120Swing(const std::string& name, const NodeConfiguration& config) : LeafNodeBase("leaf_sample_zx120_swing_sample", config, "zx120_swing", "sample_zx120_swing"){};
+  inline LeafNodeSampleZx200Swing(const std::string& name, const NodeConfiguration& config) : LeafNodeBase("leaf_sample_zx200_swing_sample", config, "zx200_swing", "sample_zx200_swing"){};
   inline static PortsList providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
 };
 
-class LeafNodeSampleZx120Arm : public LeafNodeBase {
+class LeafNodeSampleZx200Arm : public LeafNodeBase {
 public:
-  inline LeafNodeSampleZx120Arm(const std::string& name, const NodeConfiguration& config) : LeafNodeBase("leaf_sample_zx120_arm_sample", config, "zx120_arm", "sample_zx120_arm"){};
+  inline LeafNodeSampleZx200Arm(const std::string& name, const NodeConfiguration& config) : LeafNodeBase("leaf_sample_zx200_arm_sample", config, "zx200_arm", "sample_zx200_arm"){};
   inline static PortsList providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
 };
 
-class LeafNodeSampleZx120Bucket : public LeafNodeBase {
+class LeafNodeSampleZx200Bucket : public LeafNodeBase {
 public:
-  inline LeafNodeSampleZx120Bucket(const std::string& name, const NodeConfiguration& config) : LeafNodeBase("leaf_sample_zx120_bucket_sample", config, "zx120_bucket", "sample_zx120_bucket"){};
+  inline LeafNodeSampleZx200Bucket(const std::string& name, const NodeConfiguration& config) : LeafNodeBase("leaf_sample_zx200_bucket_sample", config, "zx200_bucket", "sample_zx200_bucket"){};
   inline static PortsList providedPorts() { return { InputPort<float>("initial_position"), InputPort<float>("goal_position") }; }
 };
 
