@@ -48,10 +48,10 @@ public:
     factory.registerNodeType<LeafNodeSampleZx120Arm>("LeafNodeSampleZx120Arm");
     factory.registerNodeType<LeafNodeSampleZx120Bucket>("LeafNodeSampleZx120Bucket");
     // zx200
-    factory.registerNodeType<LeafNodeSampleZx120Boom>("LeafNodeSampleZx200Boom");
-    factory.registerNodeType<LeafNodeSampleZx120Swing>("LeafNodeSampleZx200Swing");
-    factory.registerNodeType<LeafNodeSampleZx120Arm>("LeafNodeSampleZx200Arm");
-    factory.registerNodeType<LeafNodeSampleZx120Bucket>("LeafNodeSampleZx200Bucket");
+    factory.registerNodeType<LeafNodeSampleZx200Boom>("LeafNodeSampleZx200Boom");
+    factory.registerNodeType<LeafNodeSampleZx200Swing>("LeafNodeSampleZx200Swing");
+    factory.registerNodeType<LeafNodeSampleZx200Arm>("LeafNodeSampleZx200Arm");
+    factory.registerNodeType<LeafNodeSampleZx200Bucket>("LeafNodeSampleZx200Bucket");
     
   }
   void topic_callback(const std_msgs::msg::String::SharedPtr msg){
