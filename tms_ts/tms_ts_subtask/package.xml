@@ -12,6 +12,7 @@
   <exec_depend>behaviortree_cpp_v3</exec_depend>
   <exec_depend>bsoncxx</exec_depend>
   <exec_depend>mongocxx</exec_depend>
+  <exec_depend>tms_msg_ts</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

@@ -47,9 +47,6 @@ set(dependencies_cpp
 add_executable(task_schedular_manager src/task_schedular_manager.cpp)
 ament_target_dependencies(task_schedular_manager ${dependencies_cpp})
 
-add_executable(sample_task_schedular_manager src/sample_task_schedular_manager.cpp)
-ament_target_dependencies(sample_task_schedular_manager ${dependencies_cpp})
-
 
 # -- end C++
 
@@ -74,7 +71,6 @@ install(PROGRAMS
 
 install(TARGETS
   task_schedular_manager
-  sample_task_schedular_manager
   DESTINATION lib/${PROJECT_NAME}
 )
 

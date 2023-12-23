@@ -35,7 +35,7 @@ class GUI_button(Node):
 
         self.declare_parameter('task_id', 3)
         self.task_id = self.get_parameter("task_id").get_parameter_value().integer_value
-        self.emergency_signal_publisher = self.create_publisher(String, '/emergency_signal', 10)
+        self.emergency_signal_publisher = self.create_publisher(Bool, '/emergency_signal', 10)
         self.publisher_ = self.create_publisher(String, '/task_sequence', 10)
         root = tk.Tk()
         root.title("CONTROL PANEL")
@@ -48,8 +48,6 @@ class GUI_button(Node):
         root.mainloop()
 
     def emergency_button_click(self):
-        self.get_logger().info("EMERGENCY BUTTON CLICKED")
-        self.get_logger().info("Stop the Task Scheduler")
         self.ts_button["state"] = "disabled"
         self.ts_button.configure(bg="black")
         self.emergency_thread = threading.Thread(target=self.pub_emergency_signal)
@@ -57,8 +55,8 @@ class GUI_button(Node):
 
     def pub_emergency_signal(self):
         while True:
-            msg = String()
-            msg.data = "EMERGENCY"
+            msg = Bool()
+            msg.data = True
             self.emergency_signal_publisher.publish(msg)
             time.sleep(0.01)
 
