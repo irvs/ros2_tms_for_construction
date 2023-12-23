@@ -43,15 +43,9 @@ public:
     // ic120
     
     // zx120
-    factory.registerNodeType<LeafNodeSampleZx120Boom>("LeafNodeSampleZx120Boom");
-    factory.registerNodeType<LeafNodeSampleZx120Swing>("LeafNodeSampleZx120Swing");
-    factory.registerNodeType<LeafNodeSampleZx120Arm>("LeafNodeSampleZx120Arm");
-    factory.registerNodeType<LeafNodeSampleZx120Bucket>("LeafNodeSampleZx120Bucket");
+    factory.registerNodeType<LeafNodeZx120>("LeafNodeZx120");
     // zx200
-    factory.registerNodeType<LeafNodeSampleZx200Boom>("LeafNodeSampleZx200Boom");
-    factory.registerNodeType<LeafNodeSampleZx200Swing>("LeafNodeSampleZx200Swing");
-    factory.registerNodeType<LeafNodeSampleZx200Arm>("LeafNodeSampleZx200Arm");
-    factory.registerNodeType<LeafNodeSampleZx200Bucket>("LeafNodeSampleZx200Bucket");
+    factory.registerNodeType<LeafNodeZx200>("LeafNodeZx200");
     
   }
   void topic_callback(const std_msgs::msg::String::SharedPtr msg){
