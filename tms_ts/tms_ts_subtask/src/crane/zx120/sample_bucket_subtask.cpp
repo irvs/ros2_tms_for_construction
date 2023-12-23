@@ -22,7 +22,7 @@ SubtaskSampleZx120Bucket::SubtaskSampleZx120Bucket() : SubtaskNodeBase("subtask_
   publisher_ = this->create_publisher<std_msgs::msg::Float64>("/zx120/bucket/cmd", 10);
   this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
       this,
-      "sample_zx120_bucket",
+      "sample_zx120_bucket_subtask",
       std::bind(&SubtaskSampleZx120Bucket::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
       std::bind(&SubtaskSampleZx120Bucket::handle_cancel, this, std::placeholders::_1),
       std::bind(&SubtaskSampleZx120Bucket::handle_accepted, this, std::placeholders::_1));
@@ -30,9 +30,7 @@ SubtaskSampleZx120Bucket::SubtaskSampleZx120Bucket() : SubtaskNodeBase("subtask_
 
 rclcpp_action::GoalResponse SubtaskSampleZx120Bucket::handle_goal(const rclcpp_action::GoalUUID &uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
-    RCLCPP_INFO(this->get_logger(), "Received goal request with parameter_id = %s", goal->parameter_id.c_str());
-    parameters = GetParamFromDB(goal->parameter_id);
-    RCLCPP_INFO(this->get_logger(), "param = %d", parameters["zx120_bucket_goal_pos"]);
+    parameters = GetParamFromDB(goal->model_name, goal->component_name);
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 

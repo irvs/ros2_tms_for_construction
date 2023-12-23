@@ -19,33 +19,36 @@ using namespace BT;
 using namespace std::chrono_literals;
 
 
-LeafNodeBase::LeafNodeBase(const std::string& name, const NodeConfiguration& config, std::string parts_name, std::string action_name) : CoroActionNode(name, config){
-    parts_name_ = parts_name;
-    action_name_ = action_name;
+LeafNodeBase::LeafNodeBase(const std::string& name, const NodeConfiguration& config) : CoroActionNode(name, config){
     node_ = rclcpp::Node::make_shared(name);
     callback_group_ = node_->create_callback_group(
       rclcpp::CallbackGroupType::MutuallyExclusive,
       false);
     callback_group_executor_.add_callback_group(callback_group_, node_->get_node_base_interface());
-    goal_ = tms_msg_ts::action::LeafNodeBase::Goal();
-    goal_.parameter_id = parts_name; 
-    RCLCPP_INFO(node_->get_logger(), "LeafNodeBase constructor %s", goal_.parameter_id.c_str());
+    Optional<std::string> model_name = getInput<std::string>("model_name");
+    Optional<std::string> component_name = getInput<std::string>("component_name");
+    Optional<std::string> subtask_name = getInput<std::string>("subtask_name");
+    goal_.model_name = model_name.value();
+    goal_.component_name = component_name.value();
+    subtask_name_ = subtask_name.value();
+    RCLCPP_INFO(node_->get_logger(), "mopdel_name: %s", goal_.model_name.c_str());
+    RCLCPP_INFO(node_->get_logger(), "component_name: %s", goal_.component_name.c_str());
     result_ = rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::WrappedResult();
-    LeafNodeBase::createActionClient(action_name_);
+    LeafNodeBase::createActionClient(subtask_name_);
 }
 
 
 // action clientを新たに作成する関数
-void LeafNodeBase::createActionClient(const std::string & action_name){
-    action_client_ = rclcpp_action::create_client<tms_msg_ts::action::LeafNodeBase>(node_, action_name, callback_group_);
+void LeafNodeBase::createActionClient(const std::string & subtask_name){
+    action_client_ = rclcpp_action::create_client<tms_msg_ts::action::LeafNodeBase>(node_, subtask_name, callback_group_);
 
-    RCLCPP_DEBUG(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "Waiting for \"%s\" action server", subtask_name.c_str());
     if (!action_client_->wait_for_action_server(5s)) {
       RCLCPP_ERROR(
         node_->get_logger(), "\"%s\" action server not available after waiting for 5 s",
-        action_name.c_str());
+        subtask_name.c_str());
       throw std::runtime_error(
-              std::string("Action server ") + action_name +
+              std::string("Action server ") + subtask_name +
               std::string(" not available"));
     } 
 }
@@ -115,7 +118,7 @@ void LeafNodeBase::send_new_goal(){
       {
         RCLCPP_ERROR(
           node_->get_logger(),
-          "Failed to cancel action server for %s", action_name_.c_str());
+          "Failed to cancel subtask for %s", subtask_name_.c_str());
       }
     }
 
@@ -159,8 +162,8 @@ NodeStatus LeafNodeBase::tick() {
         }
         RCLCPP_WARN(
           node_->get_logger(),
-          "Timed out while waiting for action server to acknowledge goal request for %s",
-          action_name_.c_str());
+          "Timed out while waiting for subtask to acknowledge goal request for %s",
+          subtask_name_.c_str());
         future_goal_handle_.reset();
         return BT::NodeStatus::FAILURE;
       }
@@ -183,8 +186,8 @@ NodeStatus LeafNodeBase::tick() {
           }
           RCLCPP_WARN(
             node_->get_logger(),
-            "Timed out while waiting for action server to acknowledge goal request for %s",
-            action_name_.c_str());
+            "Timed out while waiting for action server to acknowledge goal request for %s subatsk",
+            subtask_name_.c_str());
           future_goal_handle_.reset();
           return BT::NodeStatus::FAILURE;
         }

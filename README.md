@@ -86,16 +86,7 @@ python3 -m pip install -r requirements.txt
 sudo systemctl start mongod
 cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction/demo
 unzip rostmsdb_collections.zip
-cd rostmsdb_collections/
-mongoimport --db rostmsdb --collection default --file rostmsdb.default.json --jsonArray
-mongoimport --db rostmsdb --collection fs.chunks  --file rostmsdb.fs.chunks.json --jsonArray
-mongoimport --db rostmsdb --collection machine --file rostmsdb.machine.json --jsonArray
-mongoimport --db rostmsdb --collection now --file rostmsdb.now.json --jsonArray
-mongoimport --db rostmsdb --collection sensor --file rostmsdb.sensor.json --jsonArray
-mongoimport --db rostmsdb --collection fs.files --file rostmsdb.fs.files.json --jsonArray
-mongoimport --db rostmsdb --collection parameter --file rostmsdb.parameter.json --jsonArray
-mongoimport --db rostmsdb --collection task --file rostmsdb.task.json --jsonArray
-cd .. && rm -rf  rostmsdb_collections
+mongorestore dump
 ```
 
 ## Setup BehaviorTree.CPP
@@ -436,18 +427,10 @@ sudo systemctl start mongod
  If the database or collections does not exist, please execute the following command to add the database
 
 ```
+sudo systemctl start mongod
 cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction/demo
 unzip rostmsdb_collections.zip
-cd rostmsdb_collections/
-mongoimport --db rostmsdb --collection default --file rostmsdb.default.json --jsonArray
-mongoimport --db rostmsdb --collection fs.chunks  --file rostmsdb.fs.chunks.json --jsonArray
-mongoimport --db rostmsdb --collection machine --file rostmsdb.machine.json --jsonArray
-mongoimport --db rostmsdb --collection now --file rostmsdb.now.json --jsonArray
-mongoimport --db rostmsdb --collection sensor --file rostmsdb.sensor.json --jsonArray
-mongoimport --db rostmsdb --collection fs.files --file rostmsdb.fs.files.json --jsonArray
-mongoimport --db rostmsdb --collection parameter --file rostmsdb.parameter.json --jsonArray
-mongoimport --db rostmsdb --collection task --file rostmsdb.task.json --jsonArray
-cd .. && rm -rf  rostmsdb_collections
+mongorestore dump
 ```
 
 
