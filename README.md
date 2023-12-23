@@ -86,16 +86,7 @@ python3 -m pip install -r requirements.txt
 sudo systemctl start mongod
 cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction/demo
 unzip rostmsdb_collections.zip
-cd rostmsdb_collections/
-mongoimport --db rostmsdb --collection default --file rostmsdb.default.json --jsonArray
-mongoimport --db rostmsdb --collection fs.chunks  --file rostmsdb.fs.chunks.json --jsonArray
-mongoimport --db rostmsdb --collection machine --file rostmsdb.machine.json --jsonArray
-mongoimport --db rostmsdb --collection now --file rostmsdb.now.json --jsonArray
-mongoimport --db rostmsdb --collection sensor --file rostmsdb.sensor.json --jsonArray
-mongoimport --db rostmsdb --collection fs.files --file rostmsdb.fs.files.json --jsonArray
-mongoimport --db rostmsdb --collection parameter --file rostmsdb.parameter.json --jsonArray
-mongoimport --db rostmsdb --collection task --file rostmsdb.task.json --jsonArray
-cd .. && rm -rf  rostmsdb_collections
+mongorestore dump
 ```
 
 ## Setup BehaviorTree.CPP
@@ -251,6 +242,7 @@ The following demonstrations are presented here.
 4. [Try running the task schedular](#4-try-running-the-task-schedular)
 5. [Try running the task schedular with OperaSim-PhysX](#5-Try-running-the-task-schedular-with-OperaSim-PhysX)
 6. [Insert new task data to tms_db](#6-Insert-new-task-data-to-tms_db)
+7. [How to update parameters in mongodb based on topics from sensing pc](#7-How-to-update-parameters-in-mongodb-based-on-topics-from-sensing-pc)
 
 
 
@@ -424,7 +416,7 @@ sudo systemctl start mongod
 
  Before running the task scheduler, make sure that the task collection and the parameter collection are placed under rostmsdb database in MongoDB. Database verification can be done using mongodb compass. The confirmation procedure is as follows.
 1. Start MongoDB Compass. The following screen will appear.
- ![](docs/procedure_setting_mongodb_1.png)
+ ![](docs/procedure_setting_mongodb_1.png)How to update parameters in mongodb from sensing pc
 
 2. Confirm that the URI is entered as "mongodb://localhost:27017/" and press the "Connect" button. You will then see the following screen.
 ![](docs/procedure_setting_mongodb_2.png)
@@ -435,18 +427,10 @@ sudo systemctl start mongod
  If the database or collections does not exist, please execute the following command to add the database
 
 ```
+sudo systemctl start mongod
 cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction/demo
 unzip rostmsdb_collections.zip
-cd rostmsdb_collections/
-mongoimport --db rostmsdb --collection default --file rostmsdb.default.json --jsonArray
-mongoimport --db rostmsdb --collection fs.chunks  --file rostmsdb.fs.chunks.json --jsonArray
-mongoimport --db rostmsdb --collection machine --file rostmsdb.machine.json --jsonArray
-mongoimport --db rostmsdb --collection now --file rostmsdb.now.json --jsonArray
-mongoimport --db rostmsdb --collection sensor --file rostmsdb.sensor.json --jsonArray
-mongoimport --db rostmsdb --collection fs.files --file rostmsdb.fs.files.json --jsonArray
-mongoimport --db rostmsdb --collection parameter --file rostmsdb.parameter.json --jsonArray
-mongoimport --db rostmsdb --collection task --file rostmsdb.task.json --jsonArray
-cd .. && rm -rf  rostmsdb_collections
+mongorestore dump
 ```
 
 
@@ -571,6 +555,32 @@ Combining these nodes, we can create a task tree as shown below.
   ```
 
 4. You can see that the task just described has been added under the tasks collection in mongodb's rostmsdb database.
+
+### 7. How to update parameters in mongodb based on topics from sensing pc
+
+1. Place the .msg file directly under the ros2-tms-for-construction_ws/tms_ts/sensing_msgs/msg directory. This .msg file represents the type of data to be stored from the sensing pc to the parameter collection in mongodb via ros2 topic.
+2. After storing the .msg file in place, execute the following command.
+  ```
+  cd ~/ros2-tms-for-construction_ws
+  colcon build --packages-select sensing_msgs tms_sp_sensing && source install/setup.bash
+  ros2 run tms_sp_sensing sample
+  ```
+3. From then on, processing will be performed on a different ubuntu pc for sensing processing than the pc running ros2-tms-for-construction. These personal computers must be located on the same network. In this description, the sensing pc is assumed to be running Ubuntu 22.04 lts with ROS2 Humble on it.
+4. Once the sensing pc is ready, open a terminal and execute the following command.
+  ```
+  cd 
+  mkdir -p sensing_ws/src
+  cd sensing_ws/src
+  git clone -b master https://github.com/kasahara-san/sensing_sample_cps.git
+  cd ..
+  colcon build --packages-select sample_sensing_nodes sensing_msgs && source install/setup.bash
+  ros2 run sample_sensing_nodes sample_publisher
+  ```
+5. Then you can see that the following parameter on parameter collection in mongodb change dynamically using mongodb compass. Note that when using mongodb compass to check parameter values, you must press the refresh button shown in the following image each time to reflect the latest values of the parameters on mongodb.
+
+![](docs/dynamic_parameter.png)
+
+
 
 
 ## Version Information
