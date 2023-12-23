@@ -20,22 +20,22 @@ mongocxx::instance SubtaskNodeBase::inst{};
 SubtaskNodeBase::SubtaskNodeBase(const std::string& node_name_) : rclcpp::Node(node_name_) {};
 
 // データベースから動的パラメータの値をとってくるための関数
-std::map<std::string, int> SubtaskNodeBase::GetParamFromDB(std::string parts_name){
+std::map<std::string, float> SubtaskNodeBase::GetParamFromDB(std::string model_name, std::string component_name){
     mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
     mongocxx::database db = client["rostmsdb"];
     mongocxx::collection collection = db["parameter"];
     bsoncxx::builder::stream::document filter_builder;
-    filter_builder << "parts_name" << parts_name;
+    filter_builder << "model_name" << model_name << "component_name" << component_name;
     auto filter = filter_builder.view();
     auto result = collection.find_one(filter);
     if (result) {
-        std::map<std::string, int> dataMap;
+        std::map<std::string, float> dataMap;
 
         for (auto&& element : result->view()) {
             std::string key = element.key().to_string();
-            if (key != "_id" && key != "type" && key != "description" && key != "parameter_id" && key != "parameter_type" && key != "parts_name") {
-                if (element.type() == bsoncxx::type::k_int32) {
-                    int value = element.get_int32();
+            if (key != "_id" && key != "model_name" && key != "type" && key != "component_name") {
+                if (element.type() == bsoncxx::type::k_double) {
+                    float value = static_cast<float>(element.get_double());
                     dataMap[key] = value;
                 }
             }
@@ -44,6 +44,6 @@ std::map<std::string, int> SubtaskNodeBase::GetParamFromDB(std::string parts_nam
         return dataMap;
     } else {
         std::cout << "Dynamic parameter not found in your parameter collection" << std::endl;
-        return std::map<std::string, int>();
+        return std::map<std::string, float>();
     }
 }

@@ -33,7 +33,7 @@ public:
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
-  std::map<std::string, int> parameters;
+  std::map<std::string, float> parameters;
 
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal);
   rclcpp_action::CancelResponse handle_cancel(const std::shared_ptr<GoalHandle> goal_handle);

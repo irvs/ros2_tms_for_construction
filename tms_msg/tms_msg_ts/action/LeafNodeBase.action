@@ -1,5 +1,6 @@
 # Goal
-string parameter_id
+string model_name
+string component_name
 ---
 # Result
 bool result

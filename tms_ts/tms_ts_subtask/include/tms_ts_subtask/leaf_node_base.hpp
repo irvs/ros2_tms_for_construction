@@ -45,15 +45,14 @@ using namespace std::chrono_literals;
 
 class LeafNodeBase : public CoroActionNode{
 public:
-    LeafNodeBase(const std::string& name, const NodeConfiguration& config, std::string parts_name, std::string action_name_);
+    LeafNodeBase(const std::string& name, const NodeConfiguration& config);
     NodeStatus tick() override;
     std::mutex db_instance_mutex;
     bool should_send_goal_ = true;
     bool goal_result_available_ = false;
     bool goal_updated_ = false;
     
-    std::string parts_name_ = "templete"; // Please specify the parts name per corresponding parameter in mongodb
-    std::string action_name_ = "template"; // Please specify the action node name per corresponding subtasks
+    std::string subtask_name_;
 
     void createActionClient(const std::string & action_name_); 
 
@@ -74,8 +73,6 @@ public:
     typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::WrappedResult result_;
     std::shared_ptr<const typename tms_msg_ts::action::LeafNodeBase::Feedback> feedback_;
     
-
-
     rclcpp::Node::SharedPtr node_;
     rclcpp::CallbackGroup::SharedPtr callback_group_;
     rclcpp::executors::SingleThreadedExecutor callback_group_executor_;

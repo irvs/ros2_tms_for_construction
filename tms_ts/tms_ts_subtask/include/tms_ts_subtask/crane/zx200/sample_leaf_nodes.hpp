@@ -35,7 +35,7 @@ using namespace std::chrono_literals;
 
 class LeafNodeZx200 : public LeafNodeBase {
 public:
-  inline LeafNodeZx200(const std::string& name, const NodeConfiguration& config) : LeafNodeBase("leaf_node_zx200", config, "zx200_boom", "sample_zx200_boom"){};
+  inline LeafNodeZx200(const std::string& name, const NodeConfiguration& config) : LeafNodeBase("leaf_node_zx200", config){};
   inline static PortsList providedPorts() { return { InputPort<float>("model_name"), InputPort<float>("component_name"), InputPort<float>("subtask_name")}; };
 };
 

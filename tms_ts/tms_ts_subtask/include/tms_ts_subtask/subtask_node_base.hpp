@@ -35,7 +35,7 @@
 class SubtaskNodeBase : public rclcpp::Node{
 public:
     SubtaskNodeBase(const std::string& node_name_);
-    std::map<std::string, int> GetParamFromDB(std::string parts_name);
+    std::map<std::string, float> GetParamFromDB(std::string model_name, std::string component_name);
     static mongocxx::instance inst;
 private:
 };
