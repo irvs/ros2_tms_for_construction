@@ -37,7 +37,6 @@ rclcpp_action::GoalResponse SubtaskSampleZx200Swing::handle_goal(const rclcpp_ac
 rclcpp_action::CancelResponse SubtaskSampleZx200Swing::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
-    sleep(5);
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
