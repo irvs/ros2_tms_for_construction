@@ -1,38 +1,14 @@
 <root>
     <TreeNodesModel>
-        <Action ID="SubtaskControlZx120Arm">
-            <input_port name="goal_position"/>
-            <inout_port name="initial_position"/>
+        <Action ID="LeafNodeZx120">
+            <input_port name=" model_name"/>
+            <inout_port name="component_name"/>
+            <inout_port name="subtask_name"/>  
         </Action>
-        <Action ID="SubtaskControlZx120Boom">
-            <input_port name="goal_position"/>
-            <inout_port name="initial_position"/>
-        </Action>
-        <Action ID="SubtaskControlZx120Bucket">
-            <inout_port name="goal_position"/>
-            <inout_port name="initial_position"/>
-        </Action>
-        <Action ID="SubtaskControlZx120Swing">
-            <inout_port name="goal_position"/>
-            <inout_port name="initial_position"/>
-        </Action>
-
-
-        <Action ID="SubtaskControlZx200Arm">
-            <input_port name="goal_position"/>
-            <inout_port name="initial_position"/>
-        </Action>
-        <Action ID="SubtaskControlZx200Boom">
-            <input_port name="goal_position"/>
-            <inout_port name="initial_position"/>
-        </Action>
-        <Action ID="SubtaskControlZx200Bucket">
-            <inout_port name="goal_position"/>
-            <inout_port name="initial_position"/>
-        </Action>
-        <Action ID="SubtaskControlZx200Swing">
-            <inout_port name="goal_position"/>
-            <inout_port name="initial_position"/>
+        <Action ID="LeafNodeZx200">
+            <input_port name=" model_name"/>
+            <inout_port name="component_name"/>
+            <inout_port name="subtask_name"/> 
         </Action>
     </TreeNodesModel>
 </root>
