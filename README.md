@@ -558,6 +558,9 @@ Combining these nodes, we can create a task tree as shown below.
 
 ### 7. How to update parameters in mongodb based on topics from sensing pc
 
+The pc running cps and the sensing pc must be on the same network and they must be aligned if ROS_DOMAIN_ID is set.
+For more information for ROS_DOMAIN_ID, please refer to the official ROS documentation ( https://docs.ros.org/en/humble/Concepts/Intermediate/About-Domain-ID.html ).
+
 1. Place the .msg file directly under the ros2-tms-for-construction_ws/tms_ts/sensing_msgs/msg directory. This .msg file represents the type of data to be stored from the sensing pc to the parameter collection in mongodb via ros2 topic.
 2. After storing the .msg file in place, execute the following command.
   ```
