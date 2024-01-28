@@ -57,7 +57,7 @@ void SubtaskSampleZx200Swing::execute(const std::shared_ptr<GoalHandle> goal_han
     int deg = 0;
     std_msgs::msg::Float64 msg_rad;
 
-    while(deg <= goal_pos){
+    while(deg >= goal_pos){
         if (goal_handle->is_canceling()) {
             result->result = false;
             goal_handle->canceled(result);

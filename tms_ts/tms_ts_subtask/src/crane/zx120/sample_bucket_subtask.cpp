@@ -54,7 +54,7 @@ void SubtaskSampleZx120Bucket::execute(const std::shared_ptr<GoalHandle> goal_ha
     auto feedback = std::make_shared<tms_msg_ts::action::LeafNodeBase::Feedback>();
     auto & current_pos = feedback->current_pos;
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
-    int deg = 0;
+    int deg = 55;
     std_msgs::msg::Float64 msg_rad;
 
     while(deg >= goal_pos){
@@ -64,7 +64,7 @@ void SubtaskSampleZx120Bucket::execute(const std::shared_ptr<GoalHandle> goal_ha
             RCLCPP_INFO(this->get_logger(), "subtask execution is canceled");
             return;
         }
-        deg -= goal_pos / float(20.0);
+        deg -= goal_pos *10;
         msg_rad.data = float(deg * float(M_PI / 180));
         current_pos = deg;
         goal_handle->publish_feedback(feedback); 

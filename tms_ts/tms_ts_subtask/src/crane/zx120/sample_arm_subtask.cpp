@@ -54,7 +54,7 @@ void SubtaskSampleZx120Arm::execute(const std::shared_ptr<GoalHandle> goal_handl
     auto feedback = std::make_shared<tms_msg_ts::action::LeafNodeBase::Feedback>();
     auto & current_pos = feedback->current_pos;
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
-    int deg = 0;
+    int deg = 90;
     std_msgs::msg::Float64 msg_rad;
 
     while(deg >= goal_pos){

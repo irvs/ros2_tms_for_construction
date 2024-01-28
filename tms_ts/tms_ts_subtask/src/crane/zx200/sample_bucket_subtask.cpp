@@ -57,14 +57,14 @@ void SubtaskSampleZx200Bucket::execute(const std::shared_ptr<GoalHandle> goal_ha
     int deg = 0;
     std_msgs::msg::Float64 msg_rad;
 
-    while(deg >= goal_pos){
+    while(deg <= goal_pos){
         if (goal_handle->is_canceling()) {
             result->result = false;
             goal_handle->canceled(result);
             RCLCPP_INFO(this->get_logger(), "subtask execution is canceled");
             return;
         }
-        deg -= goal_pos / float(20.0);
+        deg += goal_pos;
         msg_rad.data = float(deg * float(M_PI / 180));
         current_pos = deg;
         goal_handle->publish_feedback(feedback); 
