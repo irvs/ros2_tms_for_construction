@@ -25,7 +25,7 @@ def generate_launch_description():
                   package='tms_ur_button_input', 
                   executable='tms_ur_button',
                   output='screen', 
-                  parameters=[{"task_id": 2}]), # You must define task_id that you want to execute. Default task_id is 2.
+                  parameters=[{"task_id": 4}]), # You must define task_id that you want to execute. Default task_id is 2.
             
             # subtasks (zx120)
             Node(
