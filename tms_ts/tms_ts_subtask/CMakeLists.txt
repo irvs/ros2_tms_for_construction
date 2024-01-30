@@ -62,14 +62,14 @@ bsoncxx)
 
 ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
 
-add_executable(zx120_sample_boom_subtask src/crane/zx120/sample_boom_subtask.cpp)
-add_executable(zx120_sample_swing_subtask src/crane/zx120/sample_swing_subtask.cpp)
-add_executable(zx120_sample_arm_subtask src/crane/zx120/sample_arm_subtask.cpp)
-add_executable(zx120_sample_bucket_subtask src/crane/zx120/sample_bucket_subtask.cpp)
-add_executable(zx200_sample_boom_subtask src/crane/zx200/sample_boom_subtask.cpp)
-add_executable(zx200_sample_swing_subtask src/crane/zx200/sample_swing_subtask.cpp)
-add_executable(zx200_sample_arm_subtask src/crane/zx200/sample_arm_subtask.cpp)
-add_executable(zx200_sample_bucket_subtask src/crane/zx200/sample_bucket_subtask.cpp)
+add_executable(zx120_sample_boom_subtask src/sample/zx120/sample_boom_subtask.cpp)
+add_executable(zx120_sample_swing_subtask src/sample/zx120/sample_swing_subtask.cpp)
+add_executable(zx120_sample_arm_subtask src/sample/zx120/sample_arm_subtask.cpp)
+add_executable(zx120_sample_bucket_subtask src/sample/zx120/sample_bucket_subtask.cpp)
+add_executable(zx200_sample_boom_subtask src/sample/zx200/sample_boom_subtask.cpp)
+add_executable(zx200_sample_swing_subtask src/sample/zx200/sample_swing_subtask.cpp)
+add_executable(zx200_sample_arm_subtask src/sample/zx200/sample_arm_subtask.cpp)
+add_executable(zx200_sample_bucket_subtask src/sample/zx200/sample_bucket_subtask.cpp)
 
 target_include_directories(zx120_sample_boom_subtask PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
