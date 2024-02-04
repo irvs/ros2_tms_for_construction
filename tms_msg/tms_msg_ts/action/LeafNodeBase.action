@@ -6,4 +6,4 @@ string record_name
 bool result
 ---
 # Feedback
-int32 current_pos
+string status

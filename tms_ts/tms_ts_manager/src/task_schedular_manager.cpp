@@ -27,8 +27,9 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
-#include "tms_ts_subtask/sample/zx120/sample_leaf_nodes.hpp"
-#include "tms_ts_subtask/sample/zx200/sample_leaf_nodes.hpp"
+// #include "tms_ts_subtask/sample/zx120/sample_leaf_nodes.hpp"
+// #include "tms_ts_subtask/sample/zx200/sample_leaf_nodes.hpp"
+#include "tms_ts_subtask/zx200/leaf_node.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -46,7 +47,7 @@ public:
     // ic120
 
     // zx120
-    factory.registerNodeType<LeafNodeZx120>("LeafNodeZx120");
+    // factory.registerNodeType<LeafNodeZx120>("LeafNodeZx120");
     // zx200
     factory.registerNodeType<LeafNodeZx200>("LeafNodeZx200");
   }
