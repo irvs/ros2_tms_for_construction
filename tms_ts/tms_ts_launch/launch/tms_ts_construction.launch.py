@@ -25,55 +25,62 @@ def generate_launch_description():
                   package='tms_ur_button_input', 
                   executable='tms_ur_button',
                   output='screen', 
-                  parameters=[{"task_id": 4}]), # You must define task_id that you want to execute. Default task_id is 2.
+                  parameters=[{"task_id": 8}]), # You must define task_id that you want to execute. Default task_id is 2.
             
+            # subtasks
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='subtask_zx200_change_pose',
+                  output='screen')
+            
+            ### sample ###
             # subtasks (zx120)
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx120_sample_boom_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx120_sample_swing_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx120_sample_arm_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx120_sample_bucket_subtask',
-                  output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx120_sample_boom_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx120_sample_swing_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx120_sample_arm_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx120_sample_bucket_subtask',
+            #       output='screen'),
             
             # subtasks (zx200)
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx200_sample_boom_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx200_sample_swing_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx200_sample_arm_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx200_sample_bucket_subtask',
-                  output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx200_sample_boom_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx200_sample_swing_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx200_sample_arm_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx200_sample_bucket_subtask',
+            #       output='screen'),
             
             
-            Node(
-                  package='tms_sp_sensing', 
-                  executable='tms_sp_zx120_end_effector',
-                  output='screen'),
-            Node(
-                  package='tms_sp_sensing', 
-                  executable='sample',
-                  output='screen'),
-            Node(
-                  package="tms_db_manager", 
-                  executable="tms_db_reader_task",
-                  output='screen'),
+            # Node(
+            #       package='tms_sp_sensing', 
+            #       executable='tms_sp_zx120_end_effector',
+            #       output='screen'),
+            # Node(
+            #       package='tms_sp_sensing', 
+            #       executable='sample',
+            #       output='screen'),
+            # Node(
+            #       package="tms_db_manager", 
+            #       executable="tms_db_reader_task",
+            #       output='screen'),
       ])
