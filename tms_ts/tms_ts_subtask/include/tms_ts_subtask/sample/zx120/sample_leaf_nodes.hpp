@@ -1,19 +1,19 @@
 // Copyright 2023, IRVS Laboratory, Kyushu University, Japan.
- 
+
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License at
- 
+
 //      http://www.apache.org/licenses/LICENSE-2.0
- 
+
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LEAF_NODE_ZX120_HPP_
-#define LEAF_NODE_ZX120_HPP_
+#ifndef SAMPLE_LEAF_NODE_ZX120_HPP_
+#define SAMPLE_LEAF_NODE_ZX120_HPP_
 
 #include <chrono>
 #include <functional>
@@ -33,12 +33,15 @@
 using namespace BT;
 using namespace std::chrono_literals;
 
-class LeafNodeZx120 : public LeafNodeBase {
+class LeafNodeZx120 : public LeafNodeBase
+{
 public:
-  inline LeafNodeZx120(const std::string& name, const NodeConfiguration& config) : LeafNodeBase("leaf_node_zx120", config){};
-  inline static PortsList providedPorts() { return { InputPort<float>("model_name"), InputPort<float>("component_name"), InputPort<float>("subtask_name")}; };
+  inline LeafNodeZx120(const std::string& name, const NodeConfiguration& config)
+    : LeafNodeBase("leaf_node_zx120", config){};
+  inline static PortsList providedPorts()
+  {
+    return { InputPort<float>("model_name"), InputPort<float>("component_name"), InputPort<float>("subtask_name") };
+  };
 };
-
-
 
 #endif
