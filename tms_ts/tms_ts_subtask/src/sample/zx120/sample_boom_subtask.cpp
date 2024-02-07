@@ -30,7 +30,7 @@ SubtaskSampleZx120Boom::SubtaskSampleZx120Boom() : SubtaskNodeBase("subtask_samp
 rclcpp_action::GoalResponse SubtaskSampleZx120Boom::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
-  parameters = GetParamFromDB(goal->model_name, goal->component_name);
+  parameters = GetParamFromDB(goal->model_name, goal->record_name);
   RCLCPP_INFO_STREAM(this->get_logger(), "zx120 boom goal pos_fin: " << parameters["zx120_boom_goal_pos"] << " [deg]");
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
@@ -53,7 +53,7 @@ void SubtaskSampleZx120Boom::execute(const std::shared_ptr<GoalHandle> goal_hand
   rclcpp::Rate loop_rate(1);
   const auto goal_pos = parameters["zx120_boom_goal_pos"];
   auto feedback = std::make_shared<tms_msg_ts::action::LeafNodeBase::Feedback>();
-  auto& current_pos = feedback->current_pos;
+  auto& status = feedback->status;
   auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
   int deg = 0;
   std_msgs::msg::Float64 msg_rad;
@@ -69,7 +69,7 @@ void SubtaskSampleZx120Boom::execute(const std::shared_ptr<GoalHandle> goal_hand
     }
     deg += goal_pos / float(20.0);
     msg_rad.data = float(deg * float(M_PI / 180));
-    current_pos = deg;
+    status = deg;
     goal_handle->publish_feedback(feedback);
     publisher_->publish(msg_rad);
     RCLCPP_INFO_STREAM(this->get_logger(), "Publishing boom position: " << deg << " [deg]");
