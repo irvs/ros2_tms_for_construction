@@ -45,7 +45,7 @@ class UpdateDB_Parameter(Node):
         client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client['rostmsdb']
         collection = db['parameter']
-        query = {"model_name": msg.model_name, "type" : "dynamic", "component_name": msg.component_name, "position_with_angle" : msg.position_with_angle}
+        query = {"model_name": msg.model_name, "type" : "dynamic", "record_name": msg.record_name, "position_with_angle" : msg.position_with_angle}
         update_parameter_info= {"x": None, "y": None, "z": None, "theta_w": None}
         parameter_info = collection.find_one(query)
         for keep_pos in msg.keep_pos:

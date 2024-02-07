@@ -36,7 +36,7 @@ class UpdateDB_Parameter(Node):
         db = client['rostmsdb']
         collection = db['parameter']
         query = {"model_name": msg.model_name, "type" : "dynamic",
-                  "component_name": msg.component_name}
+                  "record_name": msg.record_name}
         update_parameter_info= {"sample_parameter_value": None}
         for update_val in update_parameter_info:
             if update_parameter_info[update_val] == None:

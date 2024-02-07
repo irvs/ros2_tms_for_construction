@@ -27,8 +27,8 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
-// #include "tms_ts_subtask/sample/zx120/sample_leaf_nodes.hpp"
-// #include "tms_ts_subtask/sample/zx200/sample_leaf_nodes.hpp"
+#include "tms_ts_subtask/sample/zx120/sample_leaf_nodes.hpp"
+#include "tms_ts_subtask/sample/zx200/sample_leaf_nodes.hpp"
 #include "tms_ts_subtask/zx200/leaf_node.hpp"
 
 using namespace BT;
@@ -47,8 +47,9 @@ public:
     // ic120
 
     // zx120
-    // factory.registerNodeType<LeafNodeZx120>("LeafNodeZx120");
+    factory.registerNodeType<LeafNodeSampleZx120>("LeafNodeSampleZx120");
     // zx200
+    factory.registerNodeType<LeafNodeSampleZx200>("LeafNodeSampleZx200");
     factory.registerNodeType<LeafNodeZx200>("LeafNodeZx200");
   }
   void topic_callback(const std_msgs::msg::String::SharedPtr msg)
