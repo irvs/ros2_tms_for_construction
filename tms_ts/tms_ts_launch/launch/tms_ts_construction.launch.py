@@ -74,7 +74,7 @@ def generate_launch_description():
             # センシング処理後のデータをデータベースに取り込むためのノード類
             Node(
                   package='tms_sp_sensing', 
-                  executable='tms_sp_zx120_end_effector',
+                  executable='tms_sp_zx200_end_effector',
                   output='screen'),
             Node(
                   package='tms_sp_sensing', 
