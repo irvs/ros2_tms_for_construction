@@ -1,0 +1,12 @@
+# Goal definition
+float64 target_angle
+
+---
+
+# Result definition
+TmsRpErrorCodes error_code
+
+---
+
+# Feedback definition
+string state

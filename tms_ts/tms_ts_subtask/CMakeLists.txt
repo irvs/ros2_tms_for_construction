@@ -70,6 +70,7 @@ add_executable(zx200_sample_swing_subtask src/sample/zx200/sample_swing_subtask.
 add_executable(zx200_sample_arm_subtask src/sample/zx200/sample_arm_subtask.cpp)
 add_executable(zx200_sample_bucket_subtask src/sample/zx200/sample_bucket_subtask.cpp)
 add_executable(subtask_zx200_change_pose src/zx200/subtask_zx200_change_pose.cpp)
+add_executable(subtask_zx200_excavate_simple src/zx200/subtask_zx200_excavate_simple.cpp)
 
 target_include_directories(zx120_sample_boom_subtask PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -125,6 +126,11 @@ target_include_directories(subtask_zx200_change_pose PUBLIC
   /usr/local/include/mongocxx/v_noabi
   /usr/local/include/bsoncxx/v_noabi)
 
+  target_include_directories(subtask_zx200_excavate_simple PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  /usr/local/include/mongocxx/v_noabi
+  /usr/local/include/bsoncxx/v_noabi)
 
 target_link_directories(zx120_sample_boom_subtask PUBLIC
   /usr/local/lib)
@@ -151,6 +157,9 @@ target_link_directories(zx200_sample_bucket_subtask PUBLIC
 /usr/local/lib)
 
 target_link_directories(subtask_zx200_change_pose PUBLIC
+/usr/local/lib)
+
+target_link_directories(subtask_zx200_excavate_simple PUBLIC
 /usr/local/lib)
 
 target_link_libraries(zx120_sample_boom_subtask
@@ -216,6 +225,13 @@ target_link_libraries(subtask_zx200_change_pose
   glog::glog
 )
 
+target_link_libraries(subtask_zx200_excavate_simple
+  ${PROJECT_NAME}
+  mongocxx
+  bsoncxx
+  glog::glog
+)
+
 ament_target_dependencies(zx120_sample_boom_subtask ${dependencies_cpp})
 ament_target_dependencies(zx120_sample_swing_subtask ${dependencies_cpp})
 ament_target_dependencies(zx120_sample_arm_subtask ${dependencies_cpp})
@@ -225,6 +241,7 @@ ament_target_dependencies(zx200_sample_swing_subtask ${dependencies_cpp})
 ament_target_dependencies(zx200_sample_arm_subtask ${dependencies_cpp})
 ament_target_dependencies(zx200_sample_bucket_subtask ${dependencies_cpp})
 ament_target_dependencies(subtask_zx200_change_pose ${dependencies_cpp})
+ament_target_dependencies(subtask_zx200_excavate_simple ${dependencies_cpp})
 
 install(TARGETS
   zx120_sample_boom_subtask
@@ -236,6 +253,7 @@ install(TARGETS
   zx200_sample_arm_subtask
   zx200_sample_bucket_subtask
   subtask_zx200_change_pose
+  subtask_zx200_excavate_simple
   DESTINATION lib/${PROJECT_NAME}
 )
 
