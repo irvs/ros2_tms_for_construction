@@ -17,11 +17,11 @@
 
 using namespace std::chrono_literals;
 
-SubtaskSampleZx200Swing::SubtaskSampleZx200Swing() : SubtaskNodeBase("subtask_sample_zx200_swing")
+SubtaskSampleZx200Swing::SubtaskSampleZx200Swing() : SubtaskNodeBase("st_zx200_sample_swing_node")
 {
   publisher_ = this->create_publisher<std_msgs::msg::Float64>("/zx200/swing/cmd", 10);
   this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-      this, "sample_zx200_swing_subtask",
+      this, "st_zx200_sample_swing",
       std::bind(&SubtaskSampleZx200Swing::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
       std::bind(&SubtaskSampleZx200Swing::handle_cancel, this, std::placeholders::_1),
       std::bind(&SubtaskSampleZx200Swing::handle_accepted, this, std::placeholders::_1));
