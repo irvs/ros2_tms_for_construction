@@ -17,11 +17,11 @@
 
 using namespace std::chrono_literals;
 
-SubtaskSampleZx200Bucket::SubtaskSampleZx200Bucket() : SubtaskNodeBase("subtask_sample_zx200_bucket")
+SubtaskSampleZx200Bucket::SubtaskSampleZx200Bucket() : SubtaskNodeBase("st_zx200_sample_bucket_node")
 {
   publisher_ = this->create_publisher<std_msgs::msg::Float64>("/zx200/bucket/cmd", 10);
   this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-      this, "sample_zx200_bucket_subtask",
+      this, "st_zx200_sample_bucket",
       std::bind(&SubtaskSampleZx200Bucket::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
       std::bind(&SubtaskSampleZx200Bucket::handle_cancel, this, std::placeholders::_1),
       std::bind(&SubtaskSampleZx200Bucket::handle_accepted, this, std::placeholders::_1));
