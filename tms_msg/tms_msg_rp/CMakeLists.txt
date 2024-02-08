@@ -35,6 +35,7 @@ set(msg_files
 
 set(action_files
   "action/TmsRpZx200ChangePose.action"
+  "action/TmsRpZx200ExcavateSimple.action"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
