@@ -48,8 +48,6 @@ class UpdateDB_Parameter(Node):
         query = {"model_name": msg.model_name, "type" : "dynamic", "record_name": msg.record_name}
         update_parameter_info= {"x": None, "y": None, "z": None, "theta_w": None}
         parameter_info = collection.find_one(query)
-        for keep_pos in msg.keep_pos:
-            update_parameter_info[keep_pos] = parameter_info[keep_pos]
         # self.get_logger().info(f"BEFORE: parameter_info: {update_parameter_info}")
         for update_val in update_parameter_info:
             if update_parameter_info[update_val] == None:
