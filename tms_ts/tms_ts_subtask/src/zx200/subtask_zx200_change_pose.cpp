@@ -19,13 +19,13 @@ using namespace std::chrono_literals;
 
 SubtaskZx200ChangePose::SubtaskZx200ChangePose() : SubtaskNodeBase("subtask_zx200_change_pose_node")
 {
-  this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
+  action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
       this, "subtask_zx200_change_pose",
       std::bind(&SubtaskZx200ChangePose::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
       std::bind(&SubtaskZx200ChangePose::handle_cancel, this, std::placeholders::_1),
       std::bind(&SubtaskZx200ChangePose::handle_accepted, this, std::placeholders::_1));
 
-  this->action_client_ = rclcpp_action::create_client<Zx200ChangePose>(this, "tms_rp_zx200_change_pose");
+  action_client_ = rclcpp_action::create_client<Zx200ChangePose>(this, "tms_rp_zx200_change_pose");
   if (action_client_->wait_for_action_server())
   {
     RCLCPP_INFO(this->get_logger(), "Action server is ready");
@@ -94,7 +94,12 @@ rclcpp_action::GoalResponse SubtaskZx200ChangePose::handle_goal(
 rclcpp_action::CancelResponse SubtaskZx200ChangePose::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
   RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
-  // TODO: Implement canceling subtask
+  if (client_future_goal_handle_.valid() &&
+      client_future_goal_handle_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+  {
+    auto goal_handle = client_future_goal_handle_.get();
+    action_client_->async_cancel_goal(goal_handle);
+  }
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
@@ -180,18 +185,15 @@ void SubtaskZx200ChangePose::execute(const std::shared_ptr<GoalHandle> goal_hand
 
   // Send goal to TMS_RP
   auto send_goal_options = rclcpp_action::Client<Zx200ChangePose>::SendGoalOptions();
-  send_goal_options.goal_response_callback = [this](const auto& goal_handle) {
-    this->goal_response_callback(goal_handle);
-  };
+  send_goal_options.goal_response_callback = [this](const auto& goal_handle) { goal_response_callback(goal_handle); };
   send_goal_options.feedback_callback = [this](const auto tmp, const auto feedback) {
-    this->feedback_callback(tmp, feedback);
+    feedback_callback(tmp, feedback);
   };
-  send_goal_options.result_callback = [this, goal_handle](const auto& result) {
-    this->result_callback(goal_handle, result);
-  };
+  send_goal_options.result_callback = [this, goal_handle](const auto& result) { result_callback(goal_handle, result); };
 
   RCLCPP_INFO(this->get_logger(), "Sending goal");
-  action_client_->async_send_goal(goal_msg, send_goal_options);
+
+  client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
 void SubtaskZx200ChangePose::goal_response_callback(const GoalHandleZx200ChangePose::SharedPtr& goal_handle)
