@@ -27,7 +27,6 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
-// #include "std_msgs/msg/float64.hpp"
 #include "tms_msg_ts/action/leaf_node_base.hpp"
 #include "tms_ts_subtask/subtask_node_base.hpp"
 
@@ -56,6 +55,7 @@ private:
 
   // Member as an action client
   rclcpp_action::Client<Zx200ExcavateSimple>::SharedPtr action_client_;
+  std::shared_future<GoalHandleZx200ExcavateSimple::SharedPtr> client_future_goal_handle_;
   void goal_response_callback(const GoalHandleZx200ExcavateSimple::SharedPtr& goal_handle);
   void feedback_callback(GoalHandleZx200ExcavateSimple::SharedPtr,
                          const std::shared_ptr<const Zx200ExcavateSimple::Feedback> feedback);
