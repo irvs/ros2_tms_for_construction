@@ -1,5 +1,5 @@
 # Goal definition
-float64 target_angle
+tms_msg_rp/TmsRpZx200PositionWithAngle position_with_angle
 
 ---
 
