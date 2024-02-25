@@ -128,23 +128,28 @@ void SubtaskZx200ExcavateSimple::execute(const std::shared_ptr<GoalHandle> goal_
     }
   };
 
-  // RCLCPP_INFO(this->get_logger(), "subtask is executing...");
-
   if (!action_client_->action_server_is_ready())
   {
     handle_error("Action server not available");
     return;
   }
 
-  // TODO: Fix to get array from DB
   auto goal_msg = Zx200ExcavateSimple::Goal();
-  if (param_from_db_.find("target_angle") != param_from_db_.end())
+  if (param_from_db_["position_with_angle"] > 0.5)
   {
-    goal_msg.target_angle = param_from_db_["target_angle"];
+    RCLCPP_INFO(this->get_logger(), "Get position_with_angle from DB.");
+
+    tms_msg_rp::msg::TmsRpZx200PositionWithAngle target_pose;
+    target_pose.position.x = param_from_db_["x"];
+    target_pose.position.y = param_from_db_["y"];
+    target_pose.position.z = param_from_db_["z"];
+    target_pose.theta_w = param_from_db_["theta_w"];
+
+    goal_msg.position_with_angle = target_pose;
   }
   else
   {
-    handle_error("No target_angle found in DB");
+    handle_error("No trajectory, pose, or position_with_angle found in DB");
     return;
   }
 

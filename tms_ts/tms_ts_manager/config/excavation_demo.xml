@@ -5,8 +5,7 @@
         <Repeat num_cycles="3">
             <Sequence>
                 <Action  model_name="zx200" ID="LeafNodeZx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
-                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_change_pose"/>
-                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="excavate_angle" subtask_name="subtask_zx200_excavate_simple"/>
+                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple"/>
                 <Action  model_name="zx200" ID="LeafNodeZx200" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_zx200_change_pose"/>
                 <Action  model_name="zx200" ID="LeafNodeZx200" record_name="hold_soil_while_turning_pose" subtask_name="subtask_zx200_change_pose"/>
                 <Action  model_name="zx200" ID="LeafNodeZx200" record_name="target_release_pose" subtask_name="subtask_zx200_change_pose"/>
