@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action  model_name="zx200" ID="LeafNodeZx200" record_name="excavation_1" subtask_name="subtask_zx200_change_pose"/>
+            <Action  model_name="zx200" ID="LeafNodeZx200" record_name="excavation_2" subtask_name="subtask_zx200_change_pose"/>
+            <Action  model_name="zx200" ID="LeafNodeZx200" record_name="excavation_3" subtask_name="subtask_zx200_change_pose"/>
+            <Action  model_name="zx200" ID="LeafNodeZx200" record_name="excavation_4" subtask_name="subtask_zx200_change_pose"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="LeafNodeZx200">
+            <input_port name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>

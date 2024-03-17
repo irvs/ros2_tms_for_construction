@@ -15,7 +15,7 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Sample.msg"
-  "msg/Zx120EndEffector.msg"
+  "msg/Zx200EndEffector.msg"
   DEPENDENCIES builtin_interfaces
 )
 

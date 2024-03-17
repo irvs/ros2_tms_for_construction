@@ -24,19 +24,18 @@
 #include "std_msgs/msg/string.hpp"
 #include "std_msgs/msg/float64.hpp"
 
-
 #include <bsoncxx/json.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 
-
-
-class SubtaskNodeBase : public rclcpp::Node{
+class SubtaskNodeBase : public rclcpp::Node
+{
 public:
-    SubtaskNodeBase(const std::string& node_name_);
-    std::map<std::string, float> GetParamFromDB(std::string model_name, std::string component_name);
-    static mongocxx::instance inst;
+  SubtaskNodeBase(const std::string& node_name_);
+  std::map<std::string, float> GetParamFromDB(std::string model_name, std::string record_name);
+  static mongocxx::instance inst;
+
 private:
 };
 
