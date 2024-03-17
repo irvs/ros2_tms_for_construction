@@ -1,13 +1,19 @@
 <root>
     <TreeNodesModel>
-        <Action ID="LeafNodeZx120">
+        <Action ID="LeafNodeSampleZx120">
             <input_port name=" model_name"/>
-            <inout_port name="component_name"/>
+            <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>  
         </Action>
+        <Action ID="LeafNodeSampleZx200">
+            <input_port name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/> 
+        </Action>
+        
         <Action ID="LeafNodeZx200">
             <input_port name=" model_name"/>
-            <inout_port name="component_name"/>
+            <inout_port name="record_name"/>
             <inout_port name="subtask_name"/> 
         </Action>
     </TreeNodesModel>
