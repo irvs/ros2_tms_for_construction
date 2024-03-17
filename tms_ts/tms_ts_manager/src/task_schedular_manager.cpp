@@ -29,7 +29,9 @@
 
 #include "tms_ts_subtask/sample/zx120/sample_leaf_nodes.hpp"
 #include "tms_ts_subtask/sample/zx200/sample_leaf_nodes.hpp"
+#include "tms_ts_subtask/ic120/leaf_node.hpp"
 #include "tms_ts_subtask/zx200/leaf_node.hpp"
+
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -45,7 +47,7 @@ public:
         "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
 
     // ic120
-
+    factory.registerNodeType<LeafNodeIc120>("LeafNodeIc120");
     // zx120
     factory.registerNodeType<LeafNodeSampleZx120>("LeafNodeSampleZx120");
     // zx200

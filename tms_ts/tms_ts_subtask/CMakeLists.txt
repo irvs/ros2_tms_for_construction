@@ -28,6 +28,7 @@ find_package(mongocxx REQUIRED)
 find_package(tms_msg_ts REQUIRED)
 find_package(tms_msg_rp REQUIRED)
 find_package(glog REQUIRED)
+find_package(nav2_msgs REQUIRED)
 
 set(dependencies_cpp
   rclcpp
@@ -38,7 +39,8 @@ set(dependencies_cpp
   nlohmann_json
   geometry_msgs
   tms_msg_ts
-  tms_msg_rp)
+  tms_msg_rp
+  nav2_msgs)
 
 
 add_library(${PROJECT_NAME} SHARED
@@ -60,7 +62,7 @@ mongocxx
 bsoncxx)
 
 ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
-
+add_executable(subtask_ic120_navigate_anywhere_server src/ic120/subtask_ic120_navigate_anywhere_server.cpp)
 add_executable(zx120_sample_boom_subtask src/sample/zx120/sample_boom_subtask.cpp)
 add_executable(zx120_sample_swing_subtask src/sample/zx120/sample_swing_subtask.cpp)
 add_executable(zx120_sample_arm_subtask src/sample/zx120/sample_arm_subtask.cpp)
@@ -72,6 +74,12 @@ add_executable(zx200_sample_bucket_subtask src/sample/zx200/sample_bucket_subtas
 add_executable(subtask_zx200_change_pose src/zx200/subtask_zx200_change_pose.cpp)
 add_executable(subtask_zx200_excavate_simple src/zx200/subtask_zx200_excavate_simple.cpp)
 add_executable(subtask_zx200_release_simple src/zx200/subtask_zx200_release_simple.cpp)
+
+target_include_directories(subtask_ic120_navigate_anywhere_server PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  /usr/local/include/mongocxx/v_noabi
+  /usr/local/include/bsoncxx/v_noabi)
 
 target_include_directories(zx120_sample_boom_subtask PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -139,8 +147,11 @@ target_include_directories(subtask_zx200_release_simple PUBLIC
   /usr/local/include/mongocxx/v_noabi
   /usr/local/include/bsoncxx/v_noabi)
 
+target_link_directories(subtask_ic120_navigate_anywhere_server PUBLIC
+/usr/local/lib)
+
 target_link_directories(zx120_sample_boom_subtask PUBLIC
-  /usr/local/lib)
+/usr/local/lib)
 
 target_link_directories(zx120_sample_swing_subtask PUBLIC
 /usr/local/lib)
@@ -152,7 +163,7 @@ target_link_directories(zx120_sample_bucket_subtask PUBLIC
 /usr/local/lib)
 
 target_link_directories(zx200_sample_boom_subtask PUBLIC
-  /usr/local/lib)
+/usr/local/lib)
 
 target_link_directories(zx200_sample_swing_subtask PUBLIC
 /usr/local/lib)
@@ -171,6 +182,13 @@ target_link_directories(subtask_zx200_excavate_simple PUBLIC
 
 target_link_directories(subtask_zx200_release_simple PUBLIC
 /usr/local/lib)
+
+target_link_libraries(subtask_ic120_navigate_anywhere_server
+${PROJECT_NAME}
+mongocxx
+bsoncxx
+glog::glog
+)
 
 target_link_libraries(zx120_sample_boom_subtask
   ${PROJECT_NAME}
@@ -249,6 +267,7 @@ target_link_libraries(subtask_zx200_release_simple
   glog::glog
 )
 
+ament_target_dependencies(subtask_ic120_navigate_anywhere_server ${dependencies_cpp})
 ament_target_dependencies(zx120_sample_boom_subtask ${dependencies_cpp})
 ament_target_dependencies(zx120_sample_swing_subtask ${dependencies_cpp})
 ament_target_dependencies(zx120_sample_arm_subtask ${dependencies_cpp})
@@ -262,6 +281,7 @@ ament_target_dependencies(subtask_zx200_excavate_simple ${dependencies_cpp})
 ament_target_dependencies(subtask_zx200_release_simple ${dependencies_cpp})
 
 install(TARGETS
+  subtask_ic120_navigate_anywhere_server
   zx120_sample_boom_subtask
   zx120_sample_swing_subtask
   zx120_sample_arm_subtask
