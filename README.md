@@ -20,7 +20,7 @@ Project page: [https://moonshot-cafe-project.org/en/](https://moonshot-cafe-proj
 
 ### Architecture
 
-![](docs/ros2-tms-for-construction_architecture.png)
+![](docs/ros2_tms_for_construction_architecture.png)
 
 ## Install
 
@@ -78,7 +78,6 @@ python3 -m pip install -r requirements.txt
 ### Setup MongoDB
 
 > **Note**
->
 > If a rostmsdb database already exists on mongodb, an error will occur during the execution of the following command. In such a case, delete the rostmsdb database in your environment and then execute the following command.
 
 
@@ -137,9 +136,51 @@ cd .. && colcon build --packages-select groot
 ```
 
 ### Install nlohmann-json library
-
 ```
 sudo apt install nlohmann-json3-dev
+```
+
+### Setup OPERA
+```
+# Install dbcppp
+cd && git clone --recurse-submodules https://github.com/genkiiii/dbcppp.git
+cd dbcppp && mkdir build && cd build
+
+# Install caranry
+cd && git clone https://github.com/djarek/canary.git
+cd canary && mkdir build && cd build
+cmake ..
+sudo make install
+
+# Install rttr
+sudo apt install doxygen
+https://github.com/irvs/rttr.git # This package is a private repository. Please wait a while until it is made public.
+cd rttr && mkdir build && cd build
+cmake ..
+sudo make install
+echo 'export RTTR_DIR=/home/common/rttr/build/install/' >> ~/.bashrc
+source ~/.bashrc
+
+# Install common packages for OPERA
+cd ~/ros2-tms-for-construction_ws/src/opera/common
+git clone https://github.com/pwri-opera/com3
+git clone https://github.com/pwri-opera/com3_ros.git
+
+# Install the package for OperaSim-PhysX
+cd .. && mkdir simulator && cd simulator
+git clone -b main-ros2 https://github.com/Unity-Technologies/ROS-TCP-Endpoint.git
+
+# Install packages for OPERA-compatible backhoe ZX200
+cd .. && mkdir zx200 && cd zx200
+git clone -b develop/top https://github.com/irvs/tms_if_for_opera.git
+git clone https://github.com/irvs/excavator_ik.git
+git clone https://github.com/pwri-opera/zx200_ros2.git
+
+# Install packages for OPERA-compatible crawler dump IC120
+cd .. && mkdir ic120 && cd ic120
+git clone https://github.com/pwri-opera/ic120_ros2.git  # This package is a private repository. Please wait a while until it is made public.
+git clone https://github.com/pwri-opera/gnss_localizer_ros2.git   # This package is a private repository. Please wait a while until it is made public.
+git clone https://github.com/pwri-opera/ic120_com3_ros.git  # This package is a private repository. Please wait a while until it is made public.
 ```
 
 ### Build the workspace
@@ -408,6 +449,7 @@ Here is an example. It may be a little different than yours, but as long as it i
 
 ### 4. Try running the task schedular
 
+In this chapter, we will explain how to use the task scheduler.
 To successfully run the task scheduler, mongodb must be started by executing the following command.
 
 ```
@@ -416,7 +458,7 @@ sudo systemctl start mongod
 
  Before running the task scheduler, make sure that the task collection and the parameter collection are placed under rostmsdb database in MongoDB. Database verification can be done using mongodb compass. The confirmation procedure is as follows.
 1. Start MongoDB Compass. The following screen will appear.
- ![](docs/procedure_setting_mongodb_1.png)How to update parameters in mongodb from sensing pc
+ ![](docs/procedure_setting_mongodb_1.png)
 
 2. Confirm that the URI is entered as "mongodb://localhost:27017/" and press the "Connect" button. You will then see the following screen.
 ![](docs/procedure_setting_mongodb_2.png)
@@ -521,6 +563,10 @@ ros2 launch tms_ts_launch tms_ts_construction.launch.py
 ```
 
 As explained in Chapter 4, you can execute the specified task using the task scheduler by clicking the green button that appears when starting ros2-tms-for-construction. If you want to make an emergency stop while executing a task, click on the red button.
+
+Additionally, the current ROS2-TMS for Construction includes several tasks for operating construction machinery and real machines on OperaSim-PhysX, along with their respective subtasks. The contents are as follows:
+
+![](docs/task_datas.png)
 
 Of course, you can also use Groot to monitor the tasks being performed by the Behavior Tree while the Task Scheduler is running, as shown in the following video.
 
