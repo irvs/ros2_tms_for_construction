@@ -1,0 +1,12 @@
+# Goal definition
+tms_msg_rp/TmsRpZx200PositionWithAngle position_with_angle
+
+---
+
+# Result definition
+TmsRpErrorCodes error_code
+
+---
+
+# Feedback definition
+string state
