@@ -294,7 +294,7 @@ The following demonstrations are presented here.
 5. [Try running the task schedular with OperaSim-PhysX](#5-Try-running-the-task-schedular-with-OperaSim-PhysX)
 6. [Insert new task data to tms_db](#6-Insert-new-task-data-to-tms_db)
 7. [How to update parameters in mongodb based on topics from sensing pc](#7-How-to-update-parameters-in-mongodb-based-on-topics-from-sensing-pc)
-8. [Try running the actual OPERA-compatible construction machinery](#8-Try-running-the-actual-opera-compatible-construction-machinery)
+<!-- 8. [Try running the actual OPERA-compatible construction machinery](#8-Try-running-the-actual-opera-compatible-construction-machinery) -->
 
 
 
@@ -684,7 +684,7 @@ Combining these nodes, we can create a task tree as shown below.
 ![](docs/dynamic_parameter.png)
 
 
-### 8. Try running the actual OPERA-compatible construction machinery
+<!-- ### 8. Try running the actual OPERA-compatible construction machinery
 
 ※ Execution of this section requires a actual OPERA-compatible construction machinery.
 
@@ -732,7 +732,7 @@ ros2 launch tms_ts_launch tms_ts_construction.launch.py
 ```
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch ic120_bringup ic120_vehicle.launch.py
-```
+``` -->
 
 
 
