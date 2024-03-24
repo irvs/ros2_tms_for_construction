@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>tms_sp_sensing</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="kasahara@irvs.ait.kyushu-u.ac.jp">Yuichiro Kasahara</maintainer>
+  <license>Apache License, Version 2.0</license>
+
+  <exec_depend>datetime</exec_depend>
+  <exec_depend>json</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>pymongo</exec_depend>
+  <exec_depend>sensing_msgs</exec_depend>
+  <exec_depend>tms_db_manager</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

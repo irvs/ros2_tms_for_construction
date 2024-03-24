@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>tms_ts_manager</name>
+  <version>0.0.0</version>
+  <description>The tms_ts_manager package</description>
+  <maintainer email="kasahara@irvs.ait.kyushu-u.ac.jp">Yuichiro Kasahara</maintainer>
+  <license>Apache License, Version 2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  
+  <build_depend>tms_ts_subtask</build_depend>
+
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>behaviortree_cpp_v3</exec_depend>
+  <exec_depend>tms_ts_subtask</exec_depend>
+  <exec_depend>bsoncxx</exec_depend>
+  <exec_depend>mongocxx</exec_depend>
+  <exec_depend>nav2_msgs</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -30,7 +30,7 @@ class TmsDbReader(Node):
         super().__init__("tms_db_reader")
 
         # Declare parameters
-        self.declare_parameter("db_host", "localhost")
+        self.declare_parameter("db_host", '127.0.0.1')
         self.declare_parameter("db_port", 27017)
 
         # Get parameters

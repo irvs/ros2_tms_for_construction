@@ -20,7 +20,7 @@ Project page: [https://moonshot-cafe-project.org/en/](https://moonshot-cafe-proj
 
 ### Architecture
 
-![](docs/ros2-tms-for-construction_architecture.png)
+![](docs/ros2_tms_for_construction_architecture.png)
 
 ## Install
 
@@ -51,44 +51,153 @@ https://www.mongodb.com/docs/compass/current/install/
 - setuptools 58.2.0
 - numpy-quaternion 2022.4.3
 
-```
-python3 -m pip install -r requirements.txt
-```
 
 ## Setup
 
 ### Create a workspace
 
 ```
-mkdir -p ~/ros2-tms-for-constructoin_ws/src
+cd
+mkdir -p ~/ros2-tms-for-construction_ws/src
 ```
 
 ### Clone this repository
 
 ```
-cd ~/ros2-tms-for-constructoin_ws/src/
-git clone https://github.com/irvs/ros2_tms_for_construction.git
+cd ~/ros2-tms-for-construction_ws/src
+git clone https://github.com/irvs/ros2_tms_for_construction.git -b develop/ts # modify if this is the other branch
+```
+
+
+### Install required python packages
+```
+cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction
+python3 -m pip install -r requirements.txt
+```
+
+### Setup MongoDB
+
+> **Note**
+> If a rostmsdb database already exists on mongodb, an error will occur during the execution of the following command. In such a case, delete the rostmsdb database in your environment and then execute the following command.
+
+
+```
+sudo systemctl start mongod
+cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction/demo
+unzip rostmsdb_collections.zip
+mongorestore dump
+```
+
+## Setup BehaviorTree.CPP
+
+```
+sudo apt install libzmq3-dev libboost-dev libncurses5-dev libncursesw5-dev
+cd
+git clone --branch v3.8 https://github.com/BehaviorTree/BehaviorTree.CPP.git
+cd BehaviorTree.CPP
+mkdir build; cd build
+cmake ..
+make
+sudo make install
+cd && rm -rf BehaviorTree.CPP
+```
+
+### Setup mongocxx / bsoncxx
+
+```
+cd
+wget https://github.com/mongodb/mongo-c-driver/releases/download/1.24.4/mongo-c-driver-1.24.4.tar.gz
+tar -xzf mongo-c-driver-1.24.4.tar.gz
+cd mongo-c-driver-1.24.4
+mkdir cmake-build
+cd cmake-build
+cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF .. -DCMAKE_INSTALL_PREFIX=/usr/local
+sudo make install
+
+cd
+curl -OL https://github.com/mongodb/mongo-cxx-driver/releases/download/r3.8.1/mongo-cxx-driver-r3.8.1.tar.gz
+tar -xzf mongo-cxx-driver-r3.8.1.tar.gz
+cd mongo-cxx-driver-r3.8.1/build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBSONCXX_POLY_USE_BOOST=1 -DMONGOCXX_OVERRIDE_DEFAULT_INSTALL_PREFIX=OFF
+cmake --build .
+sudo cmake --build . --target install
+￼
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+cd && rm -rf mongo-c-driver-1.24.4 mongo-c-driver-1.24.4.tar.gz mongo-cxx-driver-r3.8.1 mongo-cxx-driver-r3.8.1.tar.gz
+```
+
+### Setup Groot
+```
+sudo apt install qtbase5-dev libqt5svg5-dev libzmq3-dev libdw-dev
+cd ~/ros2-tms-for-construction_ws/src && git clone https://github.com/BehaviorTree/Groot.git
+cd .. && colcon build --packages-select groot
+./build/groot/Groot
+```
+
+### Install nlohmann-json library
+```
+sudo apt install nlohmann-json3-dev
+```
+
+### Setup OPERA
+```
+# Install dbcppp
+cd && git clone --recurse-submodules https://github.com/genkiiii/dbcppp.git
+cd dbcppp && mkdir build && cd build
+
+# Install caranry
+cd && git clone https://github.com/djarek/canary.git
+cd canary && mkdir build && cd build
+cmake ..
+sudo make install
+
+# Install rttr
+sudo apt install doxygen
+https://github.com/irvs/rttr.git # This package is a private repository. Please wait a while until it is made public.
+cd rttr && mkdir build && cd build
+cmake ..
+sudo make install
+echo 'export RTTR_DIR=/home/common/rttr/build/install/' >> ~/.bashrc
+source ~/.bashrc
+
+# Install tms_if_for_opera
+cd ~/ros2-tms-for-construction_ws/src
+git clone -b develop/top https://github.com/irvs/tms_if_for_opera.git
+
+# Install common packages for OPERA
+mkdir -p opera/common && cd opera/common
+git clone https://github.com/pwri-opera/com3
+git clone https://github.com/pwri-opera/com3_ros.git
+
+# Install the package for OperaSim-PhysX
+cd .. && mkdir simulator && cd simulator
+git clone -b main-ros2 https://github.com/Unity-Technologies/ROS-TCP-Endpoint.git
+
+# Install packages for OPERA-compatible backhoe ZX200
+cd .. && mkdir zx200 && cd zx200
+git clone https://github.com/pwri-opera/zx200_ros2.git
+
+# Install packages for OPERA-compatible crawler dump IC120
+cd .. && mkdir ic120 && cd ic120
+git clone https://github.com/pwri-opera/ic120_ros2.git  # This package is a private repository. Please wait a while until it is made public.
+git clone https://github.com/pwri-opera/gnss_localizer_ros2.git   # This package is a private repository. Please wait a while until it is made public.
+git clone https://github.com/pwri-opera/ic120_com3_ros.git  # This package is a private repository. Please wait a while until it is made public.
+```
+
+### Setup MoveIt! and Nav2
+```
+# install MoveIt!
+sudo apt install ros-humble-*moveit*
+# install Nav2
+sudo apt install ros-humble-*nav2*
 ```
 
 ### Build the workspace
 
 ```
-cd ~/ros2-tms-for-constructoin_ws
-colcon build
-```
-
-### Setup MongoDB
-```
-sudo systemctl start mongod
-cd ~/ros2-tms-for-constructoin_ws/src/ros2_tms_for_construction/demo
-unzip rostmsdb_collections.zip
-rm rostmsdb_collections.zip
-mongoimport --db rostmsdb --collection default --file rostmsdb.default.json --jsonArray
-mongoimport --db rostmsdb --collection fs.chunks  --file rostmsdb.fs.chunks.json --jsonArray
-mongoimport --db rostmsdb --collection machine --file rostmsdb.machine.json --jsonArray
-mongoimport --db rostmsdb --collection now --file rostmsdb.now.json --jsonArray
-mongoimport --db rostmsdb --collection sensor --file rostmsdb.sensor.json --jsonArray
-mongoimport --db rostmsdb --collection fs.files --file rostmsdb.fs.files.json --jsonArray
+cd ~/ros2-tms-for-construction_ws
+colcon build && source install/setup.bash
 ```
 
 
@@ -130,6 +239,11 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
   tms_sp_machine is a package for handling data realated to construction machines.
 
+
+- [tms_sp_sensing](tms_sp/tms_sp_sensing/)
+
+  tms_sp_sensing is a package  to update dynamic parameters stored in mongoDB based on ros topic sent from another pc.
+
 ### tms_ss
 
 - [tms_ss_terrain_static](tms_ss/tms_ss_terrain_static)
@@ -145,25 +259,30 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
   tms_tf_gui is a package for transforming construction data (ex. machine's location, terrain and hardness of ground) using GUI tools.
 
 ### tms_ts
-- [tms_ts_launch_project](tms_ts/tms_ts_launch_project/)
+- [tms_ts_launch](tms_ts/tms_ts_launch/)
   
-  tms_ts_launch_ts is a package for launching the task schedular.
+  tms_ts_launch_ts is a  package for specifying and executing tasks to run the actual construction machinery.
   
-- [tms_ts_manager_project](tms_ts/tms_ts_manager_project/)
 
-  tms_ts_manager_project is a package included in the main task schedular programs.
+- [tms_ts_subtask](tms_ts/tms_ts_subtask/)
 
-- [tms_ts_subtask_project](tms_ts/tms_ts_subtask_project/)
-
-  tms_ts_subtask_project is a package included in subtasks.
+  tms_ts_subtask is a package included in subtasks.
   
   If you want to implement new subtasks, please refer programs in the tms_ts_subtask directory.
 
+- [tms_ts_manager](tms_ts/tms_ts_manager/)
+
+  tms_ts_manager is a package that contains the main program of task schedular.
+
+- [sensing_msgs](tms_ts/sensing_msgs/)
+  
+  sensing_msgs is a package that contains .msg files for sensing process.
+
 ### tms_ur
 
-- [tms_ur_construction](tms_ur/tms_ur_construction)
+- [tms_ur_button_input](tms_ur/tms_ur_button_input)
 
-  tms_ur_construction is a package for getting construction data (ex. machine's location, terrain, hardness of ground) from tms_db_reader(_gridfs) and publishing them.
+  tms_ur_button_input is a package that searches data in mongodb for the corresponding task when the GUI button is pressed, and passes the corresponding task sequence to the task scheduler.
 
 ## Demo
 
@@ -173,11 +292,17 @@ The following demonstrations are presented here.
 2. [Get stored data](#2-get-stored-data)
 3. [Store and get data simultaneously in real-time](#3-store-and-get-data-simultaneously-in-real-time)
 4. [Try running the task schedular](#4-try-running-the-task-schedular)
+5. [Try running the task schedular with OperaSim-PhysX](#5-Try-running-the-task-schedular-with-OperaSim-PhysX)
+6. [Insert new task data to tms_db](#6-Insert-new-task-data-to-tms_db)
+7. [How to update parameters in mongodb based on topics from sensing pc](#7-How-to-update-parameters-in-mongodb-based-on-topics-from-sensing-pc)
+<!-- 8. [Try running the actual OPERA-compatible construction machinery](#8-Try-running-the-actual-opera-compatible-construction-machinery) -->
+
+
 
 Before demonstration, change directory and setup this workspace.
 
 ```
-cd ~/ros2-tms-for-constructoin_ws
+cd ~/ros2-tms-for-construction_ws
 source install/setup.bash
 ```
 
@@ -336,28 +461,283 @@ Here is an example. It may be a little different than yours, but as long as it i
 
 ### 4. Try running the task schedular
 
-To run the task scheduler, make sure that the default collection and now collection are placed under rostmsdb database in MongoDB as shown in the following image.
+In this chapter, we will explain how to use the task scheduler.
+To successfully run the task scheduler, mongodb must be started by executing the following command.
 
-![](docs/rostmsdb_ts.png)
+```
+sudo systemctl start mongod
+``` 
+
+ Before running the task scheduler, make sure that the task collection and the parameter collection are placed under rostmsdb database in MongoDB. Database verification can be done using mongodb compass. The confirmation procedure is as follows.
+1. Start MongoDB Compass. The following screen will appear.
+ ![](docs/procedure_setting_mongodb_1.png)
+
+2. Confirm that the URI is entered as "mongodb://localhost:27017/" and press the "Connect" button. You will then see the following screen.
+![](docs/procedure_setting_mongodb_2.png)
+
+ 3. Click on the "rostmsdb" button in the above screen, and if the screen looks like the following, the database setup is complete.
+![](docs/procedure_setting_mongodb_3.png)
+
+ If the database or collections does not exist, please execute the following command to add the database
+
+```
+sudo systemctl start mongod
+cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction/demo
+unzip rostmsdb_collections.zip
+mongorestore dump
+```
 
 
 Once you have verified that MongoDB looks like the image above, execute the following command.
 
 ```
-cd ~/ros2-tms-for-constructoin_ws
+cd ~/ros2-tms-for-construction_ws
 source install/setup.bash
-ros2 launch tms_ts_launch tms_ts_action.launch.py
+ros2 launch tms_ts_launch tms_ts_construction.launch.py
 ```
 
-If the above command have been properly executed, start a new terminal and execute the following command.
+The following GUI button will then be activated.
+
+![](docs/gui_button.png)
+
+When this green button is pressed, the corresponding task is read from the mongodb and the Behavior Tree executes subtasks based on the corresponding task sequence.
+The task to be executed at this time is the task data in the task collection of rostmsdb in mongodb. The number displayed to the right of the "task_id:" button is the task_id of the task data to be executed by task schedular. The summary of current task data stored in the DB is as presented in section 5.
+
+**Also, the red button is for emergency stop. Press this button if you want to stop the Task Scheduler in an emergency when it is executing a task.**
+
+
+Before you start executing tasks by pressing the GUI button described above, please execute the following command to launch Groot. Groot is a tool that functions both as an editor for creating sequences of tasks and as a monitor for observing the execution state of the task sequences being run by the Behavior Tree. In this section, we will introduce the monitoring functionality of Groot.
 
 ```
-cd ~/ros2-tms-for-constructoin_ws
+cd ~/ros2-tms-for-construction_ws
+./build/groot/Groot
+```
+After executing the above command, if Groot can be successfully started, the following screen will be appeared.
+
+![](docs/groot_2.png)
+
+In the above image, "Editor" is used to generate task sequence. On the other hand, "Monitor" is used to visualize the status of running tasks.
+
+In this section, we will show you how to visualize the status of running tasks using the "monitor" function.
+
+First, click on the "monitor" button of the previous screen to output the following screen.
+
+After opening the screen, check that the parameter settings on this screen are as follows
+
+
+> The settings for use should be as follows.
+> 
+> ・ Sensing IP : localhost
+> 
+> ・ Publisher Port : 1666 
+> 
+> ・ Sever Port : 1667
+
+After setting each parameter, click the "connect" button to see how the task is running in the behavior tree, as shown in the image below.
+
+![](docs/groot.png)
+
+> **Note**
+> 
+> The ability to visualize tasks being executed by Groot cannot be performed unless the task is being executed by the behavior tree. 
+>　So, if you want to visualize the  task sequence on Groot, you have to follow  the step below.
+>
+>  ![](docs/groot_7.png)
+>
+>  If you click the above button in Groot without the behavior tree running, the following error will occur.
+>  
+>  ![](docs/groot_8.png)
+
+If you want to change the task to be executed, update the following parameter in ros2_tms_for_construction/tms_ts/tms_ts_launch/launch/tms_ts_construction.launch.py to the task_id value of the task you want to execute, and then execute the following.
+
+```
+cd ~/ros2-tms-for-construction_ws
+colcon build --packages-select tms_ts_launch && source install/setup.bash
+```
+
+![](docs/tms_ts_launch_1.png)
+
+
+### 5. Try running the task schedular with OperaSim-PhysX
+
+This chapter explain how to link ROS2-TMS for Construction and OperaSim-PhysX , which is being developed by PWRI as a simulator of OPERA.
+
+Please follow the instructions described in the ReadMe on the official GitHub page of OperaSim-PhysX (URL: https://github.com/pwri-opera/OperaSim-PhysX) on how to set up windows PC and ubuntu 22.04 PC for using OperaSimPhysX.
+
+Once the connection between OperaSim-PhysX and ROS2 Humble is established, run the following command to start ROS2-TMS-for-construction on Ubuntu22.04 PC.
+
+```
+cd ~/ros2-tms-for-construction_ws
 source install/setup.bash
-ros2 service call /tms_ts_text_recognizer tms_msg_ts/srv/TaskTextRecognize '{data: "zx120", is_announce: False}'
+ros2 launch tms_ts_launch tms_ts_construction.launch.py
 ```
-After the above operation is executed, the corresponding task is called from MongoDB, and subtasks and parameters are called based on the task sequence, and these are executed according to the task sequence.
 
+As explained in Chapter 4, you can execute the specified task using the task scheduler by clicking the green button that appears when starting ros2-tms-for-construction. If you want to make an emergency stop while executing a task, click on the red button.
+
+
+
+Additionally, the current ROS2-TMS for Construction includes several tasks for operating actual construction machinery and machines on OperaSim-PhysX. 
+The summary of the task data currently stored in the database is as follows:
+
+![](docs/task_data.png)
+
+
+
+Additionally, to successfully execute the tasks with task_id ranging from 3 to 7 as mentioned in the table above, it is necessary to pre-launch the ROS2 packages for zx200 and ic120 prepared on the OPERA. Because the packages to launch differ for cases involving the operation of zx200 and ic120, the procedures are explained separately below.
+
+※ It is not necessary to execute the following command when running sample tasks (task_id: 1 ~ 3).
+
+#### Packages for operating OPERA-compatible ZX200 on the OperaSim-PhysX using MoveIt! (task_id: 4, 5)
+```
+# Open the 1st terminal
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch ros_tcp_endpoint endpoint.py
+
+# Open the 2nd terminal
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch zx200_unity zx200_standby.launch.py
+
+# Open the 3rd terminal
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch tms_if_for_opera tms_if_for_opera.launch.py
+
+# Open the 4th terminal
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch tms_ts_launch tms_ts_construction.launch.py
+```
+#### Packages for operating OPOERA-compatible IC120 on the OperaSim-PhysX using Nav2! (task_id: 6, 7) 
+```
+# Open the 1st terminal
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch ros_tcp_endpoint endpoint.py
+
+# Open the 2nd terminal
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch ic120_unity ic120_standby_ekf.launch.py
+
+# Open the 3rd terminal
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch tms_ts_launch tms_ts_construction.launch.py
+```
+
+
+
+Of course, you can also use Groot to monitor the tasks being performed by the Behavior Tree while the Task Scheduler is running, as shown in the following video.
+
+
+https://github.com/irvs/ros2_tms_for_construction/assets/130209264/8747df87-0dd9-42c4-9132-6454c15eeedf
+
+
+### 6. Insert new task data to tms_db
+
+This section describes how to add new tasks to the database.
+
+1. First, generate a new task sequence using Groot. When using Groot to generate a task sequence, it is necessary to register subtasks. Load the following file to make each subtask configurable.
+![](docs/procedure_setting_groot_1.png)
+Then the subtasks will appear in the node list section of Groot as shown in the following image.
+![](docs/groot_4.png)
+Combining these nodes, we can create a task tree as shown below.
+![](docs/groot_5.png)
+
+2. Please store the xml file of the task sequence generated using Groot under ros2_tms_for_construction/tms_ts/tms_ts_manager/config directory.The following is how to save the xml file of the task tree created in Groot.
+![](docs/groot_6.png)
+
+3. Execute the following command to save the created task data to the database Replace [file_name] in the command with the filename of the xml file you created.
+  ```
+  cd ~/ros2-tms-for-construction_ws
+  colcon build --packages-select tms_ts_manager && source install/setup.bash
+  ros2 run tms_ts_manager task_generator.py --ros-args -p bt_tree_xml_file_name:=[file_name]
+  ```
+  For example, to store sample_construction_tree.xml in ros2_tms_for_construction/tms_ts/tms_ts_manager/config in the database as a task, run the following command.
+
+  ```
+  ros2 run tms_ts_manager task_generator.py --ros-args -p bt_tree_xml_file_name:=sample_construction_tree
+  ```
+
+4. You can see that the task just described has been added under the tasks collection in mongodb's rostmsdb database.
+
+### 7. How to update parameters in mongodb based on topics from sensing pc
+
+> **Note**
+> The pc running cps and the sensing pc must be on the same network and they must be aligned if ROS_DOMAIN_ID is set.
+> For more information for ROS_DOMAIN_ID, please refer to the official ROS documentation ( https://docs.ros.org/en/humble/Concepts/Intermediate/About-Domain-ID.html ).
+
+1. Place the .msg file directly under the ros2-tms-for-construction_ws/tms_ts/sensing_msgs/msg directory. This .msg file represents the type of data to be stored from the sensing pc to the parameter collection in mongodb via ros2 topic.
+2. After storing the .msg file in place, execute the following command.
+  ```
+  cd ~/ros2-tms-for-construction_ws
+  colcon build --packages-select sensing_msgs tms_sp_sensing && source install/setup.bash
+  ros2 run tms_sp_sensing sample
+  ```
+3. From then on, processing will be performed on a different ubuntu pc for sensing processing than the pc running ros2-tms-for-construction. These personal computers must be located on the same network. In this description, the sensing pc is assumed to be running Ubuntu 22.04 lts with ROS2 Humble on it.
+4. Once the sensing pc is ready, open a terminal and execute the following command.
+  ```
+  cd 
+  mkdir -p sensing_ws/src
+  cd sensing_ws/src
+  git clone -b master https://github.com/kasahara-san/sensing_sample_cps.git
+  cd ..
+  colcon build --packages-select sample_sensing_nodes sensing_msgs && source install/setup.bash
+  ros2 run sample_sensing_nodes sample_publisher
+  ```
+5. Then you can see that the following parameter on parameter collection in mongodb change dynamically using mongodb compass. Note that when using mongodb compass to check parameter values, you must press the refresh button shown in the following image each time to reflect the latest values of the parameters on mongodb.
+
+![](docs/dynamic_parameter.png)
+
+
+<!-- ### 8. Try running the actual OPERA-compatible construction machinery
+
+※ Execution of this section requires a actual OPERA-compatible construction machinery.
+
+First, in accordance with the instructions outlined in section 4, specify the task_id of the task data you wish to execute and run the following command to launch the task management mechanism of ROS2-TMS for Construction.
+
+#### For operating actual OPERA-compatible construction machinery ZX200
+
+< LOCAL PC > 
+
+```
+# Open the 1st terminal
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch tms_if_for_opera tms_if_for_opera.launch.py
+
+# Open the 2nd terminal
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch tms_if_for_opera tms_if_for_opera.launch.py
+
+# Open the 2nd terminal
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch tms_ts_launch tms_ts_construction.launch.py
+```
+
+< REMOTE PC >
+
+```
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch zx200_bringup vehicle.launch.py
+```
+
+#### For operating the actual OPOERA-compatible construction machinery IC120
+
+< LOCAL PC >
+```
+# Open the 1st terminal
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch ic120_bringup ic120_remote.launch.py
+
+# Open the 3rd terminal
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch tms_ts_launch tms_ts_construction.launch.py
+```
+
+< REMOTE PC >
+```
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch ic120_bringup ic120_vehicle.launch.py
+``` -->
+
+
+
+Then, without clicking the GUI button, execute the following commands. The commands to be executed varies depending on the OPERA-compatible construction machinery that the task is intended to operate.
 
 ## Version Information
 

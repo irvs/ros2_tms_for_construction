@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action  model_name="zx120" ID="LeafNodeZx120" component_name="boom_joint" subtask_name="sample_zx120_boom_subtask"/>
+            <Action  model_name="zx120" ID="LeafNodeZx120" component_name="swing_joint" subtask_name="sample_zx120_swing_subtask"/>
+            <Action  model_name="zx120" ID="LeafNodeZx120" component_name="arm_joint" subtask_name="sample_zx120_arm_subtask"/>
+            <Action  model_name="zx120" ID="LeafNodeZx120" component_name="bucket_joint" subtask_name="sample_zx120_bucket_subtask"/>
+            <Action  model_name="zx200" ID="LeafNodeZx200" component_name="boom_joint" subtask_name="sample_zx200_boom_subtask"/>
+            <Action  model_name="zx200" ID="LeafNodeZx200" component_name="swing_joint" subtask_name="sample_zx200_swing_subtask"/>
+            <Action  model_name="zx200" ID="LeafNodeZx200" component_name="arm_joint" subtask_name="sample_zx200_arm_subtask"/>
+            <Action  model_name="zx200" ID="LeafNodeZx200" component_name="bucket_joint" subtask_name="sample_zx200_bucket_subtask"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="LeafNodeZx120">
+            <input_port name=" model_name"/>
+            <inout_port name="component_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeZx200">
+            <input_port name=" model_name"/>
+            <inout_port name="component_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
