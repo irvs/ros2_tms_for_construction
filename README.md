@@ -203,7 +203,7 @@ colcon build && source install/setup.bash
 
 ## File Structure
 
-ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descriptions from the links.
+ROS2-TMS-FOR-CONSTRUCTION is composed of the following packages. Each packages's detail was described as follows.
 
 ### tms_db
 
@@ -286,7 +286,8 @@ ROS2-TMS-FOR-CONSTRUCTION has the following packages. You can see detail descrip
 
 ## Demo
 
-The following demonstrations are presented here.Before demonstration, you need to setup each terminals before running the commands described in the following demonstrations.
+The following demonstrations are presented here.
+Before demonstration, you need to setup each terminals before running the commands described in the following demonstrations.
 
 ```
 cd ~/ros2-tms-for-construction_ws
@@ -356,8 +357,6 @@ ros2 launch ic120_bringup ic120_vehicle.launch.py
 ``` -->
 
 
-
-Then, without clicking the GUI button, execute the following commands. The commands to be executed varies depending on the OPERA-compatible construction machinery that the task is intended to operate.
 
 ## Version Information
 
