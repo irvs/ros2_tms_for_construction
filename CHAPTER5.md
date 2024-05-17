@@ -1,31 +1,28 @@
 ### 5. Try running the task schedular with OperaSim-PhysX
 
-This chapter explain how to link ROS2-TMS for Construction and OperaSim-PhysX , which is being developed by PWRI as a simulator of OPERA.
+本章では国立研究開発法人土木研究所が開発を進めるOPERAの一部であるシミュレータOperaSim-PhysXとROS2-TMS for Constructionを接続し、ROs2-TMS for ConstructionからOperaSima-PhysX上の建設機械を操作する方法についてご紹介します。
 
-Please follow the instructions described in the ReadMe on the official GitHub page of OperaSim-PhysX (URL: https://github.com/pwri-opera/OperaSim-PhysX) on how to set up windows PC and ubuntu 22.04 PC for using OperaSimPhysX.
+まずはじめに[OperaSim-PhysXの公式ページ](https://github.com/pwri-opera/OperaSim-PhysX)のReadMeに記載されている手順にそってwindows PC上で環境構築を行ってください。
 
-Once the connection between OperaSim-PhysX and ROS2 Humble is established, run the following command to start ROS2-TMS-for-construction on Ubuntu22.04 PC.
+OperaSim-PhysX とUbuntu 22.04 PCの接続ができたら、以下のコマンドを実行してください。
+コマンドは実行するタスクごとに異なるので、該当する項に沿って実行してください。
 
-```
-cd ~/ros2-tms-for-construction_ws
-source install/setup.bash
-ros2 launch tms_ts_launch tms_ts_construction.launch.py
-```
-
-As explained in Chapter 4, you can execute the specified task using the task scheduler by clicking the green button that appears when starting ros2-tms-for-construction. If you want to make an emergency stop while executing a task, click on the red button.
-
-
-
-Additionally, the current ROS2-TMS for Construction includes several tasks for operating actual construction machinery and machines on OperaSim-PhysX. 
-The summary of the task data currently stored in the database is as follows:
+現在、データベースに用意されているタスクの詳細は以下の表のとおりです。
 
 ![](docs/task_data.png)
 
 
+#### Packages for operating OPERA-compatible machineries on the OperaSim-PhysX　(task_id: 1, 2, 3)
 
-Additionally, to successfully execute the tasks with task_id ranging from 3 to 7 as mentioned in the table above, it is necessary to pre-launch the ROS2 packages for zx200 and ic120 prepared on the OPERA. Because the packages to launch differ for cases involving the operation of zx200 and ic120, the procedures are explained separately below.
+```
+# Open the 1st terminal
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch ros_tcp_endpoint endpoint.py
 
-※ It is not necessary to execute the following command when running sample tasks (task_id: 1 ~ 3).
+# Open the 2nd terminal
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch tms_ts_launch tms_ts_construction.launch.py
+```
 
 #### Packages for operating OPERA-compatible ZX200 on the OperaSim-PhysX using MoveIt! (task_id: 4, 5)
 ```
@@ -61,8 +58,3 @@ ros2 launch tms_ts_launch tms_ts_construction.launch.py
 ```
 
 
-
-Of course, you can also use Groot to monitor the tasks being performed by the Behavior Tree while the Task Scheduler is running, as shown in the following video.
-
-
-https://github.com/irvs/ros2_tms_for_construction/assets/130209264/8747df87-0dd9-42c4-9132-6454c15eeedf

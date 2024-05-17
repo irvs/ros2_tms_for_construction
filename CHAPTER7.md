@@ -1,18 +1,20 @@
 ### 7. How to update parameters in mongodb based on topics from sensing pc
 
-> **Note**
-> The pc running cps and the sensing pc must be on the same network and they must be aligned if ROS_DOMAIN_ID is set.
-> For more information for ROS_DOMAIN_ID, please refer to the official ROS documentation ( https://docs.ros.org/en/humble/Concepts/Intermediate/About-Domain-ID.html ).
+ROS2-TMS for Constructionでは、システム外部からセンシング処理を行った結果のデータを受け取るシステム構造をしています。本章ではセンシング処理結果を使用してデータベース上のパラメータデータを更新する方法についてご紹介します。
 
-1. Place the .msg file directly under the ros2-tms-for-construction_ws/tms_ts/sensing_msgs/msg directory. This .msg file represents the type of data to be stored from the sensing pc to the parameter collection in mongodb via ros2 topic.
-2. After storing the .msg file in place, execute the following command.
+> **Note**
+> 本章では、センシング処理を行うPCとROS2-TMS for Constructionを動作させるPCを分けることが可能です。各々のPCを分ける際には同じネットワクークに接続されていることとROS_DOMAIN_IDの設定値が同じであることを確認してください。ROS_DOMAIN_IDについては[公式資料](https://docs.ros.org/en/humble/Concepts/Intermediate/About-Domain-ID.html)をご確認ください。
+
+1. まずはじめにセンシングPCからROS2 topicを介してROS2-TMS for Constructionにデータを送る際のデータ型を.msgファイルにて定義します。.msgファイルを実装後、ros2-tms-for-construction_ws/tms_ts/sensing_msgs/msgディレクトリ下に配置してください。.msgdファイルの実装例についてはros2-tms-for-construction_ws/tms_ts/sensing_msgs/msgディレクトリ下にいくつか実装したものが用意されているのでそちらを参考にしてください。本解説では、Sample.msgを例に説明していきます。
+
+2. 1.の処理を完了したらROS2-TMS for Construction実行用PCでターミナルを開き、以下のコマンドを実行してください
   ```
   cd ~/ros2-tms-for-construction_ws
   colcon build --packages-select sensing_msgs tms_sp_sensing && source install/setup.bash
   ros2 run tms_sp_sensing sample
   ```
-3. From then on, processing will be performed on a different ubuntu pc for sensing processing than the pc running ros2-tms-for-construction. These personal computers must be located on the same network. In this description, the sensing pc is assumed to be running Ubuntu 22.04 lts with ROS2 Humble on it.
-4. Once the sensing pc is ready, open a terminal and execute the following command.
+
+3. 次にセンシングPCでターミナルを開き、以下のコマンドを実行してください。
   ```
   cd 
   mkdir -p sensing_ws/src
@@ -22,6 +24,9 @@
   colcon build --packages-select sample_sensing_nodes sensing_msgs && source install/setup.bash
   ros2 run sample_sensing_nodes sample_publisher
   ```
-5. Then you can see that the following parameter on parameter collection in mongodb change dynamically using mongodb compass. Note that when using mongodb compass to check parameter values, you must press the refresh button shown in the following image each time to reflect the latest values of the parameters on mongodb.
+5. そして。ROS2-TMS for Construction実行用PCでMongoDb Compassを起動し、rostmsdbデータベースのparameterコレクション下にあるmodel_nameが"sample_model"となっているパラメータデータに注目し、以下の画像の手順にしたがってMongoDB Compassの更新を行ってください。すると、データが更新されていっているのが確認できると思います。
+※ MongoDB上の値は自動で更新されますが、MongoDB COmpass上のデータは以下の画像の手順にしたがって更新しないと、最新の値が表示されないのでご留意ください。
+
+hen you can see that the following parameter on parameter collection in mongodb change dynamically using mongodb compass. Note that when using mongodb compass to check parameter values, you must press the refresh button shown in the following image each time to reflect the latest values of the parameters on mongodb.
 
 ![](docs/dynamic_parameter.png)

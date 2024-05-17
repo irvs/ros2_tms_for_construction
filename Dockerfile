@@ -19,8 +19,8 @@ FROM tiryoh/ros2-desktop-vnc:humble
 # LABEL maintainer= "kasahara.yuichiro.res@gmail.com"
 RUN . /opt/ros/humble/setup.sh
 
-# set the environment variable OVERLAY_WS to the path of the workspace(ros2_tms_for_construction_ws)
-ARG OVERLAY_WS=/opt/ros2_tms_for_construction_ws
+# set the environment variable OVERLAY_WS to the path of the workspace(ros2-tms-for-construction_ws)
+ARG OVERLAY_WS=/home/ubuntu/ros2-tms-for-construction_ws
 
 WORKDIR $OVERLAY_WS/src
 
@@ -55,14 +55,14 @@ RUN apt update && apt install -y \
     gnome-keyring \
     wget \
     unzip \
-    xvfs \
+    xvfb \
     && rm -rf /var/lib/apt/lists/*
 
 # install pymongo
 RUN pip install pymongo
 
 # install mongodb
-WORKDIR /home
+WORKDIR /home/ubuntu
 RUN apt update && apt install -y gnupg curl \
     && curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc | \
     gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg \
@@ -73,61 +73,50 @@ RUN echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.
     && echo "mongodb-org-server hold" | dpkg --set-selections && echo "mongodb-mongosh hold" | dpkg --set-selections \
     && echo "mongodb-org-mongos hold" | dpkg --set-selections && echo "mongodb-org-tools hold" | dpkg --set-selections
 # データディレクトリの作成
-RUN mkdir -p /data/db
+RUN mkdir -p /var/log/mongodb/
+#　ログファイルの追加
+RUN touch /var/log/mongodb/mongod.log
+# ログ用ファイル&ディレクトリの権限変更
+RUN chmod 777 /var/log/mongodb/
+RUN chmod 777 /var/log/mongodb/mongod.log
 
 # install mongodb compass
 RUN wget https://downloads.mongodb.com/compass/mongodb-compass_1.43.0_amd64.deb \
     && dpkg -i mongodb-compass_1.43.0_amd64.deb
 # Xvfb のセットアップと dbus & MongoDB serverの起動
 RUN chmod +x /usr/bin/mongodb-compass
-CMD Xvfb :1 -screen 0 1024x768x16 & \
-    service dbus start && \
-    export DISPLAY=:1 && \
-    xhost +local:root
-
-# install related python packages for RSO2-TMS for Construction
-WORKDIR $OVERLAY_WS/src/ros2_tms_for_construction
-RUN python3 -m pip install -r requirements.txt
-
-# setup MongoDB
-WORKDIR $OVERLAY_WS/src/ros2_tms_for_construction/demo
-RUN unzip rostmsdb_collections.zip
-
-# execute entrypoint.sh
-WORKDIR $OVERLAY_WS/src/ros2_tms_for_construction
-RUN chmod +x entrypoint.sh
-CMD ["./entrypoint.sh"]
 
 # setup BehaviorTree.CPP 
-WORKDIR /home
+WORKDIR /home/ubuntu
 RUN apt install  -y libzmq3-dev libboost-dev libncurses5-dev libncursesw5-dev \
     && git clone --branch v3.8 https://github.com/BehaviorTree/BehaviorTree.CPP.git
-WORKDIR /home/BehaviorTree.CPP
+WORKDIR /home/ubuntu/BehaviorTree.CPP
 RUN mkdir build
-WORKDIR /home/BehaviorTree.CPP/build
+WORKDIR /home/ubuntu/BehaviorTree.CPP/build
 RUN cmake .. && make && make install
-WORKDIR /home
+WORKDIR /home/ubuntu
 RUN rm -rf BehaviorTree.CPP
 
+
 # setup mongocxx / bsoncxx
-WORKDIR /home
+WORKDIR /home/ubuntu
 RUN wget https://github.com/mongodb/mongo-c-driver/releases/download/1.24.4/mongo-c-driver-1.24.4.tar.gz \
     && tar -xzf mongo-c-driver-1.24.4.tar.gz
-WORKDIR /home/mongo-c-driver-1.24.4
+WORKDIR /home/ubuntu/mongo-c-driver-1.24.4
 RUN mkdir cmake-build
-WORKDIR /home/mongo-c-driver-1.24.4/cmake-build
+WORKDIR /home/ubuntu/mongo-c-driver-1.24.4/cmake-build
 RUN cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF .. -DCMAKE_INSTALL_PREFIX=/usr/local \
     && make install
-WORKDIR /home
+WORKDIR /home/ubuntu
 RUN curl -OL https://github.com/mongodb/mongo-cxx-driver/releases/download/r3.8.1/mongo-cxx-driver-r3.8.1.tar.gz \
     && tar -xzf mongo-cxx-driver-r3.8.1.tar.gz
-WORKDIR /home/mongo-cxx-driver-r3.8.1/build
+WORKDIR /home/ubuntu/mongo-cxx-driver-r3.8.1/build
 RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DBSONCXX_POLY_USE_BOOST=1 -DMONGOCXX_OVERRIDE_DEFAULT_INSTALL_PREFIX=OFF \
     && cmake --build . \
     && cmake --build . --target install \
     && export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH \
     && echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
-WORKDIR /home
+WORKDIR /home/ubuntu
 RUN rm -rf mongo-c-driver-1.24.4 mongo-c-driver-1.24.4.tar.gz mongo-cxx-driver-r3.8.1 mongo-cxx-driver-r3.8.1.tar.gz
 
 # # setup groot
@@ -139,20 +128,19 @@ RUN git submodule update --init --recursive
 WORKDIR $OVERLAY_WS/
 RUN colcon build --packages-select groot
 
-
 # setup nlohmann-json3-dev
 RUN apt install -y nlohmann-json3-dev
 
 # setup related opera packages
-WORKDIR /home
+WORKDIR /home/ubuntu
 RUN git clone --recurse-submodules https://github.com/genkiiii/dbcppp.git
-WORKDIR /home/dbcppp
+WORKDIR /home/ubuntu/dbcppp
 RUN mkdir build
-WORKDIR /home
+WORKDIR /home/ubuntu
 RUN git clone https://github.com/djarek/canary.git
-WORKDIR /home/canary
+WORKDIR /home/ubuntu/canary
 RUN mkdir build
-WORKDIR /home/canary/build
+WORKDIR /home/ubuntu/canary/build
 RUN cmake .. && make install
 RUN apt install -y doxygen
 WORKDIR $OVERLAY_WS/src
@@ -187,3 +175,11 @@ RUN /bin/bash -c "source /opt/ros/humble/setup.bash"
 # source underlay for shell
 RUN echo 'source "/opt/ros/humble/setup.sh"' >> /etc/bash.bashrc
 RUN echo 'source "$OVERLAY_WS/install/setup.bash"' >> /etc/bash.bashrc
+
+
+# エントリーポイントスクリプトをコピー
+COPY entrypoint_mongodb.sh /entrypoint_mongodb.sh
+RUN chmod +x /entrypoint_mongodb.sh
+
+# エントリーポイントを設定
+ENTRYPOINT ["/entrypoint_mongodb.sh"]
