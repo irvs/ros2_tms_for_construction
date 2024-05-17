@@ -160,8 +160,8 @@ cd .. && mkdir zx200 && cd zx200
 git clone https://github.com/pwri-opera/zx200_ros2.git
 
 # Install packages for OPERA-compatible crawler dump IC120
-# cd .. && mkdir ic120 && cd ic120
-# git clone https://github.com/pwri-opera/ic120_ros2.git  # This package is a private repository. Please wait a while until it is made public.
+cd .. && mkdir ic120 && cd ic120
+git clone https://github.com/pwri-opera/ic120_ros2.git  # This package is a private repository. Please wait a while until it is made public.
 # git clone https://github.com/pwri-opera/gnss_localizer_ros2.git   # This package is a private repository. Please wait a while until it is made public.
 # git clone https://github.com/pwri-opera/ic120_com3_ros.git  # This package is a private repository. Please wait a while until it is made public.
 
