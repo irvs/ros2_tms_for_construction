@@ -27,6 +27,5 @@ ROS2-TMS for Constructionでは、システム外部からセンシング処理�
 5. そして。ROS2-TMS for Construction実行用PCでMongoDb Compassを起動し、rostmsdbデータベースのparameterコレクション下にあるmodel_nameが"sample_model"となっているパラメータデータに注目し、以下の画像の手順にしたがってMongoDB Compassの更新を行ってください。すると、データが更新されていっているのが確認できると思います。
 ※ MongoDB上の値は自動で更新されますが、MongoDB COmpass上のデータは以下の画像の手順にしたがって更新しないと、最新の値が表示されないのでご留意ください。
 
-hen you can see that the following parameter on parameter collection in mongodb change dynamically using mongodb compass. Note that when using mongodb compass to check parameter values, you must press the refresh button shown in the following image each time to reflect the latest values of the parameters on mongodb.
 
 ![](docs/dynamic_parameter.png)
