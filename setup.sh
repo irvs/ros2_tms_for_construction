@@ -123,7 +123,7 @@ echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
 cd && rm -rf mongo-c-driver-1.24.4 mongo-c-driver-1.24.4.tar.gz mongo-cxx-driver-r3.8.1 mongo-cxx-driver-r3.8.1.tar.gz
 
 #Setup Groot
-sudo apt install　-y qtbase5-dev libqt5svg5-dev libzmq3-dev libdw-dev
+sudo apt install -y qtbase5-dev libqt5svg5-dev libzmq3-dev libdw-dev
 cd ~/ros2-tms-for-construction_ws/src && git clone https://github.com/BehaviorTree/Groot.git
 cd .. && colcon build --packages-select groot
 
