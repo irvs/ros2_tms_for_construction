@@ -12,6 +12,8 @@
 # limitations under the License.
 ##################################################################################################
 
+#!/bin/bash
+
 # Setup ROS2
 locale  # check for UTF-8
 
