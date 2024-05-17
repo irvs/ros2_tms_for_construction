@@ -39,9 +39,9 @@ sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
 sudo apt update
 sudo apt upgrade
-sudo apt install ros-humble-desktop
-sudo apt install ros-humble-ros-base
-sudo apt install ros-dev-tools
+sudo apt install -y ros-humble-desktop
+sudo apt install -y ros-humble-ros-base
+sudo apt install -y ros-dev-tools
 
 sudo apt install pip
 sudo pip install pymongo
@@ -79,16 +79,16 @@ git clone https://github.com/irvs/ros2_tms_for_construction.git
 
 # install required python packages
 cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction
-python3 -m pip install -r requirements.txt
+python3 -m pip install -r requirements.txt --quiet --no-input
 
 #setup MongoDB
 sudo systemctl start mongod
 cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction/demo
 unzip rostmsdb_collections.zip
-mongorestore dump
+mongorestore --drop dump
 
 #Setup BehaviorTree.cpp
-sudo apt install libzmq3-dev libboost-dev libncurses5-dev libncursesw5-dev
+sudo apt install -y libzmq3-dev libboost-dev libncurses5-dev libncursesw5-dev
 cd
 git clone --branch v3.8 https://github.com/BehaviorTree/BehaviorTree.CPP.git
 cd BehaviorTree.CPP
@@ -121,7 +121,7 @@ echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
 cd && rm -rf mongo-c-driver-1.24.4 mongo-c-driver-1.24.4.tar.gz mongo-cxx-driver-r3.8.1 mongo-cxx-driver-r3.8.1.tar.gz
 
 #Setup Groot
-sudo apt install qtbase5-dev libqt5svg5-dev libzmq3-dev libdw-dev
+sudo apt install　-y qtbase5-dev libqt5svg5-dev libzmq3-dev libdw-dev
 cd ~/ros2-tms-for-construction_ws/src && git clone https://github.com/BehaviorTree/Groot.git
 cd .. && colcon build --packages-select groot
 
@@ -175,9 +175,9 @@ git clone https://github.com/pwri-opera/zx200_ros2.git
 
 #Setup Moveit! and Nav2
 # install MoveIt!
-sudo apt install ros-humble-*moveit*
+sudo apt -y install ros-humble-*moveit*
 # install Nav2
-sudo apt install ros-humble-*nav2*
+sudo apt -y install ros-humble-*nav2*
 
 #Build the workspace 
 cd ~/ros2-tms-for-construction_ws
