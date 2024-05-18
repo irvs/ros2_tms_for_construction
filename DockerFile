@@ -160,7 +160,7 @@ RUN git clone https://github.com/pwri-opera/zx200_ros2.git
 WORKDIR $OVERLAY_WS/src/opera
 RUN mkdir ic120
 WORKDIR $OVERLAY_WS/src/opera/ic120
-# RUN git clone https://github.com/pwri-opera/ic120_ros2.git
+RUN git clone https://github.com/pwri-opera/ic120_ros2.git
 # RUN git clone https://github.com/pwri-opera/gnss_localizer_ros2.git
 # RUN git clone https://github.com/pwri-opera/ic120_com3_ros.git
 
@@ -178,8 +178,8 @@ RUN echo 'source "$OVERLAY_WS/install/setup.bash"' >> /etc/bash.bashrc
 
 
 # エントリーポイントスクリプトをコピー
-COPY entrypoint_mongodb.sh /entrypoint_mongodb.sh
-RUN chmod +x /entrypoint_mongodb.sh
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # エントリーポイントを設定
-ENTRYPOINT ["/entrypoint_mongodb.sh"]
+ENTRYPOINT ["/entrypoint.sh"]

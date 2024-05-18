@@ -8,10 +8,14 @@ xhost +local:root
 # MongoDBサーバーをバックグラウンドで起動
 mongod --fork --logpath /var/log/mongodb/mongod.log --dbpath /var/lib/mongodb
 
-cd /home/ubuntu/ros2_tms_for_construction_ws/src/ros2_tms_for_construction/demo
+cd /home/ubuntu/ros2-tms-for-construction_ws/src/ros2_tms_for_construction/demo
 unzip rostmsdb_collections.zip
 mongorestore dump
 cd 
+
+source /opt/ros/humble/setup.bash
+cd /home/ubuntu/ros2-tms-for-construction_ws
+colcon build && source install/setup.bash
 
 # Create User
 USER=${USER:-root}

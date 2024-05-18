@@ -6,7 +6,7 @@
 
 1. まずはじめに端末を開き、以下のコマンドを実行してMongoDB Compassを起動します。
 ```
-mongodb-compass --no-sandbox
+mongodb-compass --no-sandbox --disable-gpu
 ```
 うまく起動できると以下の画像の画面が表示されます。
 
@@ -56,7 +56,7 @@ cd ~/ros2-tms-for-construction_ws
 
 > The settings for use should be as follows.
 > 
-> ・ Sensing IP : localhost
+> ・ Server IP : localhost
 > 
 > ・ Publisher Port : 1666 
 > 
@@ -75,7 +75,7 @@ cd ~/ros2-tms-for-construction_ws
 >  
 >  ![](docs/groot_8.png)
 
-最後に、タスクスケジューラが実行するタスクデータを変更する方法のご説明です。タスク管理機構を起動するためのlaunchファイル(ros2_tms_for_construction/tms_ts/tms_ts_launch/launch/tms_ts_construction.launch.py)を開き、画像の部分の数値を変更してください。この数値はMongoDBのrostmsdbデータベースのtaskコレクション内にあれう各々のタスクデータのtask_idの数値です。
+最後に、タスクスケジューラが実行するタスクデータを変更する方法のご説明です。[タスク管理機構を起動するためのlaunchファイル](https://github.com/irvs/ros2_tms_for_construction/blob/main/tms_ts/tms_ts_launch/launch/tms_ts_construction.launch.py)を開き、画像の部分の数値を変更してください。この数値はMongoDBのrostmsdbデータベースのtaskコレクション内にある各々のタスクデータのtask_idの数値です。
 
 ![](docs/tms_ts_launch_1.png)
 
