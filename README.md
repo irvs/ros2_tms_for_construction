@@ -28,12 +28,13 @@ In setup, there are two methods: entering individual commands directly and using
 1. [A method of entering individual commands directly](setup.md)
 2. A method of using scripts. 
 
+      Please make the workspace named ros2-tms-for-construction_ws
       Please execute the following commands.
 
     ```
-    cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction
+    cd
+    mkdir ~/ros2-tms-for-construction_ws && cd ~/ros2-tms-for-construction_ws && mkdir src && cd src
     sudo ./setup.sh
-
     ```
 
 ## File Structure
