@@ -66,8 +66,8 @@ wget https://downloads.mongodb.com/compass/mongodb-compass_1.43.0_amd64.deb
 sudo dpkg -i mongodb-compass_1.43.0_amd64.deb
 
 #Create a worlspace
-cd
-mkdir -p ~/ros2-tms-for-construction_ws/src
+#cd
+#mkdir -p ~/ros2-tms-for-construction_ws/src
 
 #Clone this repository
 cd ~/ros2-tms-for-construction_ws/src
