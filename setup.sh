@@ -71,8 +71,8 @@ sudo dpkg -i mongodb-compass_1.43.0_amd64.deb
 
 
 #Clone this repository
-#cd ~/ros2-tms-for-construction_ws/src
-#git clone https://github.com/irvs/ros2_tms_for_construction.git
+cd ~/ros2-tms-for-construction_ws/src
+git clone https://github.com/irvs/ros2_tms_for_construction.git
 
 
 # install required python packages
