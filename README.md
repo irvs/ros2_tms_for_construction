@@ -33,10 +33,11 @@ In setup, there are two methods: entering individual commands directly and using
 
     ```
     cd
+    source /opt/ros/humble/setup.bash
     mkdir -p ~/ros2-tms-for-construction_ws/src && cd ~/ros2-tms-for-construction_ws/src
     git clone https://github.com/irvs/ros2_tms_for_construction.git
     cd ros2_tms_for_construction
-    sudo ./setup.sh
+    . setup.sh
     ```
 
 ## File Structure
