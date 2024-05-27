@@ -40,10 +40,6 @@ sudo apt install -y ros-dev-tools
 sudo apt install pip
 sudo pip install pymongo
 
-echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
-source ~/.bashrc
-
-
 #MongoDB
 sudo apt-get install -y gnupg curl
 curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc | \
