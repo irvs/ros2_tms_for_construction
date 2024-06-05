@@ -47,6 +47,9 @@ def generate_launch_description():
                   package='tms_ts_subtask',
                   executable='subtask_ic120_navigate_anywhere_server',
                   output='screen'),
+            Node(package='tms_ts_subtask',
+                  executable='subtask_ic120_release_soil_server',
+                  output='screen'),
             
             # zx120用
             Node(
