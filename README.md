@@ -1,20 +1,20 @@
 # ROS2-TMS-FOR-CONSTRUCTION
 
-ROS2-TMS-FOR-CONSTRUCTION is an IoRT library for construction applications based on ROS2-TMS.
+ROS2-TMS-FOR-CONSTRUCTION is an IoRT (Internet of Robots and Things) library for construction applications developed based on ROS2-TMS.
 
 https://github.com/irvs/ros2_tms_for_construction/assets/63947554/d7fb02dd-37d9-4d72-aa2c-a2c2d6f7824a
 
 ## ROS2-TMS
 
-ROS2-TMS is an IoRT (Internet of Robotic Things) library for TMS (Town Management System), which is the management system of an informationally structured environment (ISE). ROS2-TMS is newly constructed on the basis of [ROS-TMS](https://github.com/irvs/ros_tms/wiki) and adopts the state-of-the-art robot middleware, ROS2. This system integrates various information gathered by distributed sensors, stores them to an on-line database, plans proper service tasks, and manages and executes robot motion.
+ROS2-TMS is an IoRT (Internet of Robotic Things) library for TMS (Town Management System), which is the management system of an informationally structured environment (ISE). ROS2-TMS is designed on the basis of [ROS-TMS](https://github.com/irvs/ros_tms/wiki) and adopts the state-of-the-art robot middleware, ROS2. This system integrates various information collected by distributed sensors, stores it in an on-line database, plans appropriate service tasks, and manages and executes robot's motion.
 
 Wiki page : [https://github.com/irvs/ros2_tms/wiki/ROS2-TMS](https://github.com/irvs/ros2_tms/wiki/ROS2-TMS)
 
-ROS2-TMS is being developed as a part of "**MyIoT Store**" in "**MyIoT Project**" supported by the Cabinet Office (CAO), **Cross-ministerial Strategic Innovation Promotion Program (SIP)**, “An intelligent knowledge processing infrastructure, integrating physical and virtual domains” (funding agency: NEDO).
+ROS2-TMS was developed as a part of "**MyIoT Store**" in "**MyIoT Project**" supported by the Cabinet Office (CAO), **Cross-ministerial Strategic Innovation Promotion Program (SIP)**, “An intelligent knowledge processing infrastructure, integrating physical and virtual domains” (funding agency: NEDO).
 
 ## ROS2-TMS-FOR-CONSTRUCTION
 
-ROS2-TMS-FOR-CONSTRUCTION is developed as an IoRT library for construction applications based on ROS2-TMS with the support of JST Moonshot R&D, Grant Number JPMJPS2032 entitled “Collaborative AI robots for adaptation of diverse environments and innovation of infrastructure construction” in “Moonshot Goal 3: Realization of Artificial Intelligence (AI) robots that autonomously learn, adapt to their environment, evolve itself in intelligence, and act alongside human beings, by 2050.”
+ROS2-TMS-FOR-CONSTRUCTION is newly developed as an IoRT library for construction applications based on ROS2-TMS with the support of JST Moonshot R&D, Grant Number JPMJPS2032 entitled “Collaborative AI robots for adaptation of diverse environments and innovation of infrastructure construction” in “Moonshot Goal 3: Realization of Artificial Intelligence (AI) robots that autonomously learn, adapt to their environment, evolve itself in intelligence, and act alongside human beings, by 2050.”
 
 Project page: [https://moonshot-cafe-project.org/en/](https://moonshot-cafe-project.org/en/)
 
@@ -23,10 +23,10 @@ Project page: [https://moonshot-cafe-project.org/en/](https://moonshot-cafe-proj
 ![](docs/ros2_tms_for_construction_architecture.png)
 
 ## Setup
-In setup, there are two methods: entering individual commands directly and using scripts.
+There are two ways to set up ROS2-TMS for Construction: by entering individual commands directly or by using scripts.
 
-1. [A method of entering individual commands directly](setup.md)
-2. A method of using scripts. 
+1. [Etering individual commands directly](setup.md)
+2. Using scripts. 
 
       Please make the workspace named ros2-tms-for-construction_ws
       Please execute the following commands.
@@ -41,7 +41,7 @@ In setup, there are two methods: entering individual commands directly and using
 
 ## File Structure
 
-ROS2-TMS-FOR-CONSTRUCTION is composed of the following packages. Each packages's detail was described as follows.
+ROS2-TMS-FOR-CONSTRUCTION consists of the following packages. The details of each package are as follows:
 
 ### tms_db
 
