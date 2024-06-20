@@ -124,8 +124,8 @@ ROS2-TMS-FOR-CONSTRUCTION is composed of the following packages. Each packages's
 
 ## Demo
 
-The following demonstrations are presented here.
-Before demonstration, you need to setup each terminals before running the commands described in the following demonstrations.
+Some demonstrations are presented here.
+Before starting demonstrations, you need to setup each terminal with the following commands.
 
 ```
 cd ~/ros2-tms-for-construction_ws
