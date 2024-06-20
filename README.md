@@ -28,9 +28,6 @@ There are two ways to set up ROS2-TMS for Construction: by entering individual c
 1. [Etering individual commands directly](setup.md)
 2. Using scripts. 
 
-      Please make the workspace named ros2-tms-for-construction_ws
-      Please execute the following commands.
-
     ```
     cd
     mkdir -p ~/ros2-tms-for-construction_ws/src && cd ~/ros2-tms-for-construction_ws/src
