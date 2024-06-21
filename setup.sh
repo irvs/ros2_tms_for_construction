@@ -168,8 +168,11 @@ sudo apt -y install ros-humble-*moveit*
 # install Nav2
 sudo apt -y install ros-humble-*nav2*
 
+#Commands for error countermeasures
+cd && cd ~/ros2-tms-for-construction_ws/src
+rm -rf ic120 zx200
+cd opera && rm -rf ROS-TCP-Endpoint
+
 #Build the workspace 
 cd ~/ros2-tms-for-construction_ws
 colcon build && source install/setup.bash
-
-
