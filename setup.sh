@@ -167,6 +167,8 @@ git clone https://github.com/pwri-opera/ic120_ros2.git  # This package is a priv
 sudo apt -y install ros-humble-*moveit*
 # install Nav2
 sudo apt -y install ros-humble-*nav2*
+#install tf package
+sudo apt -y install ros-humble-*tf*
 
 #Commands for error countermeasures
 cd && cd ~/ros2-tms-for-construction_ws/src
