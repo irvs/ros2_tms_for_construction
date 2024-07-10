@@ -12,6 +12,7 @@ ros2 launch tms_db_manager tms_db_writer.launch.py init_db:=true
 
 # Terrain
 ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/terrain/static/pointcloud2:=/demo2/terrain/static
+/aaaaaaaaaaaaaaaaaaaa/
 
 # Static terrain
 ros2 launch tms_ss_terrain_static tms_ss_terrain_static_launch.py filename:=demo.pcd filename_mesh:=demo.ply filename_dem:=demo.npy voxel_size:=0.1 octree_depth:=8 density_th:=0.1 fill_nan_type:=avg resolution:=0.1
