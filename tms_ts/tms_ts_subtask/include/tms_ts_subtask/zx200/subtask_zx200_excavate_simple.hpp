@@ -41,7 +41,6 @@ public:
   using GoalHandleZx200ExcavateSimple = rclcpp_action::ClientGoalHandle<Zx200ExcavateSimple>;
 
   SubtaskZx200ExcavateSimple();
-  // std::map<std::string, double> GetParamFromDB(std::string model_name, std::string record_name);
 
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;

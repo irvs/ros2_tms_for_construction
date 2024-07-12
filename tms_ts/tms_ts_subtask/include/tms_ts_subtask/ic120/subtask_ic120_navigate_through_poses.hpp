@@ -44,11 +44,9 @@ public:
     using NavigateThroughPoses = nav2_msgs::action::NavigateThroughPoses;
     using GoalHandleIc120NavigateThroughPoses = rclcpp_action::ClientGoalHandle<NavigateThroughPoses>;
     SubtaskIc120NavigateThroughPoses();
-    // std::map<std::pair<std::string, std::string>, double> GetParamFromDB(std::string model_name, std::string record_name);
 
 
 private:
-    // void ConfirmDBValue(std::string model_name, std::string record_name);
     rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
     std::map<std::pair<std::string, std::string>, double> param_from_db_;
     rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
