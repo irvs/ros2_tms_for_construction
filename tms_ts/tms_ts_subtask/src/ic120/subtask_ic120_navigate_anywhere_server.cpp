@@ -101,7 +101,7 @@ void SubtaskIc120NavigateAnywhere::execute(const std::shared_ptr<GoalHandle> goa
 
     RCLCPP_INFO_STREAM(this->get_logger(), "x:" << std::to_string(parameters["x"]));
 
-    //進捗状況を表示するFeedbackコールバックを設定
+    //進捗状況を表示するFeedbackコールバックを設�?
     auto send_goal_options = rclcpp_action::Client<NavigateToPose>::SendGoalOptions();
     send_goal_options.goal_response_callback = [this](const auto& goal_handle) { goal_response_callback(goal_handle); };
     send_goal_options.feedback_callback = [this](const auto tmp, const auto feedback) {
@@ -109,7 +109,7 @@ void SubtaskIc120NavigateAnywhere::execute(const std::shared_ptr<GoalHandle> goa
     };
     send_goal_options.result_callback = [this, goal_handle](const auto& result) { result_callback(goal_handle, result); };
 
-    //Goal をサーバーに送信
+    //Goal をサーバ�?�に送信
     RCLCPP_INFO(this->get_logger(), "Sending goal");
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
