@@ -36,54 +36,6 @@ SubtaskZx200ChangePose::SubtaskZx200ChangePose() : SubtaskNodeBase("subtask_zx20
   }
 }
 
-// std::map<std::string, double> SubtaskZx200ChangePose::GetParamFromDB(std::string model_name, std::string record_name)
-// {
-//   // Connect to MongoDB
-//   mongocxx::client client{ mongocxx::uri{ "mongodb://localhost:27017" } };
-//   mongocxx::database db = client["rostmsdb"];
-//   mongocxx::collection collection = db["parameter"];
-
-//   // Query to MongoDB
-//   bsoncxx::builder::stream::document filter_builder;
-//   filter_builder << "model_name" << model_name << "record_name" << record_name;
-//   auto filter = filter_builder.view();
-//   auto result = collection.find_one(filter);
-//   if (result)
-//   {
-//     std::map<std::string, double> dataMap;
-
-//     for (auto&& element : result->view())
-//     {
-//       std::string key = element.key().to_string();
-//       if (key != "_id" && key != "model_name" && key != "type" && key != "record_name")
-//       {
-//         if (element.type() == bsoncxx::type::k_double)
-//         {
-//           double value = static_cast<double>(element.get_double());
-//           dataMap[key] = value;
-//         }
-//         else if (element.type() == bsoncxx::type::k_int32)
-//         {
-//           double value = static_cast<double>(element.get_int32().value);
-//           dataMap[key] = value;
-//         }
-//         else if (element.type() == bsoncxx::type::k_int64)
-//         {
-//           double value = static_cast<double>(element.get_int64().value);
-//           dataMap[key] = value;
-//         }
-//       }
-//     }
-
-//     return dataMap;
-//   }
-//   else
-//   {
-//     std::cout << "Dynamic parameter not found in your parameter collection" << std::endl;
-//     return std::map<std::string, double>();
-//   }
-// }
-
 rclcpp_action::GoalResponse SubtaskZx200ChangePose::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
