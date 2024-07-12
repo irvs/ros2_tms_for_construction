@@ -44,7 +44,7 @@ public:
     using NavigateThroughPoses = nav2_msgs::action::NavigateThroughPoses;
     using GoalHandleIc120NavigateThroughPoses = rclcpp_action::ClientGoalHandle<NavigateThroughPoses>;
     SubtaskIc120NavigateThroughPoses();
-    std::map<std::pair<std::string, std::string>, double> GetParamFromDB(std::string model_name, std::string record_name);
+    // std::map<std::pair<std::string, std::string>, double> GetParamFromDB(std::string model_name, std::string record_name);
 
 
 private:
@@ -60,7 +60,7 @@ private:
     // Member as an action client
     rclcpp_action::Client<NavigateThroughPoses>::SharedPtr action_client_;
     std::shared_future<GoalHandleIc120NavigateThroughPoses::SharedPtr> client_future_goal_handle_;
-    // std::map<std::pair<std::string, std::string>, float> parameters;
+    std::map<std::pair<std::string, std::string>, double> parameters;
     void goal_response_callback(const GoalHandleIc120NavigateThroughPoses::SharedPtr& goal_handle);
     void feedback_callback(GoalHandleIc120NavigateThroughPoses::SharedPtr,
                             const std::shared_ptr<const NavigateThroughPoses::Feedback> feedback);

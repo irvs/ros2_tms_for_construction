@@ -41,7 +41,7 @@ public:
   using GoalHandleZx200ChangePose = rclcpp_action::ClientGoalHandle<Zx200ChangePose>;
 
   SubtaskZx200ChangePose();
-  std::map<std::string, double> GetParamFromDB(std::string model_name, std::string record_name);
+  // std::map<std::string, double> GetParamFromDB(std::string model_name, std::string record_name);
 
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;

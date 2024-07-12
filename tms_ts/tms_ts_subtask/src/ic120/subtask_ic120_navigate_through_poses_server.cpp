@@ -31,45 +31,45 @@ SubtaskIc120NavigateThroughPoses::SubtaskIc120NavigateThroughPoses() : SubtaskNo
     action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "/ic120/navigate_through_poses");
 }
 
-std::map<std::pair<std::string, std::string>, double> SubtaskIc120NavigateThroughPoses::GetParamFromDB(std::string model_name, std::string record_name)
-{
+// std::map<std::pair<std::string, std::string>, double> SubtaskIc120NavigateThroughPoses::GetParamFromDB(std::string model_name, std::string record_name)
+// {
   
-  // Connect to MongoDB
-  mongocxx::client client{ mongocxx::uri{ "mongodb://localhost:27017" } };
-  mongocxx::database db = client["rostmsdb"];
-  mongocxx::collection collection = db["parameter"];
+//   // Connect to MongoDB
+//   mongocxx::client client{ mongocxx::uri{ "mongodb://localhost:27017" } };
+//   mongocxx::database db = client["rostmsdb"];
+//   mongocxx::collection collection = db["parameter"];
 
-  // Query to MongoDB
-  bsoncxx::builder::stream::document filter_builder;
-  filter_builder << "model_name" << model_name << "record_name" << record_name;
-  auto filter = filter_builder.view();
-  auto result = collection.find_one(filter);
-  if (result)
-  {
-    std::map<std::pair<std::string, std::string>, double> dataMap;
+//   // Query to MongoDB
+//   bsoncxx::builder::stream::document filter_builder;
+//   filter_builder << "model_name" << model_name << "record_name" << record_name;
+//   auto filter = filter_builder.view();
+//   auto result = collection.find_one(filter);
+//   if (result)
+//   {
+//     std::map<std::pair<std::string, std::string>, double> dataMap;
 
-    for (auto&& element : result->view()) {
-        int index = 0;
-        std::string key = element.key().to_string();
-        if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
-            auto array = element.get_array().value;
-            for (auto&& item : array) { 
-                // std::cout << element.key().to_string() << ": ";
-                dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = static_cast<double>(item.get_double());
-                index++;
-                // std::cout <<   item.get_double() << std::endl;
-            }
-        }
-    }
+//     for (auto&& element : result->view()) {
+//         int index = 0;
+//         std::string key = element.key().to_string();
+//         if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
+//             auto array = element.get_array().value;
+//             for (auto&& item : array) { 
+//                 // std::cout << element.key().to_string() << ": ";
+//                 dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = static_cast<double>(item.get_double());
+//                 index++;
+//                 // std::cout <<   item.get_double() << std::endl;
+//             }
+//         }
+//     }
 
-    return dataMap;
-  }
-  else
-  {
-    std::cout << "Dynamic parameter not found in your parameter collection" << std::endl;
-    return std::map<std::pair<std::string, std::string>, double>();
-  }
-}
+//     return dataMap;
+//   }
+//   else
+//   {
+//     std::cout << "Dynamic parameter not found in your parameter collection" << std::endl;
+//     return std::map<std::pair<std::string, std::string>, double>();
+//   }
+// }
 
 
 
@@ -77,7 +77,7 @@ std::map<std::pair<std::string, std::string>, double> SubtaskIc120NavigateThroug
 rclcpp_action::GoalResponse SubtaskIc120NavigateThroughPoses::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
-    // parameters = GetParamFromDB(goal->model_name, goal->record_name);
+    parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
@@ -121,23 +121,23 @@ void SubtaskIc120NavigateThroughPoses::execute(const std::shared_ptr<GoalHandle>
     std::vector<geometry_msgs::msg::PoseStamped> poses;
     auto goal_msg = NavigateThroughPoses::Goal();
 
-    param_from_db_ = GetParamFromDB("ic120", "path1");
+    // param_from_db_ = CustomGetParamFromDB<std::pair<std::string, std::string>, double>("ic120", "path1");
 
-    int point_num = param_from_db_.size() / 7;
-    // std::cout << "Total number of points: " << param_from_db_.size() << std::endl;
+    int point_num = parameters.size() / 7;
+    // std::cout << "Total number of points: " << parameters.size() << std::endl;
     // std::cout << "point_num: " << point_num << std::endl;
     auto pose = geometry_msgs::msg::PoseStamped();
     pose.header.frame_id = "map";
     pose.header.stamp = this->now();
 
     for (int i=0; i < point_num; i++){
-      pose.pose.position.x = param_from_db_[std::make_pair("x",std::to_string(i))];
-      pose.pose.position.y = param_from_db_[std::make_pair("y",std::to_string(i))];
-      pose.pose.position.z = param_from_db_[std::make_pair("z",std::to_string(i))];
-      pose.pose.orientation.x = param_from_db_[std::make_pair("qx",std::to_string(i))];
-      pose.pose.orientation.y = param_from_db_[std::make_pair("qy",std::to_string(i))];
-      pose.pose.orientation.z = param_from_db_[std::make_pair("qz",std::to_string(i))];
-      pose.pose.orientation.w = param_from_db_[std::make_pair("qw",std::to_string(i))];
+      pose.pose.position.x = parameters[std::make_pair("x",std::to_string(i))];
+      pose.pose.position.y = parameters[std::make_pair("y",std::to_string(i))];
+      pose.pose.position.z = parameters[std::make_pair("z",std::to_string(i))];
+      pose.pose.orientation.x = parameters[std::make_pair("qx",std::to_string(i))];
+      pose.pose.orientation.y = parameters[std::make_pair("qy",std::to_string(i))];
+      pose.pose.orientation.z = parameters[std::make_pair("qz",std::to_string(i))];
+      pose.pose.orientation.w = parameters[std::make_pair("qw",std::to_string(i))];
       poses.push_back(pose);
     }
     goal_msg.poses = poses;

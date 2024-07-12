@@ -55,7 +55,7 @@ private:
     // Member as an action client
     rclcpp_action::Client<NavigateToPose>::SharedPtr action_client_;
     std::shared_future<GoalHandleIc120NavigateAnywhere::SharedPtr> client_future_goal_handle_;
-    std::map<std::string, float> parameters;
+    std::map<std::string, double> parameters;
     void goal_response_callback(const GoalHandleIc120NavigateAnywhere::SharedPtr& goal_handle);
     void feedback_callback(GoalHandleIc120NavigateAnywhere::SharedPtr,
                             const std::shared_ptr<const NavigateToPose::Feedback> feedback);
