@@ -80,8 +80,8 @@ void SubtaskIc120NavigateThroughPoses::execute(const std::shared_ptr<GoalHandle>
 
 
     int point_num = parameters.size() / 7;
-    // std::cout << "Total number of points: " << parameters.size() << std::endl;
-    // std::cout << "point_num: " << point_num << std::endl;
+    std::cout << "Total number of points: " << parameters.size() << std::endl;
+    std::cout << "point_num: " << point_num << std::endl;
     auto pose = geometry_msgs::msg::PoseStamped();
     pose.header.frame_id = "map";
     pose.header.stamp = this->now();
@@ -95,6 +95,8 @@ void SubtaskIc120NavigateThroughPoses::execute(const std::shared_ptr<GoalHandle>
       pose.pose.orientation.z = parameters[std::make_pair("qz",std::to_string(i))];
       pose.pose.orientation.w = parameters[std::make_pair("qw",std::to_string(i))];
       poses.push_back(pose);
+      std::cout << "Point " << i << ": " << pose.pose.position.x << ", " << pose.pose.position.y << ", " << pose.pose.position.z << std::endl;
+      std::cout << "Pose " << i << ": " << pose.pose.orientation.x << ", " << pose.pose.orientation.y << ", " << pose.pose.orientation.z << ", " << pose.pose.orientation.w << std::endl;
     }
     goal_msg.poses = poses;
 
