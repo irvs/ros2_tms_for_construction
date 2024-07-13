@@ -47,6 +47,7 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
   filter_builder << "model_name" << model_name << "record_name" << record_name;
   auto filter = filter_builder.view();
   auto result = collection.find_one(filter);
+
   if (result)
   {
     std::map<K,T> dataMap;
@@ -57,9 +58,34 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
         if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
             auto array = element.get_array().value;
             for (auto&& item : array) { 
-                dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = static_cast<T>(item.get_double());
+              if (item.type() == bsoncxx::type::k_double)
+              {
+                T value = static_cast<T>(item.get_double());
+                dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = value;
                 index++;
-            }
+                std::cout << value << std::endl;
+              }
+              else if (item.type() == bsoncxx::type::k_int32)
+              {
+                T value = static_cast<T>(item.get_int32());
+                dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = value;
+                index++;
+                std::cout << value << std::endl;
+              }
+              else if (item.type() == bsoncxx::type::k_int64)
+              {
+                T value = static_cast<T>(item.get_int64());
+                dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = value;
+                index++;
+                std::cout << value << std::endl;
+              }else{
+                std::cout << "Type error" << std::endl;
+              }
+            }  
+            // for (auto&& item : array) { 
+            //     dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = static_cast<T>(item.get_double());
+            //     index++;
+            // }
         }
     }
 
@@ -107,6 +133,8 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
         {
           T value = static_cast<T>(element.get_int64().value);
           dataMap[key] = value;
+        }else{
+          std::cout << "Type error" << std::endl;
         }
       }
     }
