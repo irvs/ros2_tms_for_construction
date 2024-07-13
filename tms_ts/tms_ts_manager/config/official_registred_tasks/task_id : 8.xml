@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Repeat num_cycles="2">
+            <Sequence>
+                <Parallel failure_threshold="1" success_threshold="2">
+                    <Action  model_name="zx200" ID="LeafNodeZx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
+                    <Action ID="LeafNodeIc120" model_name="ic120" record_name="position_and_pose_1" subtask_name="st_ic120_navigate_anywhere"/>
+                </Parallel>
+                <Repeat num_cycles="1">
+                    <Sequence>
+                        <Action  model_name="zx200" ID="LeafNodeZx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple"/>
+                        <Action  model_name="zx200" ID="LeafNodeZx200" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_zx200_change_pose"/>
+                        <Action  model_name="zx200" ID="LeafNodeZx200" record_name="hold_soil_while_turning_pose" subtask_name="subtask_zx200_change_pose"/>
+                        <Action  model_name="zx200" ID="LeafNodeZx200" record_name="target_release_pose" subtask_name="subtask_zx200_change_pose"/>
+                        <Action  model_name="zx200" ID="LeafNodeZx200" record_name="release_angle" subtask_name="subtask_zx200_release_simple"/>
+                    </Sequence>
+                </Repeat>
+                <Parallel failure_threshold="1" success_threshold="2">
+                    <Action  model_name="zx200" ID="LeafNodeZx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
+                    <Sequence>
+                        <Action ID="LeafNodeIc120" model_name="ic120" record_name="position_and_pose_2" subtask_name="st_ic120_navigate_anywhere"/>
+                        <Action ID="LeafNodeIc120" model_name="ic120" record_name="soil_release_vessel_angle" subtask_name="st_ic120_release_soil"/>
+                        <Action ID="LeafNodeIc120" model_name="ic120" record_name="position_and_pose_3" subtask_name="st_ic120_navigate_anywhere"/>
+                    </Sequence>
+                </Parallel>
+            </Sequence>
+        </Repeat>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="LeafNodeSampleZx120">
+            <input_port name=" model_name" default="zx120"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx200">
+            <input_port name=" model_name" default="zx200"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeIc120">
+            <input_port name=" model_name" default="ic120"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeZx200">
+            <input_port name=" model_name" default="zx200"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>

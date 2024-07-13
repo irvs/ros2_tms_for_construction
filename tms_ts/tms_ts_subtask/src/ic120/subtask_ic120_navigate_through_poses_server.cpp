@@ -78,7 +78,6 @@ void SubtaskIc120NavigateThroughPoses::execute(const std::shared_ptr<GoalHandle>
     std::vector<geometry_msgs::msg::PoseStamped> poses;
     auto goal_msg = NavigateThroughPoses::Goal();
 
-    // param_from_db_ = CustomGetParamFromDB<std::pair<std::string, std::string>, double>("ic120", "path1");
 
     int point_num = parameters.size() / 7;
     // std::cout << "Total number of points: " << parameters.size() << std::endl;
