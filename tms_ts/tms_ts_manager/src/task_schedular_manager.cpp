@@ -27,10 +27,20 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
+// sample leaf nodes
 #include "tms_ts_subtask/sample/zx120/sample_leaf_nodes.hpp"
 #include "tms_ts_subtask/sample/zx200/sample_leaf_nodes.hpp"
+
+// leaf nodes for ic120
 #include "tms_ts_subtask/ic120/leaf_node.hpp"
+// leaf nodes for zx200
 #include "tms_ts_subtask/zx200/leaf_node.hpp"
+// commmon action nodes
+#include "tms_ts_subtask/common/blackboard_value_checker.hpp"
+#include "tms_ts_subtask/common/blackboard_value_writer_topic.hpp"
+#include "tms_ts_subtask/common/blackboard_value_writer_srv.hpp"
+
+
 
 
 using namespace BT;
@@ -45,6 +55,8 @@ public:
   {
     subscription_ = this->create_subscription<std_msgs::msg::String>(
         "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
+    
+    // Add leafNodes to registrated nodes
 
     // ic120
     factory.registerNodeType<LeafNodeIc120>("LeafNodeIc120");
@@ -53,11 +65,23 @@ public:
     // zx200
     factory.registerNodeType<LeafNodeSampleZx200>("LeafNodeSampleZx200");
     factory.registerNodeType<LeafNodeZx200>("LeafNodeZx200");
+    // common nodes
+    factory.registerNodeType<BlackboardValueChecker>("BlackboardValueChecker");
+    factory.registerNodeType<BlackboardValueWriterTopic>("BlackboardValueWriterTopic");
+    factory.registerNodeType<BlackboardValueWriterSrv>("BlackboardValueWriterSrv");
+
+
   }
   void topic_callback(const std_msgs::msg::String::SharedPtr msg)
   {
     task_sequence = std::string(msg->data);
     tree = factory.createTreeFromText(task_sequence);
+
+    // Setup black board parameters
+    auto blackboard = tree.rootBlackboard();
+    blackboard->set("RepeatSwitching", 0); // Blackboard parameters for Repeat Switching Node
+
+
     BT::PublisherZMQ publisher_zmq(tree);
     try
     {
