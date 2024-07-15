@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="MainTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="MainTree">
+        <Repeat num_cycles="100">
+            <Sequence name="root_sequence">
+                <Delay delay_msec="1000">
+                    <SetBlackboard output_key="RepeatSwitching" value="5"/>
+                </Delay>
+                <Action ID="BlackboardValueChecker" key="RepeatSwitching" value="{RepeatSwitching}"/>
+                <Action ID="BlackboardValueWriterSrv" output_key="RepeatSwitching" value="{RepeatSwitching}"/>
+                <Action ID="BlackboardValueChecker" key="RepeatSwitching" value="{RepeatSwitching}"/>
+            </Sequence>
+        </Repeat>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="BlackboardValueChecker">
+            <inout_port name="key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="BlackboardValueWriterSrv">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="BlackboardValueWriterTopic">
+            <inout_port name="parameter_value"/>
+        </Action>
+        <Action ID="LeafNodeIc120">
+            <input_port default="ic120" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx120">
+            <input_port default="zx120" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx200">
+            <input_port default="zx200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeZx200">
+            <input_port default="zx200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
