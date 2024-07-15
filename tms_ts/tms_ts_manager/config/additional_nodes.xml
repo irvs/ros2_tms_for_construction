@@ -24,6 +24,20 @@
             <inout_port name="subtask_name"/> 
         </Action>
 
+        <Action ID="BlackboardValueChecker">
+            <inout_port name="key"/>
+            <inout_port name="value"/>
+        </Action>
+
+        <Action ID="BlackboardValueWriterSrv">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
+
+        <Action ID="BlackboardValueWriterTopic">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
 
     </TreeNodesModel>
 </root>

@@ -15,36 +15,38 @@ public:
     BlackboardValueChecker(const std::string& name, const NodeConfiguration& config)
       : SyncActionNode(name, config)
     {
-        node_ = rclcpp::Node::make_shared("input");
-        pub_ = node_->create_publisher<std_msgs::msg::Int32>("/output_val", 10);
+        node_ = rclcpp::Node::make_shared("blackboard_value_checker");
+        // pub_ = node_->create_publisher<std_msgs::msg::Int32>("/output_val", 10);
     }
 
     static PortsList providedPorts()
     {
-        return { InputPort<int>("parameter_value") };
+        return { InputPort<int>("value"), InputPort<std::string>("key") };
     }
 
     virtual NodeStatus tick() override
     {
-        Optional<int> msg = getInput<int>("parameter_value");
+        Optional<std::string> key = getInput<std::string>("key");
+        Optional<int> value = getInput<int>("value");
 
-        if (!msg)
+        if (!value || !key)
         {
-            throw RuntimeError("missing required input [parameter_value]: ", msg.error());
+            std::cout << "missing required input. Please fill key or value parameters." << std::endl;
+            return NodeStatus::FAILURE;
         }
-        auto msg_data = msg.value();
-        std::cout << "parameter_valui: " << msg_data << std::endl;
+        
+        std::cout << "key name : " << key.value() << "   ,   value : " << value.value() << std::endl;
 
-        std_msgs::msg::Int32 input_msg;
-        input_msg.data = msg_data;
-        pub_->publish(input_msg);
+        // std_msgs::msg::Int32 input_msg;
+        // input_msg.data = msg_data;
+        // pub_->publish(input_msg);
 
         return NodeStatus::SUCCESS;
     }
 
 private:
     rclcpp::Node::SharedPtr node_;
-    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_;
+    // rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr pub_;
 };
 
 #endif

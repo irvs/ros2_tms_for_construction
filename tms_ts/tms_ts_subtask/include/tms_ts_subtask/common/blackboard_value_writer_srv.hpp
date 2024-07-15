@@ -11,11 +11,10 @@ using namespace BT;
 class BlackboardValueWriterSrv : public SyncActionNode
 {
 public:
-    BlackboardValueWriterSrv(const std::string& name, const NodeConfiguration& config)
-      : SyncActionNode(name, config), value_(0)
+    BlackboardValueWriterSrv(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config), value_(0)
     { 
         node_ = rclcpp::Node::make_shared("srv_cli_blackboard_node");
-        client_ = node_->create_client<tms_msg_ts::srv::BlackboardParameters>("/srv_cli_blackboard");
+        client_ = node_->create_client<tms_msg_ts::srv::BlackboardParameters>("blackboard_parameters");
     }
 
     ~BlackboardValueWriterSrv()
@@ -25,33 +24,43 @@ public:
 
     static PortsList providedPorts()
     {
-        return { OutputPort<int>("parameter_value"), InputPort<int>("parameter_value") };
+        return { OutputPort<int>("value"), InputPort<std::string>("output_key") };
     }
 
     NodeStatus tick() override
     {
-        auto request = std::make_shared<tms_msg_ts::srv::BlackboardParameters::Request>();
-        Optional<int> port_name = getInput<int>("parameter_value");
+        Optional<std::string> key_name = getInput<std::string>("output_key");
 
-        if (!port_name)
+        if (!key_name)
         {
-            throw RuntimeError("missing required input [port_name]: ", port_name.error());
-        }
-
-        request->port_name = port_name.value();
-
-        auto future = client_->async_send_request(request);
-
-        try {
-            auto response = future.get();
-            value_ = response->val;
-            setOutput("parameter_value", value_);
-            // RCLCPP_INFO(node_->get_logger(), "Received value: %d at time: %d.%d", response->val, response->time.sec, response->time.nanosec);
-            return NodeStatus::SUCCESS;
-        } catch (const std::exception &e) {
-            // RCLCPP_ERROR(node_->get_logger(), "Service call failed: %s", e.what());
+            std::cout << "Missing required key. Please fill blackboard key name in key_name parameter." << std::endl;
             return NodeStatus::FAILURE;
         }
+
+        while (!client_->wait_for_service(std::chrono::seconds(10))) {
+            if (!rclcpp::ok()) {
+                RCLCPP_ERROR(node_->get_logger(), "client interrupted while waiting for service to appear.");
+                return NodeStatus::FAILURE;
+                }
+            RCLCPP_INFO(node_->get_logger(), "waiting for service to appear...");
+            return NodeStatus::RUNNING;
+        }
+        auto request = std::make_shared<tms_msg_ts::srv::BlackboardParameters::Request>();
+        request->port_name = std::string(key_name.value());
+        auto result_future = client_->async_send_request(request);
+        if (rclcpp::spin_until_future_complete(node_, result_future) != rclcpp::FutureReturnCode::SUCCESS)
+        {
+            RCLCPP_ERROR(node_->get_logger(), "service call failed ");
+            client_->remove_pending_request(result_future);
+            return NodeStatus::FAILURE;
+        }
+
+        auto result = result_future.get();
+        setOutput("value", int(result->val));
+
+        std::cout << "Stored blackboard parameter [" << key_name.value() << "] : " << int(result->val) << std::endl;
+
+        return NodeStatus::SUCCESS;
     }
 
 private:
