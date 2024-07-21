@@ -30,7 +30,7 @@ SubtaskSampleZx120Boom::SubtaskSampleZx120Boom() : SubtaskNodeBase("st_zx120_sam
 rclcpp_action::GoalResponse SubtaskSampleZx120Boom::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
-  parameters = GetParamFromDB(goal->model_name, goal->record_name);
+  parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
   RCLCPP_INFO_STREAM(this->get_logger(), "zx120 boom goal pos_fin: " << parameters["zx120_boom_goal_pos"] << " [deg]");
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }

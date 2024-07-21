@@ -30,7 +30,7 @@ SubtaskSampleZx120Swing::SubtaskSampleZx120Swing() : SubtaskNodeBase("st_zx120_s
 rclcpp_action::GoalResponse SubtaskSampleZx120Swing::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
-  parameters = GetParamFromDB(goal->model_name, goal->record_name);
+  parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 

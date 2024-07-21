@@ -14,9 +14,15 @@
 
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
+
       return LaunchDescription([
+
+            DeclareLaunchArgument('task_id', default_value="20"),
+
             Node(
                   package='tms_ts_manager',
                   executable='task_schedular_manager',
@@ -25,7 +31,7 @@ def generate_launch_description():
                   package='tms_ur_button_input', 
                   executable='tms_ur_button',
                   output='screen', 
-                  parameters=[{"task_id": 2}]), # You must define task_id that you want to execute. Default task_id is 2.
+                  parameters=[{"task_id": LaunchConfiguration('task_id')}]), # You must define task_id that you want to execute. Default task_id is 2.
             
             # subtasks
             Node(
@@ -47,7 +53,12 @@ def generate_launch_description():
                   package='tms_ts_subtask',
                   executable='subtask_ic120_navigate_anywhere_server',
                   output='screen'),
-            Node(package='tms_ts_subtask',
+            Node(
+                  package='tms_ts_subtask',
+                  executable='subtask_ic120_navigate_through_poses_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask',
                   executable='subtask_ic120_release_soil_server',
                   output='screen'),
             
@@ -87,7 +98,7 @@ def generate_launch_description():
                   executable='zx200_sample_bucket_subtask',
                   output='screen'),
             
-            # センシング処理後のデータをデータベースに取り込むためのノード類
+            # センシング処�?後�?��?ータをデータベ�?�スに取り込むためのノ�?�ド�?
             Node(
                   package='tms_sp_sensing', 
                   executable='tms_sp_zx200_end_effector',

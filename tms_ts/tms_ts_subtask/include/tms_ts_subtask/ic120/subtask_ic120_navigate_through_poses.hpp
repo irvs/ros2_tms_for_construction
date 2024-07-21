@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SAMPLE_SUBTASK_IC120_NAVIGATE_ANYWHERE_HPP
-#define SAMPLE_SUBTASK_IC120_NAVIGATE_ANYWHERE_HPP
+#ifndef SAMPLE_SUBTASK_IC120_NAVIGATE_THROUGH_POSES_HPP
+#define SAMPLE_SUBTASK_IC120_NAVIGATE_THROUGH_POSES_HPP
 
 #include <memory>
 #include <map>
@@ -33,19 +33,22 @@
 #include "tms_msg_ts/action/leaf_node_base.hpp"
 #include "tms_ts_subtask/subtask_node_base.hpp"
 
-#include "nav2_msgs/action/navigate_to_pose.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "nav2_msgs/action/navigate_through_poses.hpp"
 
 
-class SubtaskIc120NavigateAnywhere : public SubtaskNodeBase
+class SubtaskIc120NavigateThroughPoses : public SubtaskNodeBase
 {
 public:
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
-    using NavigateToPose = nav2_msgs::action::NavigateToPose;
-    using GoalHandleIc120NavigateAnywhere = rclcpp_action::ClientGoalHandle<NavigateToPose>;
-    SubtaskIc120NavigateAnywhere();
+    using NavigateThroughPoses = nav2_msgs::action::NavigateThroughPoses;
+    using GoalHandleIc120NavigateThroughPoses = rclcpp_action::ClientGoalHandle<NavigateThroughPoses>;
+    SubtaskIc120NavigateThroughPoses();
+
 
 private:
     rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
+    std::map<std::pair<std::string, std::string>, double> param_from_db_;
     rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
                                             std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal);
     rclcpp_action::CancelResponse handle_cancel(const std::shared_ptr<GoalHandle> goal_handle);
@@ -53,14 +56,14 @@ private:
     void execute(const std::shared_ptr<GoalHandle> goal_handle);
 
     // Member as an action client
-    rclcpp_action::Client<NavigateToPose>::SharedPtr action_client_;
-    std::shared_future<GoalHandleIc120NavigateAnywhere::SharedPtr> client_future_goal_handle_;
-    std::map<std::string, double> parameters;
-    void goal_response_callback(const GoalHandleIc120NavigateAnywhere::SharedPtr& goal_handle);
-    void feedback_callback(GoalHandleIc120NavigateAnywhere::SharedPtr,
-                            const std::shared_ptr<const NavigateToPose::Feedback> feedback);
+    rclcpp_action::Client<NavigateThroughPoses>::SharedPtr action_client_;
+    std::shared_future<GoalHandleIc120NavigateThroughPoses::SharedPtr> client_future_goal_handle_;
+    std::map<std::pair<std::string, std::string>, double> parameters;
+    void goal_response_callback(const GoalHandleIc120NavigateThroughPoses::SharedPtr& goal_handle);
+    void feedback_callback(GoalHandleIc120NavigateThroughPoses::SharedPtr,
+                            const std::shared_ptr<const NavigateThroughPoses::Feedback> feedback);
     void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                        const GoalHandleIc120NavigateAnywhere::WrappedResult& result);
+                        const GoalHandleIc120NavigateThroughPoses::WrappedResult& result);
 };
 
 #endif
