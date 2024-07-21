@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="MainTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="MainTree">
+        <Sequence name="root_sequence">
+            <Action  model_name="ic120" ID="LeafNodeIc120" record_name="position_and_pose" subtask_name="st_ic120_navigate_anywhere"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="LeafNodeSampleZx120">
+            <input_port name=" model_name" default="zx120"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx200">
+            <input_port name=" model_name" default="zx200"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeIc120">
+            <input_port name=" model_name" default="ic120"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeZx200">
+            <input_port name=" model_name" default="zx200"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>

@@ -41,7 +41,6 @@ public:
   using GoalHandleZx200ReleaseSimple = rclcpp_action::ClientGoalHandle<Zx200ReleaseSimple>;
 
   SubtaskZx200ReleaseSimple();
-  std::map<std::string, double> GetParamFromDB(std::string model_name, std::string record_name);
 
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;

@@ -63,6 +63,7 @@ bsoncxx)
 
 ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
 add_executable(subtask_ic120_navigate_anywhere_server src/ic120/subtask_ic120_navigate_anywhere_server.cpp)
+add_executable(subtask_ic120_navigate_through_poses_server src/ic120/subtask_ic120_navigate_through_poses_server.cpp)
 add_executable(subtask_ic120_release_soil_server src/ic120/subtask_ic120_release_soil_server.cpp)
 add_executable(zx120_sample_boom_subtask src/sample/zx120/sample_boom_subtask.cpp)
 add_executable(zx120_sample_swing_subtask src/sample/zx120/sample_swing_subtask.cpp)
@@ -75,12 +76,19 @@ add_executable(zx200_sample_bucket_subtask src/sample/zx200/sample_bucket_subtas
 add_executable(subtask_zx200_change_pose src/zx200/subtask_zx200_change_pose.cpp)
 add_executable(subtask_zx200_excavate_simple src/zx200/subtask_zx200_excavate_simple.cpp)
 add_executable(subtask_zx200_release_simple src/zx200/subtask_zx200_release_simple.cpp)
+# add_executable(param_publisher src/common/param_publisher.cpp)
 
 target_include_directories(subtask_ic120_navigate_anywhere_server PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
   /usr/local/include/mongocxx/v_noabi
   /usr/local/include/bsoncxx/v_noabi)
+
+  target_include_directories(subtask_ic120_navigate_through_poses_server PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  /usr/local/include/mongocxx/v_noabi
+  /usr/local/include/bsoncxx/v_noabi)  
 
   target_include_directories(subtask_ic120_release_soil_server PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -154,7 +162,16 @@ target_include_directories(subtask_zx200_release_simple PUBLIC
   /usr/local/include/mongocxx/v_noabi
   /usr/local/include/bsoncxx/v_noabi)
 
+  # target_include_directories(param_publisher PUBLIC
+  # $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  # $<INSTALL_INTERFACE:include>
+  # /usr/local/include/mongocxx/v_noabi
+  # /usr/local/include/bsoncxx/v_noabi)
+
 target_link_directories(subtask_ic120_navigate_anywhere_server PUBLIC
+/usr/local/lib)
+
+target_link_directories(subtask_ic120_navigate_through_poses_server PUBLIC
 /usr/local/lib)
 
 target_link_directories(subtask_ic120_release_soil_server PUBLIC
@@ -193,7 +210,17 @@ target_link_directories(subtask_zx200_excavate_simple PUBLIC
 target_link_directories(subtask_zx200_release_simple PUBLIC
 /usr/local/lib)
 
+# target_link_directories(param_publisher PUBLIC
+# /usr/local/lib)
+
 target_link_libraries(subtask_ic120_navigate_anywhere_server
+${PROJECT_NAME}
+mongocxx
+bsoncxx
+glog::glog
+)
+
+target_link_libraries(subtask_ic120_navigate_through_poses_server
 ${PROJECT_NAME}
 mongocxx
 bsoncxx
@@ -284,7 +311,15 @@ target_link_libraries(subtask_zx200_release_simple
   glog::glog
 )
 
+# target_link_libraries(param_publisher
+#   ${PROJECT_NAME}
+#   mongocxx
+#   bsoncxx
+#   glog::glog
+# )
+
 ament_target_dependencies(subtask_ic120_navigate_anywhere_server ${dependencies_cpp})
+ament_target_dependencies(subtask_ic120_navigate_through_poses_server ${dependencies_cpp})
 ament_target_dependencies(subtask_ic120_release_soil_server ${dependencies_cpp})
 ament_target_dependencies(zx120_sample_boom_subtask ${dependencies_cpp})
 ament_target_dependencies(zx120_sample_swing_subtask ${dependencies_cpp})
@@ -297,9 +332,11 @@ ament_target_dependencies(zx200_sample_bucket_subtask ${dependencies_cpp})
 ament_target_dependencies(subtask_zx200_change_pose ${dependencies_cpp})
 ament_target_dependencies(subtask_zx200_excavate_simple ${dependencies_cpp})
 ament_target_dependencies(subtask_zx200_release_simple ${dependencies_cpp})
+# ament_target_dependencies(param_publisher ${dependencies_cpp})
 
 install(TARGETS
   subtask_ic120_navigate_anywhere_server
+  subtask_ic120_navigate_through_poses_server
   subtask_ic120_release_soil_server
   zx120_sample_boom_subtask
   zx120_sample_swing_subtask
@@ -312,6 +349,7 @@ install(TARGETS
   subtask_zx200_change_pose
   subtask_zx200_excavate_simple
   subtask_zx200_release_simple
+  # param_publisher
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="MainTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="MainTree">
+        <Repeat num_cycles="2">
+            <Sequence name="root_sequence">
+                <Action  model_name="ic120" ID="LeafNodeIc120" record_name="position_and_pose_1" subtask_name="st_ic120_navigate_anywhere"/>
+                <Action  model_name="ic120" ID="LeafNodeIc120" record_name="position_and_pose_2" subtask_name="st_ic120_navigate_anywhere"/>
+                <Action  model_name="ic120" ID="LeafNodeIc120" record_name="position_and_pose_3" subtask_name="st_ic120_navigate_anywhere"/>
+                <Action  model_name="ic120" ID="LeafNodeIc120" record_name="position_and_pose_4" subtask_name="st_ic120_navigate_anywhere"/>
+                <Action  model_name="ic120" ID="LeafNodeIc120" record_name="position_and_pose_5" subtask_name="st_ic120_navigate_anywhere"/>
+                <Action  model_name="ic120" ID="LeafNodeIc120" record_name="position_and_pose_6" subtask_name="st_ic120_navigate_anywhere"/>
+            </Sequence>
+        </Repeat>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="LeafNodeSampleZx120">
+            <input_port name=" model_name" default="zx120"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx200">
+            <input_port name=" model_name" default="zx200"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeIc120">
+            <input_port name=" model_name" default="ic120"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeZx200">
+            <input_port name=" model_name" default="zx200"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
