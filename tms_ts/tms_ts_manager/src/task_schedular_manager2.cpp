@@ -1,17 +1,3 @@
-// Copyright 2023, IRVS Laboratory, Kyushu University, Japan.
-
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-
-//      http://www.apache.org/licenses/LICENSE-2.0
-
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -40,21 +26,19 @@
 #include "tms_ts_subtask/common/blackboard_value_writer_topic.hpp"
 #include "tms_ts_subtask/common/blackboard_value_writer_srv.hpp"
 
-
-
-
 using namespace BT;
 using namespace std::chrono_literals;
 
 bool cancelRequested = false;
 
-class ExecTaskSequence : public rclcpp::Node
+// First Program
+class ExecTaskSequence2 : public rclcpp::Node
 {
 public:
-  ExecTaskSequence() : Node("exec_task_sequence")
+  ExecTaskSequence2() : Node("exec_task_sequence2")
   {
     subscription_ = this->create_subscription<std_msgs::msg::String>(
-        "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
+        "/task_sequence2", 10, std::bind(&ExecTaskSequence2::topic_callback, this, std::placeholders::_1));
     
     // Add leafNodes to registered nodes
 
@@ -77,7 +61,7 @@ public:
     tree = factory.createTreeFromText(task_sequence);
 
     // BT::PublisherZMQ publisher_zmq(tree);
-    BT::PublisherZMQ publisher_zmq(tree, 100, 1666, 1777);
+    BT::PublisherZMQ publisher_zmq2(tree, 100, 1668, 1779);
     try
     {
       while (rclcpp::ok() && status == NodeStatus::RUNNING)
@@ -92,18 +76,18 @@ public:
     }
     catch (const std::exception& e)
     {
-      RCLCPP_ERROR(rclcpp::get_logger("exec_task_sequence"), "Behavior tree threw an exception");
+      RCLCPP_ERROR(rclcpp::get_logger("exec_task_sequence2"), "Behavior tree threw an exception");
       status = NodeStatus::FAILURE;
     }
 
     switch (status)
     {
       case NodeStatus::SUCCESS:
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence"), "Task is successfully finished.");
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence2"), "Task is successfully finished.");
         break;
 
       case NodeStatus::FAILURE:
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence"), "Task is canceled.");
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence2"), "Task is canceled.");
         break;
     }
 
@@ -118,13 +102,13 @@ private:
   NodeStatus status = NodeStatus::RUNNING;
 };
 
-class ForceQuietNode : public rclcpp::Node
+class ForceQuietNode2 : public rclcpp::Node
 {
 public:
-  ForceQuietNode() : Node("force_quiet_node")
+  ForceQuietNode2() : Node("force_quiet_node2")
   {
     shutdown_subscription = this->create_subscription<std_msgs::msg::Bool>(
-        "/emergency_signal", 10, std::bind(&ForceQuietNode::callback, this, std::placeholders::_1));
+        "/emergency_signal2", 10, std::bind(&ForceQuietNode2::callback, this, std::placeholders::_1));
   }
 
   void callback(const std_msgs::msg::Bool& msg)
@@ -144,10 +128,10 @@ int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
   rclcpp::executors::MultiThreadedExecutor exec;
-  auto task_schedular_node = std::make_shared<ExecTaskSequence>();
-  exec.add_node(task_schedular_node);
-  auto force_quiet_node = std::make_shared<ForceQuietNode>();
-  exec.add_node(force_quiet_node);
+  auto task_schedular_node2 = std::make_shared<ExecTaskSequence2>();
+  exec.add_node(task_schedular_node2);
+  auto force_quiet_node2 = std::make_shared<ForceQuietNode2>();
+  exec.add_node(force_quiet_node2);
   exec.spin();
   rclcpp::shutdown();
   return 0;

@@ -21,7 +21,8 @@ def generate_launch_description():
 
       return LaunchDescription([
 
-            DeclareLaunchArgument('task_id', default_value="20"),
+            DeclareLaunchArgument('task_id1', default_value="1"),
+            DeclareLaunchArgument('task_id2', default_value="3"),
 
             Node(
                   package='tms_ts_manager',
@@ -31,7 +32,18 @@ def generate_launch_description():
                   package='tms_ur_button_input', 
                   executable='tms_ur_button',
                   output='screen', 
-                  parameters=[{"task_id": LaunchConfiguration('task_id')}]), # You must define task_id that you want to execute. Default task_id is 2.
+                  parameters=[{"task_id": LaunchConfiguration('task_id1')}]), # You must define task_id that you want to execute. Default task_id is 2.
+
+            Node(
+                  package='tms_ts_manager',
+                  executable='task_schedular_manager2',
+                  output='screen'),
+            Node(
+                  package='tms_ur_button_input', 
+                  executable='tms_ur_button_',
+                  output='screen', 
+                  parameters=[{"task_id": LaunchConfiguration('task_id2')}]), # You must define task_id that you want to execute. Default task_id is 2.
+            
             
             # subtasks
             Node(

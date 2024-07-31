@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Repeat num_cycles="2">
+            <Sequence>
+                <Parallel failure_threshold="1" name="Parallel " success_threshold="2">
+                    <Action  model_name="ic120" ID="LeafNodeIc120" record_name="path_operasimphysx_SIMIZU:1" subtask_name="st_ic120_navigate_through_poses"/>
+                    <Action  model_name="zx200" ID="LeafNodeZx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
+                </Parallel>
+                <KeepRunningUntilFailure>
+                    <Parallel failure_threshold="1" success_threshold="1000">
+                        <Sequence>
+                            <Action ID="BlackboardValueWriterSrv" output_key="RepeatSwitching" value="{RepeatSwitching}"/>
+                            <Action ID="BlackboardValueChecker" key="RepeatSwitching" value="{RepeatSwitching}"/>
+                        </Sequence>
+                        <Switch4 case_1="0" case_2="1" case_3="2" case_4="3" variable="RepeatSwitching">
+                            <Delay delay_msec="10000">
+                                <AlwaysSuccess/>
+                            </Delay>
+                            <Sequence>
+                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
+                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple"/>
+                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_zx200_change_pose"/>
+                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="hold_soil_while_turning_pose" subtask_name="subtask_zx200_change_pose"/>
+                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="target_release_pose" subtask_name="subtask_zx200_change_pose"/>
+                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="release_angle" subtask_name="subtask_zx200_release_simple"/>
+                            </Sequence>
+                            <AlwaysFailure/>
+                            <Sequence>
+                                <Action  model_name="ic120" ID="LeafNodeIc120" record_name="path_operasimphysx_SIMIZU:5" subtask_name="st_ic120_navigate_through_poses"/>
+                                <Action  model_name="ic120" ID="LeafNodeIc120" record_name="soil_release_vessel_angle" subtask_name="st_ic120_release_soil"/>
+                                <Action  model_name="ic120" ID="LeafNodeIc120" record_name="path_operasimphysx_SIMIZU:6" subtask_name="st_ic120_navigate_through_poses"/>
+                            </Sequence>
+                        </Switch4>
+                    </Parallel>
+                </KeepRunningUntilFailure>
+            </Sequence>
+        </Repeat>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="BlackboardValueChecker">
+            <inout_port name="key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="BlackboardValueWriterSrv">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="BlackboardValueWriterTopic">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="LeafNodeIc120">
+            <input_port default="ic120" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx120">
+            <input_port default="zx120" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx200">
+            <input_port default="zx200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeZx200">
+            <input_port default="zx200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
