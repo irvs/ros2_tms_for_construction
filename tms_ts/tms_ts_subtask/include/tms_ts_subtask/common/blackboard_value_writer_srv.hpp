@@ -5,6 +5,7 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "tms_msg_ts/srv/blackboard_parameters.hpp"
+#include <string>
 
 using namespace BT;
 
@@ -24,7 +25,7 @@ public:
 
     static PortsList providedPorts()
     {
-        return { OutputPort<int>("value"), InputPort<std::string>("output_key") };
+        return { OutputPort<std::string>("value"), InputPort<std::string>("output_key") };
     }
 
     NodeStatus tick() override
@@ -56,9 +57,9 @@ public:
         }
 
         auto result = result_future.get();
-        setOutput("value", int(result->val));
+        setOutput("value", std::to_string(result->val));
 
-        std::cout << "Stored blackboard parameter [" << key_name.value() << "] : " << int(result->val) << std::endl;
+        // std::cout << "Stored blackboard parameter [" << key_name.value() << "] : " << int(result->val) << std::endl;
 
         return NodeStatus::SUCCESS;
     }
