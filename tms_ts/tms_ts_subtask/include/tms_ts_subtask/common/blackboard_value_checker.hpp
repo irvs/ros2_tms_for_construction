@@ -22,25 +22,59 @@ public:
 
     static PortsList providedPorts()
     {
-        return { InputPort<std::string>("value"), InputPort<std::string>("key") };
+        return { InputPort<std::string>("key") };
     }
 
     virtual NodeStatus tick() override
     {
         Optional<std::string> key = getInput<std::string>("key");
-        Optional<std::string> value = getInput<std::string>("value");
 
-        if (!value || !key)
+        if (!key)
         {
-            std::cout << "missing required input. Please fill key or value parameters." << std::endl;
+            std::cout << "[BlackboardValueChecker] missing required input. Please fill key parameter." << std::endl;
             return NodeStatus::FAILURE;
         }
         
-        std::cout << "key name : " << key.value() << "   ,   value : " << value.value() << std::endl;
+        auto any_value = config().blackboard->getAny(key.value());
+        if (!any_value)
+        {
+            std::cout << "[BlackboardValueChecker] No value found for key: " << key.value() << std::endl;
+            return NodeStatus::FAILURE;
+        }
 
-        // std_msgs::msg::String input_msg;
-        // input_msg.data = msg_data;
-        // pub_->publish(input_msg);
+        try
+        {
+            if (any_value->type() == typeid(int))
+            {
+                int value = any_value->cast<int>();
+                std::cout << "[BlackboardValueChecker] key name : " << key.value() << "   ,   value : " << value << std::endl;
+            }
+            else if (any_value->type() == typeid(double))
+            {
+                double value = any_value->cast<double>();
+                std::cout << "[BlackboardValueChecker] key name : " << key.value() << "   ,   value : " << value << std::endl;
+            }
+            else if (any_value->type() == typeid(bool))
+            {
+                bool value = any_value->cast<bool>();
+                std::cout << "[BlackboardValueChecker] key name : " << key.value() << "   ,   value : " << std::boolalpha << value << std::endl;
+            }
+            else if (any_value->type() == typeid(std::string))
+            {
+                std::string value = any_value->cast<std::string>();
+                std::cout << "[BlackboardValueChecker] key name : " << key.value() << "   ,   value : " << value << std::endl;
+            }
+            else
+            {
+                std::cout << "[BlackboardValueChecker] Unsupported type for key: " << key.value() << std::endl;
+                return NodeStatus::FAILURE;
+            }
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "[BlackboardValueChecker] Error retrieving value for key: " << key.value() << ". " << e.what() << std::endl;
+            return NodeStatus::FAILURE;
+        }
 
         return NodeStatus::SUCCESS;
     }

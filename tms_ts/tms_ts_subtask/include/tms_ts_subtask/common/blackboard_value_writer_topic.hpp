@@ -45,11 +45,11 @@ public:
 
             if (!value || !key)
             {
-                std::cout << "missing required input. Please fill key or value parameters." << std::endl;
+                std::cout << "[BlackboardValueWriterTopic] Missing required input. Please fill key or value parameters." << std::endl;
                 return NodeStatus::FAILURE;
             }
 
-            std::cout << "Stored blackboard parameter [" << key.value() << "] : " << int(value_) << std::endl;
+            std::cout << "[BlackboardValueWriterTopic] Stored blackboard parameter [" << key.value() << "] : " << int(value_) << std::endl;
 
             setOutput("value", value_);
             return NodeStatus::SUCCESS;
@@ -57,7 +57,7 @@ public:
         }
         case false:
         {
-            std::cout << "input value is not subscribed. Please confirm ros2 topic /input_val is publishing nowe" << std::endl;
+            std::cout << "[BlackboardValueWriterTopic]  Input value is not subscribed. Please confirm ros2 topic /input_val is publishing nowe" << std::endl;
             return NodeStatus::FAILURE;
             break;
         }

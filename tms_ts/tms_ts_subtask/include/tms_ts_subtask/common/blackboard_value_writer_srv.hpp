@@ -34,7 +34,7 @@ public:
 
         if (!key_name)
         {
-            std::cout << "Missing required key. Please fill blackboard key name in key_name parameter." << std::endl;
+            std::cout << "[BlackboardValueWriterSrv] Missing required key. Please fill blackboard key name in key_name parameter." << std::endl;
             return NodeStatus::FAILURE;
         }
 
@@ -43,7 +43,7 @@ public:
                 RCLCPP_ERROR(node_->get_logger(), "client interrupted while waiting for service to appear.");
                 return NodeStatus::FAILURE;
                 }
-            RCLCPP_INFO(node_->get_logger(), "waiting for service to appear...");
+            std::cout << "[BlackboardValueWriterSrv] waiting for service to appear..." << std::endl;
             return NodeStatus::RUNNING;
         }
         auto request = std::make_shared<tms_msg_ts::srv::BlackboardParameters::Request>();
@@ -58,8 +58,6 @@ public:
 
         auto result = result_future.get();
         setOutput("value", std::to_string(result->val));
-
-        // std::cout << "Stored blackboard parameter [" << key_name.value() << "] : " << int(result->val) << std::endl;
 
         return NodeStatus::SUCCESS;
     }
