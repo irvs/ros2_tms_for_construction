@@ -73,19 +73,19 @@ public:
                     std::cout << "[BlackboardValueReaderMongo]  Stored blackboard parameter [" << key1.value() << "] : " << value.get_utf8().value.to_string() << std::endl;
                     break;
                 case bsoncxx::type::k_int32:
-                    config().blackboard->set(key1.value(), std::to_string(value.get_int32().value));
+                    config().blackboard->set(key1.value(), value.get_int32().value);
                     std::cout << "[BlackboardValueReaderMongo]  Stored blackboard parameter [" << key1.value() << "] : " << value.get_int32().value << std::endl;
                     break;
                 case bsoncxx::type::k_int64:
-                    config().blackboard->set(key1.value(), std::to_string(value.get_int64().value));
+                    config().blackboard->set(key1.value(), value.get_int64().value);
                     std::cout << "[BlackboardValueReaderMongo]  Stored blackboard parameter [" << key1.value() << "] : " << value.get_int64().value << std::endl;
                     break;
                 case bsoncxx::type::k_double:
-                    config().blackboard->set(key1.value(), std::to_string(value.get_double().value));
+                    config().blackboard->set(key1.value(), value.get_double().value);
                     std::cout << "[BlackboardValueReaderMongo]  Stored blackboard parameter [" << key1.value() << "] : " << value.get_double().value << std::endl;
                     break;
                 case bsoncxx::type::k_bool:
-                    config().blackboard->set(key1.value(), value.get_bool().value ? "true" : "false");
+                    config().blackboard->set(key1.value(), value.get_bool().value);
                     std::cout << "[BlackboardValueReaderMongo]  Stored blackboard parameter [" << key1.value() << "] : " << (value.get_bool().value ? "true" : "false") << std::endl;
                     break;
                 default:

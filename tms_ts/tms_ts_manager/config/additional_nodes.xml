@@ -52,7 +52,6 @@
 
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
-            <inout_port name="output_key"/>
         </Action>        
 
     </TreeNodesModel>

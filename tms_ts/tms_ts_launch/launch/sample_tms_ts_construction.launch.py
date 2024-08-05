@@ -21,8 +21,8 @@ def generate_launch_description():
 
       return LaunchDescription([
 
-            DeclareLaunchArgument('task_id1', default_value="34"),
-            DeclareLaunchArgument('task_id2', default_value="35"),
+            DeclareLaunchArgument('task_id1', default_value="40"),
+            DeclareLaunchArgument('task_id2', default_value="41"),
 
             Node(
                   package='tms_ts_manager',

@@ -16,6 +16,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <unordered_map>
+#include <typeinfo>
 
 using namespace BT;
 
@@ -40,17 +41,15 @@ public:
     static PortsList providedPorts()
     {
         return { 
-            InputPort<std::string>("conditional_expression"), 
-            InputPort<std::string>("output_key")
+            InputPort<std::string>("conditional_expression")
         };
     }
 
     NodeStatus tick() override
     {
         Optional<std::string> expr_str = getInput<std::string>("conditional_expression");
-        Optional<std::string> output_key = getInput<std::string>("output_key");
 
-        if (!expr_str || !output_key)
+        if (!expr_str)
         {
             std::cout << "[ConditionalExpression] Missing required input." << std::endl;
             return NodeStatus::FAILURE;
@@ -63,10 +62,9 @@ public:
             return NodeStatus::FAILURE;
         }
 
-        config().blackboard->set(output_key.value(), result);
         std::cout << "[ConditionalExpression] Evaluated condition: " << expr_str.value() << " Result: " << std::boolalpha << result << std::endl;
 
-        return NodeStatus::SUCCESS;
+        return result ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
     }
 
 private:
@@ -97,13 +95,7 @@ private:
                 auto value_any = blackboard_ptr->getAny(key);
                 if(value_any)
                 {
-                    if (value_any->type() == typeid(std::string))
-                    {
-                        std::string value_str = value_any->cast<std::string>();
-                        double value = std::stod(value_str);
-                        temp_variables[key] = value;
-                    }
-                    else if (value_any->type() == typeid(int))
+                    if (value_any->type() == typeid(int))
                     {
                         double value = static_cast<double>(value_any->cast<int>());
                         temp_variables[key] = value;
@@ -113,10 +105,15 @@ private:
                         double value = value_any->cast<double>();
                         temp_variables[key] = value;
                     }
+                    else if (value_any->type() == typeid(std::string))
+                    {
+                        std::string value_str = value_any->cast<std::string>();
+                        double value = std::stod(value_str);
+                        temp_variables[key] = value;
+                    }
                     else
                     {
-                        std::cerr << "Error: Unsupported type for variable " << key << " in blackboard." << std::endl;
-                        return false;
+                        continue; // Skip unsupported types
                     }
                 }
             }
@@ -129,6 +126,7 @@ private:
 
         for (auto& var : temp_variables)
         {
+            std::cout << "Variable: " << var.first << " Value: " << var.second << std::endl;
             symbol_table.add_variable(var.first, var.second);
         }
 

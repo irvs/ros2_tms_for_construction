@@ -12,6 +12,13 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
+// MongoDB関連のインクルード
+#include <bsoncxx/json.hpp>
+#include <bsoncxx/types.hpp>
+#include <mongocxx/client.hpp>
+#include <mongocxx/instance.hpp>
+#include <mongocxx/uri.hpp>
+
 // leaf nodesのインクルード
 #include "tms_ts_subtask/sample/zx120/sample_leaf_nodes.hpp"
 #include "tms_ts_subtask/sample/zx200/sample_leaf_nodes.hpp"
@@ -22,6 +29,7 @@
 #include "tms_ts_subtask/common/blackboard_value_writer_srv.hpp"
 #include "tms_ts_subtask/common/blackboard_value_reader_mongo.hpp"
 #include "tms_ts_subtask/common/mongo_value_writer.hpp"
+#include "tms_ts_subtask/common/conditional_expression.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -46,8 +54,11 @@ public:
     factory.registerNodeType<BlackboardValueWriterSrv>("BlackboardValueWriterSrv");
     factory.registerNodeType<BlackboardValueReaderMongo>("BlackboardValueReaderMongo");
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
+    factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
+
 
     bb_ = Blackboard::create(global_bb_);
+    loadBlackboardFromMongoDB("SAMPLE_BOARD_2");
   }
 
   void topic_callback(const std_msgs::msg::String::SharedPtr msg)
@@ -70,18 +81,18 @@ public:
     }
     catch (const std::exception& e)
     {
-      RCLCPP_ERROR(rclcpp::get_logger("exec_task_sequence"), "Behavior tree threw an exception");
+      RCLCPP_ERROR(rclcpp::get_logger("exec_task_sequence2"), "Behavior tree threw an exception");
       status_ = NodeStatus::FAILURE;
     }
 
     switch (status_)
     {
       case NodeStatus::SUCCESS:
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence"), "Task is successfully finished.");
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence2"), "Task is successfully finished.");
         break;
 
       case NodeStatus::FAILURE:
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence"), "Task is canceled.");
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence2"), "Task is canceled.");
         break;
     }
 
@@ -89,6 +100,60 @@ public:
   }
 
 private:
+  void loadBlackboardFromMongoDB(const std::string& record_name)
+  {
+    // mongocxx::instance instance{};
+    mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
+    mongocxx::database db = client["rostmsdb"];
+    mongocxx::collection collection = db["parameter"];
+
+    bsoncxx::builder::stream::document filter_builder;
+    filter_builder << "record_name" << record_name;
+    auto filter = filter_builder.view();
+    auto doc = collection.find_one(filter);
+
+    if (doc)
+    {
+      auto view = doc->view();
+      for (auto&& element : view)
+      {
+        std::string key = element.key().to_string();
+        auto value = element.get_value();
+
+        if (key != "_id" && key != "model_name" && key != "type" && key != "record_name")
+        {
+          switch (value.type())
+          {
+            case bsoncxx::type::k_utf8:
+              bb_->set(key, value.get_utf8().value.to_string());
+              break;
+            case bsoncxx::type::k_int32:
+              bb_->set(key, value.get_int32().value);
+              break;
+            case bsoncxx::type::k_int64:
+              bb_->set(key, value.get_int64().value);
+              break;
+            case bsoncxx::type::k_double:
+              bb_->set(key, value.get_double().value);
+              break;
+            case bsoncxx::type::k_bool:
+              bb_->set(key, value.get_bool().value);
+              break;
+            default:
+              std::cerr << "Unsupported BSON type: " << bsoncxx::to_string(value.type()) << std::endl;
+              break;
+          }
+        }
+      }
+    bb_->set("CHECK_TRUE", true);
+    bb_->set("CHECK_FALSE", false);
+    }
+    else
+    {
+      std::cerr << "Couldn't find document with record_name: " << record_name << std::endl;
+    }
+  }
+
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
   BehaviorTreeFactory factory;
   BT::Tree tree_;
@@ -101,7 +166,7 @@ private:
 class ForceQuietNode2 : public rclcpp::Node
 {
 public:
-  ForceQuietNode2() : Node("force_quiet_node")
+  ForceQuietNode2() : Node("force_quiet_node2")
   {
     shutdown_subscription = this->create_subscription<std_msgs::msg::Bool>(
         "/emergency_signal2", 10, std::bind(&ForceQuietNode2::callback, this, std::placeholders::_1));
