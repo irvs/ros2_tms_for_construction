@@ -52,7 +52,11 @@
 
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
-        </Action>        
+        </Action>      
+
+        <Action ID="ConditionalExpressionBool">
+            <input_port name="conditional_expression_bool"/>
+        </Action>       
 
     </TreeNodesModel>
 </root>

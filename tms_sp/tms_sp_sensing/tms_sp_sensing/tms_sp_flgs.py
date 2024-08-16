@@ -20,7 +20,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import Pose
 from std_msgs.msg import String
 from pymongo import MongoClient
-from sensing_msgs.msg import Zx200EndEffector
+from sensing_msgs.msg import Flgs
 
 import tms_db_manager.tms_db_util as db_util
 
@@ -33,19 +33,19 @@ DATA_NAME = 'data_name'
 
 class UpdateDB_Parameter(Node):
     def __init__(self):
-        super().__init__("tms_sp_zx200_end_effector")
+        super().__init__("tms_sp_flgs")
         self.subscription = self.create_subscription(
-            Zx200EndEffector,
-            '/zx200/end_effector',
+            Flgs,
+            '/Flgs',
             self.update_db_parameter,
             10) 
     
-    def update_db_parameter(self, msg: Zx200EndEffector) -> None:
+    def update_db_parameter(self, msg: Flgs) -> None:
         client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client['rostmsdb']
         collection = db['parameter']
-        query = {"model_name": msg.model_name, "type" : "dynamic", "record_name": msg.record_name}
-        update_parameter_info= {"x": None, "y": None, "z": None, "theta_w": None}
+        query = {"type" : "dynamic", "record_name": msg.record_name}
+        update_parameter_info= {"LOADED_FLG": None, "CONTINUE_FLG": None}
         parameter_info = collection.find_one(query)
         # self.get_logger().info(f"BEFORE: parameter_info: {update_parameter_info}")
         for update_val in update_parameter_info:

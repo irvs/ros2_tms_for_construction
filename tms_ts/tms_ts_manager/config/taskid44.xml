@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <ForceSuccess>
+            <KeepRunningUntilFailure>
+                <Parallel failure_threshold="1" success_threshold="-1">
+                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="CONTINUE_FLG" mongo_record_name="EXPERIMENT_SIMIZU" output_port="CONTINUE_FLG"/>
+                    <IfThenElse>
+                        <Action ID="ConditionalExpressionBool" conditional_expression_bool="CONTINUE_FLG == true"/>
+                        <Sequence>
+                            <Parallel failure_threshold="1" success_threshold="2">
+                                <Action  model_name="ic120" ID="LeafNodeIc120" record_name="path_operasimphysx_SIMIZU_2:1" subtask_name="st_ic120_navigate_through_poses"/>
+                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
+                            </Parallel>
+                            <ForceSuccess>
+                                <KeepRunningUntilFailure>
+                                    <Parallel failure_threshold="1" success_threshold="-1">
+                                        <Action ID="BlackboardValueReaderMongo" mongo_param_name="LOADED_FLG" mongo_record_name="EXPERIMENT_SIMIZU" output_port="LOADED_FLG"/>
+                                        <IfThenElse>
+                                            <Action ID="ConditionalExpressionBool" conditional_expression_bool="LOADED_FLG == false"/>
+                                            <Sequence>
+                                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
+                                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple"/>
+                                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_zx200_change_pose"/>
+                                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="hold_soil_while_turning_pose" subtask_name="subtask_zx200_change_pose"/>
+                                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="target_release_pose" subtask_name="subtask_zx200_change_pose"/>
+                                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="release_angle" subtask_name="subtask_zx200_release_simple"/>
+                                            </Sequence>
+                                            <AlwaysFailure/>
+                                        </IfThenElse>
+                                    </Parallel>
+                                </KeepRunningUntilFailure>
+                            </ForceSuccess>
+                            <Action  model_name="ic120" ID="LeafNodeIc120" record_name="path_operasimphysx_SIMIZU_2:2" subtask_name="st_ic120_navigate_through_poses"/>
+                            <Action  model_name="ic120" ID="LeafNodeIc120" record_name="soil_release_vessel_angle" subtask_name="st_ic120_release_soil"/>
+                            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADED_FLG" mongo_record_name="EXPERIMENT_SIMIZU"/>
+                            <Action  model_name="ic120" ID="LeafNodeIc120" record_name="path_operasimphysx_SIMIZU_2:1" subtask_name="st_ic120_navigate_through_poses"/>
+                        </Sequence>
+                        <AlwaysFailure/>
+                    </IfThenElse>
+                </Parallel>
+            </KeepRunningUntilFailure>
+        </ForceSuccess>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="BlackboardValueChecker">
+            <inout_port name="key"/>
+        </Action>
+        <Action ID="BlackboardValueReaderMongo">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+        </Action>
+        <Action ID="BlackboardValueWriterSrv">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="BlackboardValueWriterTopic">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="ConditionalExpression">
+            <input_port name="conditional_expression"/>
+        </Action>
+        <Action ID="ConditionalExpressionBool">
+            <input_port name="conditional_expression_bool"/>
+        </Action>
+        <Action ID="LeafNodeIc120">
+            <input_port default="ic120" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx120">
+            <input_port default="zx120" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx200">
+            <input_port default="zx200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeZx200">
+            <input_port default="zx200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="MongoValueWriter">
+            <input_port name="input_value"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
