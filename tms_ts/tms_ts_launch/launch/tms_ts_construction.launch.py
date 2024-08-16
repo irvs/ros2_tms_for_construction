@@ -21,11 +21,11 @@ def generate_launch_description():
 
       return LaunchDescription([
 
-            DeclareLaunchArgument('task_id', default_value="34"),
+            DeclareLaunchArgument('task_id', default_value="44"),
 
             Node(
                   package='tms_ts_manager',
-                  executable='task_schedular_manager',
+                  executable='task_schedular_manager_',
                   output='screen'),
             Node(
                   package='tms_ur_button_input', 
@@ -50,6 +50,10 @@ def generate_launch_description():
             
             # sample ###
             #ic120用
+            Node(
+                  package='tms_ts_subtask',
+                  executable='subtask_ic120_follow_waypoints_server',
+                  output='screen'),
             Node(
                   package='tms_ts_subtask',
                   executable='subtask_ic120_navigate_anywhere_server',

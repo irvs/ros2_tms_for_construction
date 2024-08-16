@@ -1,10 +1,8 @@
-#ifndef CONDITIONAL_EXPRESSION_NODE_HPP
-#define CONDITIONAL_EXPRESSION_NODE_HPP
+#ifndef CONDITIONAL_EXPRESSION_BOOL_NODE_HPP
+#define CONDITIONAL_EXPRESSION_BOOL_NODE_HPP
 
 #include "rclcpp/rclcpp.hpp"
 #include <thread>
-#include <bsoncxx/json.hpp>
-#include <bsoncxx/builder/stream/document.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/uri.hpp>
@@ -20,17 +18,17 @@
 
 using namespace BT;
 
-class ConditionalExpression : public SyncActionNode
+class ConditionalExpressionBool : public SyncActionNode
 {
 public:
-    ConditionalExpression(const std::string& name, const NodeConfiguration& config)
+    ConditionalExpressionBool(const std::string& name, const NodeConfiguration& config)
       : SyncActionNode(name, config), pool_(mongocxx::uri{})
     { 
-        node_ = rclcpp::Node::make_shared("conditional_expression");
+        node_ = rclcpp::Node::make_shared("conditional_expression_bool");
         spin_thread_ = std::thread([this]() { rclcpp::spin(node_); });
     }
 
-    ~ConditionalExpression()
+    ~ConditionalExpressionBool()
     {
         rclcpp::shutdown();
         if (spin_thread_.joinable()) {
@@ -41,28 +39,28 @@ public:
     static PortsList providedPorts()
     {
         return { 
-            InputPort<std::string>("conditional_expression")
+            InputPort<std::string>("conditional_expression_bool")
         };
     }
 
     NodeStatus tick() override
     {
-        Optional<std::string> expr_str = getInput<std::string>("conditional_expression");
+        Optional<std::string> expr_str = getInput<std::string>("conditional_expression_bool");
 
         if (!expr_str)
         {
-            std::cout << "[ConditionalExpression] Missing required input." << std::endl;
+            std::cout << "[ConditionalExpressionBool] Missing required input." << std::endl;
             return NodeStatus::FAILURE;
         }
 
         bool result;
         if (!evaluateCondition(expr_str.value(), result))
         {
-            std::cout << "[ConditionalExpression] Failed to evaluate condition." << std::endl;
+            std::cout << "[ConditionalExpressionBool] Failed to evaluate condition." << std::endl;
             return NodeStatus::FAILURE;
         }
 
-        std::cout << "[ConditionalExpression] Evaluated condition: " << expr_str.value() << " Result: " << std::boolalpha << result << std::endl;
+        std::cout << "[ConditionalExpressionBool] Evaluated condition: " << expr_str.value() << " Result: " << std::boolalpha << result << std::endl;
 
         return result ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
     }
@@ -82,6 +80,7 @@ private:
         expression_t   expression;
         parser_t       parser;
 
+        // Blackboard‚Ì•Ï”‚ðsymbol_table‚É’Ç‰Á
         auto blackboard_ptr = config().blackboard;
         auto blackboard_keys = blackboard_ptr->getKeys();
 
@@ -93,23 +92,12 @@ private:
             {
                 std::string key(key_view.data(), key_view.size());
                 auto value_any = blackboard_ptr->getAny(key);
-                if(value_any)
+                if (value_any)
                 {
-                    if (value_any->type() == typeid(int))
+                    if (value_any->type() == typeid(bool))
                     {
-                        double value = static_cast<double>(value_any->cast<int>());
-                        temp_variables[key] = value;
-                    }
-                    else if (value_any->type() == typeid(double))
-                    {
-                        double value = value_any->cast<double>();
-                        temp_variables[key] = value;
-                    }
-                    else if (value_any->type() == typeid(std::string))
-                    {
-                        std::string value_str = value_any->cast<std::string>();
-                        double value = std::stod(value_str);
-                        temp_variables[key] = value;
+                        bool value = value_any->cast<bool>();
+                        temp_variables[key] = value ? 1.0 : 0.0;
                     }
                     else
                     {
@@ -119,25 +107,31 @@ private:
             }
             catch (const std::exception& e)
             {
-                std::cerr << "[ConditionalExpression] Error: Unable to retrieve variable " << key_view << " from blackboard or convert it to double. " << e.what() << std::endl;
+                std::cerr << "[ConditionalExpressionBool] Error: Unable to retrieve variable " << key_view << " from blackboard or convert it to bool. " << e.what() << std::endl;
                 return false;
             }
         }
 
+        // symbol_table‚ÉBlackboard•Ï”‚ð“o˜^
         for (auto& var : temp_variables)
         {
-            std::cout << "[ConditionalExpression] Variable: " << var.first << " Value: " << var.second << std::endl;
+            std::cout << "[ConditionalExpressionBool] Variable: " << var.first << " Value: " << std::boolalpha << (var.second != 0.0) << std::endl;
             symbol_table.add_variable(var.first, var.second);
         }
 
+        // "true" ‚Æ "false" ‚ÌƒŠƒeƒ‰ƒ‹‚ðsymbol_table‚É’Ç‰Á
+        symbol_table.add_constant("true", 1.0);
+        symbol_table.add_constant("false", 0.0);
+
         expression.register_symbol_table(symbol_table);
 
+        // ðŒŽ®‚ðƒRƒ“ƒpƒCƒ‹‚µ‚Ä•]‰¿
         if (!parser.compile(condition, expression))
         {
-            std::cerr << "[ConditionalExpression] Error: " << parser.error() << std::endl;
+            std::cerr << "[ConditionalExpressionBool] Error: " << parser.error() << std::endl;
             for (std::size_t i = 0; i < parser.error_count(); ++i) {
                 exprtk::parser_error::type error = parser.get_error(i);
-                std::cerr << "[ConditionalExpression] Error: " << error.diagnostic << " at position: " << error.token.position << std::endl;
+                std::cerr << "[ConditionalExpressionBool] Error: " << error.diagnostic << " at position: " << error.token.position << std::endl;
             }
             return false;
         }

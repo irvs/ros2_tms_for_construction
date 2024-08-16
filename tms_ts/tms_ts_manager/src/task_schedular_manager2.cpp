@@ -30,6 +30,7 @@
 #include "tms_ts_subtask/common/blackboard_value_reader_mongo.hpp"
 #include "tms_ts_subtask/common/mongo_value_writer.hpp"
 #include "tms_ts_subtask/common/conditional_expression.hpp"
+#include "tms_ts_subtask/common/conditional_expression_bool.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -55,10 +56,11 @@ public:
     factory.registerNodeType<BlackboardValueReaderMongo>("BlackboardValueReaderMongo");
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
+    factory.registerNodeType<ConditionalExpressionBool>("ConditionalExpressionBool");
 
 
     bb_ = Blackboard::create(global_bb_);
-    loadBlackboardFromMongoDB("SAMPLE_BOARD_2");
+    loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SIMIZU");
   }
 
   void topic_callback(const std_msgs::msg::String::SharedPtr msg)

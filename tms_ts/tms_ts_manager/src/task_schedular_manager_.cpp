@@ -57,7 +57,7 @@ public:
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<ConditionalExpressionBool>("ConditionalExpressionBool");
 
-    loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SIMIZU");
+    loadBlackboardFromMongoDB("EXPERIMENT_SIMIZU");
   }
 
   void topic_callback(const std_msgs::msg::String::SharedPtr msg)
