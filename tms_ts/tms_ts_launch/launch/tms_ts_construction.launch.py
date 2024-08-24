@@ -113,6 +113,11 @@ def generate_launch_description():
                   executable='sample',
                   output='screen'),
             Node(
+                  package='tms_sp_sensing', 
+                  executable='tms_sp_flgs',
+                  output='screen'
+            ),
+            Node(
                   package="tms_db_manager", 
                   executable="tms_db_reader_task",
                   output='screen'),

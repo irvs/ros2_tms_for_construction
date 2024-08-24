@@ -45,13 +45,24 @@ class UpdateDB_Parameter(Node):
         db = client['rostmsdb']
         collection = db['parameter']
         query = {"type" : "dynamic", "record_name": msg.record_name}
-        update_parameter_info= {"LOADED_FLG": None, "CONTINUE_FLG": None}
         parameter_info = collection.find_one(query)
-        # self.get_logger().info(f"BEFORE: parameter_info: {update_parameter_info}")
-        for update_val in update_parameter_info:
-            if update_parameter_info[update_val] == None:
-                update_parameter_info[update_val] = eval(f"msg.{update_val}")
-        # self.get_logger().info(f"AFTER: parameter_info: {update_parameter_info}")
+        update_parameter_info = {}
+        msg_fields_and_types = msg.get_fields_and_field_types()
+        msg_fields = list(msg_fields_and_types.keys())
+
+        for key, value in parameter_info.items():
+           if key != "_id" and key!="model_name" and key != "type" and key != "record_name":
+                if key in msg.keep_val_flgs:
+                    print(f"msga.{key}")
+                    update_parameter_info[key] = value
+                elif key.lower() in msg_fields:
+                    print(f"msgb.{key}")
+                    lower_key = key.lower()
+                    update_parameter_info[key] = eval(f"msg.{lower_key}")
+                else:
+                    print(f"msgc.{key}")
+                    update_parameter_info[key] = value 
+
         update_query = {"$set": update_parameter_info}
         collection.update_one(query, update_query)
 
