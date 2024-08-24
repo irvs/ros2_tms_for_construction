@@ -22,7 +22,7 @@ def generate_launch_description():
       return LaunchDescription([
 
             DeclareLaunchArgument('task_id1', default_value="45"),
-            DeclareLaunchArgument('task_id2', default_value="47"),
+            DeclareLaunchArgument('task_id2', default_value="46"),
 
             Node(
                   package='tms_ts_manager',
@@ -61,6 +61,14 @@ def generate_launch_description():
             
             # sample ###
             #ic120用
+            Node(
+                  package='tms_ts_subtask',
+                  executable='subtask_ic120_follow_waypoints_deg_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask',
+                  executable='subtask_ic120_follow_waypoints_server',
+                  output='screen'),
             Node(
                   package='tms_ts_subtask',
                   executable='subtask_ic120_navigate_anywhere_server',
@@ -119,6 +127,11 @@ def generate_launch_description():
                   package='tms_sp_sensing', 
                   executable='sample',
                   output='screen'),
+            Node(
+                  package='tms_sp_sensing', 
+                  executable='tms_sp_flgs',
+                  output='screen'
+            ),
             Node(
                   package="tms_db_manager", 
                   executable="tms_db_reader_task",
