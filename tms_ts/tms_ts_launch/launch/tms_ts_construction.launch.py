@@ -52,11 +52,23 @@ def generate_launch_description():
             #ic120用
             Node(
                   package='tms_ts_subtask',
+                  executable='subtask_ic120_follow_waypoints_deg_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask',
                   executable='subtask_ic120_follow_waypoints_server',
                   output='screen'),
             Node(
                   package='tms_ts_subtask',
+                  executable='subtask_ic120_navigate_anywhere_deg_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask',
                   executable='subtask_ic120_navigate_anywhere_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask',
+                  executable='subtask_ic120_navigate_through_poses_deg_server',
                   output='screen'),
             Node(
                   package='tms_ts_subtask',

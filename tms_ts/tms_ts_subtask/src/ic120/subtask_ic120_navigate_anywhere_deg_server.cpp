@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_subtask/ic120/subtask_ic120_navigate_anywhere.hpp"
+#include "tms_ts_subtask/ic120/subtask_ic120_navigate_anywhere_deg.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
@@ -21,7 +21,7 @@ using std::placeholders::_2;
 SubtaskIc120NavigateAnywhereDeg::SubtaskIc120NavigateAnywhereDeg() : SubtaskNodeBase("st_ic120_navigate_anywhere_deg_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_ic120_navigate_anywhere",
+        this, "st_ic120_navigate_anywhere_deg",
         std::bind(&SubtaskIc120NavigateAnywhereDeg::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&SubtaskIc120NavigateAnywhereDeg::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskIc120NavigateAnywhereDeg::handle_accepted, this, std::placeholders::_1));
@@ -88,14 +88,15 @@ void SubtaskIc120NavigateAnywhereDeg::execute(const std::shared_ptr<GoalHandle> 
 
     RCLCPP_INFO(this->get_logger(), "Get pose from DB.");
     auto goal_msg = NavigateToPose::Goal();
+    auto pose = geometry_msgs::msg::PoseStamped();
     goal_msg.pose.header.stamp = this->now();
     goal_msg.pose.header.frame_id = "map";
 
-    pose.pose.position.x = parameters[std::make_pair("x", std::to_string(i))];
-    pose.pose.position.y = parameters[std::make_pair("y", std::to_string(i))];
-    pose.pose.position.z = parameters[std::make_pair("z", std::to_string(i))];
+    pose.pose.position.x = parameters["x"];
+    pose.pose.position.y = parameters["y"];
+    pose.pose.position.z = parameters["z"];
 
-    double yaw_rad = parameters[std::make_pair("yaw", std::to_string(i))] * M_PI / 180.0;
+    double yaw_rad = parameters["yaw"] * M_PI / 180.0;
 
     double roll_rad = 0.0;
     double pitch_rad = 0.0;
