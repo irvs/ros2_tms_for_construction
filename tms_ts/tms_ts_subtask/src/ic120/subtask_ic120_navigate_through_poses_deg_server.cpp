@@ -28,7 +28,7 @@ SubtaskIc120NavigateThroughPosesDeg::SubtaskIc120NavigateThroughPosesDeg() : Sub
         std::bind(&SubtaskIc120NavigateThroughPosesDeg::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "/ic120/navigate_through_poses_deg");
+    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "/ic120/navigate_through_poses");
 }
 
 rclcpp_action::GoalResponse SubtaskIc120NavigateThroughPosesDeg::handle_goal(
@@ -79,7 +79,7 @@ void SubtaskIc120NavigateThroughPosesDeg::execute(const std::shared_ptr<GoalHand
     auto goal_msg = NavigateThroughPoses::Goal();
 
 
-    int point_num = parameters.size() / 7;
+    int point_num = parameters.size() / 4;
     std::cout << "Total number of points: " << parameters.size() << std::endl;
     std::cout << "point_num: " << point_num << std::endl;
     auto pose = geometry_msgs::msg::PoseStamped();

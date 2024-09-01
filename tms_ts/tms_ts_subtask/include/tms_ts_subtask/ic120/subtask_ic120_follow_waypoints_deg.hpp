@@ -33,14 +33,14 @@
 #include "nav2_msgs/action/follow_waypoints.hpp"
 #include "tms_ts_subtask/subtask_node_base.hpp"
 
-class SubtaskIc120FollowWaypointysDeg : public SubtaskNodeBase
+class SubtaskIc120FollowWaypointsDeg : public SubtaskNodeBase
 {
 public:
     using FollowWaypoints = nav2_msgs::action::FollowWaypoints;
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
     using GoalHandleFollowWaypoints = rclcpp_action::ClientGoalHandle<FollowWaypoints>;
 
-    SubtaskIc120FollowWaypointysDeg();
+    SubtaskIc120FollowWaypointsDeg();
 
 private:
     rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;

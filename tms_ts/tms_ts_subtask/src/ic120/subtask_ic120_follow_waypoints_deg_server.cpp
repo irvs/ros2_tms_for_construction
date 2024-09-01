@@ -18,25 +18,25 @@
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskIc120FollowWaypointysDeg::SubtaskIc120FollowWaypointysDeg() : SubtaskNodeBase("st_ic120_follow_waypoints_deg_node")
+SubtaskIc120FollowWaypointsDeg::SubtaskIc120FollowWaypointsDeg() : SubtaskNodeBase("st_ic120_follow_waypoints_deg_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_ic120_follow_waypoints",
-        std::bind(&SubtaskIc120FollowWaypointysDeg::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskIc120FollowWaypointysDeg::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskIc120FollowWaypointysDeg::handle_accepted, this, std::placeholders::_1));
+        this, "st_ic120_follow_waypoints_deg",
+        std::bind(&SubtaskIc120FollowWaypointsDeg::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&SubtaskIc120FollowWaypointsDeg::handle_cancel, this, std::placeholders::_1),
+        std::bind(&SubtaskIc120FollowWaypointsDeg::handle_accepted, this, std::placeholders::_1));
 
-    action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "/ic120/follow_waypoints_deg");
+    action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "/ic120/follow_waypoints");
 }
 
-rclcpp_action::GoalResponse SubtaskIc120FollowWaypointysDeg::handle_goal(
+rclcpp_action::GoalResponse SubtaskIc120FollowWaypointsDeg::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskIc120FollowWaypointysDeg::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse SubtaskIc120FollowWaypointsDeg::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
     if (client_future_goal_handle_.valid() &&
@@ -48,13 +48,13 @@ rclcpp_action::CancelResponse SubtaskIc120FollowWaypointysDeg::handle_cancel(con
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskIc120FollowWaypointysDeg::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void SubtaskIc120FollowWaypointsDeg::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskIc120FollowWaypointysDeg::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&SubtaskIc120FollowWaypointsDeg::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskIc120FollowWaypointysDeg::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void SubtaskIc120FollowWaypointsDeg::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "subtask(st_ic120_follow_waypoints_node) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
@@ -76,7 +76,8 @@ void SubtaskIc120FollowWaypointysDeg::execute(const std::shared_ptr<GoalHandle> 
     std::vector<geometry_msgs::msg::PoseStamped> poses;
     auto goal_msg = FollowWaypoints::Goal();
     auto pose = geometry_msgs::msg::PoseStamped();
-    int point_num = parameters.size() / 7;
+    int point_num = parameters.size() / 4;
+    std::cout << "Total number of points: " << point_num << std::endl;
     pose.header.stamp = this->now();
     pose.header.frame_id = "map";
 
@@ -121,7 +122,7 @@ void SubtaskIc120FollowWaypointysDeg::execute(const std::shared_ptr<GoalHandle> 
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskIc120FollowWaypointysDeg::goal_response_callback(const GoalHandleFollowWaypoints::SharedPtr& goal_handle)
+void SubtaskIc120FollowWaypointsDeg::goal_response_callback(const GoalHandleFollowWaypoints::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -133,7 +134,7 @@ void SubtaskIc120FollowWaypointysDeg::goal_response_callback(const GoalHandleFol
   }
 }
 
-void SubtaskIc120FollowWaypointysDeg::feedback_callback(
+void SubtaskIc120FollowWaypointsDeg::feedback_callback(
     const GoalHandleFollowWaypoints::SharedPtr,
     const std::shared_ptr<const GoalHandleFollowWaypoints::Feedback> feedback)
 {
@@ -141,7 +142,7 @@ void SubtaskIc120FollowWaypointysDeg::feedback_callback(
   // std::cout << "Feedback: " << feedback->current_waypoint << std::endl;
 }
 
-void SubtaskIc120FollowWaypointysDeg::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void SubtaskIc120FollowWaypointsDeg::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleFollowWaypoints::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -179,7 +180,7 @@ void SubtaskIc120FollowWaypointysDeg::result_callback(const std::shared_ptr<Goal
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskIc120FollowWaypointysDeg>());
+    rclcpp::spin(std::make_shared<SubtaskIc120FollowWaypointsDeg>());
     rclcpp::shutdown();
     return 0;
 }
