@@ -71,7 +71,15 @@ def generate_launch_description():
                   output='screen'),
             Node(
                   package='tms_ts_subtask',
+                  executable='subtask_ic120_navigate_anywhere_deg_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask',
                   executable='subtask_ic120_navigate_anywhere_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask',
+                  executable='subtask_ic120_navigate_through_poses_deg_server',
                   output='screen'),
             Node(
                   package='tms_ts_subtask',
@@ -118,7 +126,7 @@ def generate_launch_description():
                   executable='zx200_sample_bucket_subtask',
                   output='screen'),
             
-            # センシング処�?後�?��?ータをデータベ�?�スに取り込むためのノ�?�ド�?
+            # センシング処�?後�?��?ータをデータベ�?�スに取り込むためのノ�?�ド�?
             Node(
                   package='tms_sp_sensing', 
                   executable='tms_sp_zx200_end_effector',
