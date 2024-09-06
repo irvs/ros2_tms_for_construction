@@ -22,6 +22,7 @@
 #include "std_msgs/msg/float64.hpp"
 #include "tms_msg_ts/action/leaf_node_base.hpp"
 #include "tms_ts_subtask/subtask_node_base.hpp"
+#include "tms_msg_ts/srv/target_angle.hpp" 
 
 class SubtaskIc120ReleaseSoil : public SubtaskNodeBase
 {
@@ -32,7 +33,8 @@ public:
 
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
-  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
+  // rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
+  rclcpp::Client<tms_msg_ts::srv::TargetAngle>::SharedPtr client_;
   std::map<std::string, double> parameters;
 
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal);
