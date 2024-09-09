@@ -32,9 +32,10 @@
                                                                 <Action ID="ConditionalExpressionBool" conditional_expression_bool="MOVING_FLG == true"/>
                                                                 <KeepRunningUntilFailure>
                                                                     <Parallel failure_threshold="1" success_threshold="-1">
+                                                                        <Action ID="BlackboardValueReaderMongo" mongo_param_name="INITIAL_POSE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU" output_port="INITIAL_POSE_FLG"/>
                                                                         <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU" output_port="SENSING_LOADED_FLG"/>
                                                                         <IfThenElse>
-                                                                            <Action ID="ConditionalExpressionBool" conditional_expression_bool="SENSING_LOADED_FLG == true"/>
+                                                                            <Action ID="ConditionalExpressionBool" conditional_expression_bool="SENSING_LOADED_FLG == true and INITIAL_POSE_FLG==true"/>
                                                                             <Sequence>
                                                                                 <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
                                                                                 <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="RELEASE_PATH" subtask_name="st_ic120_follow_waypoints"/>
