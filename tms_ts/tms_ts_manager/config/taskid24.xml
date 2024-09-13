@@ -31,6 +31,8 @@
                                                             <Sequence>
                                                                 <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
                                                                 <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="RELEASE_PATH" subtask_name="st_ic120_follow_waypoints"/>
+                                                                <Action ID="LeafNodeIc120" model_name="ic120" record_name="release_angle_1" subtask_name="st_ic120_release_soil"/>
+                                                                <Action ID="LeafNodeIc120" model_name="ic120" record_name="release_angle_2" subtask_name="st_ic120_release_soil"/>
                                                                 <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
                                                                 <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="LOAD_PATH" subtask_name="st_ic120_follow_waypoints"/>
                                                                 <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
@@ -44,6 +46,8 @@
                                                                         <Sequence>
                                                                             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
                                                                             <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="RELEASE_PATH" subtask_name="st_ic120_follow_waypoints"/>
+                                                                            <Action ID="LeafNodeIc120" model_name="ic120" record_name="release_angle_1" subtask_name="st_ic120_release_soil"/>
+                                                                            <Action ID="LeafNodeIc120" model_name="ic120" record_name="release_angle_2" subtask_name="st_ic120_release_soil"/>
                                                                             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
                                                                             <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="LOAD_PATH" subtask_name="st_ic120_follow_waypoints"/>
                                                                             <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
