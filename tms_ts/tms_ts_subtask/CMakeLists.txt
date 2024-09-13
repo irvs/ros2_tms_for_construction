@@ -29,6 +29,7 @@ find_package(tms_msg_ts REQUIRED)
 find_package(tms_msg_rp REQUIRED)
 find_package(glog REQUIRED)
 find_package(nav2_msgs REQUIRED)
+find_package(com3_msgs)
 
 set(dependencies_cpp
   rclcpp
@@ -40,7 +41,8 @@ set(dependencies_cpp
   geometry_msgs
   tms_msg_ts
   tms_msg_rp
-  nav2_msgs)
+  nav2_msgs
+  com3_msgs)
 
 
 add_library(${PROJECT_NAME} SHARED
