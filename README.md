@@ -1,5 +1,4 @@
 # ROS2-TMS-FOR-CONSTRUCTION
-ros2 topic pub /zx200/end_effector sensing_msgs/Zx200EndEffector "{model_name: 'zx200', record_name: 'target_excavate_pose', x: 4.5631, y: -0.099552, z: 2.8404, theta_w: 3}
 ROS2-TMS-FOR-CONSTRUCTION is an IoRT (Internet of Robots and Things) library for construction applications developed based on ROS2-TMS.
 
 https://github.com/irvs/ros2_tms_for_construction/assets/63947554/d7fb02dd-37d9-4d72-aa2c-a2c2d6f7824a
