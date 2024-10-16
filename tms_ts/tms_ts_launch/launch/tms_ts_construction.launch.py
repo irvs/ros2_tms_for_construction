@@ -25,7 +25,7 @@ def generate_launch_description():
 
             Node(
                   package='tms_ts_manager',
-                  executable='task_schedular_manager_',
+                  executable='task_schedular_manager',
                   output='screen'),
             Node(
                   package='tms_ur_button_input', 
