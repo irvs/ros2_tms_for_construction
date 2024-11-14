@@ -163,7 +163,7 @@ git clone https://github.com/pwri-opera/ic120_com3_ros.git  # This package is a 
 ### Install exprtk
 ```
 cd && git clone https://github.com/ArashPartow/exprtk.git
-sudo mv exprtk.hpp /usr/local/include
+sudo mv ~/exprtk/exprtk.hpp /usr/local/include
 rm -rf exprtk
 ```
 
