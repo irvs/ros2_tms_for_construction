@@ -162,7 +162,7 @@ git clone https://github.com/pwri-opera/ic120_ros2.git  # This package is a priv
 
 # Install exprtk
 cd && git clone https://github.com/ArashPartow/exprtk.git
-sudo mv exprtk.hpp /usr/local/include
+sudo mv ~/exprtk/exprtk.hpp /usr/local/include
 rm -rf exprtk
 
 # Setup Moveit! and Nav2
