@@ -4,13 +4,11 @@
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
-            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
-            <Action ID="MongoValueWriter" input_value="true" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_CHECK_MOUND_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
-            <Action  model_name="ic120" ID="LeafNodeIc120" record_name="path_operasimphysx_SIMIZU_2_deg:1" subtask_name="st_ic120_follow_waypoints_deg"/>
+            <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
             <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
             <ForceSuccess>
                 <KeepRunningUntilFailure>
@@ -31,11 +29,10 @@
                                                         <Action ID="ConditionalExpressionBool" conditional_expression_bool="SENSING_LOADED_FLG == true"/>
                                                         <Sequence>
                                                             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
-                                                            <Action  model_name="ic120" ID="LeafNodeIc120" record_name="path_operasimphysx_SIMIZU_2_deg:2" subtask_name="st_ic120_follow_waypoints_deg"/>
-                                                            <Action  model_name="ic120" ID="LeafNodeIc120" record_name="soil_release_vessel_angle" subtask_name="st_ic120_release_soil"/>
+                                                            <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="RELEASE_PATH" subtask_name="st_ic120_follow_waypoints"/>
                                                             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
-                                                            <Action  model_name="ic120" ID="LeafNodeIc120" record_name="path_operasimphysx_SIMIZU_2_deg:3" subtask_name="st_ic120_follow_waypoints_deg"/>
-                                                            <Action  model_name="ic120" ID="LeafNodeIc120" record_name="path_operasimphysx_SIMIZU_2_deg:1" subtask_name="st_ic120_follow_waypoints_deg"/>
+                                                            <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="LOAD_PATH" subtask_name="st_ic120_follow_waypoints"/>
+                                                            <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
                                                             <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
                                                             <AlwaysFailure/>
                                                         </Sequence>
@@ -46,11 +43,10 @@
                                                                     <Action ID="ConditionalExpressionBool" conditional_expression_bool="SENSING_CHECK_MOUND_FLG == true"/>
                                                                     <Sequence>
                                                                         <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
-                                                                        <Action  model_name="ic120" ID="LeafNodeIc120" record_name="path_operasimphysx_SIMIZU_2_deg:2" subtask_name="st_ic120_follow_waypoints_deg"/>
-                                                                        <Action  model_name="ic120" ID="LeafNodeIc120" record_name="soil_release_vessel_angle" subtask_name="st_ic120_release_soil"/>
+                                                                        <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="RELEASE_PATH" subtask_name="st_ic120_follow_waypoints"/>
                                                                         <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
-                                                                        <Action  model_name="ic120" ID="LeafNodeIc120" record_name="path_operasimphysx_SIMIZU_2_deg:3" subtask_name="st_ic120_follow_waypoints_deg"/>
-                                                                        <Action  model_name="ic120" ID="LeafNodeIc120" record_name="path_operasimphysx_SIMIZU_2_deg:1" subtask_name="st_ic120_follow_waypoints_deg"/>
+                                                                        <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="LOAD_PATH" subtask_name="st_ic120_follow_waypoints"/>
+                                                                        <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
                                                                         <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
                                                                         <AlwaysFailure/>
                                                                     </Sequence>

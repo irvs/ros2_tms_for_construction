@@ -55,6 +55,7 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
     for (auto&& element : result->view()) {
         int index = 0;
         std::string key = element.key().to_string();
+        std::cout << "A" << std::endl;
         if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
             auto array = element.get_array().value;
             for (auto&& item : array) { 
@@ -110,6 +111,7 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
   filter_builder << "model_name" << model_name << "record_name" << record_name;
   auto filter = filter_builder.view();
   auto result = collection.find_one(filter);
+  std::cout << "B" << std::endl;
   if (result)
   {
     std::map<K,T> dataMap;
@@ -123,16 +125,19 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
         {
           T value = static_cast<T>(element.get_double());
           dataMap[key] = value;
+          std::cout << value << std::endl;
         }
         else if (element.type() == bsoncxx::type::k_int32)
         {
           T value = static_cast<T>(element.get_int32().value);
           dataMap[key] = value;
+          std::cout << value << std::endl;
         }
         else if (element.type() == bsoncxx::type::k_int64)
         {
           T value = static_cast<T>(element.get_int64().value);
           dataMap[key] = value;
+          std::cout << value << std::endl;
         }else{
           std::cout << "Type error" << std::endl;
         }

@@ -1,3 +1,17 @@
+// Copyright 2023, IRVS Laboratory, Kyushu University, Japan.
+ 
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+ 
+//      http://www.apache.org/licenses/LICENSE-2.0
+ 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #ifndef BLACKBOARD_VALUE_WRITER_SRV_NODE_HPP
 #define BLACKBOARD_VALUE_WRITER_SRV_NODE_HPP
 
@@ -5,6 +19,7 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "tms_msg_ts/srv/blackboard_parameters.hpp"
+#include <string>
 
 using namespace BT;
 
@@ -24,7 +39,7 @@ public:
 
     static PortsList providedPorts()
     {
-        return { OutputPort<int>("value"), InputPort<std::string>("output_key") };
+        return { OutputPort<std::string>("value"), InputPort<std::string>("output_key") };
     }
 
     NodeStatus tick() override
@@ -33,7 +48,7 @@ public:
 
         if (!key_name)
         {
-            std::cout << "Missing required key. Please fill blackboard key name in key_name parameter." << std::endl;
+            std::cout << "[BlackboardValueWriterSrv] Missing required key. Please fill blackboard key name in key_name parameter." << std::endl;
             return NodeStatus::FAILURE;
         }
 
@@ -42,7 +57,7 @@ public:
                 RCLCPP_ERROR(node_->get_logger(), "client interrupted while waiting for service to appear.");
                 return NodeStatus::FAILURE;
                 }
-            RCLCPP_INFO(node_->get_logger(), "waiting for service to appear...");
+            std::cout << "[BlackboardValueWriterSrv] waiting for service to appear..." << std::endl;
             return NodeStatus::RUNNING;
         }
         auto request = std::make_shared<tms_msg_ts::srv::BlackboardParameters::Request>();
@@ -56,9 +71,7 @@ public:
         }
 
         auto result = result_future.get();
-        setOutput("value", int(result->val));
-
-        std::cout << "Stored blackboard parameter [" << key_name.value() << "] : " << int(result->val) << std::endl;
+        setOutput("value", std::to_string(result->val));
 
         return NodeStatus::SUCCESS;
     }

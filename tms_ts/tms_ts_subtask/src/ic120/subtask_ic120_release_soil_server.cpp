@@ -15,11 +15,13 @@
 #include "tms_ts_subtask/ic120/subtask_ic120_release_soil.hpp"
 #include <glog/logging.h>
 
+
 using namespace std::chrono_literals;
 
 SubtaskIc120ReleaseSoil::SubtaskIc120ReleaseSoil() : SubtaskNodeBase("st_ic120_release_soil_node")
 {
-  publisher_ = this->create_publisher<std_msgs::msg::Float64>("/ic120/vessel/cmd", 10);
+  // publisher_ = this->create_publisher<std_msgs::msg::Float64>("/ic120/vessel/cmd", 10);
+  client_ = this->create_client<com3_msgs::srv::DumpUp>("/ic120/vessel_target_pos");
   this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
       this, "st_ic120_release_soil",
       std::bind(&SubtaskIc120ReleaseSoil::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
@@ -50,56 +52,50 @@ void SubtaskIc120ReleaseSoil::execute(const std::shared_ptr<GoalHandle> goal_han
 {
   RCLCPP_INFO(this->get_logger(), "subtask is executing...");
   rclcpp::Rate loop_rate(1);
-  const auto goal_pos = parameters["target_angle"];
   auto feedback = std::make_shared<tms_msg_ts::action::LeafNodeBase::Feedback>();
-  auto& status = feedback->status;
+  // auto& status = feedback->status;
   auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
-  double deg = 0;
-  std_msgs::msg::Float64 msg_rad;
 
-  while (deg >= goal_pos)
+  auto request = std::make_shared<com3_msgs::srv::DumpUp::Request>();
+  request->vessel_angle = parameters["target_angle"];
+
+  while (!client_->wait_for_service(20s))
   {
-    if (goal_handle->is_canceling())
+    if (!rclcpp::ok())
     {
+      RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
       result->result = false;
-      goal_handle->canceled(result);
-      RCLCPP_INFO(this->get_logger(), "subtask execution is canceled");
+      goal_handle->abort(result);
       return;
     }
-    deg += double(goal_pos / float(5.0));
-    msg_rad.data = float(deg * float(M_PI / 180));
-    status = deg;
-    goal_handle->publish_feedback(feedback);
-    publisher_->publish(msg_rad);
-    RCLCPP_INFO_STREAM(this->get_logger(), "Publishing vessel position: " << deg << " [deg]");
-    sleep(1);
+    RCLCPP_INFO(this->get_logger(), "Waiting for service to become available...");
   }
 
-  while (deg <= 0.0)
+  auto future = client_->async_send_request(request);
+
+  if (future.wait_for(60s) == std::future_status::ready)
   {
-    if (goal_handle->is_canceling())
+    auto response = future.get();
+    if (response->result)
+    {
+      result->result = true;
+      goal_handle->succeed(result);
+      RCLCPP_INFO(this->get_logger(), "subtask execution succeeded");
+    }
+    else
     {
       result->result = false;
-      goal_handle->canceled(result);
-      RCLCPP_INFO(this->get_logger(), "subtask execution is canceled");
-      return;
+      goal_handle->abort(result);
+      RCLCPP_INFO(this->get_logger(), "subtask execution failed");
     }
-    deg -= double(goal_pos / float(5.0));
-    msg_rad.data = float(deg * float(M_PI / 180));
-    status = deg;
-    goal_handle->publish_feedback(feedback);
-    publisher_->publish(msg_rad);
-    RCLCPP_INFO_STREAM(this->get_logger(), "Publishing vessel position: " << deg << " [deg]");
-    sleep(1);
   }
-
-
-  if (rclcpp::ok())
+  else
   {
-    result->result = true;
-    goal_handle->succeed(result);
-    RCLCPP_INFO(this->get_logger(), "subtask execution is succeeded");
+    result->result = false;
+    goal_handle->abort(result);
+    RCLCPP_ERROR(this->get_logger(), "Failed to call service.");
   }
+
 }
 
 int main(int argc, char* argv[])

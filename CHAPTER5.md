@@ -43,7 +43,7 @@ ros2 launch tms_if_for_opera tms_if_for_opera.launch.py
 
 # Open the 4th terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
-ros2 launch tms_ts_launch tms_ts_construction.launch.py
+ros2 launch tms_ts_launch tms_ts_construction.launch.py task_id:=<task_id>
 ```
 #### Packages for operating OPOERA-compatible IC120 on the OperaSim-PhysX using Nav2! (task_id: 6, 7) 
 ```
@@ -57,7 +57,7 @@ ros2 launch ic120_unity ic120_standby_ekf.launch.py
 
 # Open the 3rd terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
-ros2 launch tms_ts_launch tms_ts_construction.launch.py
+ros2 launch tms_ts_launch tms_ts_construction.launch.py task_id:=<task_id>
 ```
 
 

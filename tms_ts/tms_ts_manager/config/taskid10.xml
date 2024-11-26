@@ -10,16 +10,13 @@
                         <Action ID="ConditionalExpressionBool" conditional_expression_bool="CONTINUE_FLG == true"/>
                         <Sequence>
                             <Action  model_name="zx200" ID="LeafNodeZx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
-                            <Action ID="MongoValueWriter" input_value="true" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
                             <ForceSuccess>
                                 <KeepRunningUntilFailure>
                                     <Parallel failure_threshold="1" success_threshold="-1">
                                         <Action ID="BlackboardValueReaderMongo" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU" output_port="ARRIVAL_FLG"/>
-                                        <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU" output_port="SENSING_ARRIVAL_FLG"/>
-                                        <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU" output_port="SENSING_LOADED_FLG"/>
-                                        <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_CHECK_MOUND_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU" output_port="SENSING_CHECK_MOUND_FLG"/>
+                                        <Action ID="BlackboardValueReaderMongo" mongo_param_name="LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU" output_port="LOADED_FLG"/>
                                         <IfThenElse>
-                                            <Action ID="ConditionalExpressionBool" conditional_expression_bool="ARRIVAL_FLG == true and SENSING_ARRIVAL_FLG == true and SENSING_LOADED_FLG == false and SENSING_CHECK_MOUND_FLG == false"/>
+                                            <Action ID="ConditionalExpressionBool" conditional_expression_bool="ARRIVAL_FLG == true and LOADED_FLG == false"/>
                                             <Sequence>
                                                 <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
                                                 <Action  model_name="zx200" ID="LeafNodeZx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple"/>
@@ -27,8 +24,9 @@
                                                 <Action  model_name="zx200" ID="LeafNodeZx200" record_name="hold_soil_while_turning_pose" subtask_name="subtask_zx200_change_pose"/>
                                                 <Action  model_name="zx200" ID="LeafNodeZx200" record_name="target_release_pose" subtask_name="subtask_zx200_change_pose"/>
                                                 <Action  model_name="zx200" ID="LeafNodeZx200" record_name="release_angle" subtask_name="subtask_zx200_release_simple"/>
-                                                <Delay delay_msec="5000">
-                                                    <AlwaysFailure/>
+                                                <Action ID="MongoValueWriter" input_value="true" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
+                                                <Delay delay_msec="1000">
+                                                    <AlwaysSuccess/>
                                                 </Delay>
                                             </Sequence>
                                             <Delay delay_msec="3000">

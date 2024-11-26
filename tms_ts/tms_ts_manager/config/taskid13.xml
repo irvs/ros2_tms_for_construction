@@ -1,18 +1,35 @@
 <?xml version="1.0"?>
-<root main_tree_to_execute="MainTree">
+<root main_tree_to_execute="BehaviorTree">
     <!-- ////////// -->
-    <BehaviorTree ID="MainTree">
-        <Repeat num_cycles="100">
-            <Sequence name="root_sequence">
-                <Action ID="ParamOutput" RepeatSwitching="10"/>
-                <Delay delay_msec="1000">
-                    <SetBlackboard output_key="RepeatSwitching" value="5"/>
-                </Delay>
-            </Sequence>
-        </Repeat>
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action  model_name="ic120" ID="LeafNodeIc120" record_name="sample_subtask_ic120_follow_waypoints_deg" subtask_name="st_ic120_follow_waypoints_deg"/>
+        </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
+        <Action ID="BlackboardValueChecker">
+            <inout_port name="key"/>
+        </Action>
+        <Action ID="BlackboardValueReaderMongo">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+        </Action>
+        <Action ID="BlackboardValueWriterSrv">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="BlackboardValueWriterTopic">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="ConditionalExpression">
+            <input_port name="conditional_expression"/>
+        </Action>
+        <Action ID="ConditionalExpressionBool">
+            <input_port name="conditional_expression_bool"/>
+        </Action>
         <Action ID="LeafNodeIc120">
             <input_port default="ic120" name=" model_name"/>
             <inout_port name="record_name"/>
@@ -33,8 +50,10 @@
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>
-        <Action ID="ParamOutput">
-            <inout_port name="RepeatSwitching"/>
+        <Action ID="MongoValueWriter">
+            <input_port name="input_value"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
         </Action>
     </TreeNodesModel>
     <!-- ////////// -->

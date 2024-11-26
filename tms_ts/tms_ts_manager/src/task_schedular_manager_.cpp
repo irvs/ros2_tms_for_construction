@@ -31,7 +31,6 @@
 #include "tms_ts_subtask/common/mongo_value_writer.hpp"
 #include "tms_ts_subtask/common/conditional_expression.hpp"
 #include "tms_ts_subtask/common/conditional_expression_bool.hpp"
-#include "tms_ts_subtask/zx200/excavation_area_segmenter.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -57,9 +56,8 @@ public:
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<ConditionalExpressionBool>("ConditionalExpressionBool");
-    factory.registerNodeType<ExcavationAreaSegmenter>("ExcavationAreaSegmenter");
 
-    loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SIMIZU");
+    loadBlackboardFromMongoDB("EXPERIMENT_SIMIZU");
   }
 
   void topic_callback(const std_msgs::msg::String::SharedPtr msg)

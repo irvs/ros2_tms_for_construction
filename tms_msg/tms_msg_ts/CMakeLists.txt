@@ -29,6 +29,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/ActionSample.action"
   "action/LeafNodeBase.action"
   "srv/BlackboardParameters.srv"
+  "srv/TargetAngle.srv"
 )
 
 ament_package()
