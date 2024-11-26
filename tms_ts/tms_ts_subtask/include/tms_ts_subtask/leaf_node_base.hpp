@@ -27,7 +27,6 @@
 
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
 #include <bsoncxx/json.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
@@ -58,7 +57,7 @@ public:
 
     void send_new_goal();
     void halt() override;
-    // on_wait_for_result()はserverから返ってきたfeedbackを処理する関数。長くブロッキングが生じる処理は実装しないこと
+    // on_wait_for_result()はserverから返ってきたfeedbackを�?��?する関数。長くブロ�?キングが生じる処�?は実�?しな�?こと
     bool should_cancel_goal();
     bool is_future_goal_handle_complete(std::chrono::milliseconds & elapsed);
 

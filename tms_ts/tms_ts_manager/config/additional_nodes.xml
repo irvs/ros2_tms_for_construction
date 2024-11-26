@@ -26,7 +26,6 @@
 
         <Action ID="BlackboardValueChecker">
             <inout_port name="key"/>
-            <inout_port name="value"/>
         </Action>
 
         <Action ID="BlackboardValueWriterSrv">
@@ -38,6 +37,26 @@
             <inout_port name="output_key"/>
             <inout_port name="value"/>
         </Action>
+
+        <Action ID="BlackboardValueReaderMongo">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+        </Action>
+    
+        <Action ID="MongoValueWriter">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="input_value"/>
+        </Action>
+
+        <Action ID="ConditionalExpression">
+            <input_port name="conditional_expression"/>
+        </Action>      
+
+        <Action ID="ConditionalExpressionBool">
+            <input_port name="conditional_expression_bool"/>
+        </Action>       
 
     </TreeNodesModel>
 </root>

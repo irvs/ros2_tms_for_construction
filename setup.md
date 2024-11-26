@@ -160,6 +160,13 @@ git clone https://github.com/pwri-opera/gnss_localizer_ros2.git   # This package
 git clone https://github.com/pwri-opera/ic120_com3_ros.git  # This package is a private repository. Please wait a while until it is made public.
 ```
 
+### Install exprtk
+```
+cd && git clone https://github.com/ArashPartow/exprtk.git
+sudo mv ~/exprtk/exprtk.hpp /usr/local/include
+rm -rf exprtk
+```
+
 ### Setup MoveIt! and Nav2
 ```
 # install MoveIt!
@@ -172,5 +179,6 @@ sudo apt install ros-humble-*nav2*
 
 ```
 cd ~/ros2-tms-for-construction_ws
+colcon build --packages-select com3_msgs && source install/setup.bash
 colcon build && source install/setup.bash
 ```

@@ -22,8 +22,6 @@ find_package(bsoncxx REQUIRED)
 find_package(mongocxx REQUIRED)
 find_package(tms_ts_subtask REQUIRED)
 
-
-
 set(dependencies_cpp
   rclcpp
   rclcpp_action
@@ -33,20 +31,28 @@ set(dependencies_cpp
   nlohmann_json
   geometry_msgs
   rclpy
-  tms_ts_subtask)
+  tms_ts_subtask
+  bsoncxx
+  mongocxx)
 
-  link_directories(
+link_directories(
   /usr/local/lib)
-  
-  
-  link_libraries(
+
+link_libraries(
   mongocxx
   bsoncxx)
-  
+
+# ExprTk のインクルードディレクトリを追加
+include_directories(/usr/local/include)
+
+add_executable(task_schedular_manager_ src/task_schedular_manager_.cpp)
+ament_target_dependencies(task_schedular_manager_ ${dependencies_cpp})
 
 add_executable(task_schedular_manager src/task_schedular_manager.cpp)
 ament_target_dependencies(task_schedular_manager ${dependencies_cpp})
 
+add_executable(task_schedular_manager2 src/task_schedular_manager2.cpp)
+ament_target_dependencies(task_schedular_manager2 ${dependencies_cpp})
 
 # -- end C++
 
@@ -71,6 +77,12 @@ install(PROGRAMS
 
 install(TARGETS
   task_schedular_manager
+  task_schedular_manager_
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(TARGETS
+  task_schedular_manager2
   DESTINATION lib/${PROJECT_NAME}
 )
 

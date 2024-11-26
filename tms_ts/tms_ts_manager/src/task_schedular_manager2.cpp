@@ -31,21 +31,21 @@
 #include "tms_ts_subtask/common/mongo_value_writer.hpp"
 #include "tms_ts_subtask/common/conditional_expression.hpp"
 #include "tms_ts_subtask/common/conditional_expression_bool.hpp"
-#include "tms_ts_subtask/zx200/excavation_area_segmenter.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
 
 bool cancelRequested = false;
 
-class ExecTaskSequence : public rclcpp::Node
+class ExecTaskSequence2 : public rclcpp::Node
 {
 public:
-  ExecTaskSequence(std::shared_ptr<Blackboard> bb) : Node("exec_task_sequence"), bb_(bb)
+  ExecTaskSequence2(std::shared_ptr<Blackboard> global_bb) : Node("exec_task_sequence2"), global_bb_(global_bb)
   {
     subscription_ = this->create_subscription<std_msgs::msg::String>(
-        "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
+        "/task_sequence2", 10, std::bind(&ExecTaskSequence2::topic_callback, this, std::placeholders::_1));
     
+    // ÉmÅ[ÉhÇìoò^
     factory.registerNodeType<LeafNodeIc120>("LeafNodeIc120");
     factory.registerNodeType<LeafNodeSampleZx120>("LeafNodeSampleZx120");
     factory.registerNodeType<LeafNodeSampleZx200>("LeafNodeSampleZx200");
@@ -57,8 +57,9 @@ public:
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<ConditionalExpressionBool>("ConditionalExpressionBool");
-    factory.registerNodeType<ExcavationAreaSegmenter>("ExcavationAreaSegmenter");
 
+
+    bb_ = Blackboard::create(global_bb_);
     loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SIMIZU");
   }
 
@@ -67,7 +68,7 @@ public:
     task_sequence_ = std::string(msg->data);
     tree_ = factory.createTreeFromText(task_sequence_, bb_);
 
-    BT::PublisherZMQ publisher_zmq(tree_, 100, 1666, 1777);
+    BT::PublisherZMQ publisher_zmq(tree_, 100, 1667, 1778);
     try
     {
       while (rclcpp::ok() && status_ == NodeStatus::RUNNING)
@@ -82,18 +83,18 @@ public:
     }
     catch (const std::exception& e)
     {
-      RCLCPP_ERROR(rclcpp::get_logger("exec_task_sequence"), "Behavior tree threw an exception");
+      RCLCPP_ERROR(rclcpp::get_logger("exec_task_sequence2"), "Behavior tree threw an exception");
       status_ = NodeStatus::FAILURE;
     }
 
     switch (status_)
     {
       case NodeStatus::SUCCESS:
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence"), "Task is successfully finished.");
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence2"), "Task is successfully finished.");
         break;
 
       case NodeStatus::FAILURE:
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence"), "Task is canceled.");
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence2"), "Task is canceled.");
         break;
     }
 
@@ -121,8 +122,8 @@ private:
         std::string key = element.key().to_string();
         auto value = element.get_value();
 
-        if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
-
+        if (key != "_id" && key != "model_name" && key != "type" && key != "record_name")
+        {
           switch (value.type())
           {
             case bsoncxx::type::k_utf8:
@@ -159,17 +160,18 @@ private:
   BehaviorTreeFactory factory;
   BT::Tree tree_;
   std::shared_ptr<Blackboard> bb_;
+  std::shared_ptr<Blackboard> global_bb_;
   std::string task_sequence_;
   NodeStatus status_ = NodeStatus::RUNNING;
 };
 
-class ForceQuietNode : public rclcpp::Node
+class ForceQuietNode2 : public rclcpp::Node
 {
 public:
-  ForceQuietNode() : Node("force_quiet_node")
+  ForceQuietNode2() : Node("force_quiet_node2")
   {
     shutdown_subscription = this->create_subscription<std_msgs::msg::Bool>(
-        "/emergency_signal", 10, std::bind(&ForceQuietNode::callback, this, std::placeholders::_1));
+        "/emergency_signal2", 10, std::bind(&ForceQuietNode2::callback, this, std::placeholders::_1));
   }
 
   void callback(const std_msgs::msg::Bool& msg)
@@ -188,12 +190,12 @@ private:
 int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
-  auto bb = Blackboard::create();
+  auto global_bb = Blackboard::create();
 
   rclcpp::executors::MultiThreadedExecutor exec;
-  auto task_schedular_node = std::make_shared<ExecTaskSequence>(bb);
+  auto task_schedular_node = std::make_shared<ExecTaskSequence2>(global_bb);
   exec.add_node(task_schedular_node);
-  auto force_quiet_node = std::make_shared<ForceQuietNode>();
+  auto force_quiet_node = std::make_shared<ForceQuietNode2>();
   exec.add_node(force_quiet_node);
   exec.spin();
   rclcpp::shutdown();
