@@ -8,13 +8,17 @@
   <license>Apache License, Version 2.0</license>
   
   <depend>rclcpp</depend>
+  <depend>rclcpp_action</depend>
   <depend>std_msgs</depend>
   <depend>behaviortree_cpp_v3</depend>
   <depend>bsoncxx</depend>
   <depend>mongocxx</depend>
+  <depend>geometry_msgs</depend>
 
   <depend>tms_msg_ts</depend>
   <depend>tms_msg_rp</depend>
+  <depend>nav2_msgs</depend>
+  <depend>com3_msgs</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
@@ -25,3 +29,4 @@
     <build_type>ament_cmake</build_type>
   </export>
 </package>
+
