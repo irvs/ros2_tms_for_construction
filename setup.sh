@@ -37,9 +37,6 @@ sudo apt install -y ros-humble-desktop
 sudo apt install -y ros-humble-ros-base
 sudo apt install -y ros-dev-tools
 
-sudo pip install pymongo
-
-
 echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 source /opt/ros/humble/setup.bash
 
