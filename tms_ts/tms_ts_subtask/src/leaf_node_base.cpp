@@ -35,10 +35,17 @@ LeafNodeBase::LeafNodeBase(const std::string& name, const NodeConfiguration& con
   LeafNodeBase::createActionClient(subtask_name_);
 }
 
-// action clientを新たに作成する関数
+// action clientを新たに作�?�する関数
 void LeafNodeBase::createActionClient(const std::string& subtask_name)
 {
-  action_client_ = rclcpp_action::create_client<tms_msg_ts::action::LeafNodeBase>(node_, subtask_name, callback_group_);
+  auto options_client = rcl_action_client_get_default_options();
+  options_client.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+  options_client.result_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+  options_client.cancel_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+  options_client.feedback_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+  options_client.status_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+
+  action_client_ = rclcpp_action::create_client<tms_msg_ts::action::LeafNodeBase>(node_, subtask_name, callback_group_, options_client);
 
   RCLCPP_DEBUG(node_->get_logger(), "Waiting for \"%s\" action server", subtask_name.c_str());
   if (!action_client_->wait_for_action_server(5s))
@@ -48,13 +55,12 @@ void LeafNodeBase::createActionClient(const std::string& subtask_name)
   }
 }
 
-// action clientのgoal,feedback,resultに対応するcallback関数をこの関数内で定義
+// action clientのgoal,feedback,resultに対応するcallback関数をこの関数�?で定義
 void LeafNodeBase::send_new_goal()
 {
   goal_result_available_ = false;
   auto send_goal_options = typename rclcpp_action::Client<tms_msg_ts::action::LeafNodeBase>::SendGoalOptions();
 
-  // actionのresultに対応するcallback関数をここで定義
   send_goal_options.result_callback =
       [this](const typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::WrappedResult& result) {
         if (this->goal_handle_->get_goal_id() == result.goal_id)
@@ -63,28 +69,28 @@ void LeafNodeBase::send_new_goal()
           result_ = result;
         }
       };
-  // actionのfeedbackに対応するcallback関数をここで定義
+
   send_goal_options.feedback_callback =
       [this](typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::SharedPtr,
              const std::shared_ptr<const typename tms_msg_ts::action::LeafNodeBase::Feedback> feedback) {
         feedback_ = feedback;
       };
 
-  // actionのgoalに対応するcallback関数をここで定義
   future_goal_handle_ = std::make_shared<
       std::shared_future<typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::SharedPtr>>(
       action_client_->async_send_goal(goal_, send_goal_options));
 
-  // time_goal_sent_変数にactionのgoalを送信した時刻を格納
   time_goal_sent_ = node_->now();
 }
+
+
 
 bool LeafNodeBase::is_future_goal_handle_complete(std::chrono::milliseconds& elapsed)
 {
   auto remaining = server_timeout_ - elapsed;
   if (remaining <= std::chrono::milliseconds(0))
   {
-    future_goal_handle_.reset();
+    future_goal_handle_.reset(); // �C�����1
     return false;
   }
   auto timeout = remaining > bt_loop_duration_ ? bt_loop_duration_ : remaining;
@@ -92,7 +98,7 @@ bool LeafNodeBase::is_future_goal_handle_complete(std::chrono::milliseconds& ela
   elapsed += timeout;
   if (result == rclcpp::FutureReturnCode::INTERRUPTED)
   {
-    future_goal_handle_.reset();
+    future_goal_handle_.reset(); // �C�����2
     throw std::runtime_error("send_goal failed");
   }
   if (result == rclcpp::FutureReturnCode::SUCCESS)
@@ -108,20 +114,60 @@ bool LeafNodeBase::is_future_goal_handle_complete(std::chrono::milliseconds& ela
   return false;
 }
 
+
 void LeafNodeBase::halt()
 {
-  if (should_cancel_goal())
-  {
-    auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
-    if (callback_group_executor_.spin_until_future_complete(future_cancel, server_timeout_) !=
-        rclcpp::FutureReturnCode::SUCCESS)
+    if (should_cancel_goal())
     {
-      RCLCPP_ERROR(node_->get_logger(), "Failed to cancel subtask for %s", subtask_name_.c_str());
-    }
-  }
+        RCLCPP_INFO(node_->get_logger(), "Attempting to cancel goal for %s", subtask_name_.c_str());
+        auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
+        auto cancel_result = rclcpp::FutureReturnCode::TIMEOUT;
 
-  setStatus(BT::NodeStatus::IDLE);
+        while (true) 
+        {
+            cancel_result = callback_group_executor_.spin_until_future_complete(future_cancel, server_timeout_);
+
+            if (cancel_result == rclcpp::FutureReturnCode::SUCCESS)
+            {
+                RCLCPP_INFO(node_->get_logger(), "Goal for %s successfully canceled.", subtask_name_.c_str());
+                
+                callback_group_executor_.spin_some(); 
+                auto status = goal_handle_->get_status();
+                if (status == action_msgs::msg::GoalStatus::STATUS_CANCELED)
+                {
+                    RCLCPP_INFO(node_->get_logger(), "Server confirmed goal cancellation for %s", subtask_name_.c_str());
+                    break; 
+                }
+                else
+                {
+                    RCLCPP_WARN(node_->get_logger(), "Server did not confirm cancellation, retrying...");
+                    future_cancel = action_client_->async_cancel_goal(goal_handle_); 
+                }
+            }
+            else if (cancel_result == rclcpp::FutureReturnCode::INTERRUPTED)
+            {
+                RCLCPP_WARN(node_->get_logger(), "Cancellation interrupted for %s. After %d trial, all nodes will be forcibly shutdown. ", subtask_name_.c_str(),cancel_process_count_);
+                cancel_process_count_= cancel_process_count_ - 1;
+                if (cancel_process_count_ == 0)
+                {
+                    RCLCPP_ERROR(node_->get_logger(), "All nodes will be forcibly shutdown. ");
+                    rclcpp::shutdown();
+                }
+            }
+            else
+            {
+                RCLCPP_WARN(node_->get_logger(), "Waiting for goal cancellation to complete for %s...", subtask_name_.c_str());
+            }
+        }
+    }
+    else
+    {
+        RCLCPP_WARN(node_->get_logger(), "No active goal to cancel for %s", subtask_name_.c_str());
+    }
+    setStatus(BT::NodeStatus::IDLE);
 }
+
+
 
 bool LeafNodeBase::should_cancel_goal()
 {
@@ -141,10 +187,9 @@ bool LeafNodeBase::should_cancel_goal()
          status == action_msgs::msg::GoalStatus::STATUS_EXECUTING;
 }
 
+
 NodeStatus LeafNodeBase::tick()
 {
-  // tick関数が呼び出された際にstatus()==NodeStatus::IDLEの場合はNodeStatus::RUNNINGに変更して、action
-  // serverへgoalを送信する
   if (status() == NodeStatus::IDLE)
   {
     setStatus(NodeStatus::RUNNING);
@@ -156,8 +201,6 @@ NodeStatus LeafNodeBase::tick()
     LeafNodeBase::send_new_goal();
   }
 
-  // action
-  // serverからの通信を受け取るまでの時間を計測し、server_timeout_を超えた場合にtick関数はNodeStatus::FAILUREを返す
   try
   {
     if (future_goal_handle_)
@@ -171,17 +214,27 @@ NodeStatus LeafNodeBase::tick()
         }
         RCLCPP_WARN(node_->get_logger(), "Timed out while waiting for subtask to acknowledge goal request for %s",
                     subtask_name_.c_str());
-        future_goal_handle_.reset();
+        future_goal_handle_.reset(); 
+        this->halt(); 
+
+        if (!should_cancel_goal())
+        {
+            RCLCPP_INFO(node_->get_logger(), "Server confirmed cancellation or goal was already stopped.");
+        }
+        else
+        {
+            RCLCPP_WARN(node_->get_logger(), "Server failed to confirm cancellation.");
+        }        
+
         return BT::NodeStatus::FAILURE;
       }
     }
 
-    // action serverへgoalを送ってからresultを受け取るまでの間にif文の中が実行される
     if (rclcpp::ok() && !goal_result_available_)
     {
       feedback_.reset();
       auto goal_status = goal_handle_->get_status();
-      if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
+      if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING || // goal_update�ϐ���false�ŏ���������Ă���̂ŁA���̏����͏��false
                             goal_status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED))
       {
         goal_updated_ = false;
@@ -196,15 +249,24 @@ NodeStatus LeafNodeBase::tick()
           RCLCPP_WARN(node_->get_logger(),
                       "Timed out while waiting for action server to acknowledge goal request for %s subatsk",
                       subtask_name_.c_str());
-          future_goal_handle_.reset();
+          future_goal_handle_.reset(); 
+          this->halt(); 
+
+          if (!should_cancel_goal())
+          {
+              RCLCPP_INFO(node_->get_logger(), "Server confirmed cancellation or goal was already stopped.");
+          }
+          else
+          {
+              RCLCPP_WARN(node_->get_logger(), "Server failed to confirm cancellation.");
+          }
           return BT::NodeStatus::FAILURE;
         }
       }
 
-      // callback関数を1回だけ実行する
       callback_group_executor_.spin_some();
 
-      // action_serverからresultが返ってきていなかったら、tick関数はNodeStatus::RUNNINGを返す
+
       if (!goal_result_available_)
       {
         return BT::NodeStatus::RUNNING;
@@ -224,7 +286,6 @@ NodeStatus LeafNodeBase::tick()
     }
   }
 
-  // サブタスク側のaction serverからactionのresultを受け取って、NodeStatusに変換しtick()の戻り値とする部分
   switch (result_.code)
   {
     case rclcpp_action::ResultCode::SUCCEEDED:
@@ -233,6 +294,7 @@ NodeStatus LeafNodeBase::tick()
       break;
 
     case rclcpp_action::ResultCode::ABORTED:
+      RCLCPP_INFO(node_->get_logger(), "Aborted the Subtask");
       bt_status = NodeStatus::FAILURE;
       break;
 

@@ -19,13 +19,29 @@ using namespace std::chrono_literals;
 
 SubtaskZx200ReleaseSimple::SubtaskZx200ReleaseSimple() : SubtaskNodeBase("subtask_zx200_release_simple_node")
 {
+    auto options_server = rcl_action_server_get_default_options();
+    options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_server.result_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_server.cancel_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_server.feedback_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_server.status_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+
+    auto options_client = rcl_action_client_get_default_options();
+    options_client.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_client.result_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_client.cancel_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_client.feedback_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_client.status_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+  
   action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
       this, "subtask_zx200_release_simple",
       std::bind(&SubtaskZx200ReleaseSimple::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
       std::bind(&SubtaskZx200ReleaseSimple::handle_cancel, this, std::placeholders::_1),
-      std::bind(&SubtaskZx200ReleaseSimple::handle_accepted, this, std::placeholders::_1));
+      std::bind(&SubtaskZx200ReleaseSimple::handle_accepted, this, std::placeholders::_1),
+      options_server
+      );
 
-  action_client_ = rclcpp_action::create_client<Zx200ReleaseSimple>(this, "tms_rp_zx200_release_simple");
+  action_client_ = rclcpp_action::create_client<Zx200ReleaseSimple>(this, "tms_rp_zx200_release_simple", nullptr, options_client);
   if (action_client_->wait_for_action_server())
   {
     RCLCPP_INFO(this->get_logger(), "Action server is ready");

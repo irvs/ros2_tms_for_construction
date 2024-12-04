@@ -32,7 +32,7 @@ setup(
     entry_points={
         'console_scripts': [
             'tms_ur_button = tms_ur_button_input.tms_ur_button:main',
-            'tms_ur_button_ = tms_ur_button_input.tms_ur_button_:main',
+            'tms_ur_demo202412 = tms_ur_button_input.tms_ur_demo202412:main',
         ],
     },
 )
