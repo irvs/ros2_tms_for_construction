@@ -64,6 +64,7 @@ echo "mongodb-org-tools hold" | sudo dpkg --set-selections
 #MongoDB Compass
 wget https://downloads.mongodb.com/compass/mongodb-compass_1.43.0_amd64.deb
 sudo dpkg -i mongodb-compass_1.43.0_amd64.deb
+rm mongodb-compass_1.43.0_amd64.deb
 
 
 # install required python packages
