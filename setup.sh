@@ -37,7 +37,6 @@ sudo apt install -y ros-humble-desktop
 sudo apt install -y ros-humble-ros-base
 sudo apt install -y ros-dev-tools
 
-sudo apt install pip
 sudo pip install pymongo
 
 
@@ -66,8 +65,8 @@ wget https://downloads.mongodb.com/compass/mongodb-compass_1.43.0_amd64.deb
 sudo dpkg -i mongodb-compass_1.43.0_amd64.deb
 rm mongodb-compass_1.43.0_amd64.deb
 
-
 # install required python packages
+sudo apt install -y pip
 cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction
 python3 -m pip install -r requirements.txt --quiet --no-input
 
