@@ -34,8 +34,6 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 sudo apt update
 sudo apt -y upgrade
 sudo apt install -y ros-humble-desktop
-sudo apt install -y ros-humble-ros-base
-sudo apt install -y ros-dev-tools
 
 echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 source /opt/ros/humble/setup.bash
