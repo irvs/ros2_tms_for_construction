@@ -50,6 +50,7 @@ public:
     bool should_send_goal_ = true;
     bool goal_result_available_ = false;
     bool goal_updated_ = false;
+    int cancel_process_count_ = 10;
     
     std::string subtask_name_;
 
@@ -63,7 +64,7 @@ public:
 
     NodeStatus bt_status;
     rclcpp::Time time_goal_sent_;
-    std::chrono::milliseconds bt_loop_duration_;
+    std::chrono::milliseconds bt_loop_duration_ = std::chrono::milliseconds(100);
     std::chrono::milliseconds server_timeout_ = std::chrono::milliseconds(1000); // Please specify the timeout duration
 
     std::shared_ptr<rclcpp_action::Client<tms_msg_ts::action::LeafNodeBase>> action_client_;

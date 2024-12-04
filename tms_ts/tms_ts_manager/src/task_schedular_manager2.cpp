@@ -11,6 +11,7 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
+#include "tms_msg_ur/msg/demo202412.hpp"
 
 // MongoDB関連のインクルード
 #include <bsoncxx/json.hpp>
@@ -42,8 +43,8 @@ class ExecTaskSequence2 : public rclcpp::Node
 public:
   ExecTaskSequence2(std::shared_ptr<Blackboard> global_bb) : Node("exec_task_sequence2"), global_bb_(global_bb)
   {
-    subscription_ = this->create_subscription<std_msgs::msg::String>(
-        "/task_sequence2", 10, std::bind(&ExecTaskSequence2::topic_callback, this, std::placeholders::_1));
+    subscription_ = this->create_subscription<tms_msg_ur::msg::Demo202412>(
+        "/task_sequence", 10, std::bind(&ExecTaskSequence2::topic_callback, this, std::placeholders::_1));
     
     // ノードを登録
     factory.registerNodeType<LeafNodeIc120>("LeafNodeIc120");
@@ -63,9 +64,9 @@ public:
     loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SIMIZU");
   }
 
-  void topic_callback(const std_msgs::msg::String::SharedPtr msg)
+  void topic_callback(const tms_msg_ur::msg::Demo202412::SharedPtr msg)
   {
-    task_sequence_ = std::string(msg->data);
+    task_sequence_ = std::string(msg->task_sequence2);
     tree_ = factory.createTreeFromText(task_sequence_, bb_);
 
     BT::PublisherZMQ publisher_zmq(tree_, 100, 1667, 1778);
@@ -156,7 +157,7 @@ private:
     }
   }
 
-  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
+  rclcpp::Subscription<tms_msg_ur::msg::Demo202412>::SharedPtr subscription_;
   BehaviorTreeFactory factory;
   BT::Tree tree_;
   std::shared_ptr<Blackboard> bb_;

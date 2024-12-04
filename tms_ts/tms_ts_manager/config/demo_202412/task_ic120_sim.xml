@@ -3,6 +3,7 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
+            <Action ID="MongoValueWriter" input_value="true" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
@@ -15,7 +16,7 @@
                         <IfThenElse>
                             <Action ID="ConditionalExpressionBool" conditional_expression_bool="CONTINUE_FLG == true"/>
                             <Sequence>
-                                <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
+                                <Action  model_name="ic120" ID="LeafNodeIc120" name="leaf_node_ic120" record_name="SIM_LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
                                 <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
                                 <ForceSuccess>
                                     <KeepRunningUntilFailure>
@@ -30,10 +31,10 @@
                                                             <Action ID="ConditionalExpressionBool" conditional_expression_bool="SENSING_LOADED_FLG == true"/>
                                                             <Sequence>
                                                                 <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
-                                                                <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="RELEASE_PATH" subtask_name="st_ic120_follow_waypoints"/>
+                                                                <Action  model_name="ic120" ID="LeafNodeIc120" name="leaf_node_ic120" record_name="SIM_RELEASE_PATH" subtask_name="st_ic120_follow_waypoints"/>
                                                                 <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
-                                                                <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="LOAD_PATH" subtask_name="st_ic120_follow_waypoints"/>
-                                                                <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
+                                                                <Action  model_name="ic120" ID="LeafNodeIc120" name="leaf_node_ic120" record_name="SIM_LOAD_PATH" subtask_name="st_ic120_follow_waypoints"/>
+                                                                <Action  model_name="ic120" ID="LeafNodeIc120" name="leaf_node_ic120" record_name="SIM_LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
                                                                 <AlwaysFailure/>
                                                             </Sequence>
                                                             <KeepRunningUntilFailure>
@@ -43,10 +44,10 @@
                                                                         <Action ID="ConditionalExpressionBool" conditional_expression_bool="SENSING_CHECK_MOUND_FLG == true"/>
                                                                         <Sequence>
                                                                             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
-                                                                            <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="RELEASE_PATH" subtask_name="st_ic120_follow_waypoints"/>
+                                                                            <Action  model_name="ic120" ID="LeafNodeIc120" name="leaf_node_ic120" record_name="SIM_RELEASE_PATH" subtask_name="st_ic120_follow_waypoints"/>
                                                                             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
-                                                                            <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="LOAD_PATH" subtask_name="st_ic120_follow_waypoints"/>
-                                                                            <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
+                                                                            <Action  model_name="ic120" ID="LeafNodeIc120" name="leaf_node_ic120" record_name="SIM_LOAD_PATH" subtask_name="st_ic120_follow_waypoints"/>
+                                                                            <Action  model_name="ic120" ID="LeafNodeIc120" name="leaf_node_ic120" record_name="SIM_LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
                                                                             <AlwaysFailure/>
                                                                         </Sequence>
                                                                         <AlwaysFailure/>
@@ -94,9 +95,9 @@
             <input_port name="conditional_expression_bool" type="std::string"/>
         </Action>
         <Action ID="LeafNodeIc120">
-            <input_port name="model_name" type="float"/>
-            <input_port name="record_name" type="float"/>
-            <input_port name="subtask_name" type="float"/>
+            <input_port default="ic120" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
         </Action>
         <Action ID="LeafNodeSampleZx120">
             <input_port default="zx120" name=" model_name"/>

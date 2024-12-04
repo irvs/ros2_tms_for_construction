@@ -21,8 +21,8 @@ def generate_launch_description():
 
       return LaunchDescription([
 
-            DeclareLaunchArgument('task_id1', default_value="22"),
-            DeclareLaunchArgument('task_id2', default_value="23"),
+            DeclareLaunchArgument('task_id1', default_value="8"),
+            DeclareLaunchArgument('task_id2', default_value="9"),
 
             Node(
                   package='tms_ts_manager',
@@ -30,19 +30,14 @@ def generate_launch_description():
                   output='screen'),
             Node(
                   package='tms_ur_button_input', 
-                  executable='tms_ur_button',
+                  executable='tms_ur_demo202412',
                   output='screen', 
-                  parameters=[{"task_id": LaunchConfiguration('task_id1')}]), # You must define task_id that you want to execute. Default task_id is 2.
+                  parameters=[{"task_id1": LaunchConfiguration('task_id1'), "task_id2": LaunchConfiguration('task_id2')}]), 
 
             Node(
                   package='tms_ts_manager',
                   executable='task_schedular_manager2',
                   output='screen'),
-            Node(
-                  package='tms_ur_button_input', 
-                  executable='tms_ur_button_',
-                  output='screen', 
-                  parameters=[{"task_id": LaunchConfiguration('task_id2')}]), # You must define task_id that you want to execute. Default task_id is 2.
             
             
             # subtasks
@@ -126,7 +121,7 @@ def generate_launch_description():
                   executable='zx200_sample_bucket_subtask',
                   output='screen'),
             
-            # センシング処�?後�?��?ータをデータベ�?�スに取り込むためのノ�?�ド�?
+            # センシング処?��?後�??��?��?ータをデータベ�??��スに取り込むためのノ�??��ド�?
             Node(
                   package='tms_sp_sensing', 
                   executable='tms_sp_zx200_end_effector',

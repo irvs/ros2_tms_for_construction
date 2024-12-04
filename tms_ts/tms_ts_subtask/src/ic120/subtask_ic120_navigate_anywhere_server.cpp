@@ -20,14 +20,30 @@ using std::placeholders::_2;
 
 SubtaskIc120NavigateAnywhere::SubtaskIc120NavigateAnywhere() : SubtaskNodeBase("st_ic120_navigate_anywhere_node")
 {
+    auto options_server = rcl_action_server_get_default_options();
+    options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_server.result_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_server.cancel_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_server.feedback_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_server.status_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+
+    auto options_client = rcl_action_client_get_default_options();
+    options_client.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_client.result_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_client.cancel_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_client.feedback_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+    options_client.status_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
+
+    
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
         this, "st_ic120_navigate_anywhere",
         std::bind(&SubtaskIc120NavigateAnywhere::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&SubtaskIc120NavigateAnywhere::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskIc120NavigateAnywhere::handle_accepted, this, std::placeholders::_1));
+        std::bind(&SubtaskIc120NavigateAnywhere::handle_accepted, this, std::placeholders::_1),
+        options_server); 
 
     
-    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "/ic120/navigate_to_pose");
+    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "/ic120/navigate_to_pose", nullptr, options_client);
     // if (action_client_->wait_for_action_server())
     // {
     //     RCLCPP_INFO(this->get_logger(), "Action server is ready");

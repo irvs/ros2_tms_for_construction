@@ -32,6 +32,9 @@
 
 #include "tms_msg_rp/action/tms_rp_zx200_change_pose.hpp"
 
+#include <rclcpp/qos.hpp>   
+#include <rmw/qos_profiles.h>  
+
 class SubtaskZx200ChangePose : public SubtaskNodeBase
 {
 public:
