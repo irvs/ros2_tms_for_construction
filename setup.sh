@@ -110,7 +110,7 @@ cd ~/ros2-tms-for-construction_ws/src && git clone https://github.com/BehaviorTr
 cd .. && colcon build --packages-select groot
 
 #Install nlohmann-json library
-sudo apt install nlohmann-json3-dev
+sudo apt install -y nlohmann-json3-dev
 
 #Setup OPERA
 # Install dbcppp
