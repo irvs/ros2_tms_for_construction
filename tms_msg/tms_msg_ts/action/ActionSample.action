@@ -1,8 +1,0 @@
-# Goal
-int32 goal_pos
----
-# Result
-bool result
----
-# Feedback
-int32 current_pos

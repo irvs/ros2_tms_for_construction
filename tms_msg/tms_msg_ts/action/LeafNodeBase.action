@@ -1,9 +1,0 @@
-# Goal
-string model_name
-string record_name
----
-# Result
-bool result
----
-# Feedback
-string status
