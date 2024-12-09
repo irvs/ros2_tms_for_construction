@@ -8,7 +8,7 @@
 ### コンテナの作成
 以下の手順でDockerFileからDockerイメージをビルドしてください。
 ```
-cd && git clone -b develop/docker-model  https://github.com/irvs/ros2_tms_for_construction.git
+cd && git clone -b docker-model  https://github.com/irvs/ros2_tms_for_construction.git
 cd ros2_tms_for_construction
 sudo docker build --no-cache -t ros2_tms_for_construction -f DockerFile .
 ```
