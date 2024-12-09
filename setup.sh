@@ -34,12 +34,6 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 sudo apt update
 sudo apt -y upgrade
 sudo apt install -y ros-humble-desktop
-sudo apt install -y ros-humble-ros-base
-sudo apt install -y ros-dev-tools
-
-sudo apt install pip
-sudo pip install pymongo
-
 
 echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 source /opt/ros/humble/setup.bash
@@ -64,9 +58,10 @@ echo "mongodb-org-tools hold" | sudo dpkg --set-selections
 #MongoDB Compass
 wget https://downloads.mongodb.com/compass/mongodb-compass_1.43.0_amd64.deb
 sudo dpkg -i mongodb-compass_1.43.0_amd64.deb
-
+rm mongodb-compass_1.43.0_amd64.deb
 
 # install required python packages
+sudo apt install -y pip
 cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction
 python3 -m pip install -r requirements.txt --quiet --no-input
 
@@ -115,7 +110,7 @@ cd ~/ros2-tms-for-construction_ws/src && git clone https://github.com/BehaviorTr
 cd .. && colcon build --packages-select groot
 
 #Install nlohmann-json library
-sudo apt install nlohmann-json3-dev
+sudo apt install -y nlohmann-json3-dev
 
 #Setup OPERA
 # Install dbcppp
