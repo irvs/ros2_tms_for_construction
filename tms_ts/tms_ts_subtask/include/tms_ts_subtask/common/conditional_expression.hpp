@@ -38,8 +38,8 @@ class ConditionalExpression : public SyncActionNode
 {
 public:
     ConditionalExpression(const std::string& name, const NodeConfiguration& config)
-      : SyncActionNode(name, config), pool_(mongocxx::uri{})
-    { 
+        : SyncActionNode(name, config), pool_(mongocxx::uri{})
+    {
         node_ = rclcpp::Node::make_shared("conditional_expression");
         spin_thread_ = std::thread([this]() { rclcpp::spin(node_); });
     }
@@ -54,7 +54,7 @@ public:
 
     static PortsList providedPorts()
     {
-        return { 
+        return {
             InputPort<std::string>("conditional_expression")
         };
     }
@@ -76,15 +76,16 @@ public:
             return NodeStatus::FAILURE;
         }
 
-        std::cout << "[ConditionalExpression] Evaluated condition: " << expr_str.value() << " Result: " << std::boolalpha << result << std::endl;
+        std::cout << "[ConditionalExpression] Evaluated condition: " << expr_str.value() 
+                  << " Result: " << std::boolalpha << result << std::endl;
 
         return result ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
     }
 
 private:
     rclcpp::Node::SharedPtr node_;
-    std::thread spin_thread_; 
-    mongocxx::pool pool_; 
+    std::thread spin_thread_;
+    mongocxx::pool pool_;
 
     bool evaluateCondition(const std::string& condition, bool& result)
     {
@@ -99,7 +100,7 @@ private:
         auto blackboard_ptr = config().blackboard;
         auto blackboard_keys = blackboard_ptr->getKeys();
 
-        std::unordered_map<std::string, double> temp_variables;
+        static std::unordered_map<std::string, double> variable_storage;
 
         for (const auto& key_view : blackboard_keys)
         {
@@ -107,56 +108,58 @@ private:
             {
                 std::string key(key_view.data(), key_view.size());
                 auto value_any = blackboard_ptr->getAny(key);
-                if(value_any)
+                if (value_any)
                 {
-                    if (value_any->type() == typeid(int))
+                    if (value_any->type() == typeid(bool))
                     {
-                        double value = static_cast<double>(value_any->cast<int>());
-                        temp_variables[key] = value;
+                        bool value = value_any->cast<bool>();
+                        variable_storage[key] = value ? 1.0 : 0.0;
+                    }
+                    else if (value_any->type() == typeid(int))
+                    {
+                        variable_storage[key] = static_cast<double>(value_any->cast<int>());
                     }
                     else if (value_any->type() == typeid(double))
                     {
-                        double value = value_any->cast<double>();
-                        temp_variables[key] = value;
-                    }
-                    else if (value_any->type() == typeid(std::string))
-                    {
-                        std::string value_str = value_any->cast<std::string>();
-                        double value = std::stod(value_str);
-                        temp_variables[key] = value;
+                        variable_storage[key] = value_any->cast<double>();
                     }
                     else
                     {
-                        continue; // Skip unsupported types
+                        std::cerr << "[ConditionalExpression] Unsupported type for key: " << key << std::endl;
                     }
                 }
             }
             catch (const std::exception& e)
             {
-                std::cerr << "[ConditionalExpression] Error: Unable to retrieve variable " << key_view << " from blackboard or convert it to double. " << e.what() << std::endl;
+                std::cerr << "[ConditionalExpression] Error retrieving variable " << key_view << ": " << e.what() << std::endl;
                 return false;
             }
         }
 
-        for (auto& var : temp_variables)
+        for (auto& var : variable_storage)
         {
-            std::cout << "[ConditionalExpression] Variable: " << var.first << " Value: " << var.second << std::endl;
-            symbol_table.add_variable(var.first, var.second);
+            double& value = variable_storage[var.first];
+            std::cout << "[ConditionalExpression Debug] Variable: " << var.first 
+                      << " Value: " << value << std::endl;
+            symbol_table.add_variable(var.first, value);
         }
 
+        symbol_table.add_constants();
         expression.register_symbol_table(symbol_table);
 
         if (!parser.compile(condition, expression))
         {
-            std::cerr << "[ConditionalExpression] Error: " << parser.error() << std::endl;
+            std::cerr << "[ConditionalExpression] Parsing Error: " << parser.error() << std::endl;
             for (std::size_t i = 0; i < parser.error_count(); ++i) {
                 exprtk::parser_error::type error = parser.get_error(i);
-                std::cerr << "[ConditionalExpression] Error: " << error.diagnostic << " at position: " << error.token.position << std::endl;
+                std::cerr << "[ConditionalExpression] Error: " << error.diagnostic
+                          << " at position: " << error.token.position << std::endl;
             }
             return false;
         }
 
         result = expression.value() != 0.0;
+        std::cout << "[ConditionalExpression] Condition Result: " << result << std::endl;
         return true;
     }
 };

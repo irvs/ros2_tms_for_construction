@@ -13,14 +13,14 @@
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 #include "tms_msg_ur/msg/demo202412.hpp"
 
-// MongoDBŠÖ˜A‚ÌƒCƒ“ƒNƒ‹[ƒh
+// MongoDBï¿½Ö˜Aï¿½ÌƒCï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½[ï¿½h
 #include <bsoncxx/json.hpp>
 #include <bsoncxx/types.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/uri.hpp>
 
-// leaf nodes‚ÌƒCƒ“ƒNƒ‹[ƒh
+// leaf nodesï¿½ÌƒCï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½[ï¿½h
 #include "tms_ts_subtask/sample/zx120/sample_leaf_nodes.hpp"
 #include "tms_ts_subtask/sample/zx200/sample_leaf_nodes.hpp"
 #include "tms_ts_subtask/ic120/leaf_node.hpp"
@@ -41,12 +41,12 @@ bool cancelRequested = false;
 class ExecTaskSequence2 : public rclcpp::Node
 {
 public:
-  ExecTaskSequence2(std::shared_ptr<Blackboard> global_bb) : Node("exec_task_sequence2"), global_bb_(global_bb)
+  ExecTaskSequence2(std::shared_ptr<Blackboard> global_bb) : Node("task_schedular_manager2_202412"), global_bb_(global_bb)
   {
     subscription_ = this->create_subscription<tms_msg_ur::msg::Demo202412>(
         "/task_sequence", 10, std::bind(&ExecTaskSequence2::topic_callback, this, std::placeholders::_1));
     
-    // ƒm[ƒh‚ğ“o˜^
+    // ï¿½mï¿½[ï¿½hï¿½ï¿½oï¿½^
     factory.registerNodeType<LeafNodeIc120>("LeafNodeIc120");
     factory.registerNodeType<LeafNodeSampleZx120>("LeafNodeSampleZx120");
     factory.registerNodeType<LeafNodeSampleZx200>("LeafNodeSampleZx200");
