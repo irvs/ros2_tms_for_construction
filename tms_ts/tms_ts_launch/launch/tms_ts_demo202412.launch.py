@@ -26,7 +26,7 @@ def generate_launch_description():
 
             Node(
                   package='tms_ts_manager',
-                  executable='task_schedular_manager',
+                  executable='task_schedular_manager1_202412',
                   output='screen'),
             Node(
                   package='tms_ur_button_input', 
@@ -36,7 +36,7 @@ def generate_launch_description():
 
             Node(
                   package='tms_ts_manager',
-                  executable='task_schedular_manager2',
+                  executable='task_schedular_manager2_202412',
                   output='screen'),
             
             
@@ -121,7 +121,7 @@ def generate_launch_description():
                   executable='zx200_sample_bucket_subtask',
                   output='screen'),
             
-            # センシング処?��?後�??��?��?ータをデータベ�??��スに取り込むためのノ�??��ド�?
+            # センシング処?��?後�??��?��?ータをデータベ�??��スに取り込むためのノ�??��ド�?
             Node(
                   package='tms_sp_sensing', 
                   executable='tms_sp_zx200_end_effector',

@@ -44,15 +44,17 @@ link_libraries(
   mongocxx
   bsoncxx)
 
-# ExprTk ‚ÌƒCƒ“ƒNƒ‹[ƒhƒfƒBƒŒƒNƒgƒŠ‚ğ’Ç‰Á
+# ExprTk ï¿½ÌƒCï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½[ï¿½hï¿½fï¿½Bï¿½ï¿½ï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½Ç‰ï¿½
 include_directories(/usr/local/include)
-
 
 add_executable(task_schedular_manager src/task_schedular_manager.cpp)
 ament_target_dependencies(task_schedular_manager ${dependencies_cpp})
 
-add_executable(task_schedular_manager2 src/task_schedular_manager2.cpp)
-ament_target_dependencies(task_schedular_manager2 ${dependencies_cpp})
+add_executable(task_schedular_manager1_202412 src/demo_202412/task_schedular_manager1.cpp)
+ament_target_dependencies(task_schedular_manager1_202412 ${dependencies_cpp})
+
+add_executable(task_schedular_manager2_202412 src/demo_202412/task_schedular_manager2.cpp)
+ament_target_dependencies(task_schedular_manager2_202412 ${dependencies_cpp})
 
 # -- end C++
 
@@ -63,7 +65,8 @@ set(dependencies_py
   ament_cmake_python
   rclpy_action
   geometry_msgs
-  ament_cmake_python)
+  ament_cmake_python
+  tms_msg_ur)
 
 ament_python_install_package(scripts)
 
@@ -81,7 +84,12 @@ install(TARGETS
 )
 
 install(TARGETS
-  task_schedular_manager2
+  task_schedular_manager1_202412
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(TARGETS
+  task_schedular_manager2_202412
   DESTINATION lib/${PROJECT_NAME}
 )
 

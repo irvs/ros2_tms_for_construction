@@ -11,15 +11,16 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
+#include "tms_msg_ur/msg/demo202412.hpp"
 
-// MongoDB関連のインクルード
+// MongoDB�֘A�̃C���N���[�h
 #include <bsoncxx/json.hpp>
 #include <bsoncxx/types.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/uri.hpp>
 
-// leaf nodesのインクルード
+// leaf nodes�̃C���N���[�h
 #include "tms_ts_subtask/sample/zx120/sample_leaf_nodes.hpp"
 #include "tms_ts_subtask/sample/zx200/sample_leaf_nodes.hpp"
 #include "tms_ts_subtask/ic120/leaf_node.hpp"
@@ -41,9 +42,9 @@ bool cancelRequested = false;
 class ExecTaskSequence : public rclcpp::Node
 {
 public:
-  ExecTaskSequence(std::shared_ptr<Blackboard> bb) : Node("exec_task_sequence"), bb_(bb)
+  ExecTaskSequence(std::shared_ptr<Blackboard> bb) : Node("task_schedular_manager1_202412"), bb_(bb)
   {
-    subscription_ = this->create_subscription<std_msgs::msg::String>(
+    subscription_ = this->create_subscription<tms_msg_ur::msg::Demo202412>(
         "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
     
     factory.registerNodeType<LeafNodeIc120>("LeafNodeIc120");
@@ -62,9 +63,9 @@ public:
     loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SIMIZU");
   }
 
-  void topic_callback(const std_msgs::msg::String::SharedPtr msg)
+  void topic_callback(const tms_msg_ur::msg::Demo202412::SharedPtr msg)
   {
-    task_sequence_ = std::string(msg->data);
+    task_sequence_ = std::string(msg->task_sequence1);
     tree_ = factory.createTreeFromText(task_sequence_, bb_);
 
     BT::PublisherZMQ publisher_zmq(tree_, 100, 1666, 1777);
@@ -73,7 +74,7 @@ public:
       while (rclcpp::ok() && status_ == NodeStatus::RUNNING)
       {
         status_ = tree_.tickRoot();
-        if (cancelRequested == true)
+        if (cancelRequested == true)                                                                                                                                                                                                                          
         {
           tree_.rootNode()->halt();
           status_ = NodeStatus::FAILURE;
@@ -155,7 +156,7 @@ private:
     }
   }
 
-  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
+  rclcpp::Subscription<tms_msg_ur::msg::Demo202412>::SharedPtr subscription_;
   BehaviorTreeFactory factory;
   BT::Tree tree_;
   std::shared_ptr<Blackboard> bb_;

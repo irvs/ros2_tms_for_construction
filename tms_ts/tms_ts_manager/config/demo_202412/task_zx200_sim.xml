@@ -26,17 +26,20 @@
                                                 <Action  model_name="zx200" ID="LeafNodeZx200" record_name="target_release_pose" subtask_name="subtask_zx200_change_pose"/>
                                                 <Action  model_name="zx200" ID="LeafNodeZx200" record_name="release_angle" subtask_name="subtask_zx200_release_simple"/>
                                                 <Action  model_name="zx200" ID="LeafNodeZx200" record_name="after_release_soil_pose" subtask_name="subtask_zx200_change_pose"/>
-                                                <Delay delay_msec="5000">
-                                                    <Action ID="MongoValueWriter" input_value="true" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
-                                                </Delay>
-                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
-                                                <Delay delay_msec="2000">
+                                                <Delay delay_msec="3000">
                                                     <AlwaysFailure/>
                                                 </Delay>
                                             </Sequence>
-                                            <Delay delay_msec="3000">
+                                            <IfThenElse>
+                                                <Action ID="ConditionalExpression" conditional_expression="( SENSING_LOADED_FLG == true or SENSING_CHECK_MOUND_FLG == true  ) and ARRIVAL_FLG == true and SENSING_ARRIVAL_FLG == true"/>
+                                                <Sequence>
+                                                    <Delay delay_msec="3000">
+                                                        <Action ID="MongoValueWriter" input_value="true" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
+                                                    </Delay>
+                                                    <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIMIZU"/>
+                                                </Sequence>
                                                 <AlwaysFailure/>
-                                            </Delay>
+                                            </IfThenElse>
                                         </IfThenElse>
                                     </Parallel>
                                 </KeepRunningUntilFailure>
