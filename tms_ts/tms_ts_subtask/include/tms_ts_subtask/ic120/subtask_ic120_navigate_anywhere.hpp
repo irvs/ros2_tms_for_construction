@@ -35,6 +35,8 @@
 
 #include "nav2_msgs/action/navigate_to_pose.hpp"
 
+#include <rclcpp/qos.hpp>   
+#include <rmw/qos_profiles.h>  
 
 class SubtaskIc120NavigateAnywhere : public SubtaskNodeBase
 {

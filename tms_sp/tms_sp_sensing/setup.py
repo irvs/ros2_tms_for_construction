@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             "tms_sp_zx200_end_effector = tms_sp_sensing.tms_sp_zx200_end_effector:main",
+            "tms_sp_zx200_collision_objects = tms_sp_sensing.tms_sp_zx200_collison_objects_ic120:main",
             "sample = tms_sp_sensing.sample:main",
             "tms_sp_flgs = tms_sp_sensing.tms_sp_flgs:main",
         ],

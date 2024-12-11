@@ -12,14 +12,14 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
-// MongoDBŠÖ˜A‚ÌƒCƒ“ƒNƒ‹[ƒh
+// MongoDBé–¢é€£ã®ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰
 #include <bsoncxx/json.hpp>
 #include <bsoncxx/types.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/uri.hpp>
 
-// leaf nodes‚ÌƒCƒ“ƒNƒ‹[ƒh
+// leaf nodesã®ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰
 #include "tms_ts_subtask/sample/zx120/sample_leaf_nodes.hpp"
 #include "tms_ts_subtask/sample/zx200/sample_leaf_nodes.hpp"
 #include "tms_ts_subtask/ic120/leaf_node.hpp"

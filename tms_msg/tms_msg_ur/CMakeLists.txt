@@ -13,9 +13,19 @@ find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
-rosidl_generate_interfaces(tms_msg_ur
+set(srv_files
   "srv/SpeakerSrv.srv"
-  DEPENDENCIES builtin_interfaces
 )
+
+set(msg_files
+  "msg/Demo202412.msg"
+)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  ${srv_files}
+  ${msg_files}
+  DEPENDENCIES builtin_interfaces 
+)
+
 
 ament_package()
