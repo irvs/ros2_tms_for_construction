@@ -32,6 +32,9 @@
 
 #include "tms_msg_rp/action/tms_rp_zx200_excavate_simple.hpp"
 
+#include <rclcpp/qos.hpp>   
+#include <rmw/qos_profiles.h>  
+
 class SubtaskZx200ExcavateSimple : public SubtaskNodeBase
 {
 public:

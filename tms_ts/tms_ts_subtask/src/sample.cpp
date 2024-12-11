@@ -233,36 +233,36 @@ NodeStatus LeafNodeBase::tick()
     if (rclcpp::ok() && !goal_result_available_)
     {
       feedback_.reset();
-      auto goal_status = goal_handle_->get_status();
-      if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING || // goal_update•Ï”‚Ífalse‚Å‰Šú‰»‚³‚ê‚Ä‚¢‚é‚Ì‚ÅA‚±‚ÌðŒ‚Íí‚Éfalse
-                            goal_status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED))
-      {
-        goal_updated_ = false;
-        send_new_goal();
-        auto elapsed = (node_->now() - time_goal_sent_).to_chrono<std::chrono::milliseconds>();
-        if (!is_future_goal_handle_complete(elapsed))
-        {
-          if (elapsed < server_timeout_)
-          {
-            return BT::NodeStatus::RUNNING;
-          }
-          RCLCPP_WARN(node_->get_logger(),
-                      "Timed out while waiting for action server to acknowledge goal request for %s subatsk",
-                      subtask_name_.c_str());
-          future_goal_handle_.reset(); 
-          this->halt(); 
+      // auto goal_status = goal_handle_->get_status();
+      // if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING || // goal_update•Ï”‚Ífalse‚Å‰Šú‰»‚³‚ê‚Ä‚¢‚é‚Ì‚ÅA‚±‚ÌðŒ‚Íí‚Éfalse
+      //                       goal_status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED))
+      // {
+      //   goal_updated_ = false;
+      //   send_new_goal();
+      //   auto elapsed = (node_->now() - time_goal_sent_).to_chrono<std::chrono::milliseconds>();
+      //   if (!is_future_goal_handle_complete(elapsed))
+      //   {
+      //     if (elapsed < server_timeout_)
+      //     {
+      //       return BT::NodeStatus::RUNNING;
+      //     }
+      //     RCLCPP_WARN(node_->get_logger(),
+      //                 "Timed out while waiting for action server to acknowledge goal request for %s subatsk",
+      //                 subtask_name_.c_str());
+      //     future_goal_handle_.reset(); 
+      //     this->halt(); 
 
-          if (!should_cancel_goal())
-          {
-              RCLCPP_INFO(node_->get_logger(), "Server confirmed cancellation or goal was already stopped.");
-          }
-          else
-          {
-              RCLCPP_WARN(node_->get_logger(), "Server failed to confirm cancellation.");
-          }
-          return BT::NodeStatus::FAILURE;
-        }
-      }
+      //     if (!should_cancel_goal())
+      //     {
+      //         RCLCPP_INFO(node_->get_logger(), "Server confirmed cancellation or goal was already stopped.");
+      //     }
+      //     else
+      //     {
+      //         RCLCPP_WARN(node_->get_logger(), "Server failed to confirm cancellation.");
+      //     }
+      //     return BT::NodeStatus::FAILURE;
+      //   }
+      // }
 
       callback_group_executor_.spin_some();
 
