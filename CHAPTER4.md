@@ -1,8 +1,9 @@
 ### 4. Try running the task schedular
 
-本章ではタスクスケジューラの使用方法について説明します。
+本章ではタスクスケジューラの概要について説明するとともに、使用前の事前確認を行います。
+従って、具体的なシミュレータ上の建設機械の操作方法はCHAPTER.5からとなっています。
 
-タスクスケジューラを実行する前に、MonoogoDB上にrostmsadbデータベースが存在し、その中にtaskコレクションとparameterコレクションが存在することを確認してください。この操作は以下の手順にしたがってMongoDbを使用して行うことができます。
+ではまずはじめに、DBのセットアップを行います。MonoogoDB上にrostmsadbデータベースが存在し、その中にtaskコレクションとparameterコレクションが存在することを確認してください。この操作は以下の手順にしたがってMongoDbを使用して行うことができます。
 
 1. まずはじめに端末を開き、以下のコマンドを実行してMongoDB Compassを起動します。
 ```
@@ -85,4 +86,6 @@ cd ~/ros2-tms-for-construction_ws
 cd ~/ros2-tms-for-construction_ws
 colcon build --packages-select tms_ts_launch && source install/setup.bash
 ```
+以上でROS2-TMS for Constructionのセットアップと概要についての説明は完了です。
+CHAPTER.5ではROS2-TMS for ConstructionとOperaSim-PhysXを接続して、実際にシミュレータ上の建設機械をROS2-TMS for Constructionから自律操作する方法についてご紹介します。
 
