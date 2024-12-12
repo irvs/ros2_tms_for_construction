@@ -172,6 +172,7 @@ WORKDIR $OVERLAY_WS/src/opera/ic120
 RUN git clone https://github.com/pwri-opera/ic120_ros2.git
 WORKDIR $OVERLAY_WS/src
 RUN git clone https://github.com/kasahara-san/shimizu_project.git
+RUN git clone https://github.com/kasahara-san/sample_sensing_nodes.git
 
 # RUN git clone https://github.com/pwri-opera/gnss_localizer_ros2.git
 # RUN git clone https://github.com/pwri-opera/ic120_com3_ros.git
