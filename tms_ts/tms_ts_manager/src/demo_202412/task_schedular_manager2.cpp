@@ -32,6 +32,8 @@
 #include "tms_ts_subtask/common/mongo_value_writer.hpp"
 #include "tms_ts_subtask/common/conditional_expression.hpp"
 #include "tms_ts_subtask/common/conditional_expression_bool.hpp"
+#include "tms_ts_subtask/common/KeepRunningUntilFlgup.hpp"
+#include "tms_ts_subtask/common/SetLocalBlackboard.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -58,7 +60,8 @@ public:
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<ConditionalExpressionBool>("ConditionalExpressionBool");
-
+    factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
+    factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
 
     bb_ = Blackboard::create(global_bb_);
     loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SIMIZU");
@@ -150,6 +153,7 @@ private:
       }
     bb_->set("CHECK_TRUE", true);
     bb_->set("CHECK_FALSE", false);
+    bb_->set("TERMINATE_FLG", false);
     }
     else
     {
