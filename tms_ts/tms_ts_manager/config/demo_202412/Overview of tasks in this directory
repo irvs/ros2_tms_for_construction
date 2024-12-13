@@ -1,0 +1,5 @@
+new_tasK_zx200_act_and_sim.xml：force successを取り除いたzx200操作用タスク
+old_task_ic120_act.xml：force successを取り除いていないic120実機操作用タスク
+old_task_zx200_act.xml：force successを取り除いていないzx200実機操作用タスク
+task_ic120_sim.xml：force successを取り除いたシミュレータ上のic120操作用タスク
+task_zx200_sim.xml：force successを取り除いたシミュレータ上のzx200操作用タスク

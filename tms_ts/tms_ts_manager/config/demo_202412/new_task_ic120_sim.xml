@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="SetLocalBlackboard" output_key="STANDBY_FLG" value="true"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+            <Action ID="MongoValueWriter" input_value="true" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_CHECK_MOUND_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+            <Decorator ID="KeepRunningUntilFlgup" key="TERMINATE_FLG">
+                <Sequence>
+                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="CONTINUE_FLG"/>
+                    <IfThenElse>
+                        <Action ID="ConditionalExpressionBool" conditional_expression_bool="CONTINUE_FLG == true"/>
+                        <Parallel failure_threshold="1" success_threshold="-1">
+                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="INITIAL_POS_FLG"/>
+                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="ARRIVAL_FLG"/>
+                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="SENSING_ARRIVAL_FLG"/>
+                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="MOVING_FLG"/>
+                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="SENSING_LOADED_FLG"/>
+                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_CHECK_MOUND_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="SENSING_CHECK_MOUND_FLG"/>
+                            <Sequence>
+                                <IfThenElse>
+                                    <Action ID="ConditionalExpression" conditional_expression="INITIAL_POS_FLG == true and STANDBY_FLG == true"/>
+                                    <Sequence>
+                                        <Action ID="SetLocalBlackboard" output_key="STANDBY_FLG" value="false"/>
+                                        <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="SIM_LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
+                                        <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+                                    </Sequence>
+                                    <AlwaysSuccess/>
+                                </IfThenElse>
+                                <IfThenElse>
+                                    <Action ID="ConditionalExpressionBool" conditional_expression_bool="ARRIVAL_FLG == true and SENSING_ARRIVAL_FLG == true and MOVING_FLG == true and (SENSING_LOADED_FLG == true or SENSING_CHECK_MOUND_FLG ==true)"/>
+                                    <Sequence>
+                                        <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+                                        <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="SIM_RELEASE_PATH" subtask_name="st_ic120_follow_waypoints"/>
+                                        <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+                                        <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="SIM_LOAD_PATH" subtask_name="st_ic120_follow_waypoints"/>
+                                        <Action ID="SetLocalBlackboard" output_key="STANDBY_FLG" value="true"/>
+                                        <IfThenElse>
+                                            <Action ID="ConditionalExpression" conditional_expression="SENSING_CHECK_MOUND_FLG  == true"/>
+                                            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+                                            <AlwaysSuccess/>
+                                        </IfThenElse>
+                                    </Sequence>
+                                    <AlwaysSuccess/>
+                                </IfThenElse>
+                            </Sequence>
+                        </Parallel>
+                        <SetBlackboard output_key="TERMINATE_FLG" value="true"/>
+                    </IfThenElse>
+                </Sequence>
+            </Decorator>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="BlackboardValueChecker">
+            <inout_port name="key"/>
+        </Action>
+        <Action ID="BlackboardValueReaderMongo">
+            <input_port name="mongo_param_name" type="std::string"/>
+            <input_port name="mongo_record_name" type="std::string"/>
+            <input_port name="output_port" type="std::string"/>
+        </Action>
+        <Action ID="BlackboardValueWriterSrv">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="BlackboardValueWriterTopic">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="ConditionalExpression">
+            <input_port name="conditional_expression" type="std::string"/>
+        </Action>
+        <Action ID="ConditionalExpressionBool">
+            <input_port name="conditional_expression_bool"/>
+        </Action>
+        <Decorator ID="KeepRunningUntilFlgup">
+            <input_port name="key"/>
+        </Decorator>
+        <Action ID="LeafNodeIc120">
+            <input_port default="ic120" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx120">
+            <input_port default="zx120" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx200">
+            <input_port default="zx200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeZx200">
+            <input_port name="model_name" type="float"/>
+            <input_port name="record_name" type="float"/>
+            <input_port name="subtask_name" type="float"/>
+        </Action>
+        <Action ID="MongoValueWriter">
+            <input_port name="input_value" type="std::string"/>
+            <input_port name="mongo_param_name" type="std::string"/>
+            <input_port name="mongo_record_name" type="std::string"/>
+        </Action>
+        <Action ID="SetLocalBlackboard">
+            <input_port name="key"/>
+            <inout_port name="output_key"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
