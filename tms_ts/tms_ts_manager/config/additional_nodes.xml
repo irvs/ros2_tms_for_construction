@@ -58,6 +58,15 @@
             <input_port name="conditional_expression_bool"/>
         </Action>       
 
+        <Decorator ID="KeepRunningUntilFlgup">
+            <input_port name="key"/>        
+        </Decorator>     
+
+        <Action ID="SetLocalBlackboard">
+            <input_port name="value"/>
+            <inout_port name="output_key"/>
+        </Action>          
+
     </TreeNodesModel>
 </root>
 

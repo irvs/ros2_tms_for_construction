@@ -32,6 +32,8 @@
 #include "tms_ts_subtask/common/conditional_expression.hpp"
 #include "tms_ts_subtask/common/conditional_expression_bool.hpp"
 #include "tms_ts_subtask/zx200/excavation_area_segmenter.hpp"
+#include "tms_ts_subtask/common/KeepRunningUntilFlgup.hpp"
+#include "tms_ts_subtask/common/SetLocalBlackboard.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -58,6 +60,8 @@ public:
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<ConditionalExpressionBool>("ConditionalExpressionBool");
     factory.registerNodeType<ExcavationAreaSegmenter>("ExcavationAreaSegmenter");
+    factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
+    factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
 
     loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SIMIZU");
   }
@@ -148,6 +152,8 @@ private:
       }
     bb_->set("CHECK_TRUE", true);
     bb_->set("CHECK_FALSE", false);
+    bb_->set("TERMINATE_FLG", false);
+    bb_->set("STANDBY_FLG", false);
     }
     else
     {

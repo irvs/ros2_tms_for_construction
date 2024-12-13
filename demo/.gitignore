@@ -1,3 +1,4 @@
 *.db3-shm
 *.db3-wal
 rostmsdb_collections
+dump
