@@ -35,7 +35,7 @@ LeafNodeBase::LeafNodeBase(const std::string& name, const NodeConfiguration& con
   LeafNodeBase::createActionClient(subtask_name_);
 }
 
-// action clientã‚’æ–°ãŸã«ä½œæ?ã™ã‚‹é–¢æ•°
+// action clientã‚’æ–°ãŸã«ä½œï¿½?ï¿½ã™ã‚‹é–¢æ•°
 void LeafNodeBase::createActionClient(const std::string& subtask_name)
 {
   auto options_client = rcl_action_client_get_default_options();
@@ -55,7 +55,7 @@ void LeafNodeBase::createActionClient(const std::string& subtask_name)
   }
 }
 
-// action clientã®goal,feedback,resultã«å¯¾å¿œã™ã‚‹callbacké–¢æ•°ã‚’ã“ã®é–¢æ•°å†?ã§å®šç¾©
+// action clientã®goal,feedback,resultã«å¯¾å¿œã™ã‚‹callbacké–¢æ•°ã‚’ã“ã®é–¢æ•°ï¿½?ã§å®šç¾©
 void LeafNodeBase::send_new_goal()
 {
   goal_result_available_ = false;
@@ -88,20 +88,22 @@ void LeafNodeBase::send_new_goal()
 bool LeafNodeBase::is_future_goal_handle_complete(std::chrono::milliseconds& elapsed)
 {
   auto remaining = server_timeout_ - elapsed;
-  if (remaining <= std::chrono::milliseconds(0))
+  if (remaining <= std::chrono::milliseconds(0)) // 1: Faied to send goal becaseuse of timeout defined by user on Action Client.
   {
-    future_goal_handle_.reset(); // C³Œó•â1
+    future_goal_handle_.reset(); 
+    this -> halt_bef();
     return false;
   }
   auto timeout = remaining > bt_loop_duration_ ? bt_loop_duration_ : remaining;
   auto result = callback_group_executor_.spin_until_future_complete(*future_goal_handle_, timeout);
   elapsed += timeout;
-  if (result == rclcpp::FutureReturnCode::INTERRUPTED)
+  if (result == rclcpp::FutureReturnCode::INTERRUPTED) // 2: Goal request was interrupted by errors caused on Action Client. (e.g., node shutdown or external interruption).
   {
-    future_goal_handle_.reset(); // C³Œó•â2
+    this -> halt_bef();
+    future_goal_handle_.reset(); 
     throw std::runtime_error("send_goal failed");
   }
-  if (result == rclcpp::FutureReturnCode::SUCCESS)
+  if (result == rclcpp::FutureReturnCode::SUCCESS) // 3: Succeeded to send goal. Action Server received the goal and returned the goal response.
   {
     goal_handle_ = future_goal_handle_->get();
     future_goal_handle_.reset();
@@ -111,8 +113,32 @@ bool LeafNodeBase::is_future_goal_handle_complete(std::chrono::milliseconds& ela
     }
     return true;
   }
+  // 4: Timed out while waiting for the Action Server to respond to the goal request. (rclcpp::FutureReturnCode::TIMEOUT)
   return false;
 }
+
+
+
+void LeafNodeBase::halt_bef() // Since goal_handle_ is invalid, all goals on the Action Client are canceled using async_cancel_all_goals().
+{
+    auto future_cancel = action_client_->async_cancel_all_goals();
+    auto cancel_result = rclcpp::spin_until_future_complete(node_->get_node_base_interface(), future_cancel, std::chrono::seconds(1));
+
+    if (cancel_result == rclcpp::FutureReturnCode::SUCCESS) {
+      RCLCPP_INFO(node_->get_logger(), "All goals have been successfully cancelled.");
+    } else if (cancel_result == rclcpp::FutureReturnCode::TIMEOUT) {
+      RCLCPP_WARN(node_->get_logger(), "Timeout occurred while cancelling all goals.");
+      rclcpp::shutdown();
+    } else if (cancel_result == rclcpp::FutureReturnCode::INTERRUPTED) {
+      RCLCPP_ERROR(node_->get_logger(), "Cancellation was interrupted.");
+      rclcpp::shutdown();
+    } else {
+      RCLCPP_ERROR(node_->get_logger(), "Failed to cancel all goals.");
+      rclcpp::shutdown();
+    }
+    setStatus(BT::NodeStatus::IDLE);
+}
+
 
 
 void LeafNodeBase::halt()
@@ -212,19 +238,9 @@ NodeStatus LeafNodeBase::tick()
         {
           return BT::NodeStatus::RUNNING;
         }
-        RCLCPP_WARN(node_->get_logger(), "Timed out while waiting for subtask to acknowledge goal request for %s",
-                    subtask_name_.c_str());
-        future_goal_handle_.reset(); 
-        this->halt(); 
-
-        if (!should_cancel_goal())
-        {
-            RCLCPP_INFO(node_->get_logger(), "Server confirmed cancellation or goal was already stopped.");
-        }
-        else
-        {
-            RCLCPP_WARN(node_->get_logger(), "Server failed to confirm cancellation.");
-        }        
+        RCLCPP_WARN(node_->get_logger(), "Timed out while waiting for subtask to acknowledge goal request for %s",subtask_name_.c_str());
+        this->halt_bef();
+        future_goal_handle_.reset();   
 
         return BT::NodeStatus::FAILURE;
       }
@@ -234,7 +250,7 @@ NodeStatus LeafNodeBase::tick()
     {
       feedback_.reset();
       auto goal_status = goal_handle_->get_status();
-      if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING || // goal_update•Ï”‚Ífalse‚Å‰Šú‰»‚³‚ê‚Ä‚¢‚é‚Ì‚ÅA‚±‚ÌğŒ‚Íí‚Éfalse
+      if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING || 
                             goal_status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED))
       {
         goal_updated_ = false;
@@ -275,8 +291,7 @@ NodeStatus LeafNodeBase::tick()
   }
   catch (const std::runtime_error& e)
   {
-    if (e.what() == std::string("send_goal failed") || e.what() == std::string("Goal was rejected by the action "
-                                                                               "server"))
+    if (e.what() == std::string("send_goal failed") || e.what() == std::string("Goal was rejected by the action server"))
     {
       return BT::NodeStatus::FAILURE;
     }
