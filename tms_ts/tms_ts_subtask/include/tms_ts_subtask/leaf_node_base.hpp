@@ -57,15 +57,16 @@ public:
     void createActionClient(const std::string & action_name_); 
 
     void send_new_goal();
+    void halt_bef();
     void halt() override;
-    // on_wait_for_result()はserverから返ってきたfeedbackを�?��?する関数。長くブロ�?キングが生じる処�?は実�?しな�?こと
+    // on_wait_for_result()はserverから返ってきたfeedbackを�?��?する関数。長くブロ�?キングが生じる処�?は実�?しな�?こと
     bool should_cancel_goal();
     bool is_future_goal_handle_complete(std::chrono::milliseconds & elapsed);
 
     NodeStatus bt_status;
     rclcpp::Time time_goal_sent_;
-    std::chrono::milliseconds bt_loop_duration_ = std::chrono::milliseconds(100);
-    std::chrono::milliseconds server_timeout_ = std::chrono::milliseconds(1000); // Please specify the timeout duration
+    std::chrono::milliseconds bt_loop_duration_ = std::chrono::milliseconds(1);
+    std::chrono::milliseconds server_timeout_ = std::chrono::milliseconds(10); // Please specify the timeout duration
 
     std::shared_ptr<rclcpp_action::Client<tms_msg_ts::action::LeafNodeBase>> action_client_;
     typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::SharedPtr goal_handle_;
