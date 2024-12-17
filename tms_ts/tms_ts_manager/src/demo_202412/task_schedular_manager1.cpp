@@ -87,7 +87,7 @@ public:
     }
     catch (const std::exception& e)
     {
-      RCLCPP_ERROR(rclcpp::get_logger("exec_task_sequence"), "Behavior tree threw an exception");
+      RCLCPP_ERROR(rclcpp::get_logger("exec_task_sequence"), "Behavior tree threw an exception: %s", e.what());
       status_ = NodeStatus::FAILURE;
     }
 

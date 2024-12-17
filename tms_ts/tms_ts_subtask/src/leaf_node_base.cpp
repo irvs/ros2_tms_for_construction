@@ -128,13 +128,13 @@ void LeafNodeBase::halt_bef() // Since goal_handle_ is invalid, all goals on the
     if (cancel_result == rclcpp::FutureReturnCode::SUCCESS) {
       RCLCPP_INFO(node_->get_logger(), "All goals have been successfully cancelled.");
     } else if (cancel_result == rclcpp::FutureReturnCode::TIMEOUT) {
-      RCLCPP_ERROR(node_->get_logger(), "Timeout occurred while cancelling all goals. For the stafety, executing script to kill ROS processes...");
+      RCLCPP_ERROR(node_->get_logger(), "Timeout occurred while cancelling all goals. For the safety, executing script to kill ROS processes...");
       system(script_command);
     } else if (cancel_result == rclcpp::FutureReturnCode::INTERRUPTED) {
-      RCLCPP_ERROR(node_->get_logger(), "Cancellation was interrupted. For the stafety, executing script to kill ROS processes...");
+      RCLCPP_ERROR(node_->get_logger(), "Cancellation was interrupted. For the safety, executing script to kill ROS processes...");
       system(script_command);
     } else {
-      RCLCPP_ERROR(node_->get_logger(), "Failed to cancel all goals. For the stafety, executing script to kill ROS processes...");
+      RCLCPP_ERROR(node_->get_logger(), "Failed to cancel all goals. For the safety, executing script to kill ROS processes...");
       system(script_command);
     }
     setStatus(BT::NodeStatus::IDLE);
@@ -147,42 +147,55 @@ void LeafNodeBase::halt()
         RCLCPP_INFO(node_->get_logger(), "Attempting to cancel goal for %s", subtask_name_.c_str());
         auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
         auto cancel_result = rclcpp::FutureReturnCode::TIMEOUT;
+        const char* script_command = "pkill -9 -f ros";
 
         while (true) 
         {
-            cancel_result = callback_group_executor_.spin_until_future_complete(future_cancel, server_timeout_);
+            cancel_result = callback_group_executor_.spin_until_future_complete(future_cancel, std::chrono::milliseconds(1000));
 
             if (cancel_result == rclcpp::FutureReturnCode::SUCCESS)
             {
-                RCLCPP_INFO(node_->get_logger(), "Goal for %s successfully canceled.", subtask_name_.c_str());
+                RCLCPP_INFO(node_->get_logger(), "Action server implemented on %s is received the cancel request.", subtask_name_.c_str());
                 
                 callback_group_executor_.spin_some(); 
                 auto status = goal_handle_->get_status();
-                if (status == action_msgs::msg::GoalStatus::STATUS_CANCELED)
+
+                // STATUS: 0 = STATUS_UNKNOWN, 1 = STATUS_ACCEPTED, 2 = STATUS_EXECUTING, 3 = STATUS_CANCELING, 
+                //         4 = STATUS_SUCCEEDED, 5 = STATUS_ABORTED, 6 = STATUS_CANCELED, 7 = STATUS_LOST
+
+                if (status == 6)
                 {
                     RCLCPP_INFO(node_->get_logger(), "Server confirmed goal cancellation for %s", subtask_name_.c_str());
                     break; 
                 }
+                else if (status == 3)
+                {
+                    RCLCPP_WARN(node_->get_logger(), "Server is processing the goal cancellation for %s...", subtask_name_.c_str());
+                }
                 else
                 {
-                    RCLCPP_WARN(node_->get_logger(), "Server did not confirm cancellation, retrying...");
-                    future_cancel = action_client_->async_cancel_goal(goal_handle_); 
+                    RCLCPP_WARN(node_->get_logger(), "The status of %s is lost. Serching...", subtask_name_.c_str());
+                    RCLCPP_INFO(node_->get_logger(), "Node status: %d", status);
+                    cancel_process_count_= cancel_process_count_ - 1;
                 }
             }
             else if (cancel_result == rclcpp::FutureReturnCode::INTERRUPTED)
             {
                 RCLCPP_WARN(node_->get_logger(), "Cancellation interrupted for %s. After %d trial, all nodes will be forcibly shutdown. ", subtask_name_.c_str(),cancel_process_count_);
+                future_cancel = action_client_->async_cancel_goal(goal_handle_); 
                 cancel_process_count_= cancel_process_count_ - 1;
-                if (cancel_process_count_ == 0)
-                {
-                    RCLCPP_ERROR(node_->get_logger(), "All nodes will be forcibly shutdown. ");
-                    rclcpp::shutdown();
-                }
             }
             else
             {
                 RCLCPP_WARN(node_->get_logger(), "Waiting for goal cancellation to complete for %s...", subtask_name_.c_str());
+                cancel_process_count_= cancel_process_count_ - 1;
             }
+
+            // if (cancel_process_count_ == 0)
+            // {
+            //     RCLCPP_ERROR(node_->get_logger(), "For the safety, executing script to kill ROS processes... ");
+            //     system(script_command);
+            // }
         }
     }
     setStatus(BT::NodeStatus::IDLE);
