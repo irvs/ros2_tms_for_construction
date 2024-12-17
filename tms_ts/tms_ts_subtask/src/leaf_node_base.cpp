@@ -175,7 +175,7 @@ void LeafNodeBase::halt()
                 else
                 {
                     RCLCPP_WARN(node_->get_logger(), "The status of %s is lost. Serching...", subtask_name_.c_str());
-                    RCLCPP_INFO(node_->get_logger(), "Node status: %d", status);
+                    // RCLCPP_INFO(node_->get_logger(), "Node status: %d", status);
                     cancel_process_count_= cancel_process_count_ - 1;
                 }
             }
@@ -191,11 +191,11 @@ void LeafNodeBase::halt()
                 cancel_process_count_= cancel_process_count_ - 1;
             }
 
-            // if (cancel_process_count_ == 0)
-            // {
-            //     RCLCPP_ERROR(node_->get_logger(), "For the safety, executing script to kill ROS processes... ");
-            //     system(script_command);
-            // }
+            if (cancel_process_count_ == 0)
+            {
+                RCLCPP_ERROR(node_->get_logger(), "For the safety, executing script to kill ROS processes... ");
+                system(script_command);
+            }
         }
     }
     setStatus(BT::NodeStatus::IDLE);
