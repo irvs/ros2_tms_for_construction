@@ -123,23 +123,22 @@ void LeafNodeBase::halt_bef() // Since goal_handle_ is invalid, all goals on the
 {
     auto future_cancel = action_client_->async_cancel_all_goals();
     auto cancel_result = rclcpp::spin_until_future_complete(node_->get_node_base_interface(), future_cancel, std::chrono::seconds(1));
+    const char* script_command = "pkill -9 -f ros";
 
     if (cancel_result == rclcpp::FutureReturnCode::SUCCESS) {
       RCLCPP_INFO(node_->get_logger(), "All goals have been successfully cancelled.");
     } else if (cancel_result == rclcpp::FutureReturnCode::TIMEOUT) {
-      RCLCPP_WARN(node_->get_logger(), "Timeout occurred while cancelling all goals.");
-      rclcpp::shutdown();
+      RCLCPP_ERROR(node_->get_logger(), "Timeout occurred while cancelling all goals. For the stafety, executing script to kill ROS processes...");
+      system(script_command);
     } else if (cancel_result == rclcpp::FutureReturnCode::INTERRUPTED) {
-      RCLCPP_ERROR(node_->get_logger(), "Cancellation was interrupted.");
-      rclcpp::shutdown();
+      RCLCPP_ERROR(node_->get_logger(), "Cancellation was interrupted. For the stafety, executing script to kill ROS processes...");
+      system(script_command);
     } else {
-      RCLCPP_ERROR(node_->get_logger(), "Failed to cancel all goals.");
-      rclcpp::shutdown();
+      RCLCPP_ERROR(node_->get_logger(), "Failed to cancel all goals. For the stafety, executing script to kill ROS processes...");
+      system(script_command);
     }
     setStatus(BT::NodeStatus::IDLE);
 }
-
-
 
 void LeafNodeBase::halt()
 {
@@ -185,10 +184,6 @@ void LeafNodeBase::halt()
                 RCLCPP_WARN(node_->get_logger(), "Waiting for goal cancellation to complete for %s...", subtask_name_.c_str());
             }
         }
-    }
-    else
-    {
-        RCLCPP_WARN(node_->get_logger(), "No active goal to cancel for %s", subtask_name_.c_str());
     }
     setStatus(BT::NodeStatus::IDLE);
 }

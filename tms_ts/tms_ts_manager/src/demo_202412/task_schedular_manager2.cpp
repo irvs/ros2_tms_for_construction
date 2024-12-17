@@ -176,7 +176,7 @@ public:
   ForceQuietNode2() : Node("force_quiet_node2")
   {
     shutdown_subscription = this->create_subscription<std_msgs::msg::Bool>(
-        "/emergency_signal2", 10, std::bind(&ForceQuietNode2::callback, this, std::placeholders::_1));
+        "/emergency_signal", 10, std::bind(&ForceQuietNode2::callback, this, std::placeholders::_1));
   }
 
   void callback(const std_msgs::msg::Bool& msg)

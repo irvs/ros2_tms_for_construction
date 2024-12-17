@@ -65,8 +65,8 @@ public:
 
     NodeStatus bt_status;
     rclcpp::Time time_goal_sent_;
-    std::chrono::milliseconds bt_loop_duration_ = std::chrono::milliseconds(1);
-    std::chrono::milliseconds server_timeout_ = std::chrono::milliseconds(10); // Please specify the timeout duration
+    std::chrono::milliseconds bt_loop_duration_ = std::chrono::milliseconds(100);
+    std::chrono::milliseconds server_timeout_ = std::chrono::milliseconds(1000); // Please specify the timeout duration
 
     std::shared_ptr<rclcpp_action::Client<tms_msg_ts::action::LeafNodeBase>> action_client_;
     typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::SharedPtr goal_handle_;
