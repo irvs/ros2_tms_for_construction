@@ -36,6 +36,11 @@
                                             <Action ID="MongoValueWriter" input_value="true" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
                                         </Delay>
                                         <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+                                        <IfThenElse>
+                                            <Action ID="ConditionalExpression" conditional_expression="SENSING_CHECK_MOUND_FLG == true"/>
+                                            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+                                            <AlwaysSuccess/>
+                                        </IfThenElse>
                                     </Sequence>
                                     <AlwaysSuccess/>
                                 </IfThenElse>

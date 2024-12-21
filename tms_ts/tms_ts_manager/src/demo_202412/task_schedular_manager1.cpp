@@ -64,7 +64,7 @@ public:
     factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
 
-    loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SIMIZU");
+    loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SHIMIZU");
   }
 
   void topic_callback(const tms_msg_ur::msg::Demo202412::SharedPtr msg)

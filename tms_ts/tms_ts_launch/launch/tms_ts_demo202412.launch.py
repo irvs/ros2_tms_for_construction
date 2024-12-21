@@ -56,26 +56,26 @@ def generate_launch_description():
             
             # sample ###
             #ic120用
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_ic120_follow_waypoints_deg_server',
-                  output='screen'),
+            # Node(
+            #       package='tms_ts_subtask',
+            #       executable='subtask_ic120_follow_waypoints_deg_server',
+            #       output='screen'),
             Node(
                   package='tms_ts_subtask',
                   executable='subtask_ic120_follow_waypoints_server',
                   output='screen'),
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_ic120_navigate_anywhere_deg_server',
-                  output='screen'),
+            # Node(
+            #       package='tms_ts_subtask',
+            #       executable='subtask_ic120_navigate_anywhere_deg_server',
+            #       output='screen'),
             Node(
                   package='tms_ts_subtask',
                   executable='subtask_ic120_navigate_anywhere_server',
                   output='screen'),
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_ic120_navigate_through_poses_deg_server',
-                  output='screen'),
+            # Node(
+            #       package='tms_ts_subtask',
+            #       executable='subtask_ic120_navigate_through_poses_deg_server',
+            #       output='screen'),
             Node(
                   package='tms_ts_subtask',
                   executable='subtask_ic120_navigate_through_poses_server',
@@ -86,40 +86,40 @@ def generate_launch_description():
                   output='screen'),
             
             # zx120用
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx120_sample_boom_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx120_sample_swing_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx120_sample_arm_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx120_sample_bucket_subtask',
-                  output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx120_sample_boom_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx120_sample_swing_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx120_sample_arm_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx120_sample_bucket_subtask',
+            #       output='screen'),
             
             # zx200用
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx200_sample_boom_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx200_sample_swing_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx200_sample_arm_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx200_sample_bucket_subtask',
-                  output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx200_sample_boom_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx200_sample_swing_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx200_sample_arm_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx200_sample_bucket_subtask',
+            #       output='screen'),
             
             # センシング処?��?後�??��?��?ータをデータベ�??��スに取り込むためのノ�??��ド�?
             Node(

@@ -64,7 +64,7 @@ public:
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
 
     bb_ = Blackboard::create(global_bb_);
-    loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SIMIZU");
+    loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SHIMIZU");
   }
 
   void topic_callback(const tms_msg_ur::msg::Demo202412::SharedPtr msg)
