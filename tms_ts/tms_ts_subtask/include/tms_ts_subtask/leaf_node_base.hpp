@@ -50,7 +50,7 @@ public:
     bool should_send_goal_ = true;
     bool goal_result_available_ = false;
     bool goal_updated_ = false;
-    int cancel_process_count_ = 3;
+    int cancel_process_count_ = 5;
     
     std::string subtask_name_;
 

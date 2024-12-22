@@ -151,7 +151,7 @@ void LeafNodeBase::halt()
 
         while (true) 
         {
-            cancel_result = callback_group_executor_.spin_until_future_complete(future_cancel, std::chrono::milliseconds(1000));
+            cancel_result = callback_group_executor_.spin_until_future_complete(future_cancel, std::chrono::milliseconds(100));
 
             if (cancel_result == rclcpp::FutureReturnCode::SUCCESS)
             {
