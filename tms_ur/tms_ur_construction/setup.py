@@ -33,6 +33,7 @@ setup(
         "console_scripts": [
             "tms_ur_construction_ground = tms_ur_construction.tms_ur_construction_ground:main",
             "tms_ur_cv_odom = tms_ur_construction.tms_ur_cv_odom:main",
+            "tms_ur_cv_posest = tms_ur_construction.tms_ur_cv_posest:main",
             "tms_ur_construction_terrain_static = tms_ur_construction.tms_ur_construction_terrain_static:main",
             "tms_ur_construction_terrain_dynamic = tms_ur_construction.tms_ur_construction_terrain_dynamic:main",
             "tms_ur_construction_terrain_mesh = tms_ur_construction.tms_ur_construction_terrain_mesh:main",

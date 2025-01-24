@@ -82,8 +82,10 @@ class TmsSpMachineOdom(Node):
             self.get_logger().info(f"Received {self.machine_name}'s Odometry msg")
             self.is_received = True
 
+       # self.get_logger().info(msg.pose.pose.position)
+
         # Transform
-        msg = self.transform(msg)
+       # msg = self.transform(msg)
 
         db_msg = self.create_db_msg(msg)
         self.publisher_.publish(db_msg)
