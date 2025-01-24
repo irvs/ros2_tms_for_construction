@@ -57,6 +57,30 @@ def generate_launch_description():
             },
         ],
     )
+<<<<<<< HEAD
+=======
+
+    tms_sp_machine_joints_node1 = Node(
+        name="tms_sp_machine_joints1",
+        package="tms_sp_machine",
+        executable="tms_sp_machine_joints.py",
+        output="screen",
+        remappings=[
+            ("~/input/joint", "/zx200/joint_state"),
+           #("~/input/odom", "/ic120/odometry/global"),
+        ],
+        parameters=[
+            {
+                "machine_name": "zx200_1",
+            },
+            {
+                "to_frame": LaunchConfiguration("to_frame"),
+            },
+        ],
+    )
+    
+    
+>>>>>>> 2d126dc (edit sp and ur for joints)
     tms_sp_machine_odom_node3 = Node(
         name="tms_sp_machine_odom3",
         package="tms_sp_machine",
@@ -114,6 +138,7 @@ def generate_launch_description():
             to_frame,
             tms_sp_machine_odom_node1,
             tms_sp_machine_odom_node2,
+            tms_sp_machine_joints_node1,
             tms_sp_machine_odom_node3,
             tms_sp_machine_odom_node4,
             tms_sp_machine_odom_node5,

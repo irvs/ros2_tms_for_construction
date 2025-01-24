@@ -19,24 +19,19 @@ from time import sleep
 import rclpy
 from rclpy.node import Node
 
-from nav_msgs.msg import Odometry
+from sensor_msgs.msg import JointState
 from tms_msg_db.srv import TmsdbGetData
 
 import tms_db_manager.tms_db_util as db_util
 
 
-NODE_NAME = "tms_ur_cv_odom"
-<<<<<<< HEAD
-DATA_ID = 2012
-DATA_TYPE = "machine"
-=======
+NODE_NAME = "tms_ur_cv_joint"
 DATA_ID = 3012#2012
-DATA_TYPE = "machine_pose"
->>>>>>> 2d126dc (edit sp and ur for joints)
+DATA_TYPE = "machine_joints"
 
 
-class TmsUrCvOdomNode(Node):
-    """Get construction vehicle's Odometry data from tms_db_reader."""
+class TmsUrCvJointNode(Node):
+    """Get construction vehicle's JointState data from tms_db_reader."""
 
     def __init__(self):
         super().__init__(NODE_NAME)
@@ -53,7 +48,7 @@ class TmsUrCvOdomNode(Node):
             self.get_parameter("machine_name").get_parameter_value().string_value
         )
 
-        self.publisher_ = self.create_publisher(Odometry, "~/output/odom", 10)
+        self.publisher_ = self.create_publisher(JointState, "~/output/joint", 10)
 
         self.cli = self.create_client(TmsdbGetData, "tms_db_reader")
         while not self.cli.wait_for_service(timeout_sec=1.0):
@@ -64,7 +59,7 @@ class TmsUrCvOdomNode(Node):
 
     def send_request(self):
         """
-        Send request to tms_db_reader to get Odometry data.
+        Send request to tms_db_reader to get JointState data.
         """
         self.req = TmsdbGetData.Request()
         self.req.type = DATA_TYPE
@@ -82,13 +77,13 @@ class TmsUrCvOdomNode(Node):
         try:
             self.res = future.result()
             self.tmsdbs = self.res.tmsdbs
-            self.publish_odom()
+            self.publish_JointState()
         except:
             return
 
-    def publish_odom(self) -> None:
+    def publish_JointState(self) -> None:
         """
-        Publish Odometry topics.
+        Publish JointState topics.
         """
         if self.latest:
             try:
@@ -96,7 +91,7 @@ class TmsUrCvOdomNode(Node):
             except:
                 return
 
-            msg: Odometry = db_util.document_to_msg(dict_msg, Odometry)
+            msg: JointState = db_util.document_to_msg(dict_msg, JointState)
             self.publisher_.publish(msg)
         else:
             try:
@@ -108,7 +103,7 @@ class TmsUrCvOdomNode(Node):
 
             for tmsdb in self.tmsdbs:
                 dict_msg: dict = json.loads(tmsdb.msg)
-                msg: Odometry = db_util.document_to_msg(dict_msg, Odometry)
+                msg: JointState = db_util.document_to_msg(dict_msg, JointState)
 
                 # Convert string to datetime
                 now_time = datetime.strptime(tmsdb.time, "%Y-%m-%dT%H:%M:%S.%f")
@@ -124,10 +119,10 @@ class TmsUrCvOdomNode(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    tms_ur_cv_odom_node = TmsUrCvOdomNode()
-    rclpy.spin(tms_ur_cv_odom_node)
+    tms_ur_cv_joint_node = TmsUrCvJointNode()
+    rclpy.spin(tms_ur_cv_joint_node)
 
-    tms_ur_cv_odom_node.destroy_node()
+    tms_ur_cv_joint_node.destroy_node()
     rclpy.shutdown()
 
 

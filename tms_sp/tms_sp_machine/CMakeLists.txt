@@ -44,6 +44,11 @@ ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
   scripts/tms_sp_machine_odom.py
+<<<<<<< HEAD
+=======
+  scripts/tms_sp_machine_posest.py
+  scripts/tms_sp_machine_joints.py
+>>>>>>> 2d126dc (edit sp and ur for joints)
   DESTINATION lib/${PROJECT_NAME}
 )
 

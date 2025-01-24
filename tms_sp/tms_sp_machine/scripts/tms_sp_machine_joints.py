@@ -20,6 +20,7 @@ import rclpy
 from rclpy.node import Node
 
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import JointState
 from tf2_ros import TransformException
 from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
@@ -29,18 +30,13 @@ from tms_msg_db.msg import Tmsdb
 import tms_db_manager.tms_db_util as db_util
 
 
-NODE_NAME = "tms_sp_machine_odom"
-<<<<<<< HEAD
-DATA_ID = 2012
-DATA_TYPE = "machine"
-=======
+NODE_NAME = "tms_sp_machine_joint"
 DATA_ID = 3012 #2012
-DATA_TYPE = "machine_pose"
->>>>>>> 2d126dc (edit sp and ur for joints)
+DATA_TYPE = "machine_joints"
 
 
-class TmsSpMachineOdom(Node):
-    """Convert Odometry msg to Tmsdb msg and sent to tms_db_writer."""
+class TmsSpMachineJoints(Node):
+    """Convert JointState msg to Tmsdb msg and sent to tms_db_writer."""
 
     def __init__(self):
         super().__init__(NODE_NAME)
@@ -59,7 +55,7 @@ class TmsSpMachineOdom(Node):
 
         self.publisher_ = self.create_publisher(Tmsdb, "tms_db_data", 10)
         self.subscription = self.create_subscription(
-            Odometry, "~/input/odom", self.send_odom_to_db_writer, 10
+            JointState, "~/input/joint", self.send_joints_to_db_writer, 10
         )
 
         self.tf_buffer = Buffer()
@@ -68,48 +64,47 @@ class TmsSpMachineOdom(Node):
 
         # This publisher is to check the transformation.
         self.publisher = self.create_publisher(
-            Odometry, f"tf_machine/{self.machine_name}", 10
+            JointState, f"tf_machine/{self.machine_name}", 10
         )
 
         self.is_received = False
 
-    def send_odom_to_db_writer(self, msg: Odometry) -> None:
+    def send_joints_to_db_writer(self, msg: JointState) -> None:
         """
-        Send topics to tms_db_writer (Write the received Odometry data to DB).
+        Send topics to tms_db_writer (Write the received Jointstate data to DB).
 
         parameters
         ----------
-        msg : Odometry
-            Target Object's Odometry.
+        msg : Jointstate
+            Target Object's Jointstate.
         """
+       # self.get_logger().info(f"Received {self.machine_name}'s Jointstate msg")
         # Log
         if not self.is_received:
-            self.get_logger().info(f"Received {self.machine_name}'s Odometry msg")
+            self.get_logger().info(f"Received {self.machine_name}'s Jointstate msg")
             self.is_received = True
 
-       # self.get_logger().info(msg.pose.pose.position)
-
         # Transform
-       # msg = self.transform(msg)
+      #  msg = self.transform(msg)
 
         db_msg = self.create_db_msg(msg)
         self.publisher_.publish(db_msg)
 
     def transform(self, msg: Odometry) -> Odometry:
         """
-        Transform Odometry msg to the specified frame.
+        Transform PoseStamped msg to the specified frame.
 
         Parameters
         ----------
-        msg : Odometry
-            Target Machine's Odometry msg.
+        msg : PoseStamped
+            Target Machine's PoseStamped msg.
 
         Returns
         -------
-        msg : Odometry
-            Transformed Odometry msg.
+        msg : PoseStamped
+            Transformed PoseStamped msg.
         """
-        prev_pose = msg.pose.pose
+        prev_pose = msg.pose
 
         from_frame = msg.header.frame_id
 
@@ -131,7 +126,7 @@ class TmsSpMachineOdom(Node):
 
         # Apply translation
         transformed_pose = do_transform_pose(prev_pose, tf)
-        msg.pose.pose = transformed_pose
+        msg.pose = transformed_pose
 
         self.publisher.publish(msg)
 
@@ -167,11 +162,11 @@ class TmsSpMachineOdom(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    tms_sp_machine_odom = TmsSpMachineOdom()
+    tms_sp_machine_joint = TmsSpMachineJoints()
 
-    rclpy.spin(tms_sp_machine_odom)
+    rclpy.spin(tms_sp_machine_joint)
 
-    tms_sp_machine_odom.destroy_node()
+    tms_sp_machine_joint.destroy_node()
     rclpy.shutdown()
 
 

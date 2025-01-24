@@ -20,19 +20,15 @@ import rclpy
 from rclpy.node import Node
 
 from nav_msgs.msg import Odometry
+from geometry_msgs.msg import PoseStamped
 from tms_msg_db.srv import TmsdbGetData
 
 import tms_db_manager.tms_db_util as db_util
 
 
 NODE_NAME = "tms_ur_cv_odom"
-<<<<<<< HEAD
-DATA_ID = 2012
-DATA_TYPE = "machine"
-=======
 DATA_ID = 3012#2012
 DATA_TYPE = "machine_pose"
->>>>>>> 2d126dc (edit sp and ur for joints)
 
 
 class TmsUrCvOdomNode(Node):
@@ -53,7 +49,7 @@ class TmsUrCvOdomNode(Node):
             self.get_parameter("machine_name").get_parameter_value().string_value
         )
 
-        self.publisher_ = self.create_publisher(Odometry, "~/output/odom", 10)
+        self.publisher_ = self.create_publisher(PoseStamped, "~/output/odom", 10)
 
         self.cli = self.create_client(TmsdbGetData, "tms_db_reader")
         while not self.cli.wait_for_service(timeout_sec=1.0):
@@ -96,8 +92,15 @@ class TmsUrCvOdomNode(Node):
             except:
                 return
 
-            msg: Odometry = db_util.document_to_msg(dict_msg, Odometry)
-            self.publisher_.publish(msg)
+            odom_msg: Odometry = db_util.document_to_msg(dict_msg, Odometry)
+
+            pose_stamped_msg = PoseStamped()
+            pose_stamped_msg.header.stamp = self.get_clock().now().to_msg()  # 現在時刻を設定
+            pose_stamped_msg.header.frame_id = "world"  # 必要に応じて適切な座標系を設定
+            pose_stamped_msg.pose = odom_msg.pose.pose  # Odometry の pose 部分をそのまま使用
+
+
+            self.publisher_.publish(pose_stamped_msg)
         else:
             try:
                 pre_time = datetime.strptime(
@@ -108,8 +111,14 @@ class TmsUrCvOdomNode(Node):
 
             for tmsdb in self.tmsdbs:
                 dict_msg: dict = json.loads(tmsdb.msg)
-                msg: Odometry = db_util.document_to_msg(dict_msg, Odometry)
+                odom_msg: Odometry = db_util.document_to_msg(dict_msg, Odometry)
 
+                pose_stamped_msg = PoseStamped()
+                pose_stamped_msg.header.stamp = self.get_clock().now().to_msg()  # 現在時刻を設定
+                pose_stamped_msg.header.frame_id = "world"  # 必要に応じて適切な座標系を設定
+                pose_stamped_msg.pose = odom_msg.pose.pose  # Odometry の pose 部分をそのまま使用
+
+                
                 # Convert string to datetime
                 now_time = datetime.strptime(tmsdb.time, "%Y-%m-%dT%H:%M:%S.%f")
 
@@ -118,7 +127,7 @@ class TmsUrCvOdomNode(Node):
                 sleep(td.total_seconds())
                 pre_time = now_time
 
-                self.publisher_.publish(msg)
+                self.publisher_.publish(pose_stamped_msg)
 
 
 def main(args=None):
