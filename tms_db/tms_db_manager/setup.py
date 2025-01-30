@@ -36,6 +36,7 @@ setup(
         'console_scripts': [
             'tms_db_reader = tms_db_manager.tms_db_reader:main',
             'tms_db_reader_gridfs = tms_db_manager.tms_db_reader_gridfs:main',
+            'tms_db_reader_heightmap = tms_db_manager.tms_db_reader_heightmap:main',
             'tms_db_reader_task = tms_db_manager.tms_db_reader_task:main',
             'tms_db_writer = tms_db_manager.tms_db_writer:main',
             'tms_db_writer_gridfs = tms_db_manager.tms_db_writer_gridfs:main',

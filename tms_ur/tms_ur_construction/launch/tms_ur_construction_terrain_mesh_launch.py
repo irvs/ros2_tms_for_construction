@@ -27,9 +27,11 @@ def generate_launch_description():
     )
 
     # Nodes
-    tms_ur_construction_terrain_mesh_node = Node(
+    #tms_ur_construction_terrain_mesh_node = Node(
+    tms_ur_construction_terrain_heightmap_node = Node(
         package='tms_ur_construction',
-        executable='tms_ur_construction_terrain_mesh',
+      #  executable='tms_ur_construction_terrain_mesh',
+        executable='tms_ur_construction_terrain_heightmap',
         output='screen',
         remappings=[
             ('~/output/terrain/mesh_srv', LaunchConfiguration('output/terrain/mesh_srv')),
@@ -42,5 +44,6 @@ def generate_launch_description():
     return LaunchDescription([
         output_mesh,
         filename_mesh,
-        tms_ur_construction_terrain_mesh_node,
+        tms_ur_construction_terrain_heightmap_node,
+        #tms_ur_construction_terrain_mesh_node,
     ])

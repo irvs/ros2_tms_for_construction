@@ -57,8 +57,6 @@ def generate_launch_description():
             },
         ],
     )
-<<<<<<< HEAD
-=======
 
     tms_sp_machine_joints_node1 = Node(
         name="tms_sp_machine_joints1",
@@ -80,7 +78,6 @@ def generate_launch_description():
     )
     
     
->>>>>>> 2d126dc (edit sp and ur for joints)
     tms_sp_machine_odom_node3 = Node(
         name="tms_sp_machine_odom3",
         package="tms_sp_machine",
