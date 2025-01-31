@@ -76,6 +76,24 @@ def generate_launch_description():
             },
         ],
     )
+
+    tms_ur_cv_joints_node2 = Node(
+        name="tms_ur_cv_joints2",
+        package="tms_ur_construction",
+        executable="tms_ur_cv_joints",
+        output="screen",
+        remappings=[
+            ("~/output/joint", "/output/ic120/joint_states"),
+        ],
+        parameters=[
+            {
+                "latest": LaunchConfiguration("latest"),
+            },
+            {
+                "machine_name": "ic120_1",
+            },
+        ],
+    )
     '''
     tms_ur_cv_odom_node3 = Node(
         name="tms_ur_cv_odom3",
@@ -136,6 +154,7 @@ def generate_launch_description():
             tms_ur_cv_odom_node1,
             tms_ur_cv_odom_node2,
             tms_ur_cv_joints_node1,
+            tms_ur_cv_joints_node2,
         #    tms_ur_cv_odom_node3,
          #   tms_ur_cv_odom_node4,
           #  tms_ur_cv_odom_node5,

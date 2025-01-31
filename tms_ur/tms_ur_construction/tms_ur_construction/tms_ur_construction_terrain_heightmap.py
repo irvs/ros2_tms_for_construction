@@ -145,7 +145,7 @@ class TmsUrConstructionTerrainMeshClient(Node):
         
         # Service server
         self.srv = self.create_service(
-            TmsdbTerrainImageSrv, "~/output/terrain/terrain_srv", self.terrain_mesh_srv_callback
+            TmsdbTerrainImageSrv, "~/output/terrain/heightmap_srv", self.terrain_terrain_srv_callback
         )
         
         # Create ColoredMesh msg
@@ -168,7 +168,7 @@ class TmsUrConstructionTerrainMeshClient(Node):
         response
             Service callback response.
         """
-        response.terrain = self.msg
+        response.tms_db_terrain_image = self.msg
         self.get_logger().info("Return a response of ColoredMesh")
         return response
     

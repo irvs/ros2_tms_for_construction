@@ -76,6 +76,24 @@ def generate_launch_description():
             },
         ],
     )
+
+    tms_sp_machine_joints_node2 = Node(
+        name="tms_sp_machine_joints2",
+        package="tms_sp_machine",
+        executable="tms_sp_machine_joints.py",
+        output="screen",
+        remappings=[
+            ("~/input/joint", "/ic120/joint_states"),
+        ],
+        parameters=[
+            {
+                "machine_name": "ic120_1",
+            },
+            {
+                "to_frame": LaunchConfiguration("to_frame"),
+            },
+        ],
+    )
     
     
     tms_sp_machine_odom_node3 = Node(
@@ -136,6 +154,7 @@ def generate_launch_description():
             tms_sp_machine_odom_node1,
             tms_sp_machine_odom_node2,
             tms_sp_machine_joints_node1,
+            tms_sp_machine_joints_node2,
             tms_sp_machine_odom_node3,
             tms_sp_machine_odom_node4,
             tms_sp_machine_odom_node5,
