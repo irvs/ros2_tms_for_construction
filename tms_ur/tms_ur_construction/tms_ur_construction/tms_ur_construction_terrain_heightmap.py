@@ -138,7 +138,11 @@ class TmsUrConstructionTerrainMeshClient(Node):
 
         # Create ColoredMesh msg
         self.msg: TmsdbTerrainImageMsg.time = result.time
-        self.msg: TmsdbTerrainImageMsg.elevation = result.elevation
+        self.msg: TmsdbTerrainImageMsg.terrainheight = result.terrainheight
+        self.msg: TmsdbTerrainImageMsg.terrainwidth = result.terrainwidth
+        self.msg: TmsdbTerrainImageMsg.terrainelevation = result.terrainelevation
+        self.msg: TmsdbTerrainImageMsg.offset_x = result.offset_x
+        self.msg: TmsdbTerrainImageMsg.offset_y = result.offset_y
         self.msg: TmsdbTerrainImageMsg.image = result.image
 
         self.get_logger().info("Terrain service is ready")

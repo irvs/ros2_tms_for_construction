@@ -1,3 +1,12 @@
 string type
 ---
-tms_msg_db/TmsdbTerrainImageMsg tms_db_terrain_image
+string time
+string type
+int32  id
+string filename
+float32 terrainheight
+float32 terrainwidth
+float32 terrainelevation
+float32 offset_x
+float32 offset_y
+sensor_msgs/Image image

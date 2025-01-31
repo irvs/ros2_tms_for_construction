@@ -145,7 +145,11 @@ class TmsDbReaderGridFSActionServer(Node):
         result.result = True
         result.time = str(file_obj.time)
         result.type = str(file_obj.type)
-        result.elevation = float(file_obj.elevation)
+        result.terrainheight = float(file_obj.height)
+        result.terrainwidth = float(file_obj.width)
+        result.terrainelevation = float(file_obj.elevation)
+        result.offset_x = float(file_obj.offset_x)
+        result.offset_y = float(file_obj.offset_y)
         result.image = ros_image
         self.get_logger().info("Export a heightmap")
         return result
