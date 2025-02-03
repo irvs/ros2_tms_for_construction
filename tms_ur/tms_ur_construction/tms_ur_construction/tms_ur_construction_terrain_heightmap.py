@@ -138,20 +138,25 @@ class TmsUrConstructionTerrainMeshClient(Node):
 
         # Create ColoredMesh msg
         self.msg: TmsdbTerrainImageMsg.time = result.time
-        self.msg: TmsdbTerrainImageMsg.terrainheight = result.terrainheight
-        self.msg: TmsdbTerrainImageMsg.terrainwidth = result.terrainwidth
-        self.msg: TmsdbTerrainImageMsg.terrainelevation = result.terrainelevation
-        self.msg: TmsdbTerrainImageMsg.offset_x = result.offset_x
-        self.msg: TmsdbTerrainImageMsg.offset_y = result.offset_y
-        self.msg: TmsdbTerrainImageMsg.image = result.image
+        self.msg1: TmsdbTerrainImageMsg.terrainheight = result.terrainheight
+        self.msg2: TmsdbTerrainImageMsg.terrainwidth = result.terrainwidth
+        self.msg3: TmsdbTerrainImageMsg.terrainelevation = result.terrainelevation
+        self.msg4: TmsdbTerrainImageMsg.offset_x = result.offset_x
+        self.msg5: TmsdbTerrainImageMsg.offset_y = result.offset_y
+        self.msg6: TmsdbTerrainImageMsg.image = result.image
 
         self.get_logger().info("Terrain service is ready")
         
         # Service server
         self.srv = self.create_service(
+            TmsdbTerrainImageSrv, "~/output/terrain/mesh_srv", self.terrain_terrain_srv_callback
+        )
+
+        """
+        self.srv = self.create_service(
             TmsdbTerrainImageSrv, "~/output/terrain/heightmap_srv", self.terrain_terrain_srv_callback
         )
-        
+        """
         # Create ColoredMesh msg
       #  self.msg: ColoredMesh = self.create_msg()
 
@@ -172,7 +177,16 @@ class TmsUrConstructionTerrainMeshClient(Node):
         response
             Service callback response.
         """
-        response.tms_db_terrain_image = self.msg
+        response.time = self.msg
+        response.terrainheight = self.msg1
+        response.terrainwidth = self.msg2
+        response.terrainelevation = self.msg3
+        response.offset_x = self.msg4
+        response.offset_y = self.msg5
+        response.image = self.msg6
+       # response.image = file_data
+
+
         self.get_logger().info("Return a response of ColoredMesh")
         return response
     
