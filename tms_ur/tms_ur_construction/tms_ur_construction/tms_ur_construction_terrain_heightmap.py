@@ -35,7 +35,7 @@ from PIL import Image
 
 NODE_NAME = "tms_ur_construction_terrain_mesh"
 DATA_ID = 4031
-DATA_TYPE = "heightmap"
+#DATA_TYPE = "heightmap"
 
 
 class TmsUrConstructionTerrainMeshClient(Node):
@@ -46,6 +46,10 @@ class TmsUrConstructionTerrainMeshClient(Node):
 
         # Declare parameters
         self.declare_parameter("filename_mesh", "filename_mesh")
+        self.declare_parameter("DATA_TYPE", "default_value")
+        self.DATA_TYPE: str = (
+            self.get_parameter("DATA_TYPE").get_parameter_value().string_value
+        )
 
         # Get parameters
         self.filename_mesh: str = (
@@ -60,7 +64,7 @@ class TmsUrConstructionTerrainMeshClient(Node):
         Send goal to action server.
         """
         self.goal_msg = TmsdbTerrainImage.Goal()
-        self.goal_msg.type = DATA_TYPE
+        self.goal_msg.type = self.DATA_TYPE
         self.goal_msg.id = DATA_ID
         self.goal_msg.filename = self.filename_mesh
 
@@ -148,9 +152,22 @@ class TmsUrConstructionTerrainMeshClient(Node):
         self.get_logger().info("Terrain service is ready")
         
         # Service server
+        if self.DATA_TYPE == "heightmap":
+
+            self.srv = self.create_service(
+                TmsdbTerrainImageSrv, "~/output/terrain/mesh_srv", self.terrain_terrain_srv_callback
+            )
+        elif  self.DATA_TYPE == "texture":
+            self.srv = self.create_service(
+                TmsdbTerrainImageSrv, "output/terrain/texture", self.terrain_terrain_srv_callback
+            )
+
+        """
+        # Service server
         self.srv = self.create_service(
             TmsdbTerrainImageSrv, "~/output/terrain/mesh_srv", self.terrain_terrain_srv_callback
         )
+        """
 
         """
         self.srv = self.create_service(
@@ -189,6 +206,9 @@ class TmsUrConstructionTerrainMeshClient(Node):
 
         self.get_logger().info("Return a response of ColoredMesh")
         return response
+
+        #DATA_TYPE = "texture"
+        #send_goal()
     
 
     def terrain_mesh_srv_callback(self, request, response):

@@ -81,7 +81,7 @@ class TmsDbReaderGridFSActionServer(Node):
         self.request = goal_handle.request
         self.fs = gridfs.GridFS(self.db)
 
-        if goal_handle.request.type == 'static' or goal_handle.request.type == 'heightmap':
+        if goal_handle.request.type == 'static' or goal_handle.request.type == 'heightmap'  or goal_handle.request.type == 'texture':
             return self.static_or_mesh_terrain_handler(goal_handle)
         elif goal_handle.request.type == 'dynamic':
             return self.dynamic_terrain_handler(goal_handle)
@@ -103,6 +103,7 @@ class TmsDbReaderGridFSActionServer(Node):
             Action result.
         """
         self.get_logger().info("Accept a goal of heightmap")
+        self.get_logger().info(str(goal_handle.request.type))
 
         file_obj = None
         while file_obj is None:
@@ -154,53 +155,8 @@ class TmsDbReaderGridFSActionServer(Node):
         self.get_logger().info("Export a heightmap")
         return result
 
-        '''
-        file_obj = None
-        while file_obj is None:
-            # Get latest static terrain data
-            file_obj = self.fs.find_one(
-                {'type': self.request.type, 'filename': self.request.filename},
-                sort=[('time', pymongo.DESCENDING)]
-            )
-
-            feedback_msg = TmsdbTerrainImage.Feedback()
-            goal_handle.publish_feedback(feedback_msg)
-
-        # Create file
-        self.get_logger().info(f'Create a {goal_handle.request.type} terrain file')
-        f = open(self.request.filename, 'wb')
-        f.write(file_obj.read())
-        f.close()
 
 
-        if file_obj is not None:
-            file_id = file_obj._id  # 'GridOut'オブジェクトの 'id' 属性にアクセス
-            self.get_logger().info(f"Found file with id: {file_id}")
-        else:
-            self.get_logger().info("No file found.")
-        # file_idは文字列として入力されるので、MongoDBのObjectIdに変換
-        file_id = ObjectId(file_id)
-        # ダウンロード先のディレクトリを定義
-        download_dir = "/home/common/images"
-        output_image_path = os.path.join(download_dir, "outputimage")
-        # file_idを使って画像を取得
-        file_data = self.fs.get(file_id)
-        # 保存先ディレクトリが存在しない場合は作成
-        os.makedirs(os.path.dirname(output_image_path), exist_ok=True)
-        # 画像をローカルに保存
-        with open(output_image_path, 'wb') as f:
-            f.write(file_data.read())
-            print(f'画像が保存されました: {output_image_path}')
-
-
-
-        
-        result = TmsdbTerrainImage.Result()
-        result.result = True
-        result.file_data = file_data.read() 
-        goal_handle.succeed()
-        return result
-        '''
 
     def dynamic_terrain_handler(self, goal_handle):
         """
