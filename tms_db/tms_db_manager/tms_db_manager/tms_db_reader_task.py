@@ -58,7 +58,7 @@ class TmsDbReaderTask(Node):
         """
         collection: pymongo.collection.Collection = self.db[request.type]
 
-        if request.type == 'default':
+        if request.type == 'task':
             task: str = self.get_task_data(request.id, collection)
             response.task = task
             return response

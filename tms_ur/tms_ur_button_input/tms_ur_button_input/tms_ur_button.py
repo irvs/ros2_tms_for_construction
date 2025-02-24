@@ -21,11 +21,12 @@ from pymongo import MongoClient
 import re
 import threading
 import time
+from tms_msg_db.srv import TmsdbGetTask
 
 from rclpy.node import Node
 
-MONGODB_IPADDRESS = '127.0.0.1'
-MONGODB_PORTNUMBER = 27017
+# MONGODB_IPADDRESS = '127.0.0.1'
+# MONGODB_PORTNUMBER = 27017
 
 
 class GUI_button(Node):
@@ -37,6 +38,11 @@ class GUI_button(Node):
         self.task_id = self.get_parameter("task_id").get_parameter_value().integer_value
         self.emergency_signal_publisher = self.create_publisher(Bool, '/emergency_signal', 10)
         self.publisher_ = self.create_publisher(String, '/task_sequence', 10)
+        self.client = self.create_client(TmsdbGetTask, '/tms_db_reader_task')
+
+        while not self.client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('Service not available, waiting...')
+
         root = tk.Tk()
         root.title("CONTROL PANEL")
         root.geometry("800x200")
@@ -74,43 +80,45 @@ class GUI_button(Node):
     
     # タスクIDに対応するタスクをTMS_DBから検索する関数
     def search_task(self):
-        client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
-        db = client['rostmsdb']
-        collection = db['task']
-        self.task_info = collection.find_one({"task_id": self.task_id})
-        if self.task_info != None:
-            self._is_valid_taskid = True
-            self.task_sequence = self.task_info["task_sequence"]
-            self.set_parameters()
+        request = TmsdbGetTask.Request()
+        request.task_id = self.task_id 
+        self.get_logger().info(f"Sending request for task_id: {request.task_id}")
+        future = self.client.call_async(request)
+        future.add_done_callback(self.service_response_callback)
+
+        if future.result().task != None and future.result().task != "":
+            self.task_sequence = future.result().task
+            # self.set_parameters()
             self.get_logger().info(f"Execute the task corresponding to the specified task ID({self.task_id})")
+            self._is_valid_taskid = True
         else:
             self.get_logger().info(f"The task corresponding to the specified task ID({self.task_id}) does not exist under the default collection in the rostmsdb database")
             self._is_valid_taskid = False
 
     # タスク列に動的にパラメータを埋め込むための関数
-    def set_parameters(self):
-        # 任意のパラメータ判別用記号(例: ${parameter})などをtask_sequenceの中に入れて、この部分を置き換えるプログラムを作成する
-        client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
-        db = client['rostmsdb']
-        collection = db['parameter']
-        subtask_raw_list = re.findall(r'\$\[.*\]', self.task_sequence)
-        if(len(subtask_raw_list) >= 1):
-            for subtask_raw in subtask_raw_list:
-                parts_task_sequence = self.task_sequence.split(subtask_raw)
-                subtask_raw = subtask_raw.replace("$", "")
-                subtask_raw = subtask_raw.replace("[", "")
-                subtask_raw = subtask_raw.replace("]", "")
-                parameter_tag = subtask_raw.split(":")
-                parameter_id_tag = int(parameter_tag[0])
-                parameter_value_tag = str(parameter_tag[1])
-                self.parameter_info = collection.find_one({"parameter_id": parameter_id_tag})
-                self.parameter_value = self.parameter_info[parameter_value_tag]
-                # self.get_logger().info(f"subtask_raw {subtask_raw}")
-                # self.get_logger().info(f"parameter_value {self.parameter_value}")
-                # self.get_logger().info(parts_task_sequence[0])
-                # self.get_logger().info(parts_task_sequence[1])
-                self.task_sequence = parts_task_sequence[0] + str(self.parameter_value) + parts_task_sequence[1]
-                # self.get_logger().info("RESULT" + self.task_sequence)
+    # def set_parameters(self):
+    #     # 任意のパラメータ判別用記号(例: ${parameter})などをtask_sequenceの中に入れて、この部分を置き換えるプログラムを作成する
+    #     client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
+    #     db = client['rostmsdb']
+    #     collection = db['parameter']
+    #     subtask_raw_list = re.findall(r'\$\[.*\]', self.task_sequence)
+    #     if(len(subtask_raw_list) >= 1):
+    #         for subtask_raw in subtask_raw_list:
+    #             parts_task_sequence = self.task_sequence.split(subtask_raw)
+    #             subtask_raw = subtask_raw.replace("$", "")
+    #             subtask_raw = subtask_raw.replace("[", "")
+    #             subtask_raw = subtask_raw.replace("]", "")
+    #             parameter_tag = subtask_raw.split(":")
+    #             parameter_id_tag = int(parameter_tag[0])
+    #             parameter_value_tag = str(parameter_tag[1])
+    #             self.parameter_info = collection.find_one({"parameter_id": parameter_id_tag})
+    #             self.parameter_value = self.parameter_info[parameter_value_tag]
+    #             # self.get_logger().info(f"subtask_raw {subtask_raw}")
+    #             # self.get_logger().info(f"parameter_value {self.parameter_value}")
+    #             # self.get_logger().info(parts_task_sequence[0])
+    #             # self.get_logger().info(parts_task_sequence[1])
+    #             self.task_sequence = parts_task_sequence[0] + str(self.parameter_value) + parts_task_sequence[1]
+    #             # self.get_logger().info("RESULT" + self.task_sequence)
 
 
 def main(args=None):

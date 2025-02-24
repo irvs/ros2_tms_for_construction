@@ -13,6 +13,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "std_msgs/msg/float64.hpp"
+#include "tms_msg_db/srv/tmsdb_get_parameter.hpp"
 
 #include <bsoncxx/json.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
@@ -22,135 +23,99 @@
 class SubtaskNodeBase : public rclcpp::Node
 {
 public:
-  SubtaskNodeBase(const std::string& node_name_);
+    SubtaskNodeBase(const std::string& node_name_);
 
-  static mongocxx::instance inst;
+    template <typename K, typename T>
+    std::map<K, T> CustomGetParamFromDB(std::string model_name, std::string record_name, 
+                                        std::enable_if_t<std::is_same_v<K, std::string>, bool> = true)
+    {
+        auto request = std::make_shared<tms_msg_db::srv::TmsdbGetParameter::Request>();
+        request->model_name = model_name;
+        request->record_name = record_name;
 
-  // std::map<std::string, float> GetParamFromDB(std::string model_name, std::string record_name);
+        while (!client_->wait_for_service(std::chrono::seconds(3))) 
+        {
+            RCLCPP_WARN(this->get_logger(), "Waiting for service to become available...");
+        }
 
-  template <typename K, typename T>
-  std::map<K, T> CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::string>, bool> = true);
+        auto future = client_->async_send_request(request);
+        std::map<K, T> dataMap;
 
-  template <typename K, typename T>
-  std::map<K, T> CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool> = true);
+        try 
+        {
+            auto response = future.get();
+            for (size_t i = 0; i < response->keys.size(); ++i) 
+            {
+                std::string value_str = response->values[i];
+                if constexpr (std::is_same_v<T, double>) {
+                    dataMap[response->keys[i]] = std::stod(value_str);
+                } else if constexpr (std::is_same_v<T, int>) {
+                    dataMap[response->keys[i]] = std::stoi(value_str);
+                } else {
+                    dataMap[response->keys[i]] = value_str;
+                }
+            }
+            RCLCPP_INFO(this->get_logger(), "Received parameters from service.");
+        } 
+        catch (const std::exception &e) 
+        {
+            RCLCPP_ERROR(this->get_logger(), "Service call failed: %s", e.what());
+        }
+
+        return dataMap;
+    }
+
+    template <typename K, typename T>
+    std::map<K, T> CustomGetParamFromDB(std::string model_name, std::string record_name, 
+                                        std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool> = true)
+    {
+        auto request = std::make_shared<tms_msg_db::srv::TmsdbGetParameter::Request>();
+        request->model_name = model_name;
+        request->record_name = record_name;
+
+        while (!client_->wait_for_service(std::chrono::seconds(3))) 
+        {
+            RCLCPP_WARN(this->get_logger(), "Waiting for service to become available...");
+        }
+
+        auto future = client_->async_send_request(request);
+        std::map<K, T> dataMap;
+
+        try 
+        {
+            auto response = future.get();
+            for (size_t i = 0; i < response->keys.size(); ++i) 
+            {
+                std::string param_name, index;
+                size_t pos = response->keys[i].find(':');
+                if (pos != std::string::npos) 
+                {
+                    param_name = response->keys[i].substr(0, pos);
+                    index = response->keys[i].substr(pos + 1);
+                    std::string value_str = response->values[i];
+                    if constexpr (std::is_same_v<T, double>) {
+                        dataMap[{param_name, index}] = std::stod(value_str);
+                    } else if constexpr (std::is_same_v<T, int>) {
+                        dataMap[{param_name, index}] = std::stoi(value_str);
+                    } else {
+                        dataMap[{param_name, index}] = value_str;
+                    }
+                }
+            }
+            RCLCPP_INFO(this->get_logger(), "Received 2D parameters from service.");
+        } 
+        catch (const std::exception &e) 
+        {
+            RCLCPP_ERROR(this->get_logger(), "Service call failed: %s", e.what());
+        }
+
+        return dataMap;
+    }
 
 private:
+    static mongocxx::instance inst;
+    rclcpp::Client<tms_msg_db::srv::TmsdbGetParameter>::SharedPtr client_;
 };
 
-// This function is to get array-type parameters from the database. (This function only supports 2D arrays.)
-template <typename K, typename T>
-std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool>) {
-  mongocxx::client client{ mongocxx::uri{ "mongodb://localhost:27017" } };
-  mongocxx::database db = client["rostmsdb"];
-  mongocxx::collection collection = db["parameter"];
-  bsoncxx::builder::stream::document filter_builder;
-  filter_builder << "model_name" << model_name << "record_name" << record_name;
-  auto filter = filter_builder.view();
-  auto result = collection.find_one(filter);
-
-  if (result)
-  {
-    std::map<K,T> dataMap;
-
-    for (auto&& element : result->view()) {
-        int index = 0;
-        std::string key = element.key().to_string();
-        std::cout << "A" << std::endl;
-        if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
-            auto array = element.get_array().value;
-            for (auto&& item : array) { 
-              if (item.type() == bsoncxx::type::k_double)
-              {
-                T value = static_cast<T>(item.get_double());
-                dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = value;
-                index++;
-                std::cout << value << std::endl;
-              }
-              else if (item.type() == bsoncxx::type::k_int32)
-              {
-                T value = static_cast<T>(item.get_int32());
-                dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = value;
-                index++;
-                std::cout << value << std::endl;
-              }
-              else if (item.type() == bsoncxx::type::k_int64)
-              {
-                T value = static_cast<T>(item.get_int64());
-                dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = value;
-                index++;
-                std::cout << value << std::endl;
-              }else{
-                std::cout << "Type error" << std::endl;
-              }
-            }  
-            // for (auto&& item : array) { 
-            //     dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = static_cast<T>(item.get_double());
-            //     index++;
-            // }
-        }
-    }
-
-    return dataMap;
-  }
-  else
-  {
-    std::cout << "Dynamic parameter not found in your parameter collection" << std::endl;
-    return std::map<K, T>();
-  }
-}
-
-// This function is to get non-array-type parameters from the database.
-template <typename K, typename T>
-std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::string>, bool>) {
-  mongocxx::client client{ mongocxx::uri{ "mongodb://localhost:27017" } };
-  mongocxx::database db = client["rostmsdb"];
-  mongocxx::collection collection = db["parameter"];
-
-  // Query to MongoDB
-  bsoncxx::builder::stream::document filter_builder;
-  filter_builder << "model_name" << model_name << "record_name" << record_name;
-  auto filter = filter_builder.view();
-  auto result = collection.find_one(filter);
-  std::cout << "B" << std::endl;
-  if (result)
-  {
-    std::map<K,T> dataMap;
-
-    for (auto&& element : result->view())
-    {
-      std::string key = element.key().to_string();
-      if (key != "_id" && key != "model_name" && key != "type" && key != "record_name")
-      {
-        if (element.type() == bsoncxx::type::k_double)
-        {
-          T value = static_cast<T>(element.get_double());
-          dataMap[key] = value;
-          std::cout << value << std::endl;
-        }
-        else if (element.type() == bsoncxx::type::k_int32)
-        {
-          T value = static_cast<T>(element.get_int32().value);
-          dataMap[key] = value;
-          std::cout << value << std::endl;
-        }
-        else if (element.type() == bsoncxx::type::k_int64)
-        {
-          T value = static_cast<T>(element.get_int64().value);
-          dataMap[key] = value;
-          std::cout << value << std::endl;
-        }else{
-          std::cout << "Type error" << std::endl;
-        }
-      }
-    }
-
-    return dataMap;
-  }
-  else
-  {
-    std::cout << "Dynamic parameter not found in your parameter collection" << std::endl;
-    return std::map<K, T>();
-  }
-}
 
 #endif // SUBTASK_NODE_BASE_HPP
