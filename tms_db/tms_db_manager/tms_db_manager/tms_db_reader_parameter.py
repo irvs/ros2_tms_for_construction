@@ -59,7 +59,7 @@ class TmsDbReaderParameter(Node):
             self.get_logger().info(f"The parameter ID(Model_name:{model_name} , Record name: {record_name}) does not exist under the default collection in the rostmsdb database")
             return ''
         
-        for field in ["_id", "model_name", "type", "record_name"]:
+        for field in ["_id", "model_name", "type", "record_name", "description"]:
             if field in parameter:
                 del parameter[field]
 

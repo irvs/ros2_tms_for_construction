@@ -84,10 +84,11 @@ class GUI_button(Node):
         request.task_id = self.task_id 
         self.get_logger().info(f"Sending request for task_id: {request.task_id}")
         future = self.client.call_async(request)
-        future.add_done_callback(self.service_response_callback)
+        rclpy.spin_until_future_complete(self, future)
+        response = future.result()
 
-        if future.result().task != None and future.result().task != "":
-            self.task_sequence = future.result().task
+        if response != None and response.task != "":
+            self.task_sequence = response.task
             # self.set_parameters()
             self.get_logger().info(f"Execute the task corresponding to the specified task ID({self.task_id})")
             self._is_valid_taskid = True

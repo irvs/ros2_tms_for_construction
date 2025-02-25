@@ -5,7 +5,7 @@
   <version>0.0.0</version>
   <description>The tms_sd_ground package</description>
 
-  <maintainer email="maeda@ait.kyushu-u.ac.jp">Ryuichi Maeda</maintainer>
+  <maintainer email="kasahara.yuichiro.res@gmail.com">Yuichiro Kasahara</maintainer>
 
   <license>Apache License, Version 2.0</license>
 
@@ -14,6 +14,7 @@
   <url type="bugtracker">https://github.com/irvs/ros2_tms_for_construction/issues</url>
   
   <author email="maeda@irvs.ait.kyushu-u.ac.jp">Ryuichi Maeda</author>
+  <author email="kasahara.yuichiro.res@gmail.com">Yuichiro Kasahara</author>
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>ros2launch</exec_depend>

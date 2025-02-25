@@ -115,7 +115,7 @@ def generate_launch_description():
                   executable='zx200_sample_bucket_subtask',
                   output='screen'),
             
-            # センシング処�?後�?��?ータをデータベ�?�スに取り込むためのノ�?�ド�?
+            # センシング処�?後�?��?ータをデータベ�?�スに取り込むためのノ�?�ド�?
             Node(
                   package='tms_sp_sensing', 
                   executable='tms_sp_zx200_end_effector',
@@ -132,5 +132,9 @@ def generate_launch_description():
             Node(
                   package="tms_db_manager", 
                   executable="tms_db_reader_task",
+                  output='screen'),
+            Node(
+                  package="tms_db_manager", 
+                  executable="tms_db_reader_parameter",
                   output='screen'),
       ])

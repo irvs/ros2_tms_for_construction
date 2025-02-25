@@ -41,54 +41,21 @@ class TmsDbReaderTask(Node):
 
 
     def db_reader_srv_callback(self, request, response):
-        """
-        Respond to requests from client nodes.
-        
-        Parameters
-        ----------
-        request
-            Request from client node.
-        response
-            Response to client node.
-            
-        Returns
-        -------
-        response
-            Response to client node.
-        """
-        collection: pymongo.collection.Collection = self.db[request.type]
-
-        if request.type == 'task':
-            task: str = self.get_task_data(request.id, collection)
-            response.task = task
-            return response
+        collection: pymongo.collection.Collection = self.db["task"]
+        task: str = self.get_task_data(request.task_id, collection)
+        response.task = task
+        return response
         
     
     def get_task_data(self, task_id, collection: pymongo.collection.Collection) -> str:
-        """
-        Get task data from MongoDB.
-        
-        Parameters
-        ----------
-        task_id : int
-            Task ID.
-        collection : pymongo.collection.Collection
-            MongoDB collection.
-            
-        Returns
-        -------
-        task : str
-            Task data.
-        """
-        task = collection.find_one({"id": task_id})
+        doc = collection.find_one({"task_id": task_id})
 
-        if task == None:
-            self.get_logger().info(f"The task ID({task_id}) does not exist under the default collection in the rostmsdb database")
+        if doc == None:
+            self.get_logger().info(f"The task ID({task_id}) does not exist under the task collection in the rostmsdb database")
             return ''
         
-        del task["_id"]
         self.get_logger().info(f"Successfully retrieved the task (ID: {task_id})")
-        return json.dumps(task)
+        return str(doc["task_sequence"])
 
 
 def main(args=None):

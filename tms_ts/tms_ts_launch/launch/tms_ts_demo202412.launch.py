@@ -144,4 +144,8 @@ def generate_launch_description():
                   package="tms_db_manager", 
                   executable="tms_db_reader_task",
                   output='screen'),
+            Node(
+                  package="tms_db_manager", 
+                  executable="tms_db_reader_parameter",
+                  output='screen'),
       ])

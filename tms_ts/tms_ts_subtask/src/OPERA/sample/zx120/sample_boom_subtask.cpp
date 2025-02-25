@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "tms_ts_subtask/OPERA/sample/zx120/sample_boom_subtask.hpp"
+#include <rclcpp/executors/multi_threaded_executor.hpp>
 #include <glog/logging.h>
 
 using namespace std::chrono_literals;
@@ -34,6 +35,7 @@ rclcpp_action::GoalResponse SubtaskSampleZx120Boom::handle_goal(
   RCLCPP_INFO_STREAM(this->get_logger(), "zx120 boom goal pos_fin: " << parameters["zx120_boom_goal_pos"] << " [deg]");
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
+
 
 rclcpp_action::CancelResponse SubtaskSampleZx120Boom::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
@@ -91,7 +93,12 @@ int main(int argc, char* argv[])
   google::InstallFailureSignalHandler();
 
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<SubtaskSampleZx120Boom>());
+  auto node = std::make_shared<SubtaskSampleZx120Boom>();
+
+  rclcpp::executors::MultiThreadedExecutor executor;
+  executor.add_node(node);
+  executor.spin();
+
   rclcpp::shutdown();
   return 0;
 }

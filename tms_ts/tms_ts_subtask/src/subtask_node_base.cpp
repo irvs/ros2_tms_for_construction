@@ -17,4 +17,9 @@
 mongocxx::instance SubtaskNodeBase::inst{};   
 
 
-SubtaskNodeBase::SubtaskNodeBase(const std::string& node_name_) : rclcpp::Node(node_name_) {};
+SubtaskNodeBase::SubtaskNodeBase(const std::string& node_name_) : rclcpp::Node(node_name_) 
+{
+    client_ = this->create_client<tms_msg_db::srv::TmsdbGetParameter>(
+        "tms_db_reader_parameter"
+    );
+};
