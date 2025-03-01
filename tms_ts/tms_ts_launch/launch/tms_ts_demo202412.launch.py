@@ -21,8 +21,9 @@ def generate_launch_description():
 
       return LaunchDescription([
 
-            DeclareLaunchArgument('task_id1', default_value="8"),
-            DeclareLaunchArgument('task_id2', default_value="9"),
+            DeclareLaunchArgument('task_id1', default_value="10"), # The task to control ic120 prepared for demo(2024/12) 
+            DeclareLaunchArgument('task_id2', default_value="9"), # The task to control zx200 prepared for demo(2024/12) 
+            # DeclareLaunchArgument('task_id2', default_value="11"), # The task to control zx200 prepared for demo(2025/3) 
 
             Node(
                   package='tms_ts_manager',
