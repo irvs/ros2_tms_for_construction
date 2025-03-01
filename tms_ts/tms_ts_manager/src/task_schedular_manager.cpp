@@ -20,10 +20,11 @@
 #include <mongocxx/uri.hpp>
 
 // leaf nodesのインクルード
-#include "tms_ts_subtask/sample/zx120/sample_leaf_nodes.hpp"
-#include "tms_ts_subtask/sample/zx200/sample_leaf_nodes.hpp"
-#include "tms_ts_subtask/ic120/leaf_node.hpp"
-#include "tms_ts_subtask/zx200/leaf_node.hpp"
+#include "tms_ts_subtask/OPERA/sample/zx120/sample_leaf_nodes.hpp"
+#include "tms_ts_subtask/OPERA/sample/zx200/sample_leaf_nodes.hpp"
+#include "tms_ts_subtask/FUJITA/mst2200/leaf_node.hpp"
+#include "tms_ts_subtask/OPERA/ic120/leaf_node.hpp"
+#include "tms_ts_subtask/OPERA/zx200/leaf_node.hpp"
 #include "tms_ts_subtask/common/blackboard_value_checker.hpp"
 #include "tms_ts_subtask/common/blackboard_value_writer_topic.hpp"
 #include "tms_ts_subtask/common/blackboard_value_writer_srv.hpp"
@@ -31,7 +32,7 @@
 #include "tms_ts_subtask/common/mongo_value_writer.hpp"
 #include "tms_ts_subtask/common/conditional_expression.hpp"
 #include "tms_ts_subtask/common/conditional_expression_bool.hpp"
-#include "tms_ts_subtask/zx200/excavation_area_segmenter.hpp"
+// #include "tms_ts_subtask/zx200/excavation_area_segmenter.hpp"
 #include "tms_ts_subtask/common/KeepRunningUntilFlgup.hpp"
 #include "tms_ts_subtask/common/SetLocalBlackboard.hpp"
 
@@ -48,6 +49,7 @@ public:
     subscription_ = this->create_subscription<std_msgs::msg::String>(
         "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
     
+    factory.registerNodeType<LeafNodeMst2200>("LeafNodeMst2200");
     factory.registerNodeType<LeafNodeIc120>("LeafNodeIc120");
     factory.registerNodeType<LeafNodeSampleZx120>("LeafNodeSampleZx120");
     factory.registerNodeType<LeafNodeSampleZx200>("LeafNodeSampleZx200");
@@ -59,7 +61,7 @@ public:
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<ConditionalExpressionBool>("ConditionalExpressionBool");
-    factory.registerNodeType<ExcavationAreaSegmenter>("ExcavationAreaSegmenter");
+    // factory.registerNodeType<ExcavationAreaSegmenter>("ExcavationAreaSegmenter");
     factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
 

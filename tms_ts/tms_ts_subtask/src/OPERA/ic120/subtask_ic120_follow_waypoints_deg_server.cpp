@@ -44,9 +44,11 @@ rclcpp_action::CancelResponse SubtaskIc120FollowWaypointsDeg::handle_cancel(cons
     {
         auto goal_handle = client_future_goal_handle_.get();
         action_client_->async_cancel_goal(goal_handle);
+
     }
     return rclcpp_action::CancelResponse::ACCEPT;
 }
+
 
 void SubtaskIc120FollowWaypointsDeg::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {

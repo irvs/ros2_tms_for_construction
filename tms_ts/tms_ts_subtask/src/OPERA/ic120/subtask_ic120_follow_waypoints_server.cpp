@@ -48,6 +48,7 @@ rclcpp_action::CancelResponse SubtaskIc120FollowWaypointys::handle_cancel(const 
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
+
 void SubtaskIc120FollowWaypointys::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;

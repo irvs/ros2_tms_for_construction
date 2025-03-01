@@ -21,10 +21,11 @@
 #include <mongocxx/uri.hpp>
 
 // leaf nodes�̃C���N���[�h
-#include "tms_ts_subtask/sample/zx120/sample_leaf_nodes.hpp"
-#include "tms_ts_subtask/sample/zx200/sample_leaf_nodes.hpp"
-#include "tms_ts_subtask/ic120/leaf_node.hpp"
-#include "tms_ts_subtask/zx200/leaf_node.hpp"
+#include "tms_ts_subtask/OPERA/sample/zx120/sample_leaf_nodes.hpp"
+#include "tms_ts_subtask/OPERA/sample/zx200/sample_leaf_nodes.hpp"
+#include "tms_ts_subtask/FUJITA/mst2200/leaf_node.hpp"
+#include "tms_ts_subtask/OPERA/ic120/leaf_node.hpp"
+#include "tms_ts_subtask/OPERA/zx200/leaf_node.hpp"
 #include "tms_ts_subtask/common/blackboard_value_checker.hpp"
 #include "tms_ts_subtask/common/blackboard_value_writer_topic.hpp"
 #include "tms_ts_subtask/common/blackboard_value_writer_srv.hpp"
@@ -48,7 +49,7 @@ public:
     subscription_ = this->create_subscription<tms_msg_ur::msg::Demo202412>(
         "/task_sequence", 10, std::bind(&ExecTaskSequence2::topic_callback, this, std::placeholders::_1));
     
-    // �m�[�h��o�^
+    factory.registerNodeType<LeafNodeMst2200>("LeafNodeMst2200");
     factory.registerNodeType<LeafNodeIc120>("LeafNodeIc120");
     factory.registerNodeType<LeafNodeSampleZx120>("LeafNodeSampleZx120");
     factory.registerNodeType<LeafNodeSampleZx200>("LeafNodeSampleZx200");
