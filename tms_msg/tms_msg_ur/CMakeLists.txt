@@ -12,9 +12,16 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
-set(srv_files
+
+# 両方のサービスファイルを一度に渡す
+rosidl_generate_interfaces(tms_msg_ur
   "srv/SpeakerSrv.srv"
+  "srv/TmsdbTerrainDBPoseWriteSrv.srv"
+  DEPENDENCIES builtin_interfaces geometry_msgs
+  DEPENDENCIES builtin_interfaces sensor_msgs
 )
 
 set(msg_files
