@@ -73,7 +73,7 @@ class TmsUrMachinePoseWrite(Node):
         ############
         ############
         self.srv = self.create_service(
-                TmsdbTerrainDBPoseWriteSrv, "/input/DB_machne/data", self.send_odom_to_db_writer
+                TmsdbTerrainDBPoseWriteSrv, "/input/DB_machine/data", self.send_odom_to_db_writer
             )
         
 
@@ -91,6 +91,9 @@ class TmsUrMachinePoseWrite(Node):
         msg : PoseStamped
             Target Object's PoseStamped.
         """
+
+        self.get_logger().info("Get paramerters.")
+
        # self.get_logger().info(f"Received {self.machine_name}'s PoseStamped msg")
         # Log
         if not self.is_received:
