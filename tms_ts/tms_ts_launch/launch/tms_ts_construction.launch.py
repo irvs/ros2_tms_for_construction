@@ -98,21 +98,51 @@ def generate_launch_description():
                   output='screen'),
             
             # zx200用
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx200_sample_boom_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx200_sample_swing_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx200_sample_arm_subtask',
+            #       output='screen'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='zx200_sample_bucket_subtask',
+            #       output='screen'),
+
+            # mst2200用
             Node(
                   package='tms_ts_subtask', 
-                  executable='zx200_sample_boom_subtask',
+                  executable='subtask_mst2200_follow_waypoints_deg_server',
                   output='screen'),
             Node(
                   package='tms_ts_subtask', 
-                  executable='zx200_sample_swing_subtask',
+                  executable='subtask_mst2200_follow_waypoints_server',
                   output='screen'),
             Node(
                   package='tms_ts_subtask', 
-                  executable='zx200_sample_arm_subtask',
+                  executable='subtask_mst2200_navigate_anywhere_deg_server',
                   output='screen'),
             Node(
                   package='tms_ts_subtask', 
-                  executable='zx200_sample_bucket_subtask',
+                  executable='subtask_mst2200_navigate_anywhere_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='subtask_mst2200_navigate_through_poses_deg_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='subtask_mst2200_navigate_through_poses_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='subtask_mst2200_release_soil_server',
                   output='screen'),
             
             # センシング処�?後�?��?ータをデータベ�?�スに取り込むためのノ�?�ド�?

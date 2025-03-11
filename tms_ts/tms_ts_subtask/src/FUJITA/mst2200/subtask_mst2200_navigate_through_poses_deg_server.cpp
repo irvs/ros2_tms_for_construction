@@ -28,7 +28,7 @@ SubtaskMst2200NavigateThroughPosesDeg::SubtaskMst2200NavigateThroughPosesDeg() :
         std::bind(&SubtaskMst2200NavigateThroughPosesDeg::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "/mst2200/navigate_through_poses");
+    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "/mst2200vd/navigate_through_poses");
 }
 
 rclcpp_action::GoalResponse SubtaskMst2200NavigateThroughPosesDeg::handle_goal(

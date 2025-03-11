@@ -27,7 +27,7 @@ SubtaskMst2200NavigateAnywhereDeg::SubtaskMst2200NavigateAnywhereDeg() : Subtask
         std::bind(&SubtaskMst2200NavigateAnywhereDeg::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "/mst2200/navigate_to_pose");
+    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "/mst2200vd/navigate_to_pose");
     // if (action_client_->wait_for_action_server())
     // {
     //     RCLCPP_INFO(this->get_logger(), "Action server is ready");

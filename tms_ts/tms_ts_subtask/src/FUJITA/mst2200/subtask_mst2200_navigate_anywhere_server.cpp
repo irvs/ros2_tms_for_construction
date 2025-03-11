@@ -43,7 +43,7 @@ SubtaskMst2200NavigateAnywhere::SubtaskMst2200NavigateAnywhere() : SubtaskNodeBa
         options_server); 
 
     
-    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "/mst2200/navigate_to_pose", nullptr, options_client);
+    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "/mst2200vd/navigate_to_pose", nullptr, options_client);
     // if (action_client_->wait_for_action_server())
     // {
     //     RCLCPP_INFO(this->get_logger(), "Action server is ready");

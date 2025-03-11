@@ -21,7 +21,7 @@ using namespace std::chrono_literals;
 SubtaskMst2200ReleaseSoil::SubtaskMst2200ReleaseSoil() : SubtaskNodeBase("st_mst2200_release_soil_node")
 {
   // publisher_ = this->create_publisher<std_msgs::msg::Float64>("/mst2200/vessel/cmd", 10);
-  client_ = this->create_client<com3_msgs::srv::DumpUp>("/mst2200/vessel_target_pos");
+  client_ = this->create_client<com3_msgs::srv::DumpUp>("/mst2200vd/vessel_target_pos");
   this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
       this, "st_mst2200_release_soil",
       std::bind(&SubtaskMst2200ReleaseSoil::handle_goal, this, std::placeholders::_1, std::placeholders::_2),

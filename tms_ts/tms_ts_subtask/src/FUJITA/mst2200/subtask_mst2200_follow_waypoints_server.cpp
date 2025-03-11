@@ -26,7 +26,7 @@ SubtaskMst2200FollowWaypointys::SubtaskMst2200FollowWaypointys() : SubtaskNodeBa
         std::bind(&SubtaskMst2200FollowWaypointys::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskMst2200FollowWaypointys::handle_accepted, this, std::placeholders::_1));
 
-    action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "/mst2200/follow_waypoints");
+    action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "/mst2200vd/follow_waypoints");
 }
 
 rclcpp_action::GoalResponse SubtaskMst2200FollowWaypointys::handle_goal(
