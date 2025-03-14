@@ -45,10 +45,6 @@
                                             <Action ID="BlackboardValueReaderMongo" mongo_param_name="TRIGER_1" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="TRIGER_1"/>
                                         </Decorator>
                                         <Action  model_name="mst2200" ID="LeafNodeMst2200" record_name="RELEASE_PATH_2" subtask_name="st_mst2200_follow_waypoints"/>
-                                        <Delay delay_msec="5000">
-                                            <Action  model_name="mst2200" ID="LeafNodeMst2200" record_name="release_angle_1" subtask_name="st_mst2200_release_soil"/>
-                                        </Delay>
-                                        <Action  model_name="mst2200" ID="LeafNodeMst2200" record_name="release_angle_2" subtask_name="st_mst2200_release_soil"/>
                                         <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
                                         <Decorator ID="KeepRunningUntilFlgup" key="TRIGER_2">
                                             <Action ID="BlackboardValueReaderMongo" mongo_param_name="TRIGER_2" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="TRIGER_2"/>
