@@ -26,7 +26,8 @@ def generate_launch_description():
     tms_ur_cv_odom_node1 = Node(
         name="tms_ur_cv_odom1",
         package="tms_ur_construction",
-        executable="tms_ur_cv_odom_to_posest",
+        executable="tms_ur_cv_odom",
+        #executable="tms_ur_cv_odom_to_posest",
         output="screen",
         remappings=[
             ("~/output/odom", "/output/ic120/odom"),

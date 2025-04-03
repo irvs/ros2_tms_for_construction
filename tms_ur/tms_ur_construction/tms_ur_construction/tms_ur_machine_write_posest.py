@@ -84,30 +84,25 @@ class TmsUrMachinePoseWrite(Node):
 
 
 
-    def send_odom_to_db_writer(self, msg: TmsdbTerrainDBPoseWriteSrv) -> None:
+    def send_odom_to_db_writer(self, request, response):
         """
-        Send topics to tms_db_writer (Write the received PoseStamped data to DB).
-
-        parameters
-        ----------
-        msg : PoseStamped
-            Target Object's PoseStamped.
+        TmsdbTerrainDBPoseWriteSrv型のリクエストを受け取ってDBに保存
         """
-
-        self.get_logger().info("Get paramerters.")
-
-       # self.get_logger().info(f"Received {self.machine_name}'s PoseStamped msg")
-        # Log
+        self.get_logger().info(f"Received {request.machine_name}'s PoseStamped msg")
+    
+        # PoseStampedデータを処理する処理を追加
         if not self.is_received:
-            self.get_logger().info(f"Received {msg.machine_name}'s PoseStamped msg")
-            #self.get_logger().info(f"Received {self.machine_name}'s PoseStamped msg")
+            self.get_logger().info(f"Received {request.machine_name}'s PoseStamped msg")
             self.is_received = True
 
-        # Transform
-     #   msg = self.transform(msg)
-        response.written = True 
-        db_msg = self.create_db_msg(msg)
-        self.publisher_.publish(db_msg)
+        # DBに書き込む処理
+        response.written = True  # レスポンスを設定
+    
+        db_msg = self.create_db_msg(request)  # リクエストを使ってDBメッセージを作成
+        self.publisher_.publish(db_msg)  # DBメッセージを発行
+
+        return response
+    
 
     def transform(self, msg: Odometry) -> Odometry:
         """
@@ -169,7 +164,8 @@ class TmsUrMachinePoseWrite(Node):
         tms_db_msg.time = datetime.now().isoformat()
         tms_db_msg.type = DATA_TYPE
         tms_db_msg.id = DATA_ID
-        tms_db_msg.vehicle_name = self.machine_name
+        tms_db_msg.vehicle_name = self.request.machine_name
+        tms_db_msg.record_name = self.request.write_target
 
         # Convert Odometry msg to dictionary and then to json.
         doc: dict = db_util.msg_to_document(msg)

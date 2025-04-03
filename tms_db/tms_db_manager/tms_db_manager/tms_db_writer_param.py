@@ -56,7 +56,6 @@ class TmsDbWriterQuery(Node):
             An instance of a ROS2 custom message to store data.
         """
         ##################
-        collection = db['parameter']  # コレクション名
         # 既存のドキュメントを指定するための条件
       #  query = {"model_name": "ic120", "record_name": "test_PATH"}
         # 更新するためのクエリ条件（車両名と記録名）
