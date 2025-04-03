@@ -72,6 +72,8 @@ class TmsUrMachinePoseWrite(Node):
 
         ############
         ############
+        self.get_logger().info("DBWriter service is ready")
+        ############
         self.srv = self.create_service(
                 TmsdbTerrainDBPoseWriteSrv, "/input/DB_machine/data", self.send_odom_to_db_writer
             )

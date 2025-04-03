@@ -20,6 +20,7 @@ find_package(sensor_msgs REQUIRED)
 rosidl_generate_interfaces(tms_msg_ur
   "srv/SpeakerSrv.srv"
   "srv/TmsdbTerrainDBPoseWriteSrv.srv"
+  "msg/TmsdbPoseWriteMsg.msg"
   DEPENDENCIES builtin_interfaces geometry_msgs
   DEPENDENCIES builtin_interfaces sensor_msgs
 )
