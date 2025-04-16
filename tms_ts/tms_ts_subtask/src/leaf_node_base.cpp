@@ -28,7 +28,7 @@ LeafNodeBase::LeafNodeBase(const std::string& name, const NodeConfiguration& con
   Optional<std::string> subtask_name = getInput<std::string>("subtask_name");
   goal_.model_name = model_name.value();
   goal_.record_name = record_name.value();
-  subtask_name_ = subtask_name.value();
+  subtask_name_ = model_name.value() + "/" + subtask_name.value();
   RCLCPP_INFO(node_->get_logger(), "model_name: %s", goal_.model_name.c_str());
   RCLCPP_INFO(node_->get_logger(), "record_name: %s", goal_.record_name.c_str());
   result_ = rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::WrappedResult();

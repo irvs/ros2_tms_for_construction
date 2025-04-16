@@ -28,7 +28,7 @@ SubtaskIc120NavigateThroughPosesDeg::SubtaskIc120NavigateThroughPosesDeg() : Sub
         std::bind(&SubtaskIc120NavigateThroughPosesDeg::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "/ic120/navigate_through_poses");
+    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "navigate_through_poses");
 }
 
 rclcpp_action::GoalResponse SubtaskIc120NavigateThroughPosesDeg::handle_goal(

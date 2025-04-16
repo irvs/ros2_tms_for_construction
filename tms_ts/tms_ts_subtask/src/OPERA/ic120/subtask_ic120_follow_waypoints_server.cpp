@@ -26,7 +26,7 @@ SubtaskIc120FollowWaypointys::SubtaskIc120FollowWaypointys() : SubtaskNodeBase("
         std::bind(&SubtaskIc120FollowWaypointys::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskIc120FollowWaypointys::handle_accepted, this, std::placeholders::_1));
 
-    action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "/ic120/follow_waypoints");
+    action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "follow_waypoints");
 }
 
 rclcpp_action::GoalResponse SubtaskIc120FollowWaypointys::handle_goal(

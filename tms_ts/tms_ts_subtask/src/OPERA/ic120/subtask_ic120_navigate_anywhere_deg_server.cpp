@@ -27,7 +27,7 @@ SubtaskIc120NavigateAnywhereDeg::SubtaskIc120NavigateAnywhereDeg() : SubtaskNode
         std::bind(&SubtaskIc120NavigateAnywhereDeg::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "/ic120/navigate_to_pose");
+    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "navigate_to_pose");
     // if (action_client_->wait_for_action_server())
     // {
     //     RCLCPP_INFO(this->get_logger(), "Action server is ready");
