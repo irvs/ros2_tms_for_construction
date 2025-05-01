@@ -44,8 +44,7 @@ link_libraries(
   mongocxx
   bsoncxx)
 
-# ExprTk �̃C���N���[�h�f�B���N�g����ǉ�
-include_directories(/usr/local/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
 add_executable(task_schedular_manager src/task_schedular_manager.cpp)
 ament_target_dependencies(task_schedular_manager ${dependencies_cpp})
@@ -96,5 +95,10 @@ install(TARGETS
 install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME}
 )
+
+install(DIRECTORY deps
+  DESTINATION share/${PROJECT_NAME}
+)
+
 
 ament_package()

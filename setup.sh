@@ -113,24 +113,6 @@ cd .. && colcon build --packages-select groot
 sudo apt install -y nlohmann-json3-dev
 
 #Setup OPERA
-# Install dbcppp
-cd && git clone --recurse-submodules https://github.com/genkiiii/dbcppp.git
-cd dbcppp && mkdir build && cd build
-
-# Install caranry
-cd && git clone https://github.com/djarek/canary.git
-cd canary && mkdir build && cd build
-cmake ..
-sudo make install
-
-# Install rttr
-# sudo apt install doxygen
-# https://github.com/irvs/rttr.git # This package is a private repository. Please wait a while until it is made public.
-# cd rttr && mkdir build && cd build
-# cmake ..
-# sudo make install
-# echo 'export RTTR_DIR=/home/common/rttr/build/install/' >> ~/.bashrc
-# source ~/.bashrc
 
 # Install tms_if_for_opera
 cd ~/ros2-tms-for-construction_ws/src
@@ -138,7 +120,7 @@ git clone -b develop/top https://github.com/irvs/tms_if_for_opera.git
 
 # Install common packages for OPERA
 mkdir -p opera/common && cd opera/common
-git clone https://github.com/pwri-opera/com3
+# git clone https://github.com/pwri-opera/com3
 git clone https://github.com/pwri-opera/com3_ros.git
 
 # Install the package for OperaSim-PhysX
@@ -154,11 +136,6 @@ cd .. && mkdir ic120 && cd ic120
 git clone https://github.com/pwri-opera/ic120_ros2.git  # This package is a private repository. Please wait a while until it is made public.
 # git clone https://github.com/pwri-opera/gnss_localizer_ros2.git   # This package is a private repository. Please wait a while until it is made public.
 # git clone https://github.com/pwri-opera/ic120_com3_ros.git  # This package is a private repository. Please wait a while until it is made public.
-
-# Install exprtk
-cd && git clone https://github.com/ArashPartow/exprtk.git
-sudo mv ~/exprtk/exprtk.hpp /usr/local/include
-rm -rf exprtk
 
 # Setup Moveit! and Nav2
 # install MoveIt!
