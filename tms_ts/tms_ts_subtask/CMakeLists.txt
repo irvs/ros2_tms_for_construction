@@ -82,6 +82,9 @@ add_executable(zx200_sample_bucket_subtask src/OPERA/sample/zx200/sample_bucket_
 add_executable(subtask_zx200_change_pose src/OPERA/zx200/subtask_zx200_change_pose.cpp)
 add_executable(subtask_zx200_excavate_simple src/OPERA/zx200/subtask_zx200_excavate_simple.cpp)
 add_executable(subtask_zx200_release_simple src/OPERA/zx200/subtask_zx200_release_simple.cpp)
+add_executable(subtask_zx200_follow_waypoints_server src/OPERA/zx200/subtask_zx200_follow_waypoints_server.cpp)
+add_executable(subtask_zx200_navigate_anywhere_server src/OPERA/zx200/subtask_zx200_navigate_anywhere_server.cpp)
+add_executable(subtask_zx200_navigate_through_poses_server src/OPERA/zx200/subtask_zx200_navigate_through_poses_server.cpp)
 
 set(TARGETS
   subtask_mst2200_follow_waypoints_deg_server
@@ -109,6 +112,9 @@ set(TARGETS
   subtask_zx200_change_pose
   subtask_zx200_excavate_simple
   subtask_zx200_release_simple
+  subtask_zx200_follow_waypoints_server
+  subtask_zx200_navigate_anywhere_server
+  subtask_zx200_navigate_through_poses_server
 )
 
 set(COMMON_INCLUDE_DIRS

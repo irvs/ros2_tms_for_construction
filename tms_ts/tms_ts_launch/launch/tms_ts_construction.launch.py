@@ -47,6 +47,18 @@ def generate_launch_description():
                   package='tms_ts_subtask', 
                   executable='subtask_zx200_release_simple',
                   output='screen'),
+            Node(
+                  package='tms_ts_subtask',
+                  executable='subtask_zx200_follow_waypoints_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask',
+                  executable='subtask_zx200_navigate_anywhere_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask',
+                  executable='subtask_zx200_navigate_through_poses_server',
+                  output='screen'),
             
             # sample ###
             #ic120用
