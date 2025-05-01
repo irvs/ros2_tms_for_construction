@@ -120,7 +120,6 @@ git clone -b develop/top https://github.com/irvs/tms_if_for_opera.git
 
 # Install common packages for OPERA
 mkdir -p opera/common && cd opera/common
-# git clone https://github.com/pwri-opera/com3
 git clone https://github.com/pwri-opera/com3_ros.git
 
 # Install the package for OperaSim-PhysX
