@@ -7,7 +7,7 @@ Note: This feature is under development. In the provided sample program, you can
 
 ##　Background of this implementation
 
-Traditionally, Behavior Trees include a memory area called the Local Blackboard for sharing information among nodes within the task. However, there was no mechanism to exchange information between different Behavior Trees. In such cases, all operations had to be implemented as a single task within one Behavior Tree, which could easily lead to excessively large tasks. Furthermore, when multiple construction machines are involved in an operation, a failure in a single machine would force the entire operation (task) to stop, resulting in low flexibility. To address this, we have developed the Global Blackboard, which enables information sharing between different Behavior Trees. In the Global Blackboard approach, each task is implemented per autonomous vehicle, and by exchanging information via the Global Blackboard, we realize autonomous operations involving multiple construction machines.
+Traditionally, Behavior Trees include a memory area called the [Local Blackboard](https://www.behaviortree.dev/docs/tutorial-basics/tutorial_02_basic_ports/) for sharing information among nodes within the task. However, there was no mechanism to exchange information between different Behavior Trees. In such cases, all operations had to be implemented as a single task within one Behavior Tree, which could easily lead to excessively large tasks. Furthermore, when multiple construction machines are involved in an operation, a failure in a single machine would force the entire operation (task) to stop, resulting in low flexibility. To address this, we have developed the Global Blackboard, which enables information sharing between different Behavior Trees. In the Global Blackboard approach, each task is implemented per autonomous vehicle, and by exchanging information via the Global Blackboard, we realize autonomous operations involving multiple construction machines.
 
 <!-- 従来、Behavior TreeにはLocal Blackboardという同一のタスク内のノード間で情報を共有するためのメモリ領域が存在した。
 一方で、異なるBehavior Tree間で情報をやり取りする仕組みは存在しなかった。
@@ -52,14 +52,14 @@ For parameters, the following types are provided, and users can freely configure
 
 ![](docs/global_blackboard_types.png)
 
-②　Construct your task.Refer to CHAPTER 6 for the overall procedure. Below are the three node types provided for operating the Global Blackboard:
+②　Construct your task.Refer to [CHAPTER 6](./CHAPTER6.md) for the overall procedure. Below are the three node types provided for operating the Global Blackboard:
 
 <!-- ②　次にタスクを構築する。大まかな手順についてはCHAPTER6を参照願いたい。ここではGlobal Blackboardの操作のために用意したノード群として、MonogValueWriter, BlackboardValueReaderMongo, ConditionalExpressionという3種類のノードについて紹介する。 -->
 
 
 ・　MongoValueWriter
 
-Overwrites a value on the Global Blackboard. Ports: input_value, mongo_param_name, mongo_record_name. Using mongo_param_name and mongo_record_name, it finds the matching entry on the Global Blackboard and overwrites it with input_value. For example, with the ports set as shown, executing this node changes the sample_flg value in the sample data to true.
+Overwrites a value on the Global Blackboard. Ports: input_value, mongo_param_name,mongo_record_name. Using mongo_param_name and mongo_record_name, it finds the matching entry on the Global Blackboard and overwrites it with input_value. For example, with the ports set as shown, executing this node changes the sample_flg value in the sample data to true.
 
 <!-- 前述の通り、タスクからBlackboard上の値を書き換えるためのノードである。input_value, mongo_param_name, mongo_record_nameという3種類のノードを持ち、mongo_param_name, mongo_record_nameの2種類のキーを元にGlobal Blackboard上の該当するデータを検索し、input_valueで指定された値で上書きする。例えば以下のようにポートの値を指定した場合には、Behavior Treeがタスクの実装に則り当該ノードを実行した時点で上記画像のサンプルパラメータデータ上のsample_flgの値がtrueに書き換えられる。 -->
 
@@ -75,13 +75,13 @@ Reads a value from the Global Blackboard. Ports: output_port, mongo_param_name, 
 
 ・　ConditionalExpression
 
-Evaluates a condition using Exprtk, supporting various data types (unlike the standard Blackboard condition node). You can reference Local Blackboard values in the expression. The node returns true or false to its parent IF node, which switches child execution based on the result. For example, with the ports set as shown, it checks the Local Blackboard key fgl1; if that value exists and is true, it returns true.
+Evaluates a condition using [Exprtk](https://github.com/ArashPartow/exprtk), supporting various data types (unlike the standard Blackboard condition node). You can reference Local Blackboard values in the expression. The node returns true or false to its parent IF node, which switches child execution based on the result. For example, with the ports set as shown, it checks the Local Blackboard key fgl1; if that value exists and is true, it returns true.
 
 <!-- 条件判定を行うノードである。従来のBlackboardにも条件判定のノードが存在したものの、同一の型をもつ値しか条件式に使用できなかったりと汎用性に乏しかった。このため、Exprtkをベースに、様々なデータ型を条件判定式で使用可能なノードを新たに構築した。本ノードでは以下に示すようにLocal Blackboard上の値を条件式に指定することが可能となっている。条件判定の結果に応じて親ノードにTrue/Falseに対応する値を返却する。基本的に本ノードの親ノードにはIFノードが存在し、条件判定結果に応じて実行する子ノードを切り替えることでタスクの挙動を変化させる。例えば以下のように指定した場合、Local Blackboard上のfgl1というキーを持つデータを検索し、該当するデータが存在した場合には値を読み出してきて、これがtrueであれば親ノードへtrueに対応する値を返却する。 -->
 
 ![](docs/ConditionalExpression.png)
 
-By combining these nodes, you can share information across Behavior Trees while executing a sequence of operations. Note that Global Blackboard values are not reset automatically—use MongoValueWriter at the start of your task tree to clear or initialize values as needed. After implementation, store your task data in MongoDB following CHAPTER 6.
+By combining these nodes, you can share information across Behavior Trees while executing a sequence of operations. Note that Global Blackboard values are not reset automatically—use MongoValueWriter at the start of your task tree to clear or initialize values as needed. After implementation, store your task data in MongoDB following [CHAPTER 6](./CHAPTER6.md).
 
 <!-- 上記のノードを組み合わせてタスクを構築することでBehavior Tree間で情報共有しつつ一連の施工を行うことが可能となる。
 なお、タスクの設計に際しては、自動でGlobal Blackboard上の値がリセットされない点にご留意いただきたい。したがって、タスクツリーの先頭でMongoValueWriterを使用してGlobal Blackboard上の値をリセット可能な形にしておくことをおすすめする。
