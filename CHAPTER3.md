@@ -10,35 +10,25 @@ Static terrain data is not included because it does not need to be acquired in r
 # MongoDB manager
 ros2 launch tms_db_manager tms_db_manager.launch.py
 
-# Odometry
-ros2 launch tms_sp_machine tms_sp_machine_odom_launch.py input/odom:=/demo2/odom machine_name:=demo_machine
+# Odometry and JointStats
+ros2 launch tms_sp_machine tms_sp_machine_odom_demo_launch.py
 
-# Ground 2D map
-ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo2/map_2d ground_name:=demo_ground
-
-# Terrain
-ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/terrain/dynamic/pointcloud2:=/demo2/terrain/dynamic
-```
-
-#### Rviz2
+# Static terrain
 
 ```
-rviz2 -d ./src/ros2_tms_for_construction/demo/demo2/demo2.rviz
-```
+
 
 #### Launch tms_ur_construction
 
 Run the following commands to get data from MongoDB.
 
 ```
-# Get static terrain
-ros2 launch tms_ur_construction tms_ur_construction_terrain_static_launch.py filename:=demo.pcd voxel_size:=0.0
+# Get odometry and jointstates
+ros2 launch tms_ur_construction tms_ur_cv_odom_demo_launch.py
 
-# Service Client and Publisher nodes for static terrain data
-ros2 run tms_ur_test tms_ur_construction_terrain_static_test
+# Static terrain data
+ros2 launch tms_ur_construction tms_ur_construction_terrain_mesh_launch.py filename_mesh:=<filename>
 
-# Get odometry, ground 2D map and terrain data
-ros2 launch tms_ur_construction tms_ur_construction_launch.py machine_name:=demo_machine latest:=true
 ```
 
 #### Play rosbag
