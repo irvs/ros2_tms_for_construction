@@ -38,27 +38,33 @@ def generate_launch_description():
             Node(
                   package='tms_ts_subtask', 
                   executable='subtask_zx200_change_pose',
-                  output='screen'),
+                  output='screen',
+                  namespace = 'zx200'),
             Node(
                   package='tms_ts_subtask', 
                   executable='subtask_zx200_excavate_simple',
-                  output='screen'),
+                  output='screen',
+                  namespace = 'zx200'),
             Node(
                   package='tms_ts_subtask', 
                   executable='subtask_zx200_release_simple',
-                  output='screen'),
+                  output='screen',
+                  namespace = 'zx200'),
             Node(
                   package='tms_ts_subtask',
                   executable='subtask_zx200_follow_waypoints_server',
-                  output='screen'),
+                  output='screen',
+                  namespace = 'zx200'),
             Node(
                   package='tms_ts_subtask',
                   executable='subtask_zx200_navigate_anywhere_server',
-                  output='screen'),
+                  output='screen',
+                  namespace = 'zx200'),
             Node(
                   package='tms_ts_subtask',
                   executable='subtask_zx200_navigate_through_poses_server',
-                  output='screen'),
+                  output='screen',
+                  namespace = 'zx200'),
             
             # sample ###
             #ic120用
@@ -161,11 +167,13 @@ def generate_launch_description():
             Node(
                   package='tms_sp_sensing', 
                   executable='tms_sp_zx200_end_effector',
-                  output='screen'),
+                  output='screen',
+            ),
             Node(
                   package='tms_sp_sensing', 
                   executable='sample',
-                  output='screen'),
+                  output='screen'
+            ),
             Node(
                   package='tms_sp_sensing', 
                   executable='tms_sp_flgs',
@@ -174,9 +182,11 @@ def generate_launch_description():
             Node(
                   package="tms_db_manager", 
                   executable="tms_db_reader_task",
-                  output='screen'),
+                  output='screen'
+                  ),
             Node(
                   package="tms_db_manager", 
                   executable="tms_db_reader_parameter",
-                  output='screen'),
+                  output='screen'
+                  ),
       ])

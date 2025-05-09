@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="MongoValueWriter" input_value="true" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU2"/>
+            <Decorator ID="KeepRunningUntilFlgup" key="TERMINATE_FLG">
+                <Sequence>
+                    <Action ID="LeafNodeZx200" model_name="zx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
+                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU2" output_port="CONTINUE_FLG"/>
+                    <WhileDoElse>
+                        <Action ID="ConditionalExpression" conditional_expression="CONTINUE_FLG == true"/>
+                        <Sequence>
+                            <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple"/>
+                            <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_zx200_change_pose"/>
+                            <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="hold_soil_while_turning_pose" subtask_name="subtask_zx200_change_pose"/>
+                            <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="target_release_pose" subtask_name="subtask_zx200_change_pose"/>
+                            <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="release_angle" subtask_name="subtask_zx200_release_simple"/>
+                            <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="after_release_soil_pose" subtask_name="subtask_zx200_change_pose"/>
+                            <Delay delay_msec="3000">
+                                <AlwaysSuccess/>
+                            </Delay>
+                        </Sequence>
+                        <SetBlackboard output_key="TERMINATE_FLG" value="true"/>
+                    </WhileDoElse>
+                </Sequence>
+            </Decorator>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="BlackboardValueChecker">
+            <inout_port name="key"/>
+        </Action>
+        <Action ID="BlackboardValueReaderMongo">
+            <input_port name="mongo_param_name" type="std::string"/>
+            <input_port name="mongo_record_name" type="std::string"/>
+            <input_port name="output_port" type="std::string"/>
+        </Action>
+        <Action ID="BlackboardValueWriterSrv">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="BlackboardValueWriterTopic">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="ConditionalExpression">
+            <input_port name="conditional_expression" type="std::string"/>
+        </Action>
+        <Action ID="ConditionalExpressionBool">
+            <input_port name="conditional_expression_bool"/>
+        </Action>
+        <Decorator ID="KeepRunningUntilFlgup">
+            <input_port name="key"/>
+        </Decorator>
+        <Action ID="LeafNodeIc120">
+            <input_port default="ic120" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx120">
+            <input_port default="zx120" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx200">
+            <input_port default="zx200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeZx200">
+            <input_port name="model_name" type="float"/>
+            <input_port name="record_name" type="float"/>
+            <input_port name="subtask_name" type="float"/>
+        </Action>
+        <Action ID="MongoValueWriter">
+            <input_port name="input_value" type="std::string"/>
+            <input_port name="mongo_param_name" type="std::string"/>
+            <input_port name="mongo_record_name" type="std::string"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
