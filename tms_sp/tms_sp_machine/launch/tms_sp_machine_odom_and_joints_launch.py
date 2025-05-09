@@ -65,7 +65,6 @@ def generate_launch_description():
         output="screen",
         remappings=[
             ("~/input/joint", "/zx200/joint_state"),
-           #("~/input/odom", "/ic120/odometry/global"),
         ],
         parameters=[
             {

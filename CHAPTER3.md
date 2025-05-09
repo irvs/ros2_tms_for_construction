@@ -14,6 +14,7 @@ ros2 launch tms_db_manager tms_db_manager.launch.py
 ros2 launch tms_sp_machine tms_sp_machine_odom_demo_launch.py
 
 # Static terrain
+python save_image_to_mongodb.py <inputFile>.las --output <outputImage>.png
 
 ```
 
@@ -36,8 +37,6 @@ ros2 launch tms_ur_construction tms_ur_construction_terrain_mesh_launch.py filen
 ```
 ros2 bag play -l ./src/ros2_tms_for_construction/demo/demo2/rosbag2_2
 ```
-
-Rviz will show odometry, ground 2D map and dynamic terrain data like a example of [2. Get stored data](#2-get-stored-data), excluding static terrain.
 
 After the end of rosbag, please check whether the data is stored to fs.chunks, fs.files, machine and sensor collection in your MongoDB.
 

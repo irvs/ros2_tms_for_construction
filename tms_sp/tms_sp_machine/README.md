@@ -42,6 +42,8 @@ After the below command, a node is executed that subscribes Odometry and publish
 
 ```
 ros2 launch tms_sp_machine tms_sp_machine_odom_launch.py input/odom:=/topic/of/odom machine_name:=crawler to_frame:=world
+
+ros2 launch tms_sp_machine_odom_and_joints_launch.py
 ```
 
 ### Inputs / Outputs
@@ -51,6 +53,8 @@ ros2 launch tms_sp_machine tms_sp_machine_odom_launch.py input/odom:=/topic/of/o
 | Name          | Type                      | Description         |
 | ------------- | ------------------------- | ------------------- |
 | `/input/odom` | `nav_msgs::msg::Odometry` | location of machine |
+| `/input/odom` | `geometry_msgs::msg::PoseStamped` | location of machine |
+| `/input/joint` | `sensor_msgs::msg::JointState` | joint angles of machine |
 
 **Outputs**
 

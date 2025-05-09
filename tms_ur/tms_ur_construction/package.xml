@@ -21,6 +21,7 @@
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>shape_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
+    <exec_depend>tms_msg</exec_depend>
   <exec_depend>tms_msg_db</exec_depend>
   <exec_depend>tms_msg_ur</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>

@@ -11,7 +11,13 @@
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/> 
         </Action>
-        
+
+        <Action ID="LeafNodeMst2200">
+            <input_port name=" model_name" default="mst2200"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/> 
+        </Action>
+
         <Action ID="LeafNodeZx200">
             <input_port name=" model_name" default="zx200"/>
             <inout_port name="record_name"/>

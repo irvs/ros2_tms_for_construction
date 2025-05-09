@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
 import numpy as np
 import open3d as o3d
-from time import sleep
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
@@ -26,12 +24,8 @@ from std_msgs.msg import ColorRGBA
 
 from tms_msg_db.msg import ColoredMesh
 from tms_msg_db.msg import TmsdbTerrainImageMsg
-from tms_msg_db.srv import ColoredMeshSrv
 from tms_msg_db.srv import TmsdbTerrainImageSrv
-from tms_msg_db.action import TmsdbGridFS
 from tms_msg_db.action import TmsdbTerrainImage
-import os
-from PIL import Image
 
 NODE_NAME = "tms_ur_construction_terrain_mesh"
 DATA_ID = 4031
@@ -124,21 +118,10 @@ class TmsUrConstructionTerrainMeshClient(Node):
 
         self.get_logger().info("Return a response of Heightmap")
 
-      #  self.get_logger().info(str(future.result()))
         
         # 画像をダウンロード
         #file_idを使って画像を取得
         file_data = result.image
-
-        # 保存先ディレクトリが存在しない場合は作成
- #       os.makedirs(os.path.dirname("DDDesktop/imagedown.png"), exist_ok=True)
-
-        # 画像をローカルに保存
-  #      file_data.save("output_image.png")
-      #  with open("DDDesktop/imagedown.png", 'wb') as f:
-       #     f.write(file_data)
-            #f.write(file_data.read())
-        
 
         # Create ColoredMesh msg
         self.msg: TmsdbTerrainImageMsg.time = result.time
