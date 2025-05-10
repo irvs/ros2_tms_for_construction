@@ -18,6 +18,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Zx200EndEffector.msg"
   "msg/Zx200CollisionObjectsIc120.msg"
   "msg/Flgs.msg"
+  "msg/Flgs202506.msg"
   DEPENDENCIES builtin_interfaces
 )
 

@@ -65,19 +65,19 @@ public:
 
         if (!expr_str)
         {
-            std::cout << "[ConditionalExpression] Missing required input." << std::endl;
+            // std::cout << "[ConditionalExpression] Missing required input." << std::endl;
             return NodeStatus::FAILURE;
         }
 
         bool result;
         if (!evaluateCondition(expr_str.value(), result))
         {
-            std::cout << "[ConditionalExpression] Failed to evaluate condition." << std::endl;
+            // std::cout << "[ConditionalExpression] Failed to evaluate condition." << std::endl;
             return NodeStatus::FAILURE;
         }
 
-        std::cout << "[ConditionalExpression] Evaluated condition: " << expr_str.value() 
-                  << " Result: " << std::boolalpha << result << std::endl;
+        // std::cout << "[ConditionalExpression] Evaluated condition: " << expr_str.value() 
+                //   << " Result: " << std::eboolalpha << result << std::endl;
 
         return result ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
     }
@@ -125,13 +125,13 @@ private:
                     }
                     else
                     {
-                        std::cerr << "[ConditionalExpression] Unsupported type for key: " << key << std::endl;
+                        // std::cerr << "[ConditionalExpression] Unsupported type for key: " << key << std::endl;
                     }
                 }
             }
             catch (const std::exception& e)
             {
-                std::cerr << "[ConditionalExpression] Error retrieving variable " << key_view << ": " << e.what() << std::endl;
+                // std::cerr << "[ConditionalExpression] Error retrieving variable " << key_view << ": " << e.what() << std::endl;
                 return false;
             }
         }
@@ -139,8 +139,8 @@ private:
         for (auto& var : variable_storage)
         {
             double& value = variable_storage[var.first];
-            std::cout << "[ConditionalExpression Debug] Variable: " << var.first 
-                      << " Value: " << value << std::endl;
+            // std::cout << "[ConditionalExpression Debug] Variable: " << var.first 
+            //           << " Value: " << value << std::endl;
             symbol_table.add_variable(var.first, value);
         }
 
@@ -149,17 +149,17 @@ private:
 
         if (!parser.compile(condition, expression))
         {
-            std::cerr << "[ConditionalExpression] Parsing Error: " << parser.error() << std::endl;
+            // std::cerr << "[ConditionalExpression] Parsing Error: " << parser.error() << std::endl;
             for (std::size_t i = 0; i < parser.error_count(); ++i) {
                 exprtk::parser_error::type error = parser.get_error(i);
-                std::cerr << "[ConditionalExpression] Error: " << error.diagnostic
-                          << " at position: " << error.token.position << std::endl;
+                // std::cerr << "[ConditionalExpression] Error: " << error.diagnostic
+                //           << " at position: " << error.token.position << std::endl;
             }
             return false;
         }
 
         result = expression.value() != 0.0;
-        std::cout << "[ConditionalExpression] Condition Result: " << result << std::endl;
+        // std::cout << "[ConditionalExpression] Condition Result: " << result << std::endl;
         return true;
     }
 };
