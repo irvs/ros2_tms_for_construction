@@ -21,7 +21,10 @@
                                 <AlwaysSuccess/>
                             </Delay>
                         </Sequence>
-                        <Action ID="SetLocalBlackboard" output_key="TERMINATE_FLG" value="true"/>
+                        <Sequence>
+                            <Action  model_name="zx200" ID="LeafNodeSampleZx200" record_name="finish_pose" subtask_name="subtask_zx200_change_pose"/>
+                            <Action ID="SetLocalBlackboard" output_key="TERMINATE_FLG" value="true"/>
+                        </Sequence>
                     </IfThenElse>
                 </Sequence>
             </Decorator>
