@@ -92,7 +92,7 @@ The origin of the map coordinates in the world coordinate system is specified by
 | parameter name | description |
 |--------|---------|
 |Offset_x,Offset_y,Offset_z | Coordinates in the world coordinate system of the origin of the map coordinate system. y coordinate in x-plane Cartesian coordinates, z coordinate in y-plane Cartesian coordinates, x coordinate in z-plane Cartesian coordinates |
-|OffsetRotation_x,y,z|  |
+|OffsetRotation_x,y,z| If the model orientation is different from the direction of travel, change the orientation. |
 
 
 
