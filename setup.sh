@@ -116,7 +116,7 @@ sudo apt install -y nlohmann-json3-dev
 
 # Install tms_if_for_opera
 cd ~/ros2-tms-for-construction_ws/src
-git clone -b develop/top https://github.com/irvs/tms_if_for_opera.git
+git clone https://github.com/irvs/tms_if_for_opera.git
 
 # Install common packages for OPERA
 mkdir -p opera/common && cd opera/common
