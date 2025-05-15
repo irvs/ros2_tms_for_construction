@@ -1,4 +1,6 @@
 string type
+int32  id
+string filename
 ---
 string time
 string type

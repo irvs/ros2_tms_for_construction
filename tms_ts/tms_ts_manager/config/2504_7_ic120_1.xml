@@ -66,7 +66,7 @@
                                             <Action ID="BlackboardValueReaderMongo" mongo_param_name="R2n" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU_2" output_port="R2n"/>
                                             <Action ID="BlackboardValueReaderMongo" mongo_param_name="RM2n" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU_2" output_port="RM2n"/>
                                             <IfThenElse>
-                                                <Action ID="ConditionalExpression" conditional_expression="CURRENT_LOCATION==2 and RM1n==false and ((R2n==false and RM2n==false) or (R2UP==true and R2n==true and RM2n==false) or (RM2UP==true and RM2n==true and R2n==false))"/>
+                                                <Action ID="ConditionalExpression" conditional_expression="CURRENT_LOCATION==2 and RM1n==false and ((R2n==false and RM2n==false) or (R2UP==true and R2n==true) or (RM2UP==true and RM2n==true))"/>
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RM1n" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU_2"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RM1UP" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU_2"/>

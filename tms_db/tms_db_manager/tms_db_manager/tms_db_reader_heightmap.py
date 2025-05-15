@@ -107,39 +107,26 @@ class TmsDbReaderGridFSActionServer(Node):
 
         file_obj = None
         while file_obj is None:
-            # MongoDB から画像ファイルを取得（例：GridFSから）
             file_obj = self.fs.find_one(
              {'type': self.request.type, 'filename': self.request.filename},
                 sort=[('time', pymongo.DESCENDING)]
             )
-            #self.get_logger().info("Finding a heightmap")
 
             feedback_msg = TmsdbTerrainImage.Feedback()
             goal_handle.publish_feedback(feedback_msg)
 
-        # MongoDB から取得したファイルをバイナリデータとして読み取る
         image_data = self.fs.get(file_obj._id).read()
 
-        # バイナリデータをOpenCVで読み込み
         nparr = np.frombuffer(image_data, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-        # OpenCV 画像をROSの Image メッセージに変換
         bridge = CvBridge()
         ros_image = bridge.cv2_to_imgmsg(img, encoding="bgr8")
 
-        
-        # ROSのヘッダを設定
         ros_image.header = Header()
         ros_image.header.stamp = self.get_clock().now().to_msg()
 
-        '''
-        goal_handle.succeed()
-        self.get_logger().info("Export a heightmap")
-        return ros_image
-        '''
-
-        file_time = file_obj.time  # metadataからtimeを取得
+        file_time = file_obj.time
 
         goal_handle.succeed()
         result = TmsdbTerrainImage.Result()
