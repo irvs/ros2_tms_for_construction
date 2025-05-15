@@ -1,50 +1,4 @@
-### 3. Store and get data simultaneously in real-time
 
-Run the following commands to store data in MongoDB and get the data.
-
-Static terrain data is not included because it does not need to be acquired in real-time.
-
-#### Launch
-
-```
-# MongoDB manager
-ros2 launch tms_db_manager tms_db_manager.launch.py
-
-# Odometry and JointStats
-ros2 launch tms_sp_machine tms_sp_machine_odom_demo_launch.py
-
-# Static terrain
-python save_image_to_mongodb.py <inputFile>.las --output <outputImage>.png
-
-```
-
-
-#### Launch tms_ur_construction
-
-Run the following commands to get data from MongoDB.
-
-```
-# Get odometry and jointstates
-ros2 launch tms_ur_construction tms_ur_cv_odom_demo_launch.py
-
-# Static terrain data
-ros2 launch tms_ur_construction tms_ur_construction_terrain_mesh_launch.py filename_mesh:=<filename>
-
-```
-
-#### Play rosbag
-
-```
-ros2 bag play -l ./src/ros2_tms_for_construction/demo/demo2/rosbag2_2
-```
-
-After the end of rosbag, please check whether the data is stored to fs.chunks, fs.files, machine and sensor collection in your MongoDB.
-
-GUI tool of MongoDB like a MongoDB Compass is easy to check them.
-
-Here is an example. It may be a little different than yours, but as long as it is roughly the same, you should be fine.
-
-![](demo/demo2/demo_mongodb_compass.png)
 
 
 ## Playmode (visualizeation finction)
@@ -63,7 +17,7 @@ The system receives the position, orientation, and joint angle data published by
 | position and orientation | `sensor_msgs::msg::JointState` `nav_msgs::msg::Odometry`      | position and orientation of each machine. Plane Cartesian Coordinate System Reference .|
 | angle of vessel | `sensor_msgs::msg::JointState` | angle of swing and boom, arm, bucket of each machine |
 
-### about settings of subscriber 
+### about settings of location information subscriber 
 Set from the "PoseSubscriber" attached to the construction machine.
 
 **explanation of parameter**
@@ -98,3 +52,19 @@ The origin of the map coordinates in the world coordinate system is specified by
 
 ![](docs/OperaSimVR/ModelName.png)
 
+
+### about settings of joints information subscriber 
+Set from the "JointSubscriber" attached to the construction machine.
+
+**explanation of parameter**
+| parameter name | description |
+|--------|---------|
+|ViaDB | Check this box if you want to retrieve information via a database. 
+|JointChangeSw | Check if you want to change the joint angles of the construction machine model.
+|SimPhysXSubscribeTopicName | Specify the topic name of PhysX location information (for operation test).
+|SimAGXSubscribeTopicName | Specify the topic name of AGX location information (for operation test).
+|RealSubscribeTopicName | Specify the topic name that publishes the position and joint information of the actual machine.
+|ViaDBSubscribeTopicName | Specifies the topic name when going through a database.
+|JointPositions | Don't change.
+
+![](docs/OperaSimVR/JointSubscriber.png)
