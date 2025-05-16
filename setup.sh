@@ -122,7 +122,9 @@ sudo apt install -y nlohmann-json3-dev
 #Setup OPERA
 mkdir -p \
   "$WS_SRC/opera/common" \
-```
+  "$WS_SRC/opera/simulator" \
+  "$WS_SRC/opera/zx200" \
+  "$WS_SRC/opera/ic120"
 git clone https://github.com/pwri-opera/com3_ros.git "$WS_SRC/opera/common/com3_ros"
 
 # Install the package for OperaSim-PhysX
