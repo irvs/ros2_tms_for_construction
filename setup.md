@@ -1,3 +1,6 @@
+## Setup Environmental Variables
+export WS_SRC=~/ros2-tms-for-construction_ws/src
+
 ## Install
 
 ### ROS2 Humble
@@ -104,10 +107,9 @@ cd && rm -rf mongo-c-driver-1.24.4 mongo-c-driver-1.24.4.tar.gz mongo-cxx-driver
 
 ### Setup Groot
 ```
-sudo apt install qtbase5-dev libqt5svg5-dev libzmq3-dev libdw-dev
-cd ~/ros2-tms-for-construction_ws/src && git clone https://github.com/BehaviorTree/Groot.git
-cd .. && colcon build --packages-select groot
-./build/groot/Groot
+sudo apt install -y qtbase5-dev libqt5svg5-dev libzmq3-dev libdw-dev
+git clone https://github.com/BehaviorTree/Groot.git "$WS_SRC/Groot"
+cd ~/ros2-tms-for-construction_ws && colcon build --packages-select groot
 ```
 
 ### Install nlohmann-json library
@@ -117,37 +119,44 @@ sudo apt install nlohmann-json3-dev
 
 ### Setup OPERA
 ```
+mkdir -p \
+  "$WS_SRC/opera/common" \
+  "$WS_SRC/opera/simulator" \
+  "$WS_SRC/opera/zx200" \
+  "$WS_SRC/opera/ic120"
 
 # Install tms_if_for_opera
-cd ~/ros2-tms-for-construction_ws/src
-git clone -b develop/top https://github.com/irvs/tms_if_for_opera.git
+git clone https://github.com/irvs/tms_if_for_opera.git "$WS_SRC/tms_if_for_opera"
 
 # Install common packages for OPERA
-mkdir -p opera/common && cd opera/common
-git clone https://github.com/pwri-opera/com3_ros.git
+git clone https://github.com/pwri-opera/com3_ros.git "$WS_SRC/opera/common/com3_ros"
 
 # Install the package for OperaSim-PhysX
-cd .. && mkdir simulator && cd simulator
-git clone -b main-ros2 https://github.com/Unity-Technologies/ROS-TCP-Endpoint.git
+git clone -b main-ros2 https://github.com/Unity-Technologies/ROS-TCP-Endpoint.git \
+  "$WS_SRC/opera/simulator/ROS-TCP-Endpoint"
 
 # Install packages for OPERA-compatible backhoe ZX200
-cd .. && mkdir zx200 && cd zx200
-git clone https://github.com/pwri-opera/zx200_ros2.git
+git clone https://github.com/pwri-opera/zx200_ros2.git \
+  "$WS_SRC/opera/zx200/zx200_ros2"
 
 # Install packages for OPERA-compatible crawler dump IC120
-cd .. && mkdir ic120 && cd ic120
-git clone https://github.com/pwri-opera/ic120_ros2.git  # This package is a private repository. Please wait a while until it is made public.
-git clone https://github.com/pwri-opera/gnss_localizer_ros2.git   # This package is a private repository. Please wait a while until it is made public.
-git clone https://github.com/pwri-opera/ic120_com3_ros.git  # This package is a private repository. Please wait a while until it is made public.
+git clone https://github.com/pwri-opera/ic120_ros2.git "$WS_SRC/opera/ic120/ic120_ros2"
+# git clone https://github.com/pwri-opera/gnss_localizer_ros2.git 
+# git clone https://github.com/pwri-opera/ic120_com3_ros.git 
+
 ```
 
 
-### Setup MoveIt! and Nav2
+### Setup MoveIt!, Nav2 and depended packages
 ```
 # install MoveIt!
-sudo apt install ros-humble-*moveit*
+sudo apt -y install ros-humble-*moveit*
 # install Nav2
-sudo apt install ros-humble-*nav2*
+sudo apt -y install ros-humble-*nav2*
+# install robot_localization package
+sudo apt -y install ros-humble-robot-localization 
+#install tf package
+sudo apt -y install ros-humble-*tf*
 ```
 
 ### Build the workspace
