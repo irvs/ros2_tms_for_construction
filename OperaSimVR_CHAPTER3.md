@@ -114,3 +114,4 @@ This system can display images from cameras by linking with sensor pods (sensor 
 | ------------------------------------- | ----------------------------------- | ----------------------------------------------------------- |
 | movie | `sensor_msgs::CompressedImage`  | Movie from sensor pods(sensor cameras). |
 
+For each child object ("SensorPod") under "SensorPods", specify the topic name for subscribing to sensor pod (sensor camera) images in the parameter "ImageTopicName" of the attached script "SensorCameraNamespace".
