@@ -1,7 +1,7 @@
 
 
 ## Usege of this system
-In this system, two PCs are used: one for launching OperaSimVR (PC_A), and another (PC_B) that communicates with construction machinery via ROS 2. PC_B is connected to the actual machinery and runs ros_tcp_endpoint to establish communication with PC_A. When immersing in the cyber space using a VR headset (Quest), PC_A and the Quest headset are connected via Air Link or Quest Link.
+In this system, two PCs are used: one for launching OperaSimVR (PC_A), and another (PC_B) that communicates with construction machinery via ROS 2. PC_B is connected to the actual machinery and runs ros_tcp_endpoint to establish communication with PC_A. The system can be used either with a VR headset or without one, using keyboard controls. When immersing in the cyber space using a VR headset (Quest), PC_A and the Quest headset are connected via Air Link or Quest Link.
 
 
 ## Install
@@ -26,9 +26,10 @@ Please clone ROS2_TMS_FOR_CONSTRUCTION from https://github.com/irvs/ros2_tms_for
 # OperasimVR
 OperasimVR has 4 functions(nomal mode and play mode, controll mode, preview mode). Nomal mode is 
 
-## Playmode (visualizeation finction)
+## Playmode (visualizeation function)
 The system receives the position, orientation, and joint angle data published by the real heavy machinery as ROS 2 topics, and updates the corresponding position, orientation, and joint angles of the machinery model within the system. As a result, the heavy machinery model in OperaSimVR moves in sync with the real-world machine.
 
+### about handling information
 
 **crawler dump**
 | Type of information | Message type                       | Description                                                 |
@@ -55,7 +56,7 @@ Set from the "PoseSubscriber" attached to the construction machine.
 |SimAGXSubscribeTopicName | Specify the topic name of AGX location information (for operation test).
 |RealSubscribeTopicName | Specify the topic name that publishes the position and joint information of the actual machine.
 |ViaDBSubscribeTopicName | Specifies the topic name when going through a database.
-|ChengePosition_sw | Check if you want to change the position of the construction machine model.
+|ChengePosition_sw | Check if you want to change the position of the construction machine model(You can switch it on and off even while playing).
 |MapMachinePosition | Don't change.
 |MapMachineRotation | Don't change.
 
@@ -65,13 +66,13 @@ Set from the "PoseSubscriber" attached to the construction machine.
 
 ### How to convert from world coordinate system to map coordinate system
 
-The origin of the map coordinates in the world coordinate system is specified by the "Model_name" attached to each construction equipment object. Move the object's MapReferencePoint to the same position in the cyberspace field as the origin of the map coordinate system of the actual field.
+The origin of the map coordinates in the world coordinate system is specified by the "Model_name" attached to each construction equipment object. Move the object's "MapReferencePoint" to the same position in the cyberspace field as the origin of the map coordinate system of the actual field.
 
 **explanation of parameter**
 | parameter name | description |
 |--------|---------|
-|Offset_x,Offset_y,Offset_z | Coordinates in the world coordinate system of the origin of the map coordinate system. y coordinate in x-plane Cartesian coordinates, z coordinate in y-plane Cartesian coordinates, x coordinate in z-plane Cartesian coordinates |
-|OffsetRotation_x,y,z| If the model orientation is different from the direction of travel, change the orientation. |
+|Offset_x,Offset_y,Offset_z | Coordinates in the world coordinate system of the origin of the map coordinate system. y coordinate in x-plane Cartesian coordinates, z coordinate in y-plane Cartesian coordinates, x coordinate in z-plane Cartesian coordinates(You can switch it on and off even while playing). |
+|OffsetRotation_x,y,z| If the model orientation is different from the direction of travel, change the orientation(You can switch it on and off even while playing). |
 
 
 
@@ -85,7 +86,7 @@ Set from the "JointSubscriber" attached to the construction machine.
 | parameter name | description |
 |--------|---------|
 |ViaDB | Check this box if you want to retrieve information via a database. 
-|JointChangeSw | Check if you want to change the joint angles of the construction machine model.
+|JointChangeSw | Check if you want to change the joint angles of the construction machine model(You can switch it on and off even while playing).
 |SimPhysXSubscribeTopicName | Specify the topic name of PhysX location information (for operation test).
 |SimAGXSubscribeTopicName | Specify the topic name of AGX location information (for operation test).
 |RealSubscribeTopicName | Specify the topic name that publishes the position and joint information of the actual machine.
@@ -94,4 +95,22 @@ Set from the "JointSubscriber" attached to the construction machine.
 
 ![](docs/OperaSimVR/JointSubscriber.png)
 
+
+### How to operate
+
+When using it with the real heavy machinery, set the parameter "ForSimOrReal" of the script "FieldMainManager" attached to "FieldManager" to "ForReal". For operation testing with PhysX or AGX, set SimOrReal to ForSimPhysX or ForSimAGX instead. By changing this, the topic name, topic type, and the type of information transmitted and received will be altered. Avoid changing it during play.
+![](docs/OperaSimVR/FieldManeger.png)
+
+
+If you want to change the mode, modify the parameter "WhichMode" of script "ModeSelector" attached to "FieldManager": set it to "NomalModeSimulator" for "NomalMode", "PlayMode" for "PlayMode", and "PrevievMode" for "PrevievMode".
+![](docs/OperaSimVR/ModeSelector.png)
+
+
+### SensorPod Images
+This system can display images from cameras by linking with sensor pods (sensor cameras) installed in the field.
+
+**sensor pod(sensor camera)**
+| Type of information | Message type                       | Description                                                 |
+| ------------------------------------- | ----------------------------------- | ----------------------------------------------------------- |
+| movie | `sensor_msgs::CompressedImage`  | Movie from sensor pods(sensor cameras). |
 
