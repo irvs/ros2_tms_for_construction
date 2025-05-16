@@ -125,6 +125,8 @@ mkdir -p \
   "$WS_SRC/opera/simulator" \
   "$WS_SRC/opera/zx200" \
   "$WS_SRC/opera/ic120"
+
+# Install tms_if_for_opera
 git clone https://github.com/pwri-opera/com3_ros.git "$WS_SRC/opera/common/com3_ros"
 
 # Install the package for OperaSim-PhysX
@@ -137,8 +139,7 @@ git clone https://github.com/pwri-opera/zx200_ros2.git \
 
 # Install packages for OPERA-compatible crawler dump IC120
 git clone https://github.com/pwri-opera/ic120_ros2.git "$WS_SRC/opera/ic120/ic120_ros2"
-# git clone https://github.com/pwri-opera/gnss_localizer_ros2.git 
-# git clone https://github.com/pwri-opera/ic120_com3_ros.git 
+git clone https://github.com/pwri-opera/gnss_localizer_ros2.git "$WS_SRC/opera/common/gnss_localizer_ros2"
 
 # Setup Moveit! and Nav2
 # install MoveIt!
@@ -155,5 +156,4 @@ rm -rf "$WS_SRC"/{ic120,zx200,opera/ROS-TCP-Endpoint}
 
 #Build the workspace 
 cd ~/ros2-tms-for-construction_ws
-colcon build --packages-select com3_msgs && source install/setup.bash
 colcon build && source install/setup.bash
