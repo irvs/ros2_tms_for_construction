@@ -165,7 +165,11 @@ void SubtaskMst110crNavigateAnywhere::result_callback(const std::shared_ptr<Goal
   auto result_to_leaf = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
   switch (result.code)
   {
-    case rclcpp_action::ResultCoIC120
+    case rclcpp_action::ResultCode::SUCCEEDED:
+      result_to_leaf->result = true;
+      goal_handle->succeed(result_to_leaf);
+      RCLCPP_INFO(this->get_logger(), "Subtask execution is succeeded");
+      break;
     case rclcpp_action::ResultCode::ABORTED:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
