@@ -162,6 +162,25 @@ def generate_launch_description():
                   package='tms_ts_subtask', 
                   executable='subtask_mst2200_release_soil_server',
                   output='screen'),
+
+            #MST110CR
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='subtask_mst110cr_follow_waypoints_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='subtask_mst110cr_navigate_anywhere_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='subtask_mst110cr_navigate_through_poses_server',
+                  output='screen'),
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='subtask_mst110cr_release_soil_server',
+                  output='screen'),            
+
             
             # センシング処�?後�?��?ータをデータベ�?�スに取り込むためのノ�?�ド�?
             Node(

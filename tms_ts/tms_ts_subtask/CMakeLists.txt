@@ -86,6 +86,12 @@ add_executable(subtask_zx200_follow_waypoints_server src/OPERA/zx200/subtask_zx2
 add_executable(subtask_zx200_navigate_anywhere_server src/OPERA/zx200/subtask_zx200_navigate_anywhere_server.cpp)
 add_executable(subtask_zx200_navigate_through_poses_server src/OPERA/zx200/subtask_zx200_navigate_through_poses_server.cpp)
 
+# Substak Nodes for MST110CR
+add_executable(subtask_mst110cr_follow_waypoints_server src/OPERA/mst110cr/subtask_mst110cr_follow_waypoints_server.cpp)
+add_executable(subtask_mst110cr_navigate_anywhere_server src/OPERA/mst110cr/subtask_mst110cr_navigate_anywhere_server.cpp)
+add_executable(subtask_mst110cr_navigate_through_poses_server src/OPERA/mst110cr/subtask_mst110cr_navigate_through_poses_server.cpp)
+add_executable(subtask_mst110cr_release_soil_server src/OPERA/mst110cr/subtask_mst110cr_release_soil_server.cpp)
+
 set(TARGETS
   subtask_mst2200_follow_waypoints_deg_server
   subtask_mst2200_follow_waypoints_server
@@ -115,6 +121,10 @@ set(TARGETS
   subtask_zx200_follow_waypoints_server
   subtask_zx200_navigate_anywhere_server
   subtask_zx200_navigate_through_poses_server
+  subtask_mst110cr_follow_waypoints_server
+  subtask_mst110cr_navigate_anywhere_server
+  subtask_mst110cr_navigate_through_poses_server
+  subtask_mst110cr_release_soil_server
 )
 
 set(COMMON_INCLUDE_DIRS
