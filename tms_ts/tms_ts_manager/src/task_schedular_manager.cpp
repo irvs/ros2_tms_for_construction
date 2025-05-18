@@ -25,6 +25,7 @@
 #include "tms_ts_subtask/FUJITA/mst2200/leaf_node.hpp"
 #include "tms_ts_subtask/OPERA/ic120/leaf_node.hpp"
 #include "tms_ts_subtask/OPERA/zx200/leaf_node.hpp"
+#include "tms_ts_subtask/OPERA/mst110cr/leaf_node.hpp"
 #include "tms_ts_subtask/common/blackboard_value_checker.hpp"
 #include "tms_ts_subtask/common/blackboard_value_writer_topic.hpp"
 #include "tms_ts_subtask/common/blackboard_value_writer_srv.hpp"
@@ -51,6 +52,7 @@ public:
     
     factory.registerNodeType<LeafNodeMst2200>("LeafNodeMst2200");
     factory.registerNodeType<LeafNodeIc120>("LeafNodeIc120");
+    factory.registerNodeType<LeafNodeMst110cr>("LeafNodeMst110cr");
     factory.registerNodeType<LeafNodeSampleZx120>("LeafNodeSampleZx120");
     factory.registerNodeType<LeafNodeSampleZx200>("LeafNodeSampleZx200");
     factory.registerNodeType<LeafNodeZx200>("LeafNodeZx200");

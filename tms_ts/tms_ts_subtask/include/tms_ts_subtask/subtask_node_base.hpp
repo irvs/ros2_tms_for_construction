@@ -37,6 +37,18 @@ public:
 private:
 };
 
+static inline std::string bson_type_name(bsoncxx::type t) {
+  switch (t) {
+    case bsoncxx::type::k_double:   return "double";
+    case bsoncxx::type::k_utf8:     return "string";
+    case bsoncxx::type::k_array:    return "array";
+    case bsoncxx::type::k_int32:    return "int32";
+    case bsoncxx::type::k_int64:    return "int64";
+    default:                        return "unknown";
+  }
+}
+
+
 // This function is to get array-type parameters from the database. (This function only supports 2D arrays.)
 template <typename K, typename T>
 std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool>) {
@@ -51,11 +63,12 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
   if (result)
   {
     std::map<K,T> dataMap;
+    auto view = result->view();
+    std::cout << "Loaded parameter data:\n" << bsoncxx::to_json(view) << "\n\n";
 
     for (auto&& element : result->view()) {
         int index = 0;
         std::string key = element.key().to_string();
-        std::cout << "A" << std::endl;
         if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
             auto array = element.get_array().value;
             for (auto&& item : array) { 
@@ -81,6 +94,16 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
                 std::cout << value << std::endl;
               }else{
                 std::cout << "Type error" << std::endl;
+                bsoncxx::builder::basic::document tmp_doc{};
+                tmp_doc.append(bsoncxx::builder::basic::kvp(key, element.get_value()));
+                std::string type_name = bson_type_name(element.type());
+                bsoncxx::builder::basic::document tmp{};
+                tmp.append(bsoncxx::builder::basic::kvp(key, element.get_value()));
+                std::cout << "[TypeError] key=\"" << key
+                          << "\"  type=" << type_name
+                          << "  raw_value=" << bsoncxx::to_json(tmp.view())
+                          << "\n";
+                std::cout << "This node only supports array type. Types such as int32, int64, and double cannot be used, so please rewrite your parameter data accordingly." << std::endl;
               }
             }  
             // for (auto&& item : array) { 
@@ -89,7 +112,6 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
             // }
         }
     }
-
     return dataMap;
   }
   else
@@ -111,10 +133,11 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
   filter_builder << "model_name" << model_name << "record_name" << record_name;
   auto filter = filter_builder.view();
   auto result = collection.find_one(filter);
-  std::cout << "B" << std::endl;
   if (result)
   {
     std::map<K,T> dataMap;
+    auto view = result->view();
+    std::cout << "Loaded parameter data:\n" << bsoncxx::to_json(view) << "\n\n";
 
     for (auto&& element : result->view())
     {
@@ -140,6 +163,16 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
           std::cout << value << std::endl;
         }else{
           std::cout << "Type error" << std::endl;
+        bsoncxx::builder::basic::document tmp_doc{};
+        tmp_doc.append(bsoncxx::builder::basic::kvp(key, element.get_value()));
+        std::string type_name = bson_type_name(element.type());
+        bsoncxx::builder::basic::document tmp{};
+        tmp.append(bsoncxx::builder::basic::kvp(key, element.get_value()));
+        std::cout << "[TypeError] key=\"" << key
+                  << "\"  type=" << type_name
+                  << "  raw_value=" << bsoncxx::to_json(tmp.view())
+                  << "\n";
+        std::cout << "This node only supports int32, int64, and double types. Types such as arrays cannot be used, so please rewrite your parameter data accordingly." << std::endl;
         }
       }
     }
