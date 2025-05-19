@@ -145,6 +145,7 @@ When using it with the real heavy machinery, set the parameter "ForSimOrReal" of
 
 ### §1.2.2 configuration of using mode
 If you want to change the mode, modify the parameter "WhichMode" of script "ModeSelector" attached to "FieldManager": set it to "NomalModeSimulator" for "NomalMode", "PlayMode" for "PlayMode", and "PrevievMode" for "PrevievMode". When you use PlayMode, set "WhichMode" to "PlayMode".
+
 ![](docs/OperaSimVR/ModeSelector.png)
 
 ### §1.2.3 Setting the origin of the map coordinate system in the cyber space.
@@ -162,3 +163,42 @@ This system can display images from cameras by linking with sensor pods (sensor 
 #### Setting the topic names in ROS 2.
 For each child object ("SensorPod") under "SensorPods", specify the topic name for subscribing to sensor pod (sensor camera) images in the parameter "ImageTopicName" of the attached script "SensorCameraNamespace".
 ![](docs/OperaSimVR/SensorpodTopicname.png)
+
+## about terrain 
+This system allows for terrain reconstruction using real-world field terrain data. There are three methods for creating terrain:
+
+1. Reading point cloud data in LAS format.
+
+2. Importing terrain data and textures converted to a heightmap, then generating the terrain using a script.
+
+3. Importing terrain data and textures converted to a heightmap, then shaping the terrain via the Inspector.
+
+
+About Method 1: Reading Point Cloud Data in LAS Format
+In this method, terrain is created by importing point cloud data stored in the LAS format, which is commonly used for representing 3D spatial information obtained from sources like LiDAR. The workflow generally involves the following steps:
+1. Convert the LAS data and store it in the TMS_DB. For details, refer to ～～.
+2. Start the ROS 2 service for reading terrain data stored in the TMS_DB (for details, refer to ～～～). 
+3. When the TerrainImporter attached to the terrain object is activated, it sends a request to the server that provides the terrain data. The stored terrain data is then retrieved and transmitted back.
+
+**explanation of parameter**
+| parameter name | description |
+|--------|---------|
+|RequestInterval | The interval (in seconds) at which requests are sent to the server to retrieve terrain data.
+|Terrain | Terrain that deforms into the actual landscape.
+|TerrainRecordSw | Check this option if you want the deformed terrain to remain unchanged even after stopping Unity's Play mode.
+
+You do not need to modify the other parameters, as they will be updated automatically upon receiving the retrieved terrain data.
+
+
+
+![](docs/OperaSimVR/TerrainImporter.png)
+
+
+
+
+
+
+
+![](docs/OperaSimVR/TerrainMaker.png)
+
+
