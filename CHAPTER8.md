@@ -5,7 +5,7 @@ Note: This feature is under development. In the provided sample program, you can
 <!-- ※　本機能は開発途上であり、サンプルとして用意されているプログラムで実行可能なのは指定したタスク2つまでです。これ以上のタスクを同時に実行することも可能ですが、使用にはご自身でプログラムの一部を書き換えていただく必要がある点にご留意ください。 -->
 
 
-##　Background of this implementation
+#### Background of this implementation
 
 Traditionally, Behavior Trees include a memory area called the [Local Blackboard](https://www.behaviortree.dev/docs/tutorial-basics/tutorial_02_basic_ports/) for sharing information among nodes within the task. However, there was no mechanism to exchange information between different Behavior Trees. In such cases, all operations had to be implemented as a single task within one Behavior Tree, which could easily lead to excessively large tasks. Furthermore, when multiple construction machines are involved in an operation, a failure in a single machine would force the entire operation (task) to stop, resulting in low flexibility. To address this, we have developed the Global Blackboard, which enables information sharing between different Behavior Trees. In the Global Blackboard approach, each task is implemented per autonomous vehicle, and by exchanging information via the Global Blackboard, we realize autonomous operations involving multiple construction machines.
 
@@ -16,7 +16,7 @@ Traditionally, Behavior Trees include a memory area called the [Local Blackboard
 そこで、異なるBehavior Tree間での情報の共有を可能とするGlobal Blackboardを新たに開発した。
 Globnal Blackboardでは個々のタスクを自律移動体ごとに実装するものとし、Global Blackboardを介して情報のやり取りを行うことで複数建機による自律化施工を実現する。 -->
 
-##　Details of the Global Blackboard
+#### Details of the Global Blackboard
 
 The Global Blackboard is a mechanism for sharing information between different tasks via MongoDB, as shown below. Please note that this description provides an overview of the Global Blackboard and may differ from some internal implementation details.
 
@@ -34,7 +34,7 @@ The Local Blackboard is the built-in memory area in the Behavior Tree, and you c
 
 なお、Local BlackboardはBehavior Treeに標準搭載されているメモリ領域であり、標準で用意されているノードを指定して読み出してくることが可能である。Loacal Blackboard上の値の使用方法については以下に記載する。 -->
 
-## Usage
+#### Usage
 
 Note: In the following description, we refer to the data group placed under rostmsdb/parameter as "parameter data," and the elements within parameter data, excluding _id and record_name, as "parameters."
 
