@@ -24,12 +24,39 @@ Please clone ROS2_TMS_FOR_CONSTRUCTION from https://github.com/irvs/ros2_tms_for
 3. From the top toolbar in the Unity Editor, go to "Robotics" > "ROS Setting". Change the "Protocol" to "ROS2", and set the "ROS IP Address" to the IP address of PC_B.
 
 # OperasimVR
-OperasimVR has 4 functions(nomal mode and play mode, controll mode, preview mode). Nomal mode is 
+OperaSimVR was developed as an extension of OperaSim. OperasimVR has 4 functions(nomal mode and play mode, controll mode, preview mode). This system includes not only the original simulator function (Standard Mode) from OperaSim, but also a visualization function (Playback Mode), a control function (Control Mode), and a preview function (Preview Mode).
 
-## Playmode (visualizeation function)
+## §0. Usage Instructions
+This system can be used either with immersive VR goggles or without them by operating from the keyboard. In both cases, there are situations where interaction with Unity's Inspector window is required.
+
+### Move through the cyber (virtual) space.
+
+**When you use VR goggles**
+| operation | controller operation |
+|--------|---------|
+|Roaming in cyberspace | Use the D-pad (Axis2D.PrimaryThumbstick) on the left controller to move. Pushing it forward moves you forward, backward moves you back, left strafes left, and right strafes right.
+|Change Direction | Use the D-pad (Axis2D.SecondaryThumbstick) on the right controller to change direction. Pushing it to the left rotates to the left, and pushing it to the right rotates to the right.
+|Overview (Bird’s-Eye View) | Pressing both the X button (Button.Three) and the Y button (Button.Four) on the left controller simultaneously switches to a bird’s-eye view. Pressing the X button makes you ascend, and pressing the Y button makes you descend. The methods for moving forward, backward, sideways, and changing direction are the same as when "Roaming in cyberspace" or "Change Direction". To return to walking on the ground, press the B button (Button.Two) on the right controller.
+|Board the construction equipment model. | Point the Lay from the left controller at the construction equipment model you want to board, and then press the trigger (Axis1D.PrimaryIndexTrigger) on the left controller.To disembark, press the B button (Button.Two) on the right controller.
+
+
+----
+
+
+**When you  operate from the keyboard**
+| operation | controller operation |
+|--------|---------|
+|Roaming in cyberspace | Use the arrow keys on the keyboard to move. Press the up arrow to move forward, the down arrow to move backward, Shift + left arrow to move left, and Shift + right arrow to move right.
+|Change Direction | Use the arrow keys on the keyboard to rotate. Press the left arrow to rotate left, and the right arrow to rotate right.
+|Overview (Bird’s-Eye View) | Use the arrow keys on the keyboard. Press the left Shift key + up arrow to ascend, and the left Shift key + down arrow to descend.
+|Board the construction equipment model. | Face the construction equipment you want to board and press the V key. To disembark, press the B key.
+
+
+
+## §1.  Playmode (visualizeation function)
 The system receives the position, orientation, and joint angle data published by the real heavy machinery as ROS 2 topics, and updates the corresponding position, orientation, and joint angles of the machinery model within the system. As a result, the heavy machinery model in OperaSimVR moves in sync with the real-world machine.
 
-### about handling information
+### §1.1 about handling information
 
 **crawler dump**
 | Type of information | Message type                       | Description                                                 |
@@ -43,7 +70,14 @@ The system receives the position, orientation, and joint angle data published by
 | position and orientation | `sensor_msgs::msg::JointState` `nav_msgs::msg::Odometry`      | position and orientation of each machine. Plane Cartesian Coordinate System Reference .|
 | angle of vessel | `sensor_msgs::msg::JointState` | angle of swing and boom, arm, bucket of each machine |
 
-### about settings of location information subscriber 
+
+The following describes the configuration required for each piece of construction equipment to subscribe to position, orientation, and joint information.
+***
+***
+
+### §1.1.1 about settings of location information subscriber 
+
+#### (a) Setting the topic names and message types in ROS 2.
 Set from the "PoseSubscriber" attached to the construction machine.
 
 **explanation of parameter**
@@ -64,9 +98,9 @@ Set from the "PoseSubscriber" attached to the construction machine.
 ![](docs/OperaSimVR/PoseSubscriber.png)
 
 
-### How to convert from world coordinate system to map coordinate system
+#### (b) convert from world coordinate system to map coordinate system
 
-The origin of the map coordinates in the world coordinate system is specified by the "Model_name" attached to each construction equipment object. Move the object's "MapReferencePoint" to the same position in the cyberspace field as the origin of the map coordinate system of the actual field.
+The origin of the map coordinates in the world coordinate system is specified by the "Model_name" attached to each construction equipment object. And move the object's "MapReferencePoint" to the same position in the cyberspace field as the origin of the map coordinate system of the actual field.
 
 **explanation of parameter**
 | parameter name | description |
@@ -78,8 +112,8 @@ The origin of the map coordinates in the world coordinate system is specified by
 
 ![](docs/OperaSimVR/ModelName.png)
 
-
-### about settings of joints information subscriber 
+***
+### §1.1.2 about settings of joints information subscriber 
 Set from the "JointSubscriber" attached to the construction machine.
 
 **explanation of parameter**
@@ -95,18 +129,29 @@ Set from the "JointSubscriber" attached to the construction machine.
 
 ![](docs/OperaSimVR/JointSubscriber.png)
 
+***  
+*** 
 
-### How to operate
+The above describes the configuration required for each piece of construction equipment to subscribe to position, orientation, and joint information.
 
+
+ 
+### §1.2 The configuration required in the environment to use Play Mode
+The following explains the configuration required in the environment to use Play Mode.
+
+### §1.2.1 configuration of the connection target (simulator or actual machine)
 When using it with the real heavy machinery, set the parameter "ForSimOrReal" of the script "FieldMainManager" attached to "FieldManager" to "ForReal". For operation testing with PhysX or AGX, set SimOrReal to ForSimPhysX or ForSimAGX instead. By changing this, the topic name, topic type, and the type of information transmitted and received will be altered. Avoid changing it during play.
 ![](docs/OperaSimVR/FieldManeger.png)
 
-
-If you want to change the mode, modify the parameter "WhichMode" of script "ModeSelector" attached to "FieldManager": set it to "NomalModeSimulator" for "NomalMode", "PlayMode" for "PlayMode", and "PrevievMode" for "PrevievMode".
+### §1.2.2 configuration of using mode
+If you want to change the mode, modify the parameter "WhichMode" of script "ModeSelector" attached to "FieldManager": set it to "NomalModeSimulator" for "NomalMode", "PlayMode" for "PlayMode", and "PrevievMode" for "PrevievMode". When you use PlayMode, set "WhichMode" to "PlayMode".
 ![](docs/OperaSimVR/ModeSelector.png)
 
+### §1.2.3 Setting the origin of the map coordinate system in the cyber space.
+Move the object's "MapReferencePoint" to the same position in the cyberspace field as the origin of the map coordinate system of the actual field.
 
-### SensorPod Images
+
+### §1.3 SensorPod Images
 This system can display images from cameras by linking with sensor pods (sensor cameras) installed in the field.
 
 **sensor pod(sensor camera)**
@@ -114,4 +159,6 @@ This system can display images from cameras by linking with sensor pods (sensor 
 | ------------------------------------- | ----------------------------------- | ----------------------------------------------------------- |
 | movie | `sensor_msgs::CompressedImage`  | Movie from sensor pods(sensor cameras). |
 
+#### Setting the topic names in ROS 2.
 For each child object ("SensorPod") under "SensorPods", specify the topic name for subscribing to sensor pod (sensor camera) images in the parameter "ImageTopicName" of the attached script "SensorCameraNamespace".
+![](docs/OperaSimVR/SensorpodTopicname.png)
