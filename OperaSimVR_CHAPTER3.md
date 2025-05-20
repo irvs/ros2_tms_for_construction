@@ -171,7 +171,7 @@ This system allows for terrain reconstruction using real-world field terrain dat
 
 2. Importing terrain data and textures converted to a heightmap, then generating the terrain using a script.
 
-3. Importing terrain data and textures converted to a heightmap, then shaping the terrain via the Inspector.
+3. Importing terrain data and textures converted to a heightmap, then shaping the terrain via "Terrain Toolbox" and the Inspector.
 
 
 About Method 1: Reading Point Cloud Data in LAS Format
@@ -197,12 +197,40 @@ About Method 2: Upload heightmap and texture to Unity
 In this method, the terrain's heightmap and texture are imported into Unity, and a script is used to deform the terrain. The workflow generally involves the following steps:
 1. Upload the heightmap and texture into the OperaSimVR project.
 2. Select the uploaded images within OperaSimVR. In the Inspector, make sure the "Read/Write" checkbox under the "Advanced" section is checked.
-3. In the script "Terrain Maker" attached to the terrain, assign the uploaded images to the Heightmap and Texture fields.
+3. In the script "Terrain Maker" attached to the terrain, assign the uploaded images to the "Heightmap" and "Texture fields".
 4. Use the other parameters in the "Terrain Maker" script to configure the terrain size and other properties.
 
 
+**explanation of parameter**
+| parameter name | description |
+|--------|---------|
+|Terrain | Terrain that deforms into the actual landscape.
+|Heightmap | Specify the uploaded heightmap image.
+|Texture | Specify the uploaded texture image.
+|TerrainWidth| Length of the horizontal edge of the terrain to load (m)
+| TerrainHeight | Length of the depth edge of the terrain to load (m)
+| TerraineElevation | Length of the vertical edge (height) of the terrain to load (m)
+|WidthTexture| Length of the horizontal edge of the texture (e.g., RGB aerial image) to load (m)
+|HeightTexture| Length of the depth edge of the texture (e.g., RGB aerial image) to load (m)
+|OffsetWidthTexture| Offset to adjust the alignment between the texture (e.g., RGB aerial image) and the terrain in the horizontal direction (m)
+|OffsetHeightTexture| Offset to adjust the alignment between the texture (e.g., RGB aerial image) and the terrain in the depth direction (m)
+|TerrainRecordSw| Check this option if you want the deformed terrain to remain unchanged even after stopping Unity's Play mode.
 
 
 ![](docs/OperaSimVR/TerrainMaker.png)
+
+
+About Method 3: From the "Window" tab in OperaSimVR, select "Terrain/Terrain Toolbox" to use the "Terrain Toolbox". The texture is created from the terrain’s Inspector. More details here(https://docs.unity3d.com/Packages/com.unity.terrain-tools@2.0/manual/toolbox-getting-started.html)
+
+
+
+
+
+
+
+
+
+
+
 
 
