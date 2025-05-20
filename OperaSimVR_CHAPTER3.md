@@ -4,6 +4,8 @@
 In this system, two PCs are used: one for launching OperaSimVR (PC_A), and another (PC_B) that communicates with construction machinery via ROS 2. PC_B is connected to the actual machinery and runs ros_tcp_endpoint to establish communication with PC_A. The system can be used either with a VR headset or without one, using keyboard controls. When immersing in the cyber space using a VR headset (Quest), PC_A and the Quest headset are connected via Air Link or Quest Link.
 
 
+![](docs/OperaSimVR/OperaSImVR_connection.png)
+
 ## Install
 #### OPERASimVR(PC_A)
 Clone from ~~~~~~~~~ on PC_A.
@@ -95,7 +97,7 @@ Set from the "PoseSubscriber" attached to the construction machine.
 |MapMachineRotation | Don't change.
 
 
-![](docs/OperaSimVR/PoseSubscriber.png)
+<img src=docs/OperaSimVR/PoseSubscriber.png width="550px">
 
 
 #### (b) convert from world coordinate system to map coordinate system
@@ -110,7 +112,8 @@ The origin of the map coordinates in the world coordinate system is specified by
 
 
 
-![](docs/OperaSimVR/ModelName.png)
+<img src=docs/OperaSimVR/ModelName.png width="500px">
+
 
 ***
 ### §1.1.2 about settings of joints information subscriber 
