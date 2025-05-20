@@ -193,8 +193,12 @@ You do not need to modify the other parameters, as they will be updated automati
 
 ![](docs/OperaSimVR/TerrainImporter.png)
 
-
-
+About Method 2: Upload heightmap and texture to Unity
+In this method, the terrain's heightmap and texture are imported into Unity, and a script is used to deform the terrain. The workflow generally involves the following steps:
+1. Upload the heightmap and texture into the OperaSimVR project.
+2. Select the uploaded images within OperaSimVR. In the Inspector, make sure the "Read/Write" checkbox under the "Advanced" section is checked.
+3. In the script "Terrain Maker" attached to the terrain, assign the uploaded images to the Heightmap and Texture fields.
+4. Use the other parameters in the "Terrain Maker" script to configure the terrain size and other properties.
 
 
 
