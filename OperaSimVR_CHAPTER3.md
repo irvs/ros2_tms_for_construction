@@ -55,7 +55,7 @@ This system can be used either with immersive VR goggles or without them by oper
 
 
 
-## §1.  Playmode (visualizeation function)
+## §1.  Play mode (visualizeation function)
 The system receives the position, orientation, and joint angle data published by the real heavy machinery as ROS 2 topics, and updates the corresponding position, orientation, and joint angles of the machinery model within the system. As a result, the heavy machinery model in OperaSimVR moves in sync with the real-world machine.
 
 ### §1.1 about handling information
@@ -230,8 +230,8 @@ About Method 3: From the "Window" tab in OperaSimVR, select "Terrain/Terrain Too
 
 
 
-
-
+## §2. Control mode (controll finction)
+In this system, real construction machinery can be remotely operated. By using a VR controller or keyboard, control commands are sent to the machinery via ROS2 topics. Just like in Play mode, position and orientation data are received from the real machinery through ROS2 topics. This data is used to animate the model of the machinery in the virtual environment, allowing the operator to monitor its movements in real time while performing remote operation.
 
 
 
