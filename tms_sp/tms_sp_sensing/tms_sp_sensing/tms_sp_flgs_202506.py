@@ -53,14 +53,14 @@ class UpdateDB_Parameter(Node):
         for key, value in parameter_info.items():
            if key != "_id" and key!="model_name" and key != "type" and key != "record_name":
                 if key in msg.keep_val_flgs:
-                    print(f"msga.{key}")
+                    # print(f"msga.{key}")
                     update_parameter_info[key] = value
                 elif key.lower() in msg_fields:
-                    print(f"msgb.{key}")
+                    # print(f"msgb.{key}")
                     lower_key = key.lower()
                     update_parameter_info[key] = eval(f"msg.{lower_key}")
                 else:
-                    print(f"msgc.{key}")
+                    # print(f"msgc.{key}")
                     update_parameter_info[key] = value 
 
         update_query = {"$set": update_parameter_info}

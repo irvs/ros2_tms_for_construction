@@ -7,6 +7,7 @@
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="STANDBY_EXCAVATION_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU2"/>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="STANDBY_RELEASE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU2"/>
             <Action ID="SetLocalBlackboard" output_key="HOLD_SOIL_FLG" value="false"/>
+            <Action  model_name="zx200" ID="LeafNodeSampleZx200" record_name="pending_pose" subtask_name="subtask_zx200_change_pose"/>
             <Decorator ID="KeepRunningUntilFlgup" key="TERMINATE_FLG">
                 <Sequence>
                     <Action ID="BlackboardValueReaderMongo" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU2" output_port="CONTINUE_FLG"/>
@@ -17,11 +18,10 @@
                             <IfThenElse>
                                 <Action ID="ConditionalExpression" conditional_expression="STANDBY_EXCAVATION_FLG == true and HOLD_SOIL_FLG == false"/>
                                 <Sequence>
-                                    <Action ID="LeafNodeZx200" model_name="zx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
-                                    <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple"/>
-                                    <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_zx200_change_pose"/>
-                                    <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="hold_soil_while_turning_pose" subtask_name="subtask_zx200_change_pose"/>
-                                    <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="target_release_pose" subtask_name="subtask_zx200_change_pose"/>
+                                    <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple"/>
+                                    <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_zx200_change_pose"/>
+                                    <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="hold_soil_while_turning_pose" subtask_name="subtask_zx200_change_pose"/>
+                                    <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="target_release_pose" subtask_name="subtask_zx200_change_pose"/>
                                     <Action ID="SetLocalBlackboard" output_key="HOLD_SOIL_FLG" value="true"/>
                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="STANDBY_EXCAVATION_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU2"/>
                                 </Sequence>
@@ -30,14 +30,12 @@
                                     <IfThenElse>
                                         <Action ID="ConditionalExpression" conditional_expression="STANDBY_RELEASE_FLG == true and HOLD_SOIL_FLG == true"/>
                                         <Sequence>
-                                            <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="release_angle" subtask_name="subtask_zx200_release_simple"/>
-                                            <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="after_release_soil_pose" subtask_name="subtask_zx200_change_pose"/>
+                                            <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="release_angle" subtask_name="subtask_zx200_release_simple"/>
+                                            <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="after_release_soil_pose" subtask_name="subtask_zx200_change_pose"/>
                                             <Action ID="SetLocalBlackboard" output_key="HOLD_SOIL_FLG" value="false"/>
                                             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="STANDBY_RELEASE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU2"/>
                                         </Sequence>
-                                        <Delay delay_msec="5000">
-                                            <AlwaysSuccess/>
-                                        </Delay>
+                                        <AlwaysSuccess/>
                                     </IfThenElse>
                                 </Sequence>
                             </IfThenElse>
