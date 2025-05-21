@@ -15,25 +15,22 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
-
-# 両方のサービスファイルを一度に渡す
-rosidl_generate_interfaces(tms_msg_ur
-  "srv/SpeakerSrv.srv"
-  "srv/TmsdbTerrainDBPoseWriteSrv.srv"
-  "msg/TmsdbPoseWriteMsg.msg"
-  DEPENDENCIES builtin_interfaces geometry_msgs
-  DEPENDENCIES builtin_interfaces sensor_msgs
-)
-
+# メッセージとサービスのファイルリストを明確に定義
 set(msg_files
   "msg/Demo202412.msg"
+  "msg/TmsdbPoseWriteMsg.msg"
 )
 
+set(srv_files
+  "srv/SpeakerSrv.srv"
+  "srv/TmsdbTerrainDBPoseWriteSrv.srv"
+)
+
+# インターフェースの生成
 rosidl_generate_interfaces(${PROJECT_NAME}
-  ${srv_files}
   ${msg_files}
-  DEPENDENCIES builtin_interfaces 
+  ${srv_files}
+  DEPENDENCIES builtin_interfaces geometry_msgs sensor_msgs
 )
-
 
 ament_package()

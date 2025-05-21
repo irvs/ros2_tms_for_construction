@@ -29,28 +29,31 @@ def generate_launch_description():
         executable="tms_sp_machine_odom.py",
         output="screen",
         remappings=[
-            ("~/input/odom", "/bh/status/odom"),
+            ("~/input/odom", "/ic120/odometry/global"),
+          # ("~/input/odom", "/ic120/global_pose"),
         ],
         parameters=[
             {
-                "machine_name": "backhow1",
+                "machine_name": "ic120_1",
             },
             {
                 "to_frame": LaunchConfiguration("to_frame"),
             },
         ],
     )
+    
     tms_sp_machine_odom_node2 = Node(
         name="tms_sp_machine_odom2",
         package="tms_sp_machine",
-        executable="tms_sp_machine_odom.py",
+        executable="tms_sp_machine_posest.py",
         output="screen",
         remappings=[
-            ("~/input/odom", "/wl/status/odom"),
+            ("~/input/odom", "/zx200/pose"),
+           #("~/input/odom", "/ic120/odometry/global"),
         ],
         parameters=[
             {
-                "machine_name": "wheel_loader1",
+                "machine_name": "zx200_1",
             },
             {
                 "to_frame": LaunchConfiguration("to_frame"),
@@ -146,6 +149,7 @@ def generate_launch_description():
             },
         ],
     )
+    
 
     return LaunchDescription(
         [
