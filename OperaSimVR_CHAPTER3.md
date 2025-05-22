@@ -227,8 +227,26 @@ About Method 3: From the "Window" tab in OperaSimVR, select "Terrain/Terrain Too
 
 
 
+## about Geofence
+To distinguish between areas where construction machinery is allowed to enter and areas where it is prohibited using this system, geofence is used.
 
+![](docs/OperaSimVR/GeofenceImage.png)
 
+When the construction machinery model comes into contact with this geofence (the pink line), a control command topic with a value of zero and an emergency stop topic are sent, causing the corresponding real-world machine to stop. Upon contact, the emergency flag in the script “VRCrawlerOp” for the crawler dump or “VRArmOp” for the backhoe is set to ON, and both the control command topic and the emergency stop topic are sent.
+
+### usege
+1. Attach the script “Geofence” (Assets/Geofence.cs) to the object you want to set as the starting point of the fence. 
+2. Specify the object you want to use as the endpoint of the fence using the “EndpointObj” parameter. 
+3. Check the “Layer” of the construction machine you want to use for collision detection, and specify this “Layer” in the “CollisionLayer” parameter of the “Geofence” script (Assets/Geofence.cs).
+4. To further extend the fence, repeat the same procedure.
+
+**explanation of parameter**
+| parameter name | description |
+|--------|---------|
+|EndpointObj | Specify the object you want to use as the endpoint of the fence.
+|CollisionLayer | Specify the “Layer” of the construction machine you want to use for collision detection.
+
+![](docs/OperaSimVR/GeofenceScript.png)
 
 ## §2. Control mode (controll finction)
 In this system, real construction machinery can be remotely operated. By using a VR controller or keyboard, control commands are sent to the machinery via ROS2 topics. Just like in Play mode, position and orientation data are received from the real machinery through ROS2 topics. This data is used to animate the model of the machinery in the virtual environment, allowing the operator to monitor its movements in real time while performing remote operation.
