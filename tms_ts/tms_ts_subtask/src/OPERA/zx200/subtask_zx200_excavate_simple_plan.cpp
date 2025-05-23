@@ -17,7 +17,7 @@
 
 using namespace std::chrono_literals;
 
-SubtaskZx200ExcavateSimple::SubtaskZx200ExcavateSimple() : SubtaskNodeBase("subtask_zx200_excavate_simple_node")
+SubtaskZx200ExcavateSimple::SubtaskZx200ExcavateSimple() : SubtaskNodeBase("subtask_zx200_excavate_simple_plan_node")
 {
     auto options_server = rcl_action_server_get_default_options();
     options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
@@ -34,13 +34,13 @@ SubtaskZx200ExcavateSimple::SubtaskZx200ExcavateSimple() : SubtaskNodeBase("subt
     options_client.status_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
   
   action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-      this, "subtask_zx200_excavate_simple",
+      this, "subtask_zx200_excavate_simple_plan",
       std::bind(&SubtaskZx200ExcavateSimple::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
       std::bind(&SubtaskZx200ExcavateSimple::handle_cancel, this, std::placeholders::_1),
       std::bind(&SubtaskZx200ExcavateSimple::handle_accepted, this, std::placeholders::_1),
       options_server);
 
-  action_client_ = rclcpp_action::create_client<Zx200ExcavateSimple>(this, "tms_rp_zx200_excavate_simple", nullptr, options_client);
+  action_client_ = rclcpp_action::create_client<Zx200ExcavateSimple>(this, "tms_rp_zx200_excavate_simple_plan", nullptr, options_client);
   if (action_client_->wait_for_action_server())
   {
     RCLCPP_INFO(this->get_logger(), "Action server is ready");

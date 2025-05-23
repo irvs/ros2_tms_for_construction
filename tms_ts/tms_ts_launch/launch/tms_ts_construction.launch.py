@@ -47,6 +47,11 @@ def generate_launch_description():
                   namespace = 'zx200'),
             Node(
                   package='tms_ts_subtask', 
+                  executable='subtask_zx200_excavate_simple_plan',
+                  output='screen',
+                  namespace = 'zx200'),
+            Node(
+                  package='tms_ts_subtask', 
                   executable='subtask_zx200_release_simple',
                   output='screen',
                   namespace = 'zx200'),

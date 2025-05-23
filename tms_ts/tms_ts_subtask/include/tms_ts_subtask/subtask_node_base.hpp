@@ -207,9 +207,21 @@ bool SubtaskNodeBase::CustomUpdateParamInDB(std::string model_name, std::string 
     }
 
     bsoncxx::builder::stream::document update_builder;
-    update_builder << "$set" << bsoncxx::builder::stream::open_document
-                   << target_key << array_builder.view()
-                   << bsoncxx::builder::stream::close_document;
+    update_builder << "$set" << bsoncxx::builder::stream::open_document;
+
+    if (new_values.size() == 1) {
+      // スカラー値として保存
+      update_builder << target_key << new_values[0];
+    } else {
+      // 配列として保存
+      bsoncxx::builder::basic::array array_builder;
+      for (const auto& val : new_values) {
+        array_builder.append(val);
+      }
+      update_builder << target_key << array_builder.view();
+    }
+
+    update_builder << bsoncxx::builder::stream::close_document;
 
     auto result = collection.update_one(filter, update_builder.view());
 
