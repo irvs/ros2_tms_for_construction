@@ -34,6 +34,9 @@ public:
   template <typename K, typename T>
   std::map<K, T> CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool> = true);
 
+  template <typename T>
+  bool CustomUpdateParamInDB(std::string model_name, std::string record_name, const std::string& target_key, const std::vector<T>& new_values);
+
 private:
 };
 
@@ -186,4 +189,52 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
   }
 }
 
+template <typename T>
+bool SubtaskNodeBase::CustomUpdateParamInDB(std::string model_name, std::string record_name, const std::string& target_key, const std::vector<T>& new_values)
+{
+  try {
+    mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
+    mongocxx::database db = client["rostmsdb"];
+    mongocxx::collection collection = db["parameter"];
+
+    bsoncxx::builder::stream::document filter_builder;
+    filter_builder << "model_name" << model_name << "record_name" << record_name;
+    auto filter = filter_builder.view();
+
+    bsoncxx::builder::basic::array array_builder;
+    for (const auto& val : new_values) {
+      array_builder.append(val);
+    }
+
+    bsoncxx::builder::stream::document update_builder;
+    update_builder << "$set" << bsoncxx::builder::stream::open_document;
+
+    if (new_values.size() == 1) {
+      // スカラー値として保存
+      update_builder << target_key << new_values[0];
+    } else {
+      // 配列として保存
+      bsoncxx::builder::basic::array array_builder;
+      for (const auto& val : new_values) {
+        array_builder.append(val);
+      }
+      update_builder << target_key << array_builder.view();
+    }
+
+    update_builder << bsoncxx::builder::stream::close_document;
+
+    auto result = collection.update_one(filter, update_builder.view());
+
+    if (result && result->modified_count() > 0) {
+      RCLCPP_INFO(this->get_logger(), "Successfully updated \"%s\" field.", target_key.c_str());
+      return true;
+    } else {
+      RCLCPP_WARN(this->get_logger(), "No document updated. (model_name: %s, record_name: %s)", model_name.c_str(), record_name.c_str());
+      return false;
+    }
+  } catch (const std::exception& e) {
+    RCLCPP_ERROR(this->get_logger(), "Exception during MongoDB update: %s", e.what());
+    return false;
+  }
+}
 #endif // SUBTASK_NODE_BASE_HPP

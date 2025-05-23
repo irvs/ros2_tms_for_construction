@@ -80,6 +80,7 @@ add_executable(zx200_sample_bucket_subtask src/OPERA/sample/zx200/sample_bucket_
 
 # Subtask Nodes for ZX200
 add_executable(subtask_zx200_change_pose src/OPERA/zx200/subtask_zx200_change_pose.cpp)
+add_executable(subtask_zx200_excavate_simple_plan src/OPERA/zx200/subtask_zx200_excavate_simple_plan.cpp)
 add_executable(subtask_zx200_excavate_simple src/OPERA/zx200/subtask_zx200_excavate_simple.cpp)
 add_executable(subtask_zx200_release_simple src/OPERA/zx200/subtask_zx200_release_simple.cpp)
 add_executable(subtask_zx200_follow_waypoints_server src/OPERA/zx200/subtask_zx200_follow_waypoints_server.cpp)
@@ -116,6 +117,7 @@ set(TARGETS
   zx200_sample_arm_subtask
   zx200_sample_bucket_subtask
   subtask_zx200_change_pose
+  subtask_zx200_excavate_simple_plan
   subtask_zx200_excavate_simple
   subtask_zx200_release_simple
   subtask_zx200_follow_waypoints_server
