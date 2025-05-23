@@ -54,6 +54,8 @@ SubtaskZx200ExcavateSimple::SubtaskZx200ExcavateSimple() : SubtaskNodeBase("subt
 rclcpp_action::GoalResponse SubtaskZx200ExcavateSimple::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
+  used_model_name_ = goal->model_name;
+  used_record_name_ = goal->record_name;
   param_from_db_ = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
@@ -184,6 +186,15 @@ void SubtaskZx200ExcavateSimple::result_callback(const std::shared_ptr<GoalHandl
       RCLCPP_INFO(this->get_logger(), "Unknown result code");
       break;
   }
+  if(CustomUpdateParamInDB(used_model_name_, used_record_name_, "LOCK_FLG", std::vector<bool>{false}))
+  {
+    RCLCPP_INFO(this->get_logger(), "LOCK_FLG is set to false");
+  }
+  else
+  {
+    RCLCPP_ERROR(this->get_logger(), "Failed to set LOCK_FLG to false");
+  }
+  break;
 }
 /*******************/
 
