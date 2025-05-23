@@ -194,7 +194,6 @@ void SubtaskZx200ExcavateSimple::result_callback(const std::shared_ptr<GoalHandl
   {
     RCLCPP_ERROR(this->get_logger(), "Failed to set LOCK_FLG to false");
   }
-  break;
 }
 /*******************/
 
