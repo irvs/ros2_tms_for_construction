@@ -167,6 +167,14 @@ This system can display images from cameras by linking with sensor pods (sensor 
 For each child object ("SensorPod") under "SensorPods", specify the topic name for subscribing to sensor pod (sensor camera) images in the parameter "ImageTopicName" of the attached script "SensorCameraNamespace".
 ![](docs/OperaSimVR/SensorpodTopicname.png)
 
+## about emergency function
+This system has the function to perform an emergency stop of the construction machine by sending an emergency stop topic or operation commands with speed and angular velocity set to 0 [m/s] and 0 [rad/s], respectively.
+### settings
+Set the emergency stop topic name in the “EmergencyTopicName” field of either “VRCrawlerOp” or “VRArmOp.”
+If there is no dedicated emergency stop topic, you can set the control topic name instead. In this case, a stop command will be sent with speed and angular velocity set to 0 [m/s] and 0 [rad/s], respectively. (For details about control topics, refer to Chapter 2: Remote Operation.)
+### usage
+To perform an emergency stop on a specific construction machine, check the “Emergency” checkbox in the corresponding “VRCrawlerOp” or “VRArmOp” component. When boarding the construction machine, press the Y button on the left VR controller if using VR, or press the C key if not using VR.
+
 ## about terrain 
 This system allows for terrain reconstruction using real-world field terrain data. There are three methods for creating terrain:
 
@@ -247,9 +255,6 @@ When the construction machinery model comes into contact with this geofence (the
 |CollisionLayer | Specify the “Layer” of the construction machine you want to use for collision detection.
 
 ![](docs/OperaSimVR/GeofenceScript.png)
-
-## §2. Control mode (controll finction)
-In this system, real construction machinery can be remotely operated. By using a VR controller or keyboard, control commands are sent to the machinery via ROS2 topics. Just like in Play mode, position and orientation data are received from the real machinery through ROS2 topics. This data is used to animate the model of the machinery in the virtual environment, allowing the operator to monitor its movements in real time while performing remote operation.
 
 
 
