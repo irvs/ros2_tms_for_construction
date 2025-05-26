@@ -164,8 +164,8 @@ class TmsUrMachinePoseWrite(Node):
         tms_db_msg.time = datetime.now().isoformat()
         tms_db_msg.type = DATA_TYPE
         tms_db_msg.id = DATA_ID
-        tms_db_msg.vehicle_name = self.request.machine_name
-        tms_db_msg.record_name = self.request.write_target
+        tms_db_msg.vehicle_name = msg.machine_name
+        tms_db_msg.record_name = msg.write_target
 
         # Convert Odometry msg to dictionary and then to json.
         doc: dict = db_util.msg_to_document(msg)

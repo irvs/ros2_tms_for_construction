@@ -31,7 +31,7 @@ Note: From this point on, operating the VR controller or the keyboard will send 
 5. To end the operation, press the B button to dismount. (The controller (VRCrawlerOp) will be turned off.)
 
 
-![](docs/OperaSimVR/VRCrawlerOp.png)
+<img src=docs/OperaSimVR/VRCrawlerOp.png width="500px">
 
 **explanation of parameter**
 | parameter name | Units and message types | description |
@@ -39,18 +39,18 @@ Note: From this point on, operating the VR controller or the keyboard will send 
 |OnOffSw | - |  Toggle the control function On or Off. When set to Off, the construction equipment model and the actual machine will not operate, even if the user is onboard and using VR controllers or a keyboard. However, the emergency stop function remains active even when set to Off.
 |Emergency | - | Setting this to true will trigger an emergency stop of the actual machine. It sends a command to the emergency stop topic with motion instructions set to 0 [m/s] or 0 [rad/s]. Make sure to properly configure both the "EmergencyTopicName" and "RealPublishTopicName" before operating the actual machine.
 |Key | - | Set to "false" when using a VR headset. Set to "true" when not using one.
-|UseRos2Topic| - | Set to "false" if you want to operate the construction equipment model in "normal mode." Set to "true" if you want it to operate based on external commands without manual control within the system.
-| SimPhysXPublishTopicName | geometry_msgs/msg/Twist [m/s][rad/s] | Set this option if you want to connect to PhysX and verify the operation (for testing purposes).
-| SimAGXPublishTopicName | Geometry_msg/msg/Twist [m/s][rad/s] | Set this option if you want to connect to AGX and verify the operation (for testing purposes).
-|RealPublishTopicName| Geometry_msg/msg/Twist [m/s][rad/s] | Set the topic name for sending motion commands to the actual machine.
-|EmergncyTopicName| std_msgs/msg/Bool | The topic name for sending emergency stop commands.
+|Use Ros2 Topic| - | Set to "false" if you want to operate the construction equipment model in "normal mode." Set to "true" if you want it to operate based on external commands without manual control within the system.
+| SimPhysX Publish TopicName | geometry_msgs/msg/Twist [m/s][rad/s] | Set this option if you want to connect to PhysX and verify the operation (for testing purposes).
+| SimAGX Publish TopicName | Geometry_msg/msg/Twist [m/s][rad/s] | Set this option if you want to connect to AGX and verify the operation (for testing purposes).
+|Real Publish TopicName| Geometry_msg/msg/Twist [m/s][rad/s] | Set the topic name for sending motion commands to the actual machine.
+|Emergncy TopicName| std_msgs/msg/Bool | The topic name for sending emergency stop commands.
 |LinearSpeed| [m/s] | Specifies the maximum value [m/s] for forward and backward (linear) motion commands sent to the actual machine. When the VR D-pad (Axis2D.SecondaryThumbstick) is fully tilted or the arrow keys are pressed, the machine will accelerate up to this speed.
 |RotSpeed| [rad/s] | Specifies the maximum value [rad/s] for rotational (angular) motion commands sent to the actual machine. When the VR D-pad (Axis2D.SecondaryThumbstick) is fully tilted or the arrow keys are pressed, the machine will accelerate up to this turning speed.
-|MaxLinearAcceleration| [m/s^2] | Specifies the maximum acceleration value used when accelerating toward the commanded forward or backward (linear) motion.
-|MaxLinearDeceleration| [m/s^2] |Specifies the maximum deceleration value used when slowing down to the commanded forward or backward (linear) motion.
-|MaxAngularAcceleration| [rad/s^2] |Specifies the maximum angular acceleration value used when accelerating to the commanded rotational speed.
-|MaxAngularDeceleration| [rad/s^2] |Specifies the maximum angular deceleration value used when slowing down to the commanded rotational speed.
-|PublishMessageInterval| [s]|The interval [s] at which the command topic is published.
+|Max Linear Acceleration| [m/s^2] | Specifies the maximum acceleration value used when accelerating toward the commanded forward or backward (linear) motion.
+|Max Linear Deceleration| [m/s^2] |Specifies the maximum deceleration value used when slowing down to the commanded forward or backward (linear) motion.
+|Max Angular Acceleration| [rad/s^2] |Specifies the maximum angular acceleration value used when accelerating to the commanded rotational speed.
+|Max Angular Deceleration| [rad/s^2] |Specifies the maximum angular deceleration value used when slowing down to the commanded rotational speed.
+|Publish Message Interval| [s]|The interval [s] at which the command topic is published.
 
 The remaining parameters do not need to be set when using the control mode (they are used in preview mode).
 
