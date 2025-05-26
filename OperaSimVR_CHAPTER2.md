@@ -34,29 +34,36 @@ Note: From this point on, operating the VR controller or the keyboard will send 
 ![](docs/OperaSimVR/VRCrawlerOp.png)
 
 **explanation of parameter**
-| parameter name | description |
-|--------|---------|
-|Terrain | Terrain that deforms into the actual landscape.
-|Heightmap | Specify the uploaded heightmap image.
-|Texture | Specify the uploaded texture image.
-|TerrainWidth| Length of the horizontal edge of the terrain to load (m)
-| TerrainHeight | Length of the depth edge of the terrain to load (m)
-| TerraineElevation | Length of the vertical edge (height) of the terrain to load (m)
-|WidthTexture| Length of the horizontal edge of the texture (e.g., RGB aerial image) to load (m)
-|HeightTexture| Length of the depth edge of the texture (e.g., RGB aerial image) to load (m)
-|OffsetWidthTexture| Offset to adjust the alignment between the texture (e.g., RGB aerial image) and the terrain in the horizontal direction (m)
-|OffsetHeightTexture| Offset to adjust the alignment between the texture (e.g., RGB aerial image) and the terrain in the depth direction (m)
-|TerrainRecordSw| Check this option if you want the deformed terrain to remain unchanged even after stopping Unity's Play mode.
+| parameter name | Units and message types | description |
+|--------|---------|---------|
+|OnOffSw | - |  Toggle the control function On or Off. When set to Off, the construction equipment model and the actual machine will not operate, even if the user is onboard and using VR controllers or a keyboard. However, the emergency stop function remains active even when set to Off.
+|Emergency | - | Setting this to true will trigger an emergency stop of the actual machine. It sends a command to the emergency stop topic with motion instructions set to 0 [m/s] or 0 [rad/s]. Make sure to properly configure both the "EmergencyTopicName" and "RealPublishTopicName" before operating the actual machine.
+|Key | - | Set to "false" when using a VR headset. Set to "true" when not using one.
+|UseRos2Topic| - | Set to "false" if you want to operate the construction equipment model in "normal mode." Set to "true" if you want it to operate based on external commands without manual control within the system.
+| SimPhysXPublishTopicName | geometry_msgs/msg/Twist [m/s][rad/s] | Set this option if you want to connect to PhysX and verify the operation (for testing purposes).
+| SimAGXPublishTopicName | Geometry_msg/msg/Twist [m/s][rad/s] | Set this option if you want to connect to AGX and verify the operation (for testing purposes).
+|RealPublishTopicName| Geometry_msg/msg/Twist [m/s][rad/s] | Set the topic name for sending motion commands to the actual machine.
+|EmergncyTopicName| std_msgs/msg/Bool | The topic name for sending emergency stop commands.
+|LinearSpeed| [m/s] | Specifies the maximum value [m/s] for forward and backward (linear) motion commands sent to the actual machine. When the VR D-pad (Axis2D.SecondaryThumbstick) is fully tilted or the arrow keys are pressed, the machine will accelerate up to this speed.
+|RotSpeed| [rad/s] | Specifies the maximum value [rad/s] for rotational (angular) motion commands sent to the actual machine. When the VR D-pad (Axis2D.SecondaryThumbstick) is fully tilted or the arrow keys are pressed, the machine will accelerate up to this turning speed.
+|MaxLinearAcceleration| [m/s^2] | Specifies the maximum acceleration value used when accelerating toward the commanded forward or backward (linear) motion.
+|MaxLinearDeceleration| [m/s^2] |Specifies the maximum deceleration value used when slowing down to the commanded forward or backward (linear) motion.
+|MaxAngularAcceleration| [rad/s^2] |Specifies the maximum angular acceleration value used when accelerating to the commanded rotational speed.
+|MaxAngularDeceleration| [rad/s^2] |Specifies the maximum angular deceleration value used when slowing down to the commanded rotational speed.
+|PublishMessageInterval| [s]|The interval [s] at which the command topic is published.
+
+The remaining parameters do not need to be set when using the control mode (they are used in preview mode).
 
 
-### §2.3 Operation Method
+### §2.3 Operation Method(Crawler dump)
 **When you use VR goggles**
 | operation | controller operation |
 |--------|---------|
-|Roaming in cyberspace | Use the D-pad (Axis2D.PrimaryThumbstick) on the left controller to move. Pushing it forward moves you forward, backward moves you back, left strafes left, and right strafes right.
-|Change Direction | Use the D-pad (Axis2D.SecondaryThumbstick) on the right controller to change direction. Pushing it to the left rotates to the left, and pushing it to the right rotates to the right.
-|Overview (Bird’s-Eye View) | Pressing both the X button (Button.Three) and the Y button (Button.Four) on the left controller simultaneously switches to a bird’s-eye view. Pressing the X button makes you ascend, and pressing the Y button makes you descend. The methods for moving forward, backward, sideways, and changing direction are the same as when "Roaming in cyberspace" or "Change Direction". To return to walking on the ground, press the B button (Button.Two) on the right controller.
-|Board the construction equipment model. | Point the Lay from the left controller at the construction equipment model you want to board, and then press the trigger (Axis1D.PrimaryIndexTrigger) on the left controller.To disembark, press the B button (Button.Two) on the right controller.
+|When the controller is not turned on | Press the X button (Button.Three) to turn it on.
+|Forward and backward (linear) and rotation (angular) | Use the D-pad (Axis2D.PrimaryThumbstick) on the left controller to move. Pushing it forward moves machine forward, backward moves machine back, left rotate left, and right rotate right.
+|Emergency stop | Press the Y button (Button.Four).
+|Release emergency stop | While holding down the right controller's trigger (Axis1D.SecondaryIndexTrigger), press the Y button (Button.Four).
+|Turn off the controller. | press the B button (Button.Two) on the right controller.
 
 
 ----
@@ -65,10 +72,11 @@ Note: From this point on, operating the VR controller or the keyboard will send 
 **When you  operate from the keyboard**
 | operation | controller operation |
 |--------|---------|
-|Roaming in cyberspace | Use the arrow keys on the keyboard to move. Press the up arrow to move forward, the down arrow to move backward, Shift + left arrow to move left, and Shift + right arrow to move right.
-|Change Direction | Use the arrow keys on the keyboard to rotate. Press the left arrow to rotate left, and the right arrow to rotate right.
-|Overview (Bird’s-Eye View) | Use the arrow keys on the keyboard. Press the left Shift key + up arrow to ascend, and the left Shift key + down arrow to descend.
-|Board the construction equipment model. | Face the construction equipment you want to board and press the V key. To disembark, press the B key.
+|When the controller is not turned on | Press the X key on your keyboard to turn it on.
+|Forward and backward (linear) and rotation (angular) | Use the arrow keys on the keyboard to move. Press the up arrow to move forward, the down arrow to move backward, the left arrow rotate left, and the right arrow rotate right.
+|Emergency stop | Press the C key.
+|Release emergency stop | Shift key + C key.
+|Turn off the controller. | press the B key.
 
 
 

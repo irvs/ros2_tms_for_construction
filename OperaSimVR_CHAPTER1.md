@@ -20,13 +20,13 @@ If you use VR headset (Quest), please refer to official page of Meta (https://ww
 Please clone ROS2_TMS_FOR_CONSTRUCTION from https://github.com/irvs/ros2_tms_for_construction  on PC_B. When setting up the ROS2_TMS_FOR_CONSTRUCTION environment, ROS-TCP-ENDPOINT will also be cloned and become available for use.
 
 
+# OperasimVR
+OperaSimVR was developed as an extension of OperaSim. OperasimVR has 4 functions(nomal mode and play mode, controll mode, preview mode). This system includes not only the original simulator function (Standard Mode) from OperaSim, but also a visualization function (Playback Mode), a control function (Control Mode), and a preview function (Preview Mode).
+
 ## setup
 1. Launch Unity Hub and add the cloned OperaSimVR by selecting "Add" from the top right of the screen.
 2. Once OperaSimVR is opened, navigate to "Asset/Scenes/SampleScene."unity and open it.
 3. From the top toolbar in the Unity Editor, go to "Robotics" > "ROS Setting". Change the "Protocol" to "ROS2", and set the "ROS IP Address" to the IP address of PC_B.
-
-# OperasimVR
-OperaSimVR was developed as an extension of OperaSim. OperasimVR has 4 functions(nomal mode and play mode, controll mode, preview mode). This system includes not only the original simulator function (Standard Mode) from OperaSim, but also a visualization function (Playback Mode), a control function (Control Mode), and a preview function (Preview Mode).
 
 ## §0. Usage Instructions
 This system can be used either with immersive VR goggles or without them by operating from the keyboard. In both cases, there are situations where interaction with Unity's Inspector window is required.
@@ -133,7 +133,6 @@ Set from the "JointSubscriber" attached to the construction machine.
 ![](docs/OperaSimVR/JointSubscriber.png)
 
 ***  
-*** 
 
 The above describes the configuration required for each piece of construction equipment to subscribe to position, orientation, and joint information.
 
@@ -154,7 +153,7 @@ If you want to change the mode, modify the parameter "WhichMode" of script "Mode
 ### §1.2.3 Setting the origin of the map coordinate system in the cyber space.
 Move the object's "MapReferencePoint" to the same position in the cyberspace field as the origin of the map coordinate system of the actual field.
 
-
+***
 ### §1.3 SensorPod Images
 This system can display images from cameras by linking with sensor pods (sensor cameras) installed in the field.
 
@@ -167,7 +166,8 @@ This system can display images from cameras by linking with sensor pods (sensor 
 For each child object ("SensorPod") under "SensorPods", specify the topic name for subscribing to sensor pod (sensor camera) images in the parameter "ImageTopicName" of the attached script "SensorCameraNamespace".
 ![](docs/OperaSimVR/SensorpodTopicname.png)
 
-## about emergency function
+***
+### §1.4 about emergency function
 This system has the function to perform an emergency stop of the construction machine by sending an emergency stop topic or operation commands with speed and angular velocity set to 0 [m/s] and 0 [rad/s], respectively.
 ### settings
 Set the emergency stop topic name in the “EmergencyTopicName” field of either “VRCrawlerOp” or “VRArmOp.”
@@ -175,7 +175,9 @@ If there is no dedicated emergency stop topic, you can set the control topic nam
 ### usage
 To perform an emergency stop on a specific construction machine, check the “Emergency” checkbox in the corresponding “VRCrawlerOp” or “VRArmOp” component. When boarding the construction machine, press the Y button on the left VR controller if using VR, or press the C key if not using VR.
 
-## about terrain 
+***
+
+### §1.5  about terrain 
 This system allows for terrain reconstruction using real-world field terrain data. There are three methods for creating terrain:
 
 1. Reading point cloud data in LAS format.
@@ -184,7 +186,7 @@ This system allows for terrain reconstruction using real-world field terrain dat
 
 3. Importing terrain data and textures converted to a heightmap, then shaping the terrain via "Terrain Toolbox" and the Inspector.
 
-
+#### §1.5.1
 About Method 1: Reading Point Cloud Data in LAS Format
 In this method, terrain is created by importing point cloud data stored in the LAS format, which is commonly used for representing 3D spatial information obtained from sources like LiDAR. The workflow generally involves the following steps:
 1. Convert the LAS data and store it in the TMS_DB. For details, refer to ～～.
@@ -204,6 +206,7 @@ You do not need to modify the other parameters, as they will be updated automati
 
 ![](docs/OperaSimVR/TerrainImporter.png)
 
+#### §1.5.2
 About Method 2: Upload heightmap and texture to Unity
 In this method, the terrain's heightmap and texture are imported into Unity, and a script is used to deform the terrain. The workflow generally involves the following steps:
 1. Upload the heightmap and texture into the OperaSimVR project.
@@ -230,13 +233,14 @@ In this method, the terrain's heightmap and texture are imported into Unity, and
 
 ![](docs/OperaSimVR/TerrainMaker.png)
 
-
+#### §1.5.3
 About Method 3: From the "Window" tab in OperaSimVR, select "Terrain/Terrain Toolbox" to use the "Terrain Toolbox". The texture is created from the terrain’s Inspector. More details here(https://docs.unity3d.com/Packages/com.unity.terrain-tools@2.0/manual/toolbox-getting-started.html)
 
+***
 
-
-## about Geofence
+### §1.6 about Geofence
 To distinguish between areas where construction machinery is allowed to enter and areas where it is prohibited using this system, geofence is used.
+
 
 ![](docs/OperaSimVR/GeofenceImage.png)
 
