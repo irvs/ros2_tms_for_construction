@@ -145,27 +145,6 @@ class TmsUrConstructionTerrainMeshClient(Node):
                 TmsdbTerrainImageSrv, "output/terrain/texture", self.terrain_terrain_srv_callback
             )
 
-        """
-        # Service server
-        self.srv = self.create_service(
-            TmsdbTerrainImageSrv, "~/output/terrain/mesh_srv", self.terrain_terrain_srv_callback
-        )
-        """
-
-        """
-        self.srv = self.create_service(
-            TmsdbTerrainImageSrv, "~/output/terrain/heightmap_srv", self.terrain_terrain_srv_callback
-        )
-        """
-        # Create ColoredMesh msg
-      #  self.msg: ColoredMesh = self.create_msg()
-
-     #   self.get_logger().info("Colored Mesh service is ready")
-
-        # Service server
-    #    self.srv = self.create_service(
-     #       ColoredMeshSrv, "~/output/terrain/mesh_srv", self.terrain_mesh_srv_callback
-      #  )
 
 
     def terrain_terrain_srv_callback(self, request, response):

@@ -24,7 +24,7 @@ def generate_launch_description():
 
     # Nodes
     tms_ur_paramwriter_odom_node1 = Node(
-        name="tms_ur_cv_odom1",
+        name="tms_ur_param_writer1",
         package="tms_ur_construction",
         executable="tms_ur_db_writer",
         #executable="tms_ur_machine_write_posest",

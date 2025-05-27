@@ -79,6 +79,22 @@ The remaining parameters do not need to be set when using the control mode (they
 |Turn off the controller. | press the B key.
 
 
+## §3. Preview mode (preview finction)
+For the crawler dump, there is a feature that allows remote operation of the real machine while simultaneously simulating the operation of its model in cyberspace. Currently, there is a significant discrepancy in the simulation, so improvements are needed, but it is functional during straight-line movement. The simulation operates while correcting the discrepancies between the simulation and the real machine.
+
+#### usage
+Set "VRCrawleOp" before "Play" (for details, refer to the section on remote operation. Parameters used only in "Preview mode" are explained below).
+1. Switch to "Play mode" once to align the position of the construction machine model with the real machine.
+2. Switch the mode to "PreviewMode".
+3. Board the crawler dump you want to operate. Turn on the controller "VRCrawleOp".
+4. Operate in the same way as remote control during "Play mode".
+The construction machine model in cyberspace will simulate the operation as it moves. The real machine operates with a delay corresponding to the "Time_Delay" from this simulated operation. Once a straight movement command is sent, only straight movement commands can be sent. Therefore, to switch between turning and straight movement commands, change the value of "LinearOrRot."
+5. If the discrepancy becomes too large, switch to "Play mode" to correct the position.
 
 
-
+**explanation of parameter**
+| parameter name | Units and message types | description |
+|--------|---------|---------|
+|Time_Deray | s |  The time delay between sending an operation command to the construction machine in cyberspace and sending the operation command to the real machine.
+|intervalInMilisecond|ms|Interval for applying position correction.|
+| LinearOrRot| - | Switch between straight and turning movements. Use 1 for straight and 2 for turning. When set to 0, the mode automatically switches upon sending an operation command. |
