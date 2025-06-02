@@ -58,7 +58,7 @@ Point cloud data in .las format is converted and stored in MongoDB as a .png for
 
 ```
 # Static terrain
-cd ros2-tms-for-construction-study_task/src/ros2-tms-for-construction/tms_ss/tms_ss_terrain_static/tms_ss_terrain_static/las_to_heightmap
+cd ros2-tms-for-construction_ws/src/ros2-tms-for-construction/tms_ss/tms_ss_terrain_static/tms_ss_terrain_static/las_to_heightmap
 
 python save_image_to_mongodb.py <inputFile>.las --output <outputImage>.png
 ```
