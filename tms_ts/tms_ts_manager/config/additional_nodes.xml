@@ -1,16 +1,5 @@
 <root>
     <TreeNodesModel>
-        <Action ID="LeafNodeSampleZx120">
-            <input_port name=" model_name" default="zx120"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>  
-        </Action>
-
-        <Action ID="LeafNodeSampleZx200">
-            <input_port name=" model_name" default="zx200"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/> 
-        </Action>
 
         <Action ID="LeafNodeMst2200">
             <input_port name=" model_name" default="mst2200"/>
@@ -36,20 +25,6 @@
             <inout_port name="subtask_name"/> 
         </Action>
 
-        <Action ID="BlackboardValueChecker">
-            <inout_port name="key"/>
-        </Action>
-
-        <Action ID="BlackboardValueWriterSrv">
-            <inout_port name="output_key"/>
-            <inout_port name="value"/>
-        </Action>
-
-        <Action ID="BlackboardValueWriterTopic">
-            <inout_port name="output_key"/>
-            <inout_port name="value"/>
-        </Action>
-
         <Action ID="BlackboardValueReaderMongo">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
@@ -64,11 +39,7 @@
 
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
-        </Action>      
-
-        <Action ID="ConditionalExpressionBool">
-            <input_port name="conditional_expression_bool"/>
-        </Action>       
+        </Action>        
 
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>        
