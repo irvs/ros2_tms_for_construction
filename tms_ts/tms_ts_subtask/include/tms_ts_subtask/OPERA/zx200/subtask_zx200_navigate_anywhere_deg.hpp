@@ -41,7 +41,7 @@ class SubtaskZx200NavigateAnywhereDeg : public SubtaskNodeBase
 public:
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
     using NavigateToPose = nav2_msgs::action::NavigateToPose;
-    using GoalHandleZx200NavigateAnywhere = rclcpp_action::ClientGoalHandle<NavigateToPose>;
+    using GoalHandleZx200NavigateAnywhereDeg = rclcpp_action::ClientGoalHandle<NavigateToPose>;
     SubtaskZx200NavigateAnywhereDeg();
 
 private:
@@ -54,13 +54,13 @@ private:
 
     // Member as an action client
     rclcpp_action::Client<NavigateToPose>::SharedPtr action_client_;
-    std::shared_future<GoalHandleZx200NavigateAnywhere::SharedPtr> client_future_goal_handle_;
+    std::shared_future<GoalHandleZx200NavigateAnywhereDeg::SharedPtr> client_future_goal_handle_;
     std::map<std::string, double> parameters;
-    void goal_response_callback(const GoalHandleZx200NavigateAnywhere::SharedPtr& goal_handle);
-    void feedback_callback(GoalHandleZx200NavigateAnywhere::SharedPtr,
+    void goal_response_callback(const GoalHandleZx200NavigateAnywhereDeg::SharedPtr& goal_handle);
+    void feedback_callback(GoalHandleZx200NavigateAnywhereDeg::SharedPtr,
                             const std::shared_ptr<const NavigateToPose::Feedback> feedback);
     void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                        const GoalHandleZx200NavigateAnywhere::WrappedResult& result);
+                        const GoalHandleZx200NavigateAnywhereDeg::WrappedResult& result);
 };
 
 #endif

@@ -42,7 +42,7 @@ class SubtaskMst110crNavigateThroughPosesDeg : public SubtaskNodeBase
 public:
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
     using NavigateThroughPoses = nav2_msgs::action::NavigateThroughPoses;
-    using GoalHandleMst110crNavigateThroughPoses = rclcpp_action::ClientGoalHandle<NavigateThroughPoses>;
+    using GoalHandleMst110crNavigateThroughPosesDeg = rclcpp_action::ClientGoalHandle<NavigateThroughPoses>;
     SubtaskMst110crNavigateThroughPosesDeg();
 
 
@@ -57,13 +57,13 @@ private:
 
     // Member as an action client
     rclcpp_action::Client<NavigateThroughPoses>::SharedPtr action_client_;
-    std::shared_future<GoalHandleMst110crNavigateThroughPoses::SharedPtr> client_future_goal_handle_;
+    std::shared_future<GoalHandleMst110crNavigateThroughPosesDeg::SharedPtr> client_future_goal_handle_;
     std::map<std::pair<std::string, std::string>, double> parameters;
-    void goal_response_callback(const GoalHandleMst110crNavigateThroughPoses::SharedPtr& goal_handle);
-    void feedback_callback(GoalHandleMst110crNavigateThroughPoses::SharedPtr,
+    void goal_response_callback(const GoalHandleMst110crNavigateThroughPosesDeg::SharedPtr& goal_handle);
+    void feedback_callback(GoalHandleMst110crNavigateThroughPosesDeg::SharedPtr,
                             const std::shared_ptr<const NavigateThroughPoses::Feedback> feedback);
     void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                        const GoalHandleMst110crNavigateThroughPoses::WrappedResult& result);
+                        const GoalHandleMst110crNavigateThroughPosesDeg::WrappedResult& result);
 };
 
 #endif

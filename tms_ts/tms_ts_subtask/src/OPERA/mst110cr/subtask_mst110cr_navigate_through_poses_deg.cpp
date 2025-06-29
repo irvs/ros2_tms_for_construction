@@ -127,7 +127,7 @@ void SubtaskMst110crNavigateThroughPosesDeg::execute(const std::shared_ptr<GoalH
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskMst110crNavigateThroughPosesDeg::goal_response_callback(const GoalHandleMest110crNavigateThroughPoses::SharedPtr& goal_handle)
+void SubtaskMst110crNavigateThroughPosesDeg::goal_response_callback(const GoalHandleMst110crNavigateThroughPosesDeg::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -141,8 +141,8 @@ void SubtaskMst110crNavigateThroughPosesDeg::goal_response_callback(const GoalHa
 
   
 void SubtaskMst110crNavigateThroughPosesDeg::feedback_callback(
-    const GoalHandleMst110crNavigateThroughPoses::SharedPtr,
-    const std::shared_ptr<const GoalHandleMst110crNavigateThroughPoses::Feedback> feedback)
+    const GoalHandleMst110crNavigateThroughPosesDeg::SharedPtr,
+    const std::shared_ptr<const GoalHandleMst110crNavigateThroughPosesDeg::Feedback> feedback)
 {
   // TODO: Fix to feedback to leaf node
   // RCLCPP_INFO(get_logger(), "Distance remaininf = %f", feedback->distance_remaining);
@@ -151,7 +151,7 @@ void SubtaskMst110crNavigateThroughPosesDeg::feedback_callback(
 
 //result
 void SubtaskMst110crNavigateThroughPosesDeg::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandleMst110crNavigateThroughPoses::WrappedResult& result)
+                                             const GoalHandleMst110crNavigateThroughPosesDeg::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {

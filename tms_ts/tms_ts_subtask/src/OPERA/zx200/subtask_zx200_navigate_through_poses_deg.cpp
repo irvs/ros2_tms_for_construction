@@ -24,21 +24,21 @@ SubtaskZx200NavigateThroughPosesDeg::SubtaskZx200NavigateThroughPosesDeg() : Sub
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
         this, "st_zx200_navigate_through_poses_deg",
         std::bind(&SubtaskZx200NavigateThroughPosesDeg::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&Subtaskzx200NavigateThroughPosesDeg::handle_cancel, this, std::placeholders::_1),
+        std::bind(&SubtaskZx200NavigateThroughPosesDeg::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskZx200NavigateThroughPosesDeg::handle_accepted, this, std::placeholders::_1));
 
     
     action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "navigate_through_poses");
 }
 
-rclcpp_action::GoalResponse Subtaskzx200NavigateThroughPosesDeg::handle_goal(
+rclcpp_action::GoalResponse SubtaskZx200NavigateThroughPosesDeg::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse Subtaskzx200NavigateThroughPosesDeg::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse SubtaskZx200NavigateThroughPosesDeg::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
     if (client_future_goal_handle_.valid() &&
@@ -127,7 +127,7 @@ void SubtaskZx200NavigateThroughPosesDeg::execute(const std::shared_ptr<GoalHand
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskZx200NavigateThroughPosesDeg::goal_response_callback(const GoalHandleZx200NavigateThroughPoses::SharedPtr& goal_handle)
+void SubtaskZx200NavigateThroughPosesDeg::goal_response_callback(const GoalHandleZx200NavigateThroughPosesDeg::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -141,8 +141,8 @@ void SubtaskZx200NavigateThroughPosesDeg::goal_response_callback(const GoalHandl
 
   
 void SubtaskZx200NavigateThroughPosesDeg::feedback_callback(
-    const GoalHandleZx200NavigateThroughPoses::SharedPtr,
-    const std::shared_ptr<const GoalHandleZx200NavigateThroughPoses::Feedback> feedback)
+    const GoalHandleZx200NavigateThroughPosesDeg::SharedPtr,
+    const std::shared_ptr<const GoalHandleZx200NavigateThroughPosesDeg::Feedback> feedback)
 {
   // TODO: Fix to feedback to leaf node
   // RCLCPP_INFO(get_logger(), "Distance remaininf = %f", feedback->distance_remaining);
@@ -151,7 +151,7 @@ void SubtaskZx200NavigateThroughPosesDeg::feedback_callback(
 
 //result
 void SubtaskZx200NavigateThroughPosesDeg::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandleZx200NavigateThroughPoses::WrappedResult& result)
+                                             const GoalHandleZx200NavigateThroughPosesDeg::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {

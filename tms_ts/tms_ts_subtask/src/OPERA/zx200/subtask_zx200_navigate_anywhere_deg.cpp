@@ -129,7 +129,7 @@ void SubtaskZx200NavigateAnywhereDeg::execute(const std::shared_ptr<GoalHandle> 
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskZx200NavigateAnywhereDeg::goal_response_callback(const GoalHandleZx200NavigateAnywhere::SharedPtr& goal_handle)
+void SubtaskZx200NavigateAnywhereDeg::goal_response_callback(const GoalHandleZx200NavigateAnywhereDeg::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -143,8 +143,8 @@ void SubtaskZx200NavigateAnywhereDeg::goal_response_callback(const GoalHandleZx2
 
   
 void SubtaskZx200NavigateAnywhereDeg::feedback_callback(
-    const GoalHandleZx200NavigateAnywhere::SharedPtr,
-    const std::shared_ptr<const GoalHandleZx200NavigateAnywhere::Feedback> feedback)
+    const GoalHandleZx200NavigateAnywhereDeg::SharedPtr,
+    const std::shared_ptr<const GoalHandleZx200NavigateAnywhereDeg::Feedback> feedback)
 {
   // TODO: Fix to feedback to leaf node
   RCLCPP_INFO(get_logger(), "Distance remaininf = %f", feedback->distance_remaining);
@@ -153,7 +153,7 @@ void SubtaskZx200NavigateAnywhereDeg::feedback_callback(
 
 //result
 void SubtaskZx200NavigateAnywhereDeg::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandlezx200NavigateAnywhere::WrappedResult& result)
+                                             const GoalHandleZx200NavigateAnywhereDeg::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {

@@ -18,7 +18,7 @@
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskMst110crNavigateAnywhereDeg::Subtaskmst110crNavigateAnywhereDeg() : SubtaskNodeBase("st_mst110cr_navigate_anywhere_deg_node")
+SubtaskMst110crNavigateAnywhereDeg::SubtaskMst110crNavigateAnywhereDeg() : SubtaskNodeBase("st_mst110cr_navigate_anywhere_deg_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
         this, "st_mst110cr_navigate_anywhere_deg",
@@ -129,7 +129,7 @@ void SubtaskMst110crNavigateAnywhereDeg::execute(const std::shared_ptr<GoalHandl
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskMst110crNavigateAnywhereDeg::goal_response_callback(const GoalHandleMst110crNavigateAnywhere::SharedPtr& goal_handle)
+void SubtaskMst110crNavigateAnywhereDeg::goal_response_callback(const GoalHandleMst110crNavigateAnywhereDeg::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -143,8 +143,8 @@ void SubtaskMst110crNavigateAnywhereDeg::goal_response_callback(const GoalHandle
 
   
 void SubtaskMst110crNavigateAnywhereDeg::feedback_callback(
-    const GoalHandleMst110crNavigateAnywhere::SharedPtr,
-    const std::shared_ptr<const GoalHandleMst110crNavigateAnywhere::Feedback> feedback)
+    const GoalHandleMst110crNavigateAnywhereDeg::SharedPtr,
+    const std::shared_ptr<const GoalHandleMst110crNavigateAnywhereDeg::Feedback> feedback)
 {
   // TODO: Fix to feedback to leaf node
   RCLCPP_INFO(get_logger(), "Distance remaininf = %f", feedback->distance_remaining);
@@ -153,7 +153,7 @@ void SubtaskMst110crNavigateAnywhereDeg::feedback_callback(
 
 //result
 void SubtaskMst110crNavigateAnywhereDeg::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandleMst110crNavigateAnywhere::WrappedResult& result)
+                                             const GoalHandleMst110crNavigateAnywhereDeg::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {
