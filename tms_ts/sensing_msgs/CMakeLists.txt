@@ -14,6 +14,18 @@ find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  
+  "msg/FollowWaypoints.msg"
+  "msg/FollowWaypointsDeg.msg"
+  "msg/NavigateAnywhere.msg"
+  "msg/NavigateAnywhereDeg.msg"
+  "msg/NavigateThroughPoses.msg"
+  "msg/NavigateThroughPosesDeg.msg"
+  "msg/ReleaseSoil.msg"
+  "msg/ExcavateSimple.msg"
+  "msg/ReleaseSimple.msg"
+  "msg/ChangePose.msg"
+
   "msg/Sample.msg"
   "msg/Zx200EndEffector.msg"
   "msg/Zx200CollisionObjectsIc120.msg"
