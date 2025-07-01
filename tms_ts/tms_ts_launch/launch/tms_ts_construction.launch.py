@@ -179,22 +179,60 @@ def generate_launch_description():
                   output='screen'),            
 
             
-            # センシング処�?後�?��?ータをデータベ�?�スに取り込むためのノ�?�ド�?
+
             Node(
                   package='tms_sp_sensing', 
-                  executable='tms_sp_zx200_end_effector',
+                  executable='tms_sp_navigate_anywhere',
                   output='screen',
             ),
             Node(
                   package='tms_sp_sensing', 
-                  executable='sample',
-                  output='screen'
+                  executable='tms_sp_navigate_anywhere_deg',
+                  output='screen',
             ),
             Node(
                   package='tms_sp_sensing', 
-                  executable='tms_sp_flgs',
-                  output='screen'
+                  executable='tms_sp_follow_waypoints',
+                  output='screen',
             ),
+            Node(
+                  package='tms_sp_sensing', 
+                  executable='tms_sp_follow_waypoints_deg',
+                  output='screen',
+            ),
+            Node(
+                  package='tms_sp_sensing', 
+                  executable='tms_sp_navigate_through_poses',
+                  output='screen',
+            ),
+            Node(
+                  package='tms_sp_sensing', 
+                  executable='tms_sp_navigate_through_poses_deg',
+                  output='screen',
+            ),
+            Node(
+                  package='tms_sp_sensing', 
+                  executable='tms_sp_navigate_through_poses_deg',
+                  output='screen',
+            ),
+            Node(
+                  package='tms_sp_sensing', 
+                  executable='tms_sp_change_pose',
+                  output='screen',
+            ),
+            Node(
+                  package='tms_sp_sensing', 
+                  executable='tms_sp_excavate_simple',
+                  output='screen',
+            ),
+            Node(
+                  package='tms_sp_sensing', 
+                  executable='tms_sp_release_simple',
+                  output='screen',
+            ),
+
+            # TMS_DB
+
             Node(
                   package="tms_db_manager", 
                   executable="tms_db_reader_task",

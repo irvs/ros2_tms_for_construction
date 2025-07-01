@@ -32,6 +32,7 @@ setup(
             "tms_sp_follow_waypoints_deg = tms_sp_sensing.tms_sp_follow_waypoints_deg:main",
             "tms_sp_navigate_through_poses = tms_sp_sensing.tms_sp_navigate_through_poses:main",
             "tms_sp_navigate_through_poses_deg = tms_sp_sensing.tms_sp_navigate_through_poses_deg:main",
+            "tms_sp_release_soil = tms_sp_sensing.tms_sp_release_soil:main",
             "tms_sp_change_pose = tms_sp_sensing.tms_sp_change_pose:main",
             "tms_sp_excavate_simple = tms_sp_sensing.tms_sp_excavate_simple:main",
             "tms_sp_release_simple = tms_sp_sensing.tms_sp_release_simple:main",
