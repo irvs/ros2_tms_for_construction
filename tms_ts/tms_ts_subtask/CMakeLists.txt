@@ -50,6 +50,15 @@ target_link_libraries(${PROJECT_NAME}
 mongocxx
 bsoncxx)
 
+# Subtask Nodes for D37PXI 
+add_executable(subtask_d37pxi_follow_waypoints_deg src/OPERA/d37pxi/subtask_d37pxi_follow_waypoints_deg.cpp)
+add_executable(subtask_d37pxi_follow_waypoints src/OPERA/d37pxi/subtask_d37pxi_follow_waypoints.cpp)
+add_executable(subtask_d37pxi_navigate_anywhere_deg src/OPERA/d37pxi/subtask_d37pxi_navigate_anywhere_deg.cpp)
+add_executable(subtask_d37pxi_navigate_anywhere src/OPERA/d37pxi/subtask_d37pxi_navigate_anywhere.cpp)
+add_executable(subtask_d37pxi_navigate_through_poses_deg src/OPERA/d37pxi/subtask_d37pxi_navigate_through_poses_deg.cpp)
+add_executable(subtask_d37pxi_navigate_through_poses src/OPERA/d37pxi/subtask_d37pxi_navigate_through_poses.cpp)
+add_executable(subtask_d37pxi_release_soil src/OPERA/d37pxi/subtask_d37pxi_release_soil.cpp)
+
 # Subtask Nodes for MST2200
 add_executable(subtask_mst2200_follow_waypoints_deg src/FUJITA/mst2200/subtask_mst2200_follow_waypoints_deg.cpp)
 add_executable(subtask_mst2200_follow_waypoints src/FUJITA/mst2200/subtask_mst2200_follow_waypoints.cpp)
@@ -90,6 +99,13 @@ add_executable(subtask_mst110cr_navigate_through_poses_deg src/OPERA/mst110cr/su
 add_executable(subtask_mst110cr_release_soil src/OPERA/mst110cr/subtask_mst110cr_release_soil.cpp)
 
 set(TARGETS
+  subtask_d37pxi_follow_waypoints_deg
+  subtask_d37pxi_follow_waypoints
+  subtask_d37pxi_navigate_anywhere_deg
+  subtask_d37pxi_navigate_anywhere
+  subtask_d37pxi_navigate_through_poses_deg
+  subtask_d37pxi_navigate_through_poses
+  subtask_d37pxi_release_soil  
   subtask_mst2200_follow_waypoints_deg
   subtask_mst2200_follow_waypoints
   subtask_mst2200_navigate_anywhere_deg
