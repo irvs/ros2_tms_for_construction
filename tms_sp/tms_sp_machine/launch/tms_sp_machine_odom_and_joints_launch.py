@@ -29,12 +29,12 @@ def generate_launch_description():
         executable="tms_sp_machine_odom.py",
         output="screen",
         remappings=[
-            ("~/input/odom", "/ic120/odometry/global"),
+            ("~/input/odom", "/Vehicle01/odom"),
           # ("~/input/odom", "/ic120/global_pose"),
         ],
         parameters=[
             {
-                "machine_name": "ic120_1",
+                "machine_name": "kumagayagumi_crawler",
             },
             {
                 "to_frame": LaunchConfiguration("to_frame"),
@@ -45,15 +45,15 @@ def generate_launch_description():
     tms_sp_machine_odom_node2 = Node(
         name="tms_sp_machine_odom2",
         package="tms_sp_machine",
-        executable="tms_sp_machine_posest.py",
+        executable="tms_sp_machine_odom.py",
         output="screen",
         remappings=[
-            ("~/input/odom", "/zx200/pose"),
+            ("~/input/odom", "/global_pose"),
            #("~/input/odom", "/ic120/odometry/global"),
         ],
         parameters=[
             {
-                "machine_name": "zx200_1",
+                "machine_name": "kumagayagumi_backhoe",
             },
             {
                 "to_frame": LaunchConfiguration("to_frame"),
@@ -67,11 +67,11 @@ def generate_launch_description():
         executable="tms_sp_machine_joints.py",
         output="screen",
         remappings=[
-            ("~/input/joint", "/zx200/joint_state"),
+            ("~/input/joint", "/joint_state"),
         ],
         parameters=[
             {
-                "machine_name": "zx200_1",
+                "machine_name": "kumagayagumi_backhoe",
             },
             {
                 "to_frame": LaunchConfiguration("to_frame"),
@@ -79,76 +79,95 @@ def generate_launch_description():
         ],
     )
 
-    tms_sp_machine_joints_node2 = Node(
-        name="tms_sp_machine_joints2",
-        package="tms_sp_machine",
-        executable="tms_sp_machine_joints.py",
-        output="screen",
-        remappings=[
-            ("~/input/joint", "/ic120/joint_states"),
-        ],
-        parameters=[
-            {
-                "machine_name": "ic120_1",
-            },
-            {
-                "to_frame": LaunchConfiguration("to_frame"),
-            },
-        ],
-    )
-    
-    
     tms_sp_machine_odom_node3 = Node(
         name="tms_sp_machine_odom3",
         package="tms_sp_machine",
-        executable="tms_sp_machine_odom.py",
+        executable="tms_sp_machine_odom_yammer.py",
         output="screen",
         remappings=[
-            ("~/input/odom", "/cd_0/status/odom"),
+            ("~/input/odom", "/cafe/odom"),
+          # ("~/input/odom", "/ic120/global_pose"),
         ],
         parameters=[
             {
-                "machine_name": "crawler_dump1",
+                "machine_name": "yammer_cafe",
             },
             {
                 "to_frame": LaunchConfiguration("to_frame"),
             },
         ],
     )
-    tms_sp_machine_odom_node4 = Node(
-        name="tms_sp_machine_odom4",
-        package="tms_sp_machine",
-        executable="tms_sp_machine_odom.py",
-        output="screen",
-        remappings=[
-            ("~/input/odom", "/cd_1/status/odom"),
-        ],
-        parameters=[
-            {
-                "machine_name": "crawler_dump2",
-            },
-            {
-                "to_frame": LaunchConfiguration("to_frame"),
-            },
-        ],
-    )
-    tms_sp_machine_odom_node5 = Node(
-        name="tms_sp_machine_odom5",
-        package="tms_sp_machine",
-        executable="tms_sp_machine_odom.py",
-        output="screen",
-        remappings=[
-            ("~/input/odom", "/cd_2/status/odom"),
-        ],
-        parameters=[
-            {
-                "machine_name": "crawler_dump3",
-            },
-            {
-                "to_frame": LaunchConfiguration("to_frame"),
-            },
-        ],
-    )
+
+    # tms_sp_machine_joints_node2 = Node(
+    #     name="tms_sp_machine_joints2",
+    #     package="tms_sp_machine",
+    #     executable="tms_sp_machine_joints.py",
+    #     output="screen",
+    #     remappings=[
+    #         ("~/input/joint", "/ic120/joint_states"),
+    #     ],
+    #     parameters=[
+    #         {
+    #             "machine_name": "ic120_1",
+    #         },
+    #         {
+    #             "to_frame": LaunchConfiguration("to_frame"),
+    #         },
+    #     ],
+    # )
+    
+    
+    # tms_sp_machine_odom_node3 = Node(
+    #     name="tms_sp_machine_odom3",
+    #     package="tms_sp_machine",
+    #     executable="tms_sp_machine_odom.py",
+    #     output="screen",
+    #     remappings=[
+    #         ("~/input/odom", "/cd_0/status/odom"),
+    #     ],
+    #     parameters=[
+    #         {
+    #             "machine_name": "crawler_dump1",
+    #         },
+    #         {
+    #             "to_frame": LaunchConfiguration("to_frame"),
+    #         },
+    #     ],
+    # )
+    # tms_sp_machine_odom_node4 = Node(
+    #     name="tms_sp_machine_odom4",
+    #     package="tms_sp_machine",
+    #     executable="tms_sp_machine_odom.py",
+    #     output="screen",
+    #     remappings=[
+    #         ("~/input/odom", "/cd_1/status/odom"),
+    #     ],
+    #     parameters=[
+    #         {
+    #             "machine_name": "crawler_dump2",
+    #         },
+    #         {
+    #             "to_frame": LaunchConfiguration("to_frame"),
+    #         },
+    #     ],
+    # )
+    # tms_sp_machine_odom_node5 = Node(
+    #     name="tms_sp_machine_odom5",
+    #     package="tms_sp_machine",
+    #     executable="tms_sp_machine_odom.py",
+    #     output="screen",
+    #     remappings=[
+    #         ("~/input/odom", "/cd_2/status/odom"),
+    #     ],
+    #     parameters=[
+    #         {
+    #             "machine_name": "crawler_dump3",
+    #         },
+    #         {
+    #             "to_frame": LaunchConfiguration("to_frame"),
+    #         },
+    #     ],
+    # )
     
 
     return LaunchDescription(
@@ -156,10 +175,11 @@ def generate_launch_description():
             to_frame,
             tms_sp_machine_odom_node1,
             tms_sp_machine_odom_node2,
-            tms_sp_machine_joints_node1,
-            tms_sp_machine_joints_node2,
             tms_sp_machine_odom_node3,
-            tms_sp_machine_odom_node4,
-            tms_sp_machine_odom_node5,
+            tms_sp_machine_joints_node1,
+            # tms_sp_machine_joints_node2,
+            # tms_sp_machine_odom_node3,
+            # tms_sp_machine_odom_node4,
+            # tms_sp_machine_odom_node5,
         ]
     )

@@ -44,6 +44,7 @@ ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
   scripts/tms_sp_machine_odom.py
+  scripts/tms_sp_machine_odom_yammer.py
   scripts/tms_sp_machine_posest.py
   scripts/tms_sp_machine_joints.py
   DESTINATION lib/${PROJECT_NAME}
