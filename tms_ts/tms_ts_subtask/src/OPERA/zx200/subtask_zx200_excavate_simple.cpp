@@ -112,6 +112,7 @@ void SubtaskZx200ExcavateSimple::execute(const std::shared_ptr<GoalHandle> goal_
     target_pose.position.y = param_from_db_["y"];
     target_pose.position.z = param_from_db_["z"];
     target_pose.theta_w = param_from_db_["theta_w"];
+    target_pose.offset = param_from_db_["offset"];
 
     goal_msg.position_with_angle = target_pose;
   }
