@@ -114,6 +114,8 @@ void SubtaskZx200ReleaseSimple::execute(const std::shared_ptr<GoalHandle> goal_h
     target_pose.position.y = param_from_db_["y"];
     target_pose.position.z = param_from_db_["z"];
     target_pose.theta_w = param_from_db_["theta_w"];
+
+    goal_msg.position_with_angle = target_pose;
   }
   else
   {
