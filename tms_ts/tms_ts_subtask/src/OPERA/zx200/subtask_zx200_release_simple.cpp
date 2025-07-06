@@ -105,9 +105,15 @@ void SubtaskZx200ReleaseSimple::execute(const std::shared_ptr<GoalHandle> goal_h
 
   // TODO: Fix to get array from DB
   auto goal_msg = Zx200ReleaseSimple::Goal();
-  if (param_from_db_.find("target_angle") != param_from_db_.end())
+  if (param_from_db_["position_with_angle"] > 0.5)
   {
-    goal_msg.target_angle = param_from_db_["target_angle"];
+    RCLCPP_INFO(this->get_logger(), "Get position_with_angle from DB.");
+
+    tms_msg_rp::msg::TmsRpZx200PositionWithAngle target_pose;
+    target_pose.position.x = param_from_db_["x"];
+    target_pose.position.y = param_from_db_["y"];
+    target_pose.position.z = param_from_db_["z"];
+    target_pose.theta_w = param_from_db_["theta_w"];
   }
   else
   {

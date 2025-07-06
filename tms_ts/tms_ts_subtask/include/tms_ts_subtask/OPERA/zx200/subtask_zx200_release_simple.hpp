@@ -31,6 +31,7 @@
 #include "tms_ts_subtask/subtask_node_base.hpp"
 
 #include "tms_msg_rp/action/tms_rp_zx200_release_simple.hpp"
+#include "tms_msg_rp/action/tms_rp_zx200_excavate_simple.hpp"
 
 #include <rclcpp/qos.hpp>   
 #include <rmw/qos_profiles.h>  
@@ -40,7 +41,7 @@ class SubtaskZx200ReleaseSimple : public SubtaskNodeBase
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
 
-  using Zx200ReleaseSimple = tms_msg_rp::action::TmsRpZx200ReleaseSimple;
+  using Zx200ReleaseSimple = tms_msg_rp::action::TmsRpZx200ExcavateSimple;
   using GoalHandleZx200ReleaseSimple = rclcpp_action::ClientGoalHandle<Zx200ReleaseSimple>;
 
   SubtaskZx200ReleaseSimple();
