@@ -44,7 +44,7 @@ public:
     subscription_ = this->create_subscription<std_msgs::msg::String>(
         "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
     
-    factory.registerNodeType<LeafNodeMst2200>("LeafNodeD37pxi");
+    factory.registerNodeType<LeafNodeD37pxi>("LeafNodeD37pxi");
     factory.registerNodeType<LeafNodeMst2200>("LeafNodeMst2200");
     factory.registerNodeType<LeafNodeIc120>("LeafNodeIc120");
     factory.registerNodeType<LeafNodeMst110cr>("LeafNodeMst110cr");

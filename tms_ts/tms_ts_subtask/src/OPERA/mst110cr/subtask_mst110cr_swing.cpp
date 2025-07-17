@@ -13,32 +13,32 @@
 // limitations under the License.
 
 #include <vector>
-#include "tms_ts_subtask/OPERA/mst110cr/subtask_mst110cr_release_soil.hpp"
+#include "tms_ts_subtask/OPERA/mst110cr/subtask_mst110cr_swing.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskMst110crReleaseSoil::SubtaskMst110crReleaseSoil() : SubtaskNodeBase("st_mst110cr_release_soil_node")
+SubtaskMst110crSwing::SubtaskMst110crSwing() : SubtaskNodeBase("st_mst110cr_swing_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_mst110cr_release_soil",
-        std::bind(&SubtaskMst110crReleaseSoil::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskMst110crReleaseSoil::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskMst110crReleaseSoil::handle_accepted, this, std::placeholders::_1));
+        this, "st_mst110cr_swing",
+        std::bind(&SubtaskMst110crSwing::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&SubtaskMst110crSwing::handle_cancel, this, std::placeholders::_1),
+        std::bind(&SubtaskMst110crSwing::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<SetDumpAngle>(this, "set_dump_angle");
+    action_client_ = rclcpp_action::create_client<SetSwingAngle>(this, "set_swing_angle");
 }
 
-rclcpp_action::GoalResponse SubtaskMst110crReleaseSoil::handle_goal(
+rclcpp_action::GoalResponse SubtaskMst110crSwing::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskMst110crReleaseSoil::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse SubtaskMst110crSwing::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
     if (client_future_goal_handle_.valid() &&
@@ -50,15 +50,15 @@ rclcpp_action::CancelResponse SubtaskMst110crReleaseSoil::handle_cancel(const st
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskMst110crReleaseSoil::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void SubtaskMst110crSwing::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskMst110crReleaseSoil::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&SubtaskMst110crSwing::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskMst110crReleaseSoil::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void SubtaskMst110crSwing::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_mst110cr_release_soil) is executing...");
+    RCLCPP_INFO(this->get_logger(), "subtask(st_mst110cr_swing) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -75,12 +75,12 @@ void SubtaskMst110crReleaseSoil::execute(const std::shared_ptr<GoalHandle> goal_
 
     RCLCPP_INFO(this->get_logger(), "Get pose from DB.");
 
-    auto goal_msg = SetDumpAngle::Goal();
+    auto goal_msg = SetSwingAngle::Goal();
     goal_msg.target_angle = parameters["target_angle"];
 
 
     //進捗状況を表示するFeedbackコールバックを設�?
-    auto send_goal_options = rclcpp_action::Client<SetDumpAngle>::SendGoalOptions();
+    auto send_goal_options = rclcpp_action::Client<SetSwingAngle>::SendGoalOptions();
     send_goal_options.goal_response_callback = [this](const auto& goal_handle) { goal_response_callback(goal_handle); };
     send_goal_options.feedback_callback = [this](const auto tmp, const auto feedback) {
         feedback_callback(tmp, feedback);
@@ -92,7 +92,7 @@ void SubtaskMst110crReleaseSoil::execute(const std::shared_ptr<GoalHandle> goal_
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskMst110crReleaseSoil::goal_response_callback(const GoalHandleMst110crReleaseSoil::SharedPtr& goal_handle)
+void SubtaskMst110crSwing::goal_response_callback(const GoalHandleMst110crSwing::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -105,9 +105,9 @@ void SubtaskMst110crReleaseSoil::goal_response_callback(const GoalHandleMst110cr
 }
 
   
-void SubtaskMst110crReleaseSoil::feedback_callback(
-    const GoalHandleMst110crReleaseSoil::SharedPtr,
-    const std::shared_ptr<const GoalHandleMst110crReleaseSoil::Feedback> feedback)
+void SubtaskMst110crSwing::feedback_callback(
+    const GoalHandleMst110crSwing::SharedPtr,
+    const std::shared_ptr<const GoalHandleMst110crSwing::Feedback> feedback)
 {
   // TODO: Fix to feedback to leaf node
   // RCLCPP_INFO(get_logger(), "Distance remaininf = %f", feedback->distance_remaining);
@@ -115,8 +115,8 @@ void SubtaskMst110crReleaseSoil::feedback_callback(
 
 
 //result
-void SubtaskMst110crReleaseSoil::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandleMst110crReleaseSoil::WrappedResult& result)
+void SubtaskMst110crSwing::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+                                             const GoalHandleMst110crSwing::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {
@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskMst110crReleaseSoil>());
+    rclcpp::spin(std::make_shared<SubtaskMst110crSwing>());
     rclcpp::shutdown();
     return 0;
 }
