@@ -117,11 +117,11 @@ def generate_launch_description():
                   executable='subtask_ic120_navigate_through_poses',
                   output='screen',
                   namespace='ic120'),
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_ic120_release_soil',
-                  output='screen',
-                  namespace='ic120'),
+            # Node(
+            #       package='tms_ts_subtask',
+            #       executable='subtask_ic120_release_soil',
+            #       output='screen',
+            #       namespace='ic120'),
             
 
             # mst2200用
@@ -155,11 +155,11 @@ def generate_launch_description():
                   executable='subtask_mst2200_navigate_through_poses',
                   output='screen',
                   namespace='mst2200'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_mst2200_release_soil',
-                  output='screen',
-                  namespace='mst2200'),
+            # Node(
+            #       package='tms_ts_subtask', 
+            #       executable='subtask_mst2200_release_soil',
+            #       output='screen',
+            #       namespace='mst2200'),
 
             #MST110CR
             Node(
@@ -197,6 +197,11 @@ def generate_launch_description():
                   executable='subtask_mst110cr_release_soil',
                   output='screen',
                   namespace='mst110cr_2'),      
+            Node(
+                  package = 'tms_ts_subtask',
+                  executable='subtask_mst110cr_swing',
+                  output='screen',
+                  namespace='mst110cr_2'), 
 
             
             #D37PXI

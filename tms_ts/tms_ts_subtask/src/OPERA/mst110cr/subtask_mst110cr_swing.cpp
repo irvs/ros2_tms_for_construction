@@ -78,6 +78,8 @@ void SubtaskMst110crSwing::execute(const std::shared_ptr<GoalHandle> goal_handle
     auto goal_msg = SetSwingAngle::Goal();
     goal_msg.target_angle = parameters["target_angle"];
 
+    RCLCPP_INFO(this->get_logger(), "target_angle: %d", parameters["target_angle"]);
+
 
     //進捗状況を表示するFeedbackコールバックを設�?
     auto send_goal_options = rclcpp_action::Client<SetSwingAngle>::SendGoalOptions();
