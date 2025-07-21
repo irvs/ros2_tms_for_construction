@@ -22,13 +22,17 @@
 
 // leaf nodes�̃C���N���[�h
 #include "tms_ts_subtask/FUJITA/mst2200/leaf_node.hpp"
+#include "tms_ts_subtask/OPERA/d37pxi/leaf_node.hpp"
 #include "tms_ts_subtask/OPERA/ic120/leaf_node.hpp"
 #include "tms_ts_subtask/OPERA/zx200/leaf_node.hpp"
+#include "tms_ts_subtask/OPERA/mst110cr/leaf_node.hpp"
 #include "tms_ts_subtask/common/blackboard_value_reader_mongo.hpp"
 #include "tms_ts_subtask/common/mongo_value_writer.hpp"
 #include "tms_ts_subtask/common/conditional_expression.hpp"
 #include "tms_ts_subtask/common/KeepRunningUntilFlgup.hpp"
 #include "tms_ts_subtask/common/SetLocalBlackboard.hpp"
+#include "tms_ts_subtask/common/SetLocalBlackboardWithCounter.hpp"
+#include "tms_ts_subtask/common/Counter.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -43,14 +47,18 @@ public:
     subscription_ = this->create_subscription<tms_msg_ur::msg::Demo202412>(
         "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
     
+    factory.registerNodeType<LeafNodeD37pxi>("LeafNodeD37pxi");
     factory.registerNodeType<LeafNodeMst2200>("LeafNodeMst2200");
     factory.registerNodeType<LeafNodeIc120>("LeafNodeIc120");
+    factory.registerNodeType<LeafNodeMst110cr>("LeafNodeMst110cr");
     factory.registerNodeType<LeafNodeZx200>("LeafNodeZx200");
     factory.registerNodeType<BlackboardValueReaderMongo>("BlackboardValueReaderMongo");
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
+    factory.registerNodeType<SetLocalBlackboardWithCounter>("SetLocalBlackboardWithCounter");
+    factory.registerNodeType<Counter>("Counter");
 
     loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SHIMIZU");
   }

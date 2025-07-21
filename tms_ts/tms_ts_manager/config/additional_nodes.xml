@@ -57,6 +57,15 @@
             <inout_port name="output_key"/>
         </Action>          
 
+        <Action ID="SetLocalBlackboardWithCounter">
+            <input_port name="key"/>
+            <inout_port name="counter_key"/>
+        </Action>      
+
+        <Action ID="Counter">
+            <input_port name="key"/>
+        </Action>     
+
     </TreeNodesModel>
 </root>
 

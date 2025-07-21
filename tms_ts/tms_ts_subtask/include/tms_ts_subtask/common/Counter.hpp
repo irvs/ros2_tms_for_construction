@@ -18,28 +18,28 @@ public:
 
   static PortsList providedPorts()
   {
-    return {BidirectionalPort("local_blackboard_key")};
+    return {BidirectionalPort("key")};
   }
 
 private:
   virtual BT::NodeStatus tick() override
   {
-    std::string local_blackboard_key;
-    if (!getInput("local_blackboard_key", local_blackboard_key))
+    std::string key;
+    if (!getInput("key", key))
     {
-      throw RuntimeError("missing port [local_blackboard_key]");
+      throw RuntimeError("missing port [key]");
     }
 
     int num;
-    if (!config().blackboard->get(local_blackboard_key, num)) {
-      std::cout << "[Counter] Parameter " << local_blackboard_key << "was not found in your local blackboard." << std::endl;
+    if (!config().blackboard->get(key, num)) {
+      std::cout << "[Counter] Parameter " << key << "was not found in your local blackboard." << std::endl;
       return NodeStatus::FAILURE;
     }
 
     num++;
-    config().blackboard->set(local_blackboard_key, num);
+    config().blackboard->set(key, num);
 
-    std::cout << "[Counter] Parameter " << local_blackboard_key << "was set " << std::to_string(num) << "." << std::endl;
+    std::cout << "[Counter] Parameter " << key << "was set " << std::to_string(num) << "." << std::endl;
 
     return NodeStatus::SUCCESS;
   }
