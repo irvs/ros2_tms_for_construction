@@ -25,7 +25,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ExcavateSimple.msg"
   "msg/ReleaseSimple.msg"
   "msg/ChangePose.msg"
-
   "msg/Sample.msg"
   "msg/Zx200EndEffector.msg"
   "msg/Zx200CollisionObjectsIc120.msg"

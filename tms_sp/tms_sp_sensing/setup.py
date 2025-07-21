@@ -35,8 +35,8 @@ setup(
             "tms_sp_release_soil = tms_sp_sensing.tms_sp_release_soil:main",
             "tms_sp_change_pose = tms_sp_sensing.tms_sp_change_pose:main",
             "tms_sp_excavate_simple = tms_sp_sensing.tms_sp_excavate_simple:main",
+            "tms_sp_excavate_simple_plan = tms_sp_sensing.tms_sp_excavate_simple_plan:main",
             "tms_sp_release_simple = tms_sp_sensing.tms_sp_release_simple:main",
-
         ],
     },
 )

@@ -42,6 +42,11 @@ rclcpp_action::GoalResponse SubtaskMst2200NavigateAnywhereDeg::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
+    if (parameters.empty())
+    {
+        RCLCPP_ERROR(this->get_logger(), "Failed to get parameters from DB");
+        return rclcpp_action::GoalResponse::REJECT;
+    }
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 

@@ -30,6 +30,9 @@
 #include "tms_ts_subtask/common/conditional_expression.hpp"
 #include "tms_ts_subtask/common/KeepRunningUntilFlgup.hpp"
 #include "tms_ts_subtask/common/SetLocalBlackboard.hpp"
+#include "tms_ts_subtask/common/SetLocalBlackboardWithCounter.hpp"
+#include "tms_ts_subtask/common/Counter.hpp"
+
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -54,6 +57,8 @@ public:
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
+    factory.registerNodeType<SetLocalBlackboardWithCounter>("SetLocalBlackboardWithCounter");
+    factory.registerNodeType<Counter>("Counter");
 
     loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SIMIZU");
   }
