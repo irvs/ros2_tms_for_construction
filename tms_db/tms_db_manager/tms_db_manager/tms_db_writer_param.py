@@ -26,7 +26,7 @@ from tms_msg_db.msg import TmsdbQuery
 client = MongoClient('mongodb://localhost:27017/')
 # 使用するデータベースとコレクションの指定
 db = client['rostmsdb']  # データベース名
-collection = db['parameters']  # コレクション名
+collection = db['parameter']  # コレクション名
 
 
 class TmsDbWriterQuery(Node):
@@ -104,16 +104,9 @@ class TmsDbWriterQuery(Node):
           #  query = {"model_name": "ic120", "record_name": "test_PATH"}
             # 更新するためのクエリ条件（車両名と記録名）
             query = {"model_name": msg.vehicle_name, "record_name": msg.record_name}
-            # 新しい数値を追加する
-          #  new_data = {
-          #      "x": -34.5,  # 新しい x 値
-          #      "y": 45.0,   # 新しい y 値
-          #      "z": 1.0,    # 新しい z 値
-          #      "qx": 0.5,   # 新しい qx 値
-          #      "qy": 0.6,   # 新しい qy 値
-          #      "qz": 0.7,   # 新しい qz 値
-          #      "qw": 0.8    # 新しい qw 値
-          #  }
+
+            ''''''
+
             # 新しいデータを取り出す（msgから必要な情報を抽出）
             new_data = {
                 "x": [msg.add_path.pose.position.x],
@@ -124,21 +117,17 @@ class TmsDbWriterQuery(Node):
                 "qz": [msg.add_path.pose.orientation.z],
                 "qw": [msg.add_path.pose.orientation.w]
             }
-            # 更新操作（配列に新しい値を追加）
-         #   update = {
-         #       "$push": {
-         #           "x": new_data["x"],
-         #           "y": new_data["y"],
-         #           "z": new_data["z"],
-         #           "qx": new_data["qx"],
-         #           "qy": new_data["qy"],
-         #           "qz": new_data["qz"],
-         #           "qw": new_data["qw"]
-         #       }
-         #   }
-            # 更新操作（配列に新しい値を追加）
-            update = {
-                "$push": {
+
+            #over write
+            if (msg.writemode=="over_write"):
+                update = {
+                    "$set": new_data
+                }
+                # 更新操作（配列に新しい値を追加）
+            #rewrite
+            else:
+                update = {
+                    "$push": {
                     "x": new_data["x"],
                     "y": new_data["y"],
                     "z": new_data["z"],
@@ -146,10 +135,15 @@ class TmsDbWriterQuery(Node):
                     "qy": new_data["qy"],
                     "qz": new_data["qz"],
                     "qw": new_data["qw"]
+                    }
                 }
-            }
+
+            ''''''
+
             # ドキュメントの更新
             result = collection.update_one(query, update)
+
+            self.get_logger().info("model_name : " + msg.vehicle_name + " , record_name : " + msg.record_name + " , msg.writemode : " + msg.writemode)
 
             # 結果を表示
             if result.modified_count > 0:

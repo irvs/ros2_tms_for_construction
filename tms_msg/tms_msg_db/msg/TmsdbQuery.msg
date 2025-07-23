@@ -1,5 +1,6 @@
 string time
 string type
+string writemode
 int32  id
 string record_name
 string vehicle_name

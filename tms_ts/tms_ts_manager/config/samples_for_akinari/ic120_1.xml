@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="LeafNodeIc120" model_name="ic120_1" name="leaf_node_ic120" record_name="SIM_LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
+            <Action ID="LeafNodeIc120" model_name="ic120_1" name="leaf_node_ic120" record_name="SIM_RELEASE_PATH" subtask_name="st_ic120_follow_waypoints"/>
+            <Action ID="LeafNodeIc120" model_name="ic120_1" name="leaf_node_ic120" record_name="SIM_LOAD_PATH" subtask_name="st_ic120_follow_waypoints"/>
+            <Action ID="LeafNodeIc120" model_name="ic120_1" name="leaf_node_ic120" record_name="SIM_LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="BlackboardValueChecker">
+            <inout_port name="key"/>
+        </Action>
+        <Action ID="BlackboardValueReaderMongo">
+            <input_port name="mongo_param_name" type="std::string"/>
+            <input_port name="mongo_record_name" type="std::string"/>
+            <input_port name="output_port" type="std::string"/>
+        </Action>
+        <Action ID="BlackboardValueWriterSrv">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="BlackboardValueWriterTopic">
+            <inout_port name="output_key"/>
+            <inout_port name="value"/>
+        </Action>
+        <Action ID="ConditionalExpression">
+            <input_port name="conditional_expression"/>
+        </Action>
+        <Action ID="ConditionalExpressionBool">
+            <input_port name="conditional_expression_bool" type="std::string"/>
+        </Action>
+        <Action ID="LeafNodeIc120">
+            <input_port name="model_name" type="float"/>
+            <input_port name="record_name" type="float"/>
+            <input_port name="subtask_name" type="float"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx120">
+            <input_port default="zx120" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeSampleZx200">
+            <input_port default="zx200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeZx200">
+            <input_port default="zx200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="MongoValueWriter">
+            <input_port name="input_value" type="std::string"/>
+            <input_port name="mongo_param_name" type="std::string"/>
+            <input_port name="mongo_record_name" type="std::string"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
