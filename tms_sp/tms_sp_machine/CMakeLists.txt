@@ -48,6 +48,7 @@ install(PROGRAMS
   scripts/tms_sp_machine_posest.py
   scripts/tms_sp_machine_joints.py
   scripts/tms_sp_pose_param.py
+  scripts/tms_sp_tf_pose_param.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

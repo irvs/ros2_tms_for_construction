@@ -57,54 +57,47 @@ class TmsSpMachineOdom(Node):
         )
 
         self.publisher_ = self.create_publisher(TmsdbQuery, "tms_db_param_data", 10)
-        self.subscription = self.create_subscription(
-            PoseStamped, "~/input/odom", self.send_odom_to_db_writer, 10
-        )
+    #    self.subscription = self.create_subscription(
+    #        PoseStamped, "~/input/odom", self.send_odom_to_db_writer, 10
+    #    )
 
         self.is_received = False
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
+        self.timer = self.create_timer(0.5, self.send_odom_to_db_writer)
 
-    def send_odom_to_db_writer(self, msg: PoseStamped) -> None:
-        """
-        Send topics to tms_db_writer (Write the received Odometry data to DB).
-
-        parameters
-        ----------
-        msg : Odometry
-            Target Object's Odometry.
-        """
-        # Log
+    def send_odom_to_db_writer(self) -> None:
         if not self.is_received:
             self.get_logger().info(f"Received {self.machine_name}'s Odometry msg")
             self.is_received = True
 
-       # self.get_logger().info(msg.pose.pose.position)
-
-        #self.calculate_position(msg.pose.pose)
+        load_point, second_point, forward_quat = self.calculate_position()
+        if load_point is None:
+            self.get_logger().warn("Skipping DB write because transform is unavailable")
+            return
 
         
 
-        db_msg = self.create_db_msg(msg)
+        db_msg = self.create_db_msg()
         self.publisher_.publish(db_msg)
-        db_msg2 = self.create_db_msg2(msg)
+        db_msg2 = self.create_db_msg2()
         self.publisher_.publish(db_msg2)
 
 
-    def calculate_position(self, position):
+    def calculate_position(self):
+        result = self.transform()
+        if result is None:
+            self.get_logger().warn("Transform is None, skipping position calculation")
+            return None, None, None
+    
         # 距離（ロボットの後方に取りたい距離[m]）
-        backward_distance = 1.0
+        backward_distance = 1.5
         dump_forward_distance = 3.0
 
-        world_to_map_x, world_to_map_y, world_to_map_z =self.transform()
+        world_to_map_x, world_to_map_y, world_to_map_z, yaw =self.transform()
 
-        x = position.position.x - world_to_map_x
-        y = position.position.y - world_to_map_y
-
-        q = position.orientation
-        quaternion = [q.x, q.y, q.z, q.w]
-        rotation = R.from_quat(quaternion)
-        _, _, yaw = rotation.as_euler('xyz') 
+        x = world_to_map_x
+        y = world_to_map_y
 
         backward_x = x - backward_distance * math.cos(yaw)
         backward_y = y - backward_distance * math.sin(yaw)
@@ -113,7 +106,7 @@ class TmsSpMachineOdom(Node):
         second_point_y = backward_y + dump_forward_distance* math.sin(yaw - math.pi/2)
 
         dump_forward = [0,0,yaw - math.pi/2]
-        r = R.from_euler('xyz', dump_forward, degrees=True)
+        r = R.from_euler('xyz', dump_forward)
         quat = r.as_quat()
 
         load_pos = Point(x=backward_x, y=backward_y, z=0.0)
@@ -125,11 +118,12 @@ class TmsSpMachineOdom(Node):
         self.get_logger().info(f"second position: ({second_point_x:.2f}, {second_point_y:.2f})")
 
         return load_pos, second_pos, forward_quat
-
+    
 
     def transform(self):
-        from_frame = 'world'  # ワールド座標など
-        to_frame = 'map'  # ロボット本体の座標
+        from_frame = 'map'  # ワールド座標など
+        to_frame = 'ic120_tf/base_link'  # ロボット本体の座標
+
 
         try:
             now = rclpy.time.Time()
@@ -143,14 +137,25 @@ class TmsSpMachineOdom(Node):
             world_to_map_y = trans.transform.translation.y
             world_to_map_z = trans.transform.translation.z
 
-          #  self.get_logger().info(f'Robot position in {from_frame}: x={world_to_map_x}, y={world_to_map_y}, z={world_to_map_z}')
+            quat = trans.transform.rotation
+            quaternion = [quat.x, quat.y, quat.z, quat.w]
+            rotation = R.from_quat(quaternion)
+            roll, pitch, yaw = rotation.as_euler('xyz')#, degrees=True)
+
+            return world_to_map_x, world_to_map_y, world_to_map_z, yaw
+
+             #   self.get_logger().info(f"TF position: x={world_to_map_x:.2f}, y={world_to_map_y:.2f}, z={world_to_map_z:.2f}")
+             #   self.get_logger().info(f"TF orientation (deg): roll={roll:.2f}, pitch={pitch:.2f}, yaw={math.degrees(yaw):.2f}")
+
+              #  self.get_logger().info(f'Robot position in {from_frame}: x={world_to_map_x}, y={world_to_map_y}, z={world_to_map_z}')
         except Exception as e:
             self.get_logger().warn(f'Could not get transform: {e}')
+            return None
 
-        return world_to_map_x, world_to_map_y, world_to_map_z
+        
 
 
-    def create_db_msg(self, msg: PoseStamped) -> TmsdbQuery:
+    def create_db_msg(self) -> TmsdbQuery:
         """
         Create Tmsdb msg from Odometry msg.
 
@@ -164,7 +169,7 @@ class TmsSpMachineOdom(Node):
         tms_db_msg : Tmsdb
             Message containing Odometry msg sent to tms_db_writer.
         """
-        LoadPoint, SecondPoint, ForwardQuat = self.calculate_position(msg.pose)
+        LoadPoint, SecondPoint, ForwardQuat = self.calculate_position()
 
         tms_db_msg = TmsdbQuery()
        # tms_db_msg.time = datetime.now().isoformat()
@@ -175,8 +180,8 @@ class TmsSpMachineOdom(Node):
         tms_db_msg.record_name=RECORD_NAME
 
         # Convert Odometry msg to dictionary and then to json.
-        doc: dict = db_util.msg_to_document(msg)
-        tms_db_msg.msg: str = json.dumps(doc)
+    #    doc: dict = db_util.msg_to_document(msg)
+    #    tms_db_msg.msg: str = json.dumps(doc)
         tms_db_msg.add_path.pose.position.x = LoadPoint.x
         tms_db_msg.add_path.pose.position.y = LoadPoint.y
         tms_db_msg.add_path.pose.position.z = LoadPoint.z
@@ -187,8 +192,8 @@ class TmsSpMachineOdom(Node):
 
         return tms_db_msg
     
-    def create_db_msg2(self, msg: PoseStamped) -> TmsdbQuery:
-        LoadPoint, SecondPoint, ForwardQuat = self.calculate_position(msg.pose)
+    def create_db_msg2(self) -> TmsdbQuery:
+        LoadPoint, SecondPoint, ForwardQuat = self.calculate_position()
 
         tms_db_msg = TmsdbQuery()
        # tms_db_msg.time = datetime.now().isoformat()
@@ -199,8 +204,8 @@ class TmsSpMachineOdom(Node):
         tms_db_msg.record_name=RECORD_NAME2
 
         # Convert Odometry msg to dictionary and then to json.
-        doc: dict = db_util.msg_to_document(msg)
-        tms_db_msg.msg: str = json.dumps(doc)
+  #      doc: dict = db_util.msg_to_document(msg)
+  #      tms_db_msg.msg: str = json.dumps(doc)
        # tms_db_msg.add_path.pose.position=SecondPoint
       #  tms_db_msg.add_path.pose.orientation=ForwardQuat
 

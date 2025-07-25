@@ -26,10 +26,12 @@ def generate_launch_description():
     tms_sp_machine_param_write_node1 = Node(
         name="tms_sp_machine_odom1",
         package="tms_sp_machine",
-        executable="tms_sp_pose_param.py",
+        executable="tms_sp_tf_pose_param.py",
+       # executable="tms_sp_pose_param.py",
         output="screen",
         remappings=[
-            ("~/input/odom", "/ic120/odometry/global"),
+            ("~/input/odom", "/zx200/pose"),
+          #  ("~/input/odom", "/ic120/odometry/global"),
           # ("~/input/odom", "/ic120/global_pose"),
         ],
         parameters=[
