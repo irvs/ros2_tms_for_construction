@@ -17,16 +17,6 @@ class WaypointVisualizer(Node):
         super().__init__(NODE_NAME)
 
         self.publisher_ = self.create_publisher(Marker, 'waypoint_markers', 10)
-    #    self.timer = self.create_timer(1.0, self.timer_callback)
-
-        # ウェイポイントの定義 (x, y, z)
-        self.waypoints = [
-            Point(x=1.0, y=1.0, z=0.0),
-            Point(x=2.0, y=2.0, z=0.0),
-            Point(x=3.0, y=1.0, z=0.0)
-        ]
-
-
 
          # Declare parameters
         self.declare_parameter("latest", False)
@@ -36,11 +26,10 @@ class WaypointVisualizer(Node):
         self.latest: bool = (
             self.get_parameter("latest").get_parameter_value().bool_value
         )
-        self.machine_name: str = (
-            self.get_parameter("machine_name").get_parameter_value().string_value
-        )
 
-        self.cli = self.create_client(TmsdbGetData, "tms_db_reader")
+        self.record_name="lLOAD_POINT_TEST"
+
+        self.cli = self.create_client(TmsdbGetData, "tms_db_param_reader")
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info("service not available, waiting again...")
 
@@ -56,25 +45,43 @@ class WaypointVisualizer(Node):
         self.req.type = DATA_TYPE
         self.req.id = DATA_ID
         self.req.latest_only = self.latest
-        self.req.name = self.machine_name
+        self.req.name = self.record_name
 
         future = self.cli.call_async(self.req)
         future.add_done_callback(partial(self.callback_response))
 
     
     def callback_response(self, future):
-        """
-        Set response from tms_db_reader.
-        """
-        try:
-            self.res = future.result()
-            self.tmsdbs = self.res.tmsdbs
-            self.timer_callback()
-        except:
+        res = future.result()
+        if not res.tmsdbs:
+            self.get_logger().warn("No data received.")
             return
 
+        import json
+        msg_data = json.loads(res.tmsdbs[0].msg)
+
+        # x, y, z のリストの先頭要素を取得（または必要に応じて全部使う）
+        x = msg_data["x"][0]
+        y = msg_data["y"][0]
+        z = 0.0
+
+        position_point = Point(x=x, y=y, z=z)
+        self.get_logger().info(f"Got Point: {Point}")
+
+        self.timer_callback(position_point)
+
     
-    def timer_callback(self):
+    def timer_callback(self ,Position):
+
+        # ウェイポイントの定義 (x, y, z)
+        self.waypoints = [
+            Point(x=1.0, y=1.0, z=0.0),
+            Point(x=2.0, y=2.0, z=0.0),
+            Point(x=3.0, y=1.0, z=0.0),
+            Position
+
+        ]
+
         marker = Marker()
         marker.header.frame_id = "map"
         marker.header.stamp = self.get_clock().now().to_msg()
