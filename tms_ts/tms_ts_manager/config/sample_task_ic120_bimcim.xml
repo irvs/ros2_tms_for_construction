@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="MongoValueWriter" input_value="0" mongo_param_name="M" mongo_record_name="global_blackboard"/>
+            <Action ID="SetLocalBlackboard" output_key="M" value="0"/>
+            <Decorator ID="KeepRunningUntilFlgup" key="counter_flg_1">
+                <Sequence>
+                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="N" mongo_record_name="global_blackboard" output_port="N"/>
+                    <Action ID="SetLocalBlackboardWithCounter" counter_key="N" key="load_path_n"/>
+                    <Action  model_name="ic120" ID="LeafNodeIc120" record_name="{load_path_n}" subtask_name="st_ic120_follow_waypoints"/>
+                    <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="global_blackboard"/>
+                    <Decorator ID="KeepRunningUntilFlgup" key="counter_flg_2">
+                        <IfThenElse>
+                            <Action ID="ConditionalExpression" conditional_expression="MOVING_FLG == true"/>
+                            <Sequence>
+                                <Action ID="Counter" key="M"/>
+                                <Action ID="MongoValueWriter" input_value="{M}" mongo_param_name="M" mongo_record_name="global_blackboard"/>
+                                <Action ID="SetLocalBlackboardWithCounter" counter_key="M" key="release_path_m"/>
+                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="global_blackboard"/>
+                                <Action ID="MongoValueWriter" input_value="true" mongo_param_name="DUMP_LAUNCHED_FLG" mongo_record_name="global_blackboard"/>
+                                <Action  model_name="ic120" ID="LeafNodeIc120" record_name="{release_path_m}" subtask_name="st_ic120_follow_waypoints"/>
+                                <Action  model_name="ic120" ID="LeafNodeIc120" record_name="vessel_angle" subtask_name="st_ic120_release_soil"/>
+                                <Action ID="SetLocalBlackboard" output_key="counter_flg_2" value="true"/>
+                            </Sequence>
+                            <AlwaysSuccess/>
+                        </IfThenElse>
+                    </Decorator>
+                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="FINISH_FLG" mongo_record_name="global_blackboard" output_port="FINISH_FLG"/>
+                    <IfThenElse>
+                        <Action ID="ConditionalExpression" conditional_expression="FINISH_FLG != true"/>
+                        <AlwaysSuccess/>
+                        <Action ID="SetLocalBlackboard" output_key="counter_flg_1" value="true"/>
+                    </IfThenElse>
+                </Sequence>
+            </Decorator>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="BlackboardValueReaderMongo">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+        </Action>
+        <Action ID="ConditionalExpression">
+            <input_port name="conditional_expression"/>
+        </Action>
+        <Action ID="Counter">
+            <input_port name="key"/>
+        </Action>
+        <Decorator ID="KeepRunningUntilFlgup">
+            <input_port name="key"/>
+        </Decorator>
+        <Action ID="LeafNodeD37pxi">
+            <input_port default="d37pxi" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeIc120">
+            <input_port default="ic120" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeMst110cr">
+            <input_port default="mst110cr" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeMst2200">
+            <input_port default="mst2200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeZx200">
+            <input_port default="zx200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="MongoValueWriter">
+            <input_port name="input_value"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+        </Action>
+        <Action ID="SetLocalBlackboard">
+            <inout_port name="output_key"/>
+            <input_port name="value"/>
+        </Action>
+        <Action ID="SetLocalBlackboardWithCounter">
+            <inout_port name="counter_key"/>
+            <input_port name="key"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
