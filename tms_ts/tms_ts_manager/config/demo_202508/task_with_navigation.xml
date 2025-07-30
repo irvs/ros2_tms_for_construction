@@ -3,31 +3,47 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_NEXTPOINT_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_NEXTPOINT_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
             <Decorator ID="KeepRunningUntilFlgup" key="TERMINATE_FLG">
                 <Sequence>
-                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="CONTINUE_FLG"/>
+                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="CONTINUE_FLG"/>
                     <WhileDoElse>
                         <Action ID="ConditionalExpression" conditional_expression="CONTINUE_FLG == true"/>
                         <Sequence>
                             <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
-                            <Action ID="MongoValueWriter" input_value="true" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+                            <Action ID="MongoValueWriter" input_value="true" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
+                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_NEXTPOINT_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="SENSING_NEXTPOINT_FLG"/>
+                            <IfThenElse>
+                                <Action ID="ConditionalExpression" conditional_expression="SENSING_NEXTPOINT_FLG == true"/>
+                                <Sequence>
+                                    <Action ID="MongoValueWriter" input_value="true" mongo_param_name="LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
+                                    <RetryUntilSuccessful num_attempts="-1">
+                                        <Sequence>
+                                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="LOADAREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="LOADAREA"/>
+                                            <IfThenElse>
+                                                <Action ID="ConditionalExpression" conditional_expression="LOADAREA == false"/>
+                                                <Sequence>
+                                                    <Action ID="LeafNodeZx200" model_name="zx200" record_name="SIM_GOAL" subtask_name="st_zx200_navigate_anywhere"/>
+                                                    <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_NEXTPOINT_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
+                                                </Sequence>
+                                                <AlwaysFailure/>
+                                            </IfThenElse>
+                                        </Sequence>
+                                    </RetryUntilSuccessful>
+                                </Sequence>
+                                <AlwaysSuccess/>
+                            </IfThenElse>
                             <Parallel failure_threshold="1" success_threshold="-1">
-                                <Action ID="BlackboardValueReaderMongo" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="INITIAL_POS_FLG"/>
-                                <Action ID="BlackboardValueReaderMongo" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="ARRIVAL_FLG"/>
-                                <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="SENSING_ARRIVAL_FLG"/>
-                                <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="SENSING_LOADED_FLG"/>
-                                <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_CHECK_MOUND_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="SENSING_CHECK_MOUND_FLG"/>
-                                <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_NEXTPOINT_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="SENSING_NEXTPOINT_FLG"/>
+                                <Action ID="BlackboardValueReaderMongo" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="INITIAL_POS_FLG"/>
+                                <Action ID="BlackboardValueReaderMongo" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="ARRIVAL_FLG"/>
+                                <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="SENSING_ARRIVAL_FLG"/>
+                                <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="SENSING_LOADED_FLG"/>
+                                <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_CHECK_MOUND_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="SENSING_CHECK_MOUND_FLG"/>
                                 <IfThenElse>
                                     <Action ID="ConditionalExpression" conditional_expression="ARRIVAL_FLG == true and SENSING_ARRIVAL_FLG == true and SENSING_LOADED_FLG == false and SENSING_CHECK_MOUND_FLG == false "/>
                                     <Sequence>
-                                        <IfThenElse>
-                                            <Action ID="ConditionalExpression" conditional_expression="SENSING_NEXTPOINT_FLG == true"/>
-                                            <Action ID="LeafNodeZx200" model_name="zx200" record_name="SIM_GOAL" subtask_name="st_zx200_navigate_anywhere"/>
-                                            <AlwaysSuccess/>
-                                        </IfThenElse>
-                                        <Action ID="MongoValueWriter" input_value="false" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+                                        <Action ID="MongoValueWriter" input_value="false" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                         <RetryUntilSuccessful num_attempts="-1">
                                             <Fallback>
                                                 <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple_plan"/>
@@ -52,19 +68,19 @@
                                             <WhileDoElse>
                                                 <Action ID="ConditionalExpression" conditional_expression="ARRIVAL_FLG == true and SENSING_ARRIVAL_FLG == true"/>
                                                 <Sequence>
-                                                    <Action ID="MongoValueWriter" input_value="true" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
-                                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="ARRIVAL_FLG"/>
-                                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="SENSING_ARRIVAL_FLG"/>
+                                                    <Action ID="MongoValueWriter" input_value="true" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
+                                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="ARRIVAL_FLG"/>
+                                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="SENSING_ARRIVAL_FLG"/>
                                                 </Sequence>
-                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                             </WhileDoElse>
                                             <IfThenElse>
                                                 <Action ID="ConditionalExpression" conditional_expression="SENSING_CHECK_MOUND_FLG == true"/>
-                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                 <AlwaysSuccess/>
                                             </IfThenElse>
                                         </Sequence>
-                                        <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
+                                        <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                     </IfThenElse>
                                 </IfThenElse>
                             </Parallel>
@@ -100,7 +116,7 @@
             <input_port name="conditional_expression_bool"/>
         </Action>
         <Decorator ID="KeepRunningUntilFlgup">
-            <input_port name="key"/>
+            <input_port name="key" type="std::string"/>
         </Decorator>
         <Action ID="LeafNodeIc120">
             <input_port default="ic120" name=" model_name"/>
