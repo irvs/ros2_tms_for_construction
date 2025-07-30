@@ -24,7 +24,7 @@ setup(
             "tms_sp_zx200_collision_objects = tms_sp_sensing.tms_sp_zx200_collision_objects_ic120:main",
             "sample = tms_sp_sensing.sample:main",
             "tms_sp_flgs = tms_sp_sensing.tms_sp_flgs:main",
-            "tms_sp_flgs_202506 = tms_sp_sensing.tms_sp_flgs_202506:main"
+            "tms_sp_flgs_202506 = tms_sp_sensing.tms_sp_flgs_202506:main",
             "tms_sp_flgs_202508 = tms_sp_sensing.tms_sp_flgs_202508:main"
         ],
     },
