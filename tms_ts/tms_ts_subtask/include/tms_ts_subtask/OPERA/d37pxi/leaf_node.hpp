@@ -40,7 +40,7 @@ public:
     : LeafNodeBase("leaf_node_d37pxi", config){};
   inline static PortsList providedPorts()
   {
-    return { InputPort<float>("model_name"), InputPort<float>("record_name"), InputPort<float>("subtask_name") };
+    return { InputPort<std::string>("model_name"), InputPort<std::string>("record_name"), InputPort<std::string>("subtask_name") };
   };
 };
 
