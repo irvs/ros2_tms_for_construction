@@ -45,7 +45,18 @@ using namespace std::chrono_literals;
 class LeafNodeBase : public CoroActionNode{
 public:
     LeafNodeBase(const std::string& name, const NodeConfiguration& config);
+
+    static PortsList providedPorts()
+    {
+        return {
+            InputPort<std::string>("model_name"),   
+            InputPort<std::string>("record_name"),    
+            InputPort<std::string>("subtask_name")    
+        };
+    }
+
     NodeStatus tick() override;
+
     std::mutex db_instance_mutex;
     bool should_send_goal_ = true;
     bool goal_result_available_ = false;

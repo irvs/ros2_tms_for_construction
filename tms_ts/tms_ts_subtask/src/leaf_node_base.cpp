@@ -24,13 +24,21 @@ LeafNodeBase::LeafNodeBase(const std::string& name, const NodeConfiguration& con
   callback_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive, false);
   callback_group_executor_.add_callback_group(callback_group_, node_->get_node_base_interface());
   Optional<std::string> model_name = getInput<std::string>("model_name");
-  Optional<std::string> record_name = getInput<std::string>("record_name");
+  // Optional<std::string> record_name = getInput<std::string>("record_name");
   Optional<std::string> subtask_name = getInput<std::string>("subtask_name");
   goal_.model_name = model_name.value();
-  goal_.record_name = record_name.value();
+
+    // if (!model_name || !record_name || !subtask_name) {
+    //   RCLCPP_ERROR(node_->get_logger(),
+    //     "[LeafNode] missing port or placeholder not expanded"
+    //   );
+    //   throw RuntimeError("missing port");
+    // }
+
+  // goal_.record_name = record_name.value();
   subtask_name_ = model_name.value() + "/" + subtask_name.value();
   RCLCPP_INFO(node_->get_logger(), "model_name: %s", goal_.model_name.c_str());
-  RCLCPP_INFO(node_->get_logger(), "record_name: %s", goal_.record_name.c_str());
+  // RCLCPP_INFO(node_->get_logger(), "record_name: %s", goal_.record_name.c_str());
   result_ = rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::WrappedResult();
   LeafNodeBase::createActionClient(subtask_name_);
 }
@@ -321,6 +329,15 @@ NodeStatus LeafNodeBase::tick()
   {
     setStatus(NodeStatus::RUNNING);
     should_send_goal_ = true;
+
+    Optional<std::string> record_name = getInput<std::string>("record_name");
+    if (!record_name) {
+      RCLCPP_ERROR(node_->get_logger(),
+        "record_name port not provided: %s", record_name.error().c_str());
+      return NodeStatus::FAILURE;
+    }
+    goal_.record_name = record_name.value();
+
     if (!should_send_goal_)
     {
       return NodeStatus::FAILURE;

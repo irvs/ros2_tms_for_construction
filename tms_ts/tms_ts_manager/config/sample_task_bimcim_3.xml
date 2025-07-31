@@ -31,6 +31,7 @@
                 <Action ID="SetLocalBlackboardWithCounter" counter_key="N" key="initial_pose_n"/>
                 <Action ID="BlackboardValueReaderMongo" mongo_param_name="dig_cycle" mongo_record_name="{number_of_dig_cycle_n}" output_port="dig_cycle"/>
                 <Action ID="BlackboardValueReaderMongo" mongo_param_name="initial_position" mongo_record_name="{initial_position_n}" output_port="initial_position"/>
+                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="{initial_position_n}" subtask_name="st_zx200_follow_waypoints"/>
             </Sequence>
         </Sequence>
     </BehaviorTree>

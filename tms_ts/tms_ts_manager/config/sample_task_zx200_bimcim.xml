@@ -8,7 +8,7 @@
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="FORCE_STOP_FLG" mongo_record_name="false"/>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="global_blackboard"/>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="global_blackboard"/>
-            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADED_FLG" mongo_record_name="global blackboard"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADED_FLG" mongo_record_name="global_blackboard"/>
             <Action ID="BlackboardValueReaderMongo" mongo_param_name="num" mongo_record_name="total_num_of_dig_location" output_port="num"/>
             <Action ID="SetLocalBlackboard" output_key="number_of_dig_cycle_n" value="number_of_dig_cycle_0"/>
             <Action ID="SetLocalBlackboard" output_key="initial_position_n" value="initial_position_0"/>
@@ -26,7 +26,7 @@
             <Decorator ID="KeepRunningUntilFlgup" key="counter_flg_1">
                 <Sequence>
                     <Action ID="Counter" key="N"/>
-                    <Action ID="MongoValueWriter" input_value="{N}" mongo_param_name="N" mongo_record_name="global blackboard"/>
+                    <Action ID="MongoValueWriter" input_value="{N}" mongo_param_name="N" mongo_record_name="global_blackboard"/>
                     <Action ID="SetLocalBlackboard" output_key="dig_num" value="0"/>
                     <Action ID="SetLocalBlackboardWithCounter" counter_key="N" key="number_of_dig_cycle_n"/>
                     <Action ID="SetLocalBlackboardWithCounter" counter_key="N" key="initial_position_n"/>
@@ -36,6 +36,7 @@
                     <Action  model_name="zx200" ID="LeafNodeZx200" record_name="{initial_pose_n}" subtask_name="subtask_zx200_change_pose"/>
                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="global_blackboard"/>
                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="FINISH_FLG" mongo_record_name="global_blackboard"/>
+                    <Action ID="SetLocalBlackboard" output_key="counter_flg_2" value="false"/>
                     <Decorator ID="KeepRunningUntilFlgup" key="counter_flg_2">
                         <Sequence>
                             <Action ID="BlackboardValueReaderMongo" mongo_param_name="FORCE_STOP_FLG" mongo_record_name="global_blackboard" output_port="FORCE_STOP_FLG"/>
@@ -63,7 +64,7 @@
                                     <Action ID="Counter" key="dig_num"/>
                                     <IfThenElse>
                                         <Action ID="ConditionalExpression" conditional_expression="dig_num == dig_cycle"/>
-                                        <Action ID="MongoValueWriter" input_value="true" mongo_param_name="FORCE_STOP_FLG" mongo_record_name="global blackboard"/>
+                                        <Action ID="MongoValueWriter" input_value="true" mongo_param_name="FORCE_STOP_FLG" mongo_record_name="global_blackboard"/>
                                         <AlwaysSuccess/>
                                     </IfThenElse>
                                 </Sequence>
@@ -73,31 +74,31 @@
                                         <Action ID="ConditionalExpression" conditional_expression="FORCE_STOP_FLG == true "/>
                                         <WhileDoElse>
                                             <Action ID="ConditionalExpression" conditional_expression="DUMP_LAUNCHED_FLG == false "/>
-                                            <Action ID="MongoValueWriter" input_value="true" mongo_param_name="MOVING_FLG" mongo_record_name="global blackboard"/>
+                                            <Action ID="MongoValueWriter" input_value="true" mongo_param_name="MOVING_FLG" mongo_record_name="global_blackboard"/>
                                             <Sequence>
                                                 <Action ID="SetLocalBlackboard" output_key="counter_flg_2" value="true"/>
-                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="global blackboard"/>
-                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="FORCE_STOP_FLG" mongo_record_name="global blackboard"/>
-                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADED_FLG" mongo_record_name="global blackboard"/>
+                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="global_blackboard"/>
+                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="FORCE_STOP_FLG" mongo_record_name="global_blackboard"/>
+                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADED_FLG" mongo_record_name="global_blackboard"/>
                                                 <Action ID="Counter" key="PointN"/>
                                                 <IfThenElse>
                                                     <Action ID="ConditionalExpression" conditional_expression="PointN == num"/>
                                                     <Action ID="SetLocalBlackboard" output_key="counter_flg_1" value="true"/>
-                                                    <Action ID="MongoValueWriter" input_value="true" mongo_param_name="FINISH_FLG" mongo_record_name="global blackboard"/>
+                                                    <Action ID="MongoValueWriter" input_value="true" mongo_param_name="FINISH_FLG" mongo_record_name="global_blackboard"/>
                                                     <AlwaysSuccess/>
                                                 </IfThenElse>
                                             </Sequence>
                                         </WhileDoElse>
                                         <WhileDoElse>
                                             <Action ID="ConditionalExpression" conditional_expression="DUMP_LAUNCHED_FLG == true"/>
-                                            <Action ID="MongoValueWriter" input_value="true" mongo_param_name="MOVING_FLG" mongo_record_name="global blackboard"/>
+                                            <Action ID="MongoValueWriter" input_value="true" mongo_param_name="MOVING_FLG" mongo_record_name="global_blackboard"/>
                                             <Sequence>
-                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="global blackboard"/>
-                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADED_FLG" mongo_record_name="global blackboard"/>
+                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="global_blackboard"/>
+                                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADED_FLG" mongo_record_name="global_blackboard"/>
                                             </Sequence>
                                         </WhileDoElse>
                                     </IfThenElse>
-                                    <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="global blackboard"/>
+                                    <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="global_blackboard"/>
                                 </IfThenElse>
                             </IfThenElse>
                         </Sequence>
