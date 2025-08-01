@@ -14,185 +14,207 @@
 
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
+    # Define the task IDs for the demo
+    declare_task_ids = DeclareLaunchArgument(
+        'task_ids',
+        default_value='[1, 2, 3]',
+    )
+    
+    return LaunchDescription([
+        declare_task_ids,
+        OpaqueFunction(function=launch_setup)
+    ])
 
-      return LaunchDescription([
 
-            DeclareLaunchArgument('task_id', default_value="44"),
+def launch_setup(context, *args, **kwargs):
+    # Get the task_ids parameter and convert to int array
+    task_ids_str = LaunchConfiguration('task_ids').perform(context)
+    
+    # Convert string to int array using eval with default fallback
+    task_ids = eval(task_ids_str)
+    
+    nodes = []
+    for task_id in task_ids:
+        nodes.append(
+            Node(
+                package='tms_ts_manager',
+                executable='task_schedular_manager',
+                output='screen',
+                parameters=[{"task_id": task_id}])
+        )
 
-            Node(
-                  package='tms_ts_manager',
-                  executable='task_schedular_manager',
-                  output='screen'),
-            Node(
-                  package='tms_ur_button_input', 
-                  executable='tms_ur_button',
-                  output='screen', 
-                  parameters=[{"task_id": LaunchConfiguration('task_id')}]), # You must define task_id that you want to execute. Default task_id is 2.
-            
-            
-            # subtasks
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_zx200_change_pose',
-                  output='screen',
-                  namespace = 'zx200'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_zx200_excavate_simple',
-                  output='screen',
-                  namespace = 'zx200'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_zx200_excavate_simple_plan',
-                  output='screen',
-                  namespace = 'zx200'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_zx200_release_simple',
-                  output='screen',
-                  namespace = 'zx200'),
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_zx200_follow_waypoints_server',
-                  output='screen',
-                  namespace = 'zx200'),
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_zx200_navigate_anywhere_server',
-                  output='screen',
-                  namespace = 'zx200'),
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_zx200_navigate_through_poses_server',
-                  output='screen',
-                  namespace = 'zx200'),
-            
-            
-            # sample ###
-            #ic120用
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_ic120_follow_waypoints_deg_server',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_ic120_follow_waypoints_server',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_ic120_navigate_anywhere_deg_server',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_ic120_navigate_anywhere_server',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_ic120_navigate_through_poses_deg_server',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_ic120_navigate_through_poses_server',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_ic120_release_soil_server',
-                  output='screen'),
-            
-            # zx120用
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx120_sample_boom_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx120_sample_swing_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx120_sample_arm_subtask',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='zx120_sample_bucket_subtask',
-                  output='screen'),
-            
-            # zx200用
-            # Node(
-            #       package='tms_ts_subtask', 
-            #       executable='zx200_sample_boom_subtask',
-            #       output='screen'),
-            # Node(
-            #       package='tms_ts_subtask', 
-            #       executable='zx200_sample_swing_subtask',
-            #       output='screen'),
-            # Node(
-            #       package='tms_ts_subtask', 
-            #       executable='zx200_sample_arm_subtask',
-            #       output='screen'),
-            # Node(
-            #       package='tms_ts_subtask', 
-            #       executable='zx200_sample_bucket_subtask',
-            #       output='screen'),
+    nodes.extend([
+        Node(
+            package='tms_ur_button_input',
+            executable='tms_ur_button',
+            output='screen',
+            parameters=[{"task_ids": task_ids}]),
+        
+        # subtasks
+        Node(
+              package='tms_ts_subtask', 
+              executable='subtask_zx200_change_pose',
+              output='screen',
+              namespace = 'zx200'),
+        Node(
+              package='tms_ts_subtask', 
+              executable='subtask_zx200_excavate_simple',
+              output='screen',
+              namespace = 'zx200'),
+        Node(
+              package='tms_ts_subtask', 
+              executable='subtask_zx200_excavate_simple_plan',
+              output='screen',
+              namespace = 'zx200'),
+        Node(
+              package='tms_ts_subtask', 
+              executable='subtask_zx200_release_simple',
+              output='screen',
+              namespace = 'zx200'),
+        Node(
+              package='tms_ts_subtask',
+              executable='subtask_zx200_follow_waypoints_server',
+              output='screen',
+              namespace = 'zx200'),
+        Node(
+              package='tms_ts_subtask',
+              executable='subtask_zx200_navigate_anywhere_server',
+              output='screen',
+              namespace = 'zx200'),
+        Node(
+              package='tms_ts_subtask',
+              executable='subtask_zx200_navigate_through_poses_server',
+              output='screen',
+              namespace = 'zx200'),
+        
+        
+        # sample ###
+        #ic120用
+        Node(
+              package='tms_ts_subtask',
+              executable='subtask_ic120_follow_waypoints_deg_server',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask',
+              executable='subtask_ic120_follow_waypoints_server',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask',
+              executable='subtask_ic120_navigate_anywhere_deg_server',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask',
+              executable='subtask_ic120_navigate_anywhere_server',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask',
+              executable='subtask_ic120_navigate_through_poses_deg_server',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask',
+              executable='subtask_ic120_navigate_through_poses_server',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask',
+              executable='subtask_ic120_release_soil_server',
+              output='screen'),
+        
+        # zx120用
+        Node(
+              package='tms_ts_subtask', 
+              executable='zx120_sample_boom_subtask',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask', 
+              executable='zx120_sample_swing_subtask',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask', 
+              executable='zx120_sample_arm_subtask',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask', 
+              executable='zx120_sample_bucket_subtask',
+              output='screen'),
+        
+        # zx200用
+        # Node(
+        #       package='tms_ts_subtask', 
+        #       executable='zx200_sample_boom_subtask',
+        #       output='screen'),
+        # Node(
+        #       package='tms_ts_subtask', 
+        #       executable='zx200_sample_swing_subtask',
+        #       output='screen'),
+        # Node(
+        #       package='tms_ts_subtask', 
+        #       executable='zx200_sample_arm_subtask',
+        #       output='screen'),
+        # Node(
+        #       package='tms_ts_subtask', 
+        #       executable='zx200_sample_bucket_subtask',
+        #       output='screen'),
 
-            # mst2200用
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_mst2200_follow_waypoints_deg_server',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_mst2200_follow_waypoints_server',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_mst2200_navigate_anywhere_deg_server',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_mst2200_navigate_anywhere_server',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_mst2200_navigate_through_poses_deg_server',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_mst2200_navigate_through_poses_server',
-                  output='screen'),
-            Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_mst2200_release_soil_server',
-                  output='screen'),
-            
-            # センシング処�?後�?��?ータをデータベ�?�スに取り込むためのノ�?�ド�?
-            Node(
-                  package='tms_sp_sensing', 
-                  executable='tms_sp_zx200_end_effector',
-                  output='screen',
-            ),
-            Node(
-                  package='tms_sp_sensing', 
-                  executable='sample',
-                  output='screen'
-            ),
-            Node(
-                  package='tms_sp_sensing', 
-                  executable='tms_sp_flgs_202508',
-                  output='screen'
-            ),
-            Node(
-                  package="tms_db_manager", 
-                  executable="tms_db_reader_task",
-                  output='screen'
-                  ),
-            Node(
-                  package="tms_db_manager", 
-                  executable="tms_db_reader_parameter",
-                  output='screen'
-                  ),
-      ])
+        # mst2200用
+        Node(
+              package='tms_ts_subtask', 
+              executable='subtask_mst2200_follow_waypoints_deg_server',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask', 
+              executable='subtask_mst2200_follow_waypoints_server',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask', 
+              executable='subtask_mst2200_navigate_anywhere_deg_server',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask', 
+              executable='subtask_mst2200_navigate_anywhere_server',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask', 
+              executable='subtask_mst2200_navigate_through_poses_deg_server',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask', 
+              executable='subtask_mst2200_navigate_through_poses_server',
+              output='screen'),
+        Node(
+              package='tms_ts_subtask', 
+              executable='subtask_mst2200_release_soil_server',
+              output='screen'),
+        
+        # センシング処�?後�?��?ータをデータベ�?�スに取り込むためのノ�?�ド�?
+        Node(
+              package='tms_sp_sensing', 
+              executable='tms_sp_zx200_end_effector',
+              output='screen',
+        ),
+        Node(
+              package='tms_sp_sensing', 
+              executable='sample',
+              output='screen'
+        ),
+        Node(
+              package='tms_sp_sensing', 
+              executable='tms_sp_flgs_202508',
+              output='screen'
+        ),
+        Node(
+              package="tms_db_manager", 
+              executable="tms_db_reader_task",
+              output='screen'
+              ),
+        Node(
+              package="tms_db_manager", 
+              executable="tms_db_reader_parameter",
+              output='screen'
+              ),
+    ])
+    
+    return nodes
