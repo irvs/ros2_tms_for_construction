@@ -3,35 +3,65 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
+            <SetBlackboard output_key="M" value="0"/>
+            <SetBlackboard output_key="PointM" value="0"/>
             <Action ID="MongoValueWriter" input_value="0" mongo_param_name="M" mongo_record_name="global_blackboard"/>
-            <Action ID="SetLocalBlackboard" output_key="M" value="0"/>
+            <Action ID="BlackboardValueReaderMongo" mongo_param_name="num" mongo_record_name="total_num_of_release_location" output_port="num"/>
+            <Action ID="SetLocalBlackboard" output_key="counter_flg_1" value="false"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="global_blackboard"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="DUMP_LAUNCHED_FLG" mongo_record_name="global_blackboard"/>
+            <Action ID="SetLocalBlackboard" output_key="load_path_n" value="load_path_0"/>
+            <Action ID="SetLocalBlackboard" output_key="release_path_m" value="release_path_0"/>
             <Decorator ID="KeepRunningUntilFlgup" key="counter_flg_1">
                 <Sequence>
-                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="N" mongo_record_name="global_blackboard" output_port="N"/>
-                    <Action ID="SetLocalBlackboardWithCounter" counter_key="N" key="load_path_n"/>
-                    <Action  model_name="ic120" ID="LeafNodeIc120" record_name="{load_path_n}" subtask_name="st_ic120_follow_waypoints"/>
-                    <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="global_blackboard"/>
+                    <Action ID="SetLocalBlackboard" output_key="counter_flg_2" value="false"/>
                     <Decorator ID="KeepRunningUntilFlgup" key="counter_flg_2">
-                        <IfThenElse>
-                            <Action ID="ConditionalExpression" conditional_expression="MOVING_FLG == true"/>
-                            <Sequence>
-                                <Action ID="Counter" key="M"/>
-                                <Action ID="MongoValueWriter" input_value="{M}" mongo_param_name="M" mongo_record_name="global_blackboard"/>
-                                <Action ID="SetLocalBlackboardWithCounter" counter_key="M" key="release_path_m"/>
-                                <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="global_blackboard"/>
-                                <Action ID="MongoValueWriter" input_value="true" mongo_param_name="DUMP_LAUNCHED_FLG" mongo_record_name="global_blackboard"/>
-                                <Action  model_name="ic120" ID="LeafNodeIc120" record_name="{release_path_m}" subtask_name="st_ic120_follow_waypoints"/>
-                                <Action  model_name="ic120" ID="LeafNodeIc120" record_name="vessel_angle" subtask_name="st_ic120_release_soil"/>
-                                <Action ID="SetLocalBlackboard" output_key="counter_flg_2" value="true"/>
-                            </Sequence>
-                            <AlwaysSuccess/>
-                        </IfThenElse>
+                        <Sequence>
+                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="global_blackboard" output_port="INITIAL_POS_FLG"/>
+                            <IfThenElse>
+                                <Action ID="ConditionalExpression" conditional_expression="INITIAL_POS_FLG == true"/>
+                                <Sequence>
+                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="N" mongo_record_name="global_blackboard" output_port="N_INT"/>
+                                    <SetBlackboard output_key="N" value="{N_INT}"/>
+                                    <Action ID="SetLocalBlackboardWithCounter" counter_key="N" key="load_path_n"/>
+                                    <Action  model_name="ic120" ID="LeafNodeIc120" record_name="{load_path_n}" subtask_name="st_ic120_follow_waypoints"/>
+                                    <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="global_blackboard"/>
+                                    <Action ID="MongoValueWriter" input_value="false" mongo_param_name="DUMP_LAUNCHED_FLG" mongo_record_name="global_blackboard"/>
+                                    <Action ID="SetLocalBlackboard" output_key="counter_flg_2" value="true"/>
+                                </Sequence>
+                                <AlwaysSuccess/>
+                            </IfThenElse>
+                        </Sequence>
+                    </Decorator>
+                    <Action ID="SetLocalBlackboard" output_key="counter_flg_3" value="false"/>
+                    <Decorator ID="KeepRunningUntilFlgup" key="counter_flg_3">
+                        <Sequence>
+                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="MOVING_FLG" mongo_record_name="global_blackboard" output_port="MOVING_FLG"/>
+                            <IfThenElse>
+                                <Action ID="ConditionalExpression" conditional_expression="MOVING_FLG == true"/>
+                                <Sequence>
+                                    <Action ID="Counter" key="M"/>
+                                    <Action ID="MongoValueWriter" input_value="{M}" mongo_param_name="M" mongo_record_name="global_blackboard"/>
+                                    <Action ID="MongoValueWriter" input_value="true" mongo_param_name="DUMP_LAUNCHED_FLG" mongo_record_name="global_blackboard"/>
+                                    <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="global_blackboard"/>
+                                    <Action ID="SetLocalBlackboardWithCounter" counter_key="M" key="release_path_m"/>
+                                    <Action  model_name="ic120" ID="LeafNodeIc120" record_name="{release_path_m}" subtask_name="st_ic120_follow_waypoints"/>
+                                    <Action  model_name="ic120" ID="LeafNodeIc120" record_name="vessel_angle" subtask_name="st_ic120_release_soil"/>
+                                    <Action ID="Counter" key="PointM"/>
+                                    <Action ID="SetLocalBlackboard" output_key="counter_flg_3" value="true"/>
+                                </Sequence>
+                                <AlwaysSuccess/>
+                            </IfThenElse>
+                        </Sequence>
                     </Decorator>
                     <Action ID="BlackboardValueReaderMongo" mongo_param_name="FINISH_FLG" mongo_record_name="global_blackboard" output_port="FINISH_FLG"/>
                     <IfThenElse>
-                        <Action ID="ConditionalExpression" conditional_expression="FINISH_FLG != true"/>
+                        <Action ID="ConditionalExpression" conditional_expression="FINISH_FLG == true or PointM == num"/>
+                        <Sequence>
+                            <Action  model_name="ic120" ID="LeafNodeIc120" record_name="{load_path_n}" subtask_name="st_ic120_follow_waypoints"/>
+                            <Action ID="SetLocalBlackboard" output_key="counter_flg_1" value="true"/>
+                        </Sequence>
                         <AlwaysSuccess/>
-                        <Action ID="SetLocalBlackboard" output_key="counter_flg_1" value="true"/>
                     </IfThenElse>
                 </Sequence>
             </Decorator>

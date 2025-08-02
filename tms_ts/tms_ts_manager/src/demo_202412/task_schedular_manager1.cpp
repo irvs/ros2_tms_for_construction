@@ -60,13 +60,23 @@ public:
     factory.registerNodeType<SetLocalBlackboardWithCounter>("SetLocalBlackboardWithCounter");
     factory.registerNodeType<Counter>("Counter");
 
-    loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SHIMIZU");
+    // loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SHIMIZU");
   }
 
   void topic_callback(const tms_msg_ur::msg::Demo202412::SharedPtr msg)
   {
     task_sequence_ = std::string(msg->task_sequence1);
-    tree_ = factory.createTreeFromText(task_sequence_, bb_);
+       // tree_ = factory.createTreeFromText(task_sequence_, bb_);
+
+    try {
+      tree_ = factory.createTreeFromText(task_sequence_, bb_);
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(get_logger(),
+        "Failed to cretae tree: %s", e.what());
+      subscription_.reset();
+      return;
+    }
+
 
     BT::PublisherZMQ publisher_zmq(tree_, 100, 1666, 1777);
     try
@@ -102,60 +112,61 @@ public:
   }
 
 private:
-  void loadBlackboardFromMongoDB(const std::string& record_name)
-  {
-    // mongocxx::instance instance{};
-    mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
-    mongocxx::database db = client["rostmsdb"];
-    mongocxx::collection collection = db["parameter"];
+  // void loadBlackboardFromMongoDB(const std::string& record_name)
+  // {
+  //   // mongocxx::instance instance{};
+  //   mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
+  //   mongocxx::database db = client["rostmsdb"];
+  //   mongocxx::collection collection = db["parameter"];
 
-    bsoncxx::builder::stream::document filter_builder;
-    filter_builder << "record_name" << record_name;
-    auto filter = filter_builder.view();
-    auto doc = collection.find_one(filter);
+  //   bsoncxx::builder::stream::document filter_builder;
+  //   filter_builder << "record_name" << record_name;
+  //   auto filter = filter_builder.view();
+  //   auto doc = collection.find_one(filter);
 
-    if (doc)
-    {
-      auto view = doc->view();
-      for (auto&& element : view)
-      {
-        std::string key = element.key().to_string();
-        auto value = element.get_value();
+  //   if (doc)
+  //   {
+  //     auto view = doc->view();
+  //     for (auto&& element : view)
+  //     {
+  //       std::string key = element.key().to_string();
+  //       auto value = element.get_value();
 
-        if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
+  //       if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
 
-          switch (value.type())
-          {
-            case bsoncxx::type::k_utf8:
-              bb_->set(key, value.get_utf8().value.to_string());
-              break;
-            case bsoncxx::type::k_int32:
-              bb_->set(key, value.get_int32().value);
-              break;
-            case bsoncxx::type::k_int64:
-              bb_->set(key, value.get_int64().value);
-              break;
-            case bsoncxx::type::k_double:
-              bb_->set(key, value.get_double().value);
-              break;
-            case bsoncxx::type::k_bool:
-              bb_->set(key, value.get_bool().value);
-              break;
-            default:
-              std::cerr << "Unsupported BSON type: " << bsoncxx::to_string(value.type()) << std::endl;
-              break;
-          }
-        }
-      }
-    bb_->set("CHECK_TRUE", true);
-    bb_->set("CHECK_FALSE", false);
-    bb_->set("TERMINATE_FLG", false);
-    }
-    else
-    {
-      std::cerr << "Couldn't find document with record_name: " << record_name << std::endl;
-    }
-  }
+  //         switch (value.type())
+  //         {
+  //           case bsoncxx::type::k_utf8:
+  //             bb_->set(key, value.get_utf8().value.to_string());
+  //             break;
+  //           case bsoncxx::type::k_int32:
+  //             bb_->set(key, value.get_int32().value);
+  //             break;
+  //           case bsoncxx::type::k_int64:
+  //             bb_->set(key, value.get_int64().value);
+  //             break;
+  //           case bsoncxx::type::k_double:
+  //             bb_->set(key, value.get_double().value);
+  //             break;
+  //           case bsoncxx::type::k_bool:
+  //             bb_->set(key, value.get_bool().value);
+  //             break;
+  //           default:
+  //             std::cerr << "Unsupported BSON type: " << bsoncxx::to_string(value.type()) << std::endl;
+  //             break;
+  //         }
+  //       }
+  //     }
+  //   bb_->set("CHECK_TRUE", true);
+  //   bb_->set("CHECK_FALSE", false);
+  //   bb_->set("TERMINATE_FLG", false);
+  //   bb_->set("STANDBY_FLG", false);
+  //   }
+  //   else
+  //   {
+  //     std::cerr << "Couldn't find document with record_name: " << record_name << std::endl;
+  //   }
+  // }
 
   rclcpp::Subscription<tms_msg_ur::msg::Demo202412>::SharedPtr subscription_;
   BehaviorTreeFactory factory;
