@@ -51,6 +51,8 @@ public:
   ExecTaskSequence(std::shared_ptr<Blackboard> bb) : Node("exec_task_sequence"), bb_(bb)
   {
     this->declare_parameter("task_id", -1);
+    this->declare_parameter("zmq_server_port", 1666);
+    this->declare_parameter("zmq_publisher_port", 1777);
     
     subscription_ = this->create_subscription<std_msgs::msg::String>(
         "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
@@ -78,6 +80,8 @@ public:
   void topic_callback(const std_msgs::msg::String::SharedPtr msg)
   {
     int task_id = this->get_parameter("task_id").as_int();
+    int zmq_server_port = this->get_parameter("zmq_server_port").as_int();
+    int zmq_publisher_port = this->get_parameter("zmq_publisher_port").as_int();
     
     if (task_id == -1) {
       // 既存の処理：そのままBehavior Treeとして実行
@@ -125,7 +129,7 @@ public:
       }
     }
 
-    BT::PublisherZMQ publisher_zmq(tree_, 100, 1666, 1777);
+    BT::PublisherZMQ publisher_zmq(tree_, 100, zmq_server_port, zmq_publisher_port);
     try
     {
       while (rclcpp::ok() && status_ == NodeStatus::RUNNING)

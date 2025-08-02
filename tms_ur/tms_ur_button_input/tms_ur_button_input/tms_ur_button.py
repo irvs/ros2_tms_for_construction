@@ -46,7 +46,7 @@ class GUI_button(Node):
             self.get_logger().info('Service not available, waiting...')
 
         task_ids = self.get_parameter("task_ids").get_parameter_value().integer_array_value
-        if task_ids and task_ids != [-1]:
+        if task_ids and len(task_ids) > 0 and task_ids[0] != -1:
             task_ids_str = ", ".join(map(str, task_ids))
             button_text = f"task_ids: {task_ids_str}\n\nExecute multiple tasks"
         else:
@@ -85,7 +85,7 @@ class GUI_button(Node):
             
             task_ids = self.get_parameter("task_ids").get_parameter_value().integer_array_value
             
-            if task_ids and task_ids != [-1]:
+            if task_ids and len(task_ids) > 0 and task_ids[0] != -1:
                 # 複数タスクの場合、JSONで送信
                 task_data = {
                     "tasks": self.task_list
@@ -98,7 +98,7 @@ class GUI_button(Node):
             self.publisher_.publish(msg)
         else:
             task_ids = self.get_parameter("task_ids").get_parameter_value().integer_array_value
-            if task_ids and task_ids != [-1]:
+            if task_ids and len(task_ids) > 0 and task_ids[0] != -1:
                 task_ids_str = ", ".join(map(str, task_ids))
                 self.get_logger().error(f"Stop the Task Scheduler because of the invalid task IDs({task_ids_str})")
             else:
@@ -109,7 +109,7 @@ class GUI_button(Node):
         # task_idsパラメータを取得
         task_ids = self.get_parameter("task_ids").get_parameter_value().integer_array_value
         
-        if task_ids and task_ids != [-1]:
+        if task_ids and len(task_ids) > 0 and task_ids[0] != -1:
             self.task_sequence = ""
             self._is_valid_taskid = True
             self.task_list = []  # 複数タスクの情報を保存するリスト
