@@ -12,6 +12,7 @@ NODE_NAME = "waypoint_visualizer"
 DATA_ID = 3012 #2012
 DATA_TYPE = "parameter"
 
+
 class WaypointVisualizer(Node):
     def __init__(self):
         super().__init__(NODE_NAME)
@@ -30,11 +31,19 @@ class WaypointVisualizer(Node):
         self.record_name="lLOAD_POINT_TEST"
 
         self.cli = self.create_client(TmsdbGetData, "tms_db_param_reader")
-        while not self.cli.wait_for_service(timeout_sec=1.0):
+        while not self.cli.wait_for_service(timeout_sec=0.5):
             self.get_logger().info("service not available, waiting again...")
 
-        timer_period = 0.1
+        
+        self.waypoint_points = ["LOAD_POINT","R1_SIGNAL_POINT","RM1_R1_SIGNAL_POINT","R2_SIGNAL_POINT","R2_GOAL_POINT","RM2_R2_SIGNAL_POINT","R3_SIGNAL_POINT","RELEASE_POINT","RS1_R1_SIGNAL_POINT","RS1_R2_SIGNAL_POINT","RS2_R2_SIGNAL_POINT","RS2_R3_SIGNAL_POINT"]
+        self.waypoint_points_counter = 0
+        self.PointList = []
+        for i in range (0,len(self.waypoint_points)):
+            self.PointList.append(Point(x=0.0, y=1.0, z=0.0))
+
+        timer_period = 1
         self.call_timer = self.create_timer(timer_period, self.send_request)
+
 
 
     def send_request(self):
@@ -45,13 +54,19 @@ class WaypointVisualizer(Node):
         self.req.type = DATA_TYPE
         self.req.id = DATA_ID
         self.req.latest_only = self.latest
-        self.req.name = self.record_name
+        self.req.name = self.waypoint_points[self.waypoint_points_counter]
+     #   self.req.name = self.record_name
+        self.req.recordnames = self.waypoint_points
 
         future = self.cli.call_async(self.req)
         future.add_done_callback(partial(self.callback_response))
 
     
     def callback_response(self, future):
+        if self.waypoint_points_counter + 1 < len(self.waypoint_points):
+            self.waypoint_points_counter += 1
+        else:
+            self.waypoint_points_counter = 0
         res = future.result()
         if not res.tmsdbs:
             self.get_logger().warn("No data received.")
@@ -61,18 +76,20 @@ class WaypointVisualizer(Node):
         msg_data = json.loads(res.tmsdbs[0].msg)
 
         # x, y, z のリストの先頭要素を取得（または必要に応じて全部使う）
-        x = msg_data["x"][0]
-        y = msg_data["y"][0]
+        x = float(msg_data["x"][0])
+        y = float(msg_data["y"][0])
         z = 0.0
 
-        position_point = Point(x=x, y=y, z=z)
+        position_point = Point(x=float(x), y=float(y), z=float(z))
+
+        self.PointList[self.waypoint_points_counter] = position_point
         self.get_logger().info(f"Got Point: {Point}")
 
-        self.timer_callback(position_point)
+        self.timer_callback(self.PointList)
 
     
-    def timer_callback(self ,Position):
-
+    def timer_callback(self ,positions):
+        '''
         # ウェイポイントの定義 (x, y, z)
         self.waypoints = [
             Point(x=1.0, y=1.0, z=0.0),
@@ -81,6 +98,8 @@ class WaypointVisualizer(Node):
             Position
 
         ]
+        '''
+        self.waypoints = positions
 
         marker = Marker()
         marker.header.frame_id = "map"

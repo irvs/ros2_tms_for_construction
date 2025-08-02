@@ -42,31 +42,20 @@ class TmsDbReaderParam(Node):
 
 
     def db_reader_srv_callback(self, request, response):
-        """
-        Respond to requests from client nodes.
-        
-        Parameters
-        ----------
-        request
-            Request from client node.
-        response
-            Response to client node.
-            
-        Returns
-        -------
-        response
-            Response to client node.
-        """
-        collection: pymongo.collection.Collection = self.db[request.type]
+        collection = self.db[request.type]
 
-        latest_data: dict = self.get_latest_data(request, collection)
+        data_result = self.get_latest_data(request, collection)
 
-        if latest_data is None:
-            self.get_logger().warn(f"No data found for the given request {request.name} in {request.type}.")
-            return response  # 空のレスポンスを返す
+        if data_result is None:
+            self.get_logger().warn("No data found for the given request.")
+            return response
 
-        response.tmsdbs.append(self.allocate_tmsdb(latest_data))
-       # self.get_logger().warn(f"Get {request.name} from {request.type}.")
+        if isinstance(data_result, list):
+            for data in data_result:
+                response.tmsdbs.append(self.allocate_tmsdb(data))
+        else:
+            response.tmsdbs.append(self.allocate_tmsdb(data_result))
+
         return response
 
    #     data: str = self.get_task_data(request.name, collection)
@@ -75,61 +64,55 @@ class TmsDbReaderParam(Node):
         
     
 
-    def get_latest_data(self, request, collection: pymongo.collection.Collection) -> dict:
-        """
-        Get latest data only.
-
-        Parameters
-        ----------
-        request
-            Request from a client node.
-        collection
-            MongoDB's target collection.
-
-        Returns
-        -------
-        dict
-            Requested latest data.
-        """
+    def get_latest_data(self, request, collection: pymongo.collection.Collection):
         if request.name != "":
-            latest_data: dict = collection.find_one(
-                {"record_name": request.name},
-            )
+            latest_data = collection.find_one({"record_name": request.name})
             if latest_data is None:
-                self.get_logger().warn(f"No data found {request.name} in {request.type}.")
+                self.get_logger().warn(f"No data found for {request.name} in {request.type}.")
             return latest_data
-        
-        return
+
+        elif len(request.recordnames) > 0:
+            waypointlist = []
+            for name in request.recordnames:
+                data = collection.find_one({"record_name": name})
+                if data:
+                    waypointlist.append(data)
+                else:
+                    self.get_logger().warn(f"No data found for {name} in {request.type}.")
+            return waypointlist
+
+        return None
+
     
 
     def allocate_tmsdb(self, data: dict) -> Tmsdb:
-        """
-        Allocate dictionary data to Tmsdb msg.
-
-        Parameters
-        ----------
-        dict : data
-            Dictionary data.
-
-        Returns
-        -------
-        Tmsdb
-            Tmsdb msg data.
-        """
         tmsdb = Tmsdb()
         tmsdb.type = data["type"]
         tmsdb.name = data["record_name"]
         pose_data = {
-        "x": data.get("x", []),
-        "y": data.get("y", []),
-        "z": data.get("z", []),
-        "qx": data.get("qx", []),
-        "qy": data.get("qy", []),
-        "qz": data.get("qz", []),
-        "qw": data.get("qw", []),
-    }
+            "x": data.get("x", []),
+            "y": data.get("y", []),
+            "z": data.get("z", []),
+            "qx": data.get("qx", []),
+            "qy": data.get("qy", []),
+            "qz": data.get("qz", []),
+            "qw": data.get("qw", []),
+        }
         tmsdb.msg = json.dumps(pose_data)
         return tmsdb
+    
+    def make_pose_list(recordname, data, datalist: dict):
+        pose_data = {
+            "x": data.get("x", []),
+            "y": data.get("y", []),
+            "z": data.get("z", []),
+            "qx": data.get("qx", []),
+            "qy": data.get("qy", []),
+            "qz": data.get("qz", []),
+            "qw": data.get("qw", []),
+        }
+        datalist.append(recordname)
+        datalist.append(pose_data)
 
 
 def main(args=None):
