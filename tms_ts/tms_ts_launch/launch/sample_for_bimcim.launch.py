@@ -65,8 +65,8 @@ def generate_launch_description():
             declare_use_rviz,
             declare_robot_name_zx200,
 
-            DeclareLaunchArgument('task_id1', default_value="1"), # The task to control zx200 prepared for demo(2025/8) for FRL 
-            DeclareLaunchArgument('task_id2', default_value="2"), # The task to control ic120 prepared for demo(2025/8) for FRL
+            DeclareLaunchArgument('task_id1', default_value="3"), # The task to control zx200 prepared for demo(2025/8) for FRL 
+            DeclareLaunchArgument('task_id2', default_value="4"), # The task to control ic120 prepared for demo(2025/8) for FRL
 
             Node(
                   package='tms_ts_manager',
@@ -353,9 +353,9 @@ def generate_launch_description():
 
             # OPERA modules
 
-            # IncludeLaunchDescription(
-            #     PythonLaunchDescriptionSource(opera_modules_launch_file_path),
-            # ),
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(opera_modules_launch_file_path),
+            ),
 
             # IncludeLaunchDescription(
             #     PythonLaunchDescriptionSource(tms_if_for_opera_launch_file_path),
