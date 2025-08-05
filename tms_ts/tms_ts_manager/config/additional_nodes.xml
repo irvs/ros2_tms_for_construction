@@ -66,6 +66,11 @@
             <input_port name="key"/>
         </Action>     
 
+        <Action ID="WaitForClick">
+            <input_port name="window_title"/>
+            <input_port name="button_info"/>
+        </Action>      
+
     </TreeNodesModel>
 </root>
 

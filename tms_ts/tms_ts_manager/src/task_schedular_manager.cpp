@@ -32,6 +32,7 @@
 #include "tms_ts_subtask/common/SetLocalBlackboard.hpp"
 #include "tms_ts_subtask/common/SetLocalBlackboardWithCounter.hpp"
 #include "tms_ts_subtask/common/Counter.hpp"
+#include "tms_ts_subtask/common/wait_for_click.hpp"
 
 
 using namespace BT;
@@ -59,6 +60,7 @@ public:
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
     factory.registerNodeType<SetLocalBlackboardWithCounter>("SetLocalBlackboardWithCounter");
     factory.registerNodeType<Counter>("Counter");
+    factory.registerNodeType<WaitForClick>("WaitForClick");
 
     // loadBlackboardFromMongoDB("global_blackboard");
   }
