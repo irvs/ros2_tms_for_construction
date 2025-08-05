@@ -97,6 +97,7 @@ class TmsDbReaderParam(Node):
             "qy": data.get("qy", []),
             "qz": data.get("qz", []),
             "qw": data.get("qw", []),
+            "Release_Count": data.get("Release_Count", []),
         }
         tmsdb.msg = json.dumps(pose_data)
         return tmsdb

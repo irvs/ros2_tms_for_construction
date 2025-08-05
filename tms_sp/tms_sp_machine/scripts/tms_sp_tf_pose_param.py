@@ -68,12 +68,12 @@ class TmsSpMachineOdom(Node):
 
     def send_odom_to_db_writer(self) -> None:
         if not self.is_received:
-            self.get_logger().info(f"Received {self.machine_name}'s Odometry msg")
+          #  self.get_logger().info(f"Received {self.machine_name}'s Odometry msg")
             self.is_received = True
 
         load_point, second_point, forward_quat = self.calculate_position()
         if load_point is None:
-            self.get_logger().warn("Skipping DB write because transform is unavailable")
+          #  self.get_logger().warn("Skipping DB write because transform is unavailable")
             return
 
         
@@ -87,7 +87,7 @@ class TmsSpMachineOdom(Node):
     def calculate_position(self):
         result = self.transform()
         if result is None:
-            self.get_logger().warn("Transform is None, skipping position calculation")
+          #  self.get_logger().warn("Transform is None, skipping position calculation")
             return None, None, None
     
         # 距離（ロボットの後方に取りたい距離[m]）
@@ -113,9 +113,9 @@ class TmsSpMachineOdom(Node):
         second_pos = Point(x=second_point_x, y=second_point_y, z=0.0)
         forward_quat = Quaternion(x=quat[0], y=quat[1], z=quat[2], w=quat[3])
 
-        self.get_logger().info(f"Current position: ({x:.2f}, {y:.2f}), yaw: {math.degrees(yaw):.2f} deg")
-        self.get_logger().info(f"{backward_distance}m backward position: ({backward_x:.2f}, {backward_y:.2f})")
-        self.get_logger().info(f"second position: ({second_point_x:.2f}, {second_point_y:.2f})")
+      #  self.get_logger().info(f"Current position: ({x:.2f}, {y:.2f}), yaw: {math.degrees(yaw):.2f} deg")
+      #  self.get_logger().info(f"{backward_distance}m backward position: ({backward_x:.2f}, {backward_y:.2f})")
+      #  self.get_logger().info(f"second position: ({second_point_x:.2f}, {second_point_y:.2f})")
 
         return load_pos, second_pos, forward_quat
     
@@ -149,7 +149,7 @@ class TmsSpMachineOdom(Node):
 
               #  self.get_logger().info(f'Robot position in {from_frame}: x={world_to_map_x}, y={world_to_map_y}, z={world_to_map_z}')
         except Exception as e:
-            self.get_logger().warn(f'Could not get transform: {e}')
+         #   self.get_logger().warn(f'Could not get transform: {e}')
             return None
 
         

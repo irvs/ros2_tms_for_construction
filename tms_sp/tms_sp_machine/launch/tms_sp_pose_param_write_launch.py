@@ -36,7 +36,7 @@ def generate_launch_description():
         ],
         parameters=[
             {
-                "machine_name": "mst110cr_1",
+                "machine_name": "mst110cr_2",
             },
             {
                 "to_frame": LaunchConfiguration("to_frame"),
@@ -44,24 +44,25 @@ def generate_launch_description():
         ],
     )
     
-#    tms_sp_machine_odom_node2 = Node(
-#        name="tms_sp_machine_odom2",
-#        package="tms_sp_machine",
-#        executable="tms_sp_machine_odom.py",
-#        output="screen",
-#        remappings=[
-#            ("~/input/odom", "/global_pose"),
-#           #("~/input/odom", "/ic120/odometry/global"),
-#        ],
-#        parameters=[
-#            {
-#                "machine_name": "kumagayagumi_backhoe",
-#            },
-#            {
-#                "to_frame": LaunchConfiguration("to_frame"),
-#            },
-#        ],
-#    )
+    
+    tms_sp_machine_release_point_write_node2 = Node(
+        name="tms_sp_machine_param2",
+        package="tms_sp_machine",
+        executable="tms_sp_release_pose_param.py",
+        output="screen",
+        remappings=[
+            ("~/input/odom", "/global_pose"),
+           #("~/input/odom", "/ic120/odometry/global"),
+        ],
+        parameters=[
+            {
+                "machine_name": "mst110cr_2",
+            },
+            {
+                "to_frame": LaunchConfiguration("to_frame"),
+            },
+        ],
+    )
 
 #    tms_sp_machine_joints_node1 = Node(
 #        name="tms_sp_machine_joints1",
@@ -176,6 +177,7 @@ def generate_launch_description():
         [
             to_frame,
             tms_sp_machine_param_write_node1,
+            tms_sp_machine_release_point_write_node2,
           #  tms_sp_machine_odom_node1,
           #  tms_sp_machine_odom_node2,
           #  tms_sp_machine_odom_node3,

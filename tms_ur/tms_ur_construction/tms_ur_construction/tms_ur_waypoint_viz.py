@@ -35,7 +35,7 @@ class WaypointVisualizer(Node):
             self.get_logger().info("service not available, waiting again...")
 
         
-        self.waypoint_points = ["LOAD_POINT","R1_SIGNAL_POINT","RM1_R1_SIGNAL_POINT","R2_SIGNAL_POINT","R2_GOAL_POINT","RM2_R2_SIGNAL_POINT","R3_SIGNAL_POINT","RELEASE_POINT","RS1_R1_SIGNAL_POINT","RS1_R2_SIGNAL_POINT","RS2_R2_SIGNAL_POINT","RS2_R3_SIGNAL_POINT"]
+        self.waypoint_points = ["LOAD_POINT","R1_SIGNAL_POINT","RM1_R1_SIGNAL_POINT","R2_SIGNAL_POINT","R2_GOAL_POINT","RM2_R2_SIGNAL_POINT","R3_RELEASE_SIGNAL_POINT","RELEASE_POINT","RS1_R1_SIGNAL_POINT","RS1_R2_SIGNAL_POINT","RS2_R2_SIGNAL_POINT","RS2_R3_SIGNAL_POINT"]
         self.waypoint_points_counter = 0
         self.PointList = []
         for i in range (0,len(self.waypoint_points)):
@@ -109,9 +109,9 @@ class WaypointVisualizer(Node):
         marker.type = Marker.SPHERE_LIST
         marker.action = Marker.ADD
 
-        marker.scale.x = 0.2
-        marker.scale.y = 0.2
-        marker.scale.z = 0.2
+        marker.scale.x = 0.5
+        marker.scale.y = 0.5
+        marker.scale.z = 0.5
 
         marker.color.r = 1.0
         marker.color.g = 0.0
