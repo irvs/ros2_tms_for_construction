@@ -31,10 +31,12 @@ find_package(tms_msg_db REQUIRED)
 find_package(glog REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(com3_msgs)
+find_package(Qt5Widgets REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
   src/leaf_node_base.cpp
-  src/subtask_node_base.cpp)
+  src/subtask_node_base.cpp
+  src/common/wait_for_click_node.cpp)
 
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -49,6 +51,9 @@ target_link_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME} 
 mongocxx
 bsoncxx)
+
+# Common Subtask Nodes 
+add_executable(wait_for_click_button src/common/wait_for_click_button.cpp)
 
 # Subtask Nodes for D37PXI 
 add_executable(subtask_d37pxi_follow_waypoints_deg src/OPERA/d37pxi/subtask_d37pxi_follow_waypoints_deg.cpp)
@@ -101,6 +106,7 @@ add_executable(subtask_mst110cr_swing src/OPERA/mst110cr/subtask_mst110cr_swing.
 
 
 set(TARGETS
+  wait_for_click_button
   subtask_d37pxi_follow_waypoints_deg
   subtask_d37pxi_follow_waypoints
   subtask_d37pxi_navigate_anywhere_deg
@@ -170,7 +176,8 @@ set(dependencies_cpp
   tms_msg_rp
   tms_msg_db
   nav2_msgs
-  com3_msgs)
+  com3_msgs
+  Qt5Widgets)
 
 foreach(target IN LISTS TARGETS)
 target_include_directories(${target} PUBLIC ${COMMON_INCLUDE_DIRS})
