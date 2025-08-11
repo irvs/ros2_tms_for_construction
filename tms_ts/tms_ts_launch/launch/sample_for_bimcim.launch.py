@@ -338,6 +338,30 @@ def generate_launch_description():
                   output='screen',
             ),
 
+            Node(
+                  package='tms_sp_sensing', 
+                  executable='tms_sp_dig_cycle',
+                  output='screen',
+            ),
+
+            Node(
+                  package='tms_sp_sensing', 
+                  executable='tms_sp_dig_locations',
+                  output='screen',
+            ),
+
+            Node(
+                  package='tms_sp_sensing', 
+                  executable='tms_sp_release_angle',
+                  output='screen',
+            ),
+
+            Node(
+                  package='tms_sp_sensing', 
+                  executable='tms_sp_release_locations',
+                  output='screen',
+            ),
+
             # TMS_DB
 
             Node(

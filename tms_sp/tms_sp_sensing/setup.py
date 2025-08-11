@@ -37,6 +37,11 @@ setup(
             "tms_sp_excavate_simple = tms_sp_sensing.tms_sp_excavate_simple:main",
             "tms_sp_excavate_simple_plan = tms_sp_sensing.tms_sp_excavate_simple_plan:main",
             "tms_sp_release_simple = tms_sp_sensing.tms_sp_release_simple:main",
+            
+            "tms_sp_dig_cycle = tms_sp_sensing.tms_sp_dig_cycle:main",
+            "tms_sp_dig_locations = tms_sp_sensing.tms_sp_dig_locations:main",
+            "tms_sp_release_angle = tms_sp_sensing.tms_sp_release_angle:main",
+            "tms_sp_release_locations = tms_sp_sensing.tms_sp_release_locations:main"
         ],
     },
 )
