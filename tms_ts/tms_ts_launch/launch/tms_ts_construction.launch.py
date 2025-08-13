@@ -202,6 +202,11 @@ def generate_launch_description():
                   executable='subtask_mst110cr_swing',
                   output='screen',
                   namespace='mst110cr_2'), 
+            Node(
+                  package = 'tms_ts_subtask',
+                  executable='subtask_mst110cr_swing_align_to_heading',
+                  output='screen',
+                  namespace='mst110cr_2'), 
 
             
             #D37PXI

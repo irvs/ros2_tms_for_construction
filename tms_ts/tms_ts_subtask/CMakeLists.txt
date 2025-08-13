@@ -21,6 +21,7 @@ find_package(nlohmann_json REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(rosidl_default_runtime REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(bsoncxx REQUIRED)
@@ -99,6 +100,7 @@ add_executable(subtask_mst110cr_navigate_through_poses src/OPERA/mst110cr/subtas
 add_executable(subtask_mst110cr_navigate_through_poses_deg src/OPERA/mst110cr/subtask_mst110cr_navigate_through_poses_deg.cpp)
 add_executable(subtask_mst110cr_release_soil src/OPERA/mst110cr/subtask_mst110cr_release_soil.cpp)
 add_executable(subtask_mst110cr_swing src/OPERA/mst110cr/subtask_mst110cr_swing.cpp)
+add_executable(subtask_mst110cr_swing_align_to_heading src/OPERA/mst110cr/subtask_mst110cr_swing_align_to_heading.cpp)
 
 
 set(TARGETS
@@ -141,6 +143,7 @@ set(TARGETS
   subtask_mst110cr_navigate_through_poses
   subtask_mst110cr_release_soil
   subtask_mst110cr_swing
+  subtask_mst110cr_swing_align_to_heading
 )
 
 set(COMMON_INCLUDE_DIRS
@@ -167,6 +170,7 @@ set(dependencies_cpp
   behaviortree_cpp_v3
   nlohmann_json
   geometry_msgs
+  sensor_msgs
   tms_msg_ts
   tms_msg_rp
   tms_msg_db
