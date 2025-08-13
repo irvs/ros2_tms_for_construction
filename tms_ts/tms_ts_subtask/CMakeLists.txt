@@ -69,6 +69,7 @@ add_executable(subtask_mst2200_navigate_through_poses_deg src/FUJITA/mst2200/sub
 add_executable(subtask_mst2200_navigate_through_poses src/FUJITA/mst2200/subtask_mst2200_navigate_through_poses.cpp)
 add_executable(subtask_mst2200_release_soil src/FUJITA/mst2200/subtask_mst2200_release_soil.cpp)
 add_executable(subtask_mst2200_swing src/FUJITA/mst2200/subtask_mst2200_swing.cpp)
+add_executable(subtask_mst2200_swing_align_to_heading src/FUJITA/mst2200/subtask_mst2200_swing_align_to_heading.cpp)
 
 # Subtask Nodes for IC120
 add_executable(subtask_ic120_follow_waypoints_deg src/OPERA/ic120/subtask_ic120_follow_waypoints_deg.cpp)
@@ -118,6 +119,7 @@ set(TARGETS
   subtask_mst2200_navigate_through_poses
   subtask_mst2200_release_soil
   subtask_mst2200_swing
+  subtask_mst2200_swing_align_to_heading
   subtask_ic120_follow_waypoints_deg
   subtask_ic120_follow_waypoints
   subtask_ic120_navigate_anywhere_deg

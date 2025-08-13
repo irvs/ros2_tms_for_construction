@@ -6,8 +6,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SAMPLE_SUBTASK_MST110CR_SWING_ALIGN_TO_HEADING_HPP
-#define SAMPLE_SUBTASK_MST110CR_SWING_ALIGN_TO_HEADING_HPP
+#ifndef SAMPLE_SUBTASK_MST2200_SWING_ALIGN_TO_HEADING_HPP
+#define SAMPLE_SUBTASK_MST2200_SWING_ALIGN_TO_HEADING_HPP
 
 #include <memory>
 #include <map>
@@ -32,13 +32,13 @@
 #include "com3_msgs/action/set_swing_angle.hpp"
 
 
-class SubtaskMst110crSwingAlignToHeading : public SubtaskNodeBase
+class SubtaskMst2200SwingAlignToHeading : public SubtaskNodeBase
 {
 public:
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
     using SetSwingAngle = com3_msgs::action::SetSwingAngle;
-    using GoalHandleMst110crSwingAlignToHeading = rclcpp_action::ClientGoalHandle<SetSwingAngle>;
-    SubtaskMst110crSwingAlignToHeading();
+    using GoalHandleMst2200SwingAlignToHeading = rclcpp_action::ClientGoalHandle<SetSwingAngle>;
+    SubtaskMst2200SwingAlignToHeading();
 
 private:
     rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
@@ -49,13 +49,13 @@ private:
     void handle_accepted(const std::shared_ptr<GoalHandle> goal_handle);
     void execute(const std::shared_ptr<GoalHandle> goal_handle);
     rclcpp_action::Client<SetSwingAngle>::SharedPtr action_client_;
-    std::shared_future<GoalHandleMst110crSwingAlignToHeading::SharedPtr> client_future_goal_handle_;
+    std::shared_future<GoalHandleMst2200SwingAlignToHeading::SharedPtr> client_future_goal_handle_;
     std::map<std::string, double> parameters;
-    void goal_response_callback(const GoalHandleMst110crSwingAlignToHeading::SharedPtr& goal_handle);
-    void feedback_callback(GoalHandleMst110crSwingAlignToHeading::SharedPtr,
+    void goal_response_callback(const GoalHandleMst2200SwingAlignToHeading::SharedPtr& goal_handle);
+    void feedback_callback(GoalHandleMst2200SwingAlignToHeading::SharedPtr,
                             const std::shared_ptr<const SetSwingAngle::Feedback> feedback);
     void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                        const GoalHandleMst110crSwingAlignToHeading::WrappedResult& result);
+                        const GoalHandleMst2200SwingAlignToHeading::WrappedResult& result);
 };
 
 #endif

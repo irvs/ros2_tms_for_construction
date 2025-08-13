@@ -13,31 +13,31 @@
 // limitations under the License.
 
 #include <vector>
-#include "tms_ts_subtask/OPERA/mst110cr/subtask_mst110cr_swing_align_to_heading.hpp"
+#include "tms_ts_subtask/FUJITA/mst2200/subtask_mst2200_swing_align_to_heading.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskMst110crSwingAlignToHeading::SubtaskMst110crSwingAlignToHeading() : SubtaskNodeBase("st_mst110cr_swing_align_to_heading_node")
+SubtaskMst2200SwingAlignToHeading::SubtaskMst2200SwingAlignToHeading() : SubtaskNodeBase("st_mst2200_swing_align_to_heading_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_mst110cr_swing_align_to_heading",
-        std::bind(&SubtaskMst110crSwingAlignToHeading::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskMst110crSwingAlignToHeading::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskMst110crSwingAlignToHeading::handle_accepted, this, std::placeholders::_1));
+        this, "st_mst2200_swing_align_to_heading",
+        std::bind(&SubtaskMst2200SwingAlignToHeading::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&SubtaskMst2200SwingAlignToHeading::handle_cancel, this, std::placeholders::_1),
+        std::bind(&SubtaskMst2200SwingAlignToHeading::handle_accepted, this, std::placeholders::_1));
 
     
     action_client_ = rclcpp_action::create_client<SetSwingAngle>(this, "set_swing_angle");
 }
 
-rclcpp_action::GoalResponse SubtaskMst110crSwingAlignToHeading::handle_goal(
+rclcpp_action::GoalResponse SubtaskMst2200SwingAlignToHeading::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskMst110crSwingAlignToHeading::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse SubtaskMst2200SwingAlignToHeading::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
     if (client_future_goal_handle_.valid() &&
@@ -49,15 +49,15 @@ rclcpp_action::CancelResponse SubtaskMst110crSwingAlignToHeading::handle_cancel(
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskMst110crSwingAlignToHeading::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void SubtaskMst2200SwingAlignToHeading::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskMst110crSwingAlignToHeading::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&SubtaskMst2200SwingAlignToHeading::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskMst110crSwingAlignToHeading::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void SubtaskMst2200SwingAlignToHeading::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_mst110cr_swing_align_to_heading) is executing...");
+    RCLCPP_INFO(this->get_logger(), "subtask(st_mst2200_swing_align_to_heading) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -71,6 +71,7 @@ void SubtaskMst110crSwingAlignToHeading::execute(const std::shared_ptr<GoalHandl
         RCLCPP_INFO(this->get_logger(), "Goal is not active");
         }
     };
+
 
     const std::string swing_joint = "swing_joint";
 
@@ -139,7 +140,7 @@ void SubtaskMst110crSwingAlignToHeading::execute(const std::shared_ptr<GoalHandl
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskMst110crSwingAlignToHeading::goal_response_callback(const GoalHandleMst110crSwingAlignToHeading::SharedPtr& goal_handle)
+void SubtaskMst2200SwingAlignToHeading::goal_response_callback(const GoalHandleMst2200SwingAlignToHeading::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -152,9 +153,9 @@ void SubtaskMst110crSwingAlignToHeading::goal_response_callback(const GoalHandle
 }
 
   
-void SubtaskMst110crSwingAlignToHeading::feedback_callback(
-    const GoalHandleMst110crSwingAlignToHeading::SharedPtr,
-    const std::shared_ptr<const GoalHandleMst110crSwingAlignToHeading::Feedback> feedback)
+void SubtaskMst2200SwingAlignToHeading::feedback_callback(
+    const GoalHandleMst2200SwingAlignToHeading::SharedPtr,
+    const std::shared_ptr<const GoalHandleMst2200SwingAlignToHeading::Feedback> feedback)
 {
   // TODO: Fix to feedback to leaf node
   // RCLCPP_INFO(get_logger(), "Distance remaininf = %f", feedback->distance_remaining);
@@ -162,8 +163,8 @@ void SubtaskMst110crSwingAlignToHeading::feedback_callback(
 
 
 //result
-void SubtaskMst110crSwingAlignToHeading::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandleMst110crSwingAlignToHeading::WrappedResult& result)
+void SubtaskMst2200SwingAlignToHeading::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+                                             const GoalHandleMst2200SwingAlignToHeading::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {
@@ -204,7 +205,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskMst110crSwingAlignToHeading>());
+    rclcpp::spin(std::make_shared<SubtaskMst2200SwingAlignToHeading>());
     rclcpp::shutdown();
     return 0;
 }

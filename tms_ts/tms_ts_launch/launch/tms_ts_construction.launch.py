@@ -160,6 +160,11 @@ def generate_launch_description():
                   executable='subtask_mst2200_release_soil',
                   output='screen',
                   namespace='mst2200'),
+            Node(
+                  package = 'tms_ts_subtask',
+                  executable='subtask_mst2200_swing_align_to_heading',
+                  output='screen',
+                  namespace='mst2200'), 
 
             #MST110CR
             Node(
