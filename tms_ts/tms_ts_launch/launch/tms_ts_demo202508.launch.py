@@ -74,7 +74,7 @@ def launch_setup(context, *args, **kwargs):
                     "zmq_server_port": zmq_server_port,
                     "zmq_publisher_port": zmq_publisher_port
                 }],
-            #     arguments=['--ros-args', '--log-level', 'ERROR']  # WARNINGを非表示
+                arguments=['--ros-args', '--log-level', 'ERROR']  # WARNINGを非表示
             )
         )
 

@@ -5,6 +5,7 @@
         <Sequence>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_NEXTPOINT_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
+            <Action ID="SetLocalBlackboard" output_key="ALREADY_NEXTPOINT" value="false"/>
             <Decorator ID="KeepRunningUntilFlgup" key="TERMINATE_FLG">
                 <Sequence>
                     <Action ID="BlackboardValueReaderMongo" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="CONTINUE_FLG"/>
@@ -13,35 +14,80 @@
                         <Sequence>
                             <IfThenElse>
                                 <Action ID="ConditionalExpression" conditional_expression="INITIAL_POS_FLG == false"/>
-                                <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
+                                <Sequence>
+                                    <Action ID="WaitForClick" button_info="initial_pose_待機" window_title="initial_pose_待機"/>
+                                    <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
+                                </Sequence>
                                 <AlwaysSuccess/>
                             </IfThenElse>
                             <Action ID="MongoValueWriter" input_value="true" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
+                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_NEXTPOINT_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="SENSING_NEXTPOINT_FLG"/>
+                            <IfThenElse>
+                                <Action ID="ConditionalExpression" conditional_expression="SENSING_NEXTPOINT_FLG == true and ALREADY_NEXTPOINT == false"/>
+                                <Sequence>
+                                    <Action ID="MongoValueWriter" input_value="true" mongo_param_name="LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
+                                    <RetryUntilSuccessful num_attempts="-1">
+                                        <Sequence>
+                                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="LOADAREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="LOADAREA"/>
+                                            <IfThenElse>
+                                                <Action ID="ConditionalExpression" conditional_expression="LOADAREA == false"/>
+                                                <Sequence>
+                                                    <Action  model_name="zx200" ID="LeafNodeZx200" record_name="SIM_GOAL" subtask_name="st_zx200_navigate_anywhere"/>
+                                                    <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_NEXTPOINT_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
+                                                    <Action ID="SetLocalBlackboard" output_key="ALREADY_NEXTPOINT" value="true"/>
+                                                </Sequence>
+                                                <AlwaysFailure/>
+                                            </IfThenElse>
+                                        </Sequence>
+                                    </RetryUntilSuccessful>
+                                </Sequence>
+                                <AlwaysSuccess/>
+                            </IfThenElse>
                             <Parallel failure_threshold="1" success_threshold="-1">
                                 <Action ID="BlackboardValueReaderMongo" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="INITIAL_POS_FLG"/>
                                 <Action ID="BlackboardValueReaderMongo" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="ARRIVAL_FLG"/>
                                 <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="SENSING_ARRIVAL_FLG"/>
                                 <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="SENSING_LOADED_FLG"/>
                                 <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_CHECK_MOUND_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="SENSING_CHECK_MOUND_FLG"/>
-                                <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_NEXTPOINT_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="SENSING_NEXTPOINT_FLG"/>
                                 <IfThenElse>
                                     <Action ID="ConditionalExpression" conditional_expression="ARRIVAL_FLG == true and SENSING_ARRIVAL_FLG == true and SENSING_LOADED_FLG == false and SENSING_CHECK_MOUND_FLG == false "/>
                                     <Sequence>
                                         <Action ID="MongoValueWriter" input_value="false" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                         <RetryUntilSuccessful num_attempts="-1">
                                             <Fallback>
-                                                <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple_plan"/>
+                                                <Sequence>
+                                                    <Action ID="WaitForClick" button_info="target_excavate_pose_待機" window_title="target_excavate_pose_待機"/>
+                                                    <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple_plan"/>
+                                                </Sequence>
                                                 <Delay delay_msec="5000">
                                                     <AlwaysFailure/>
                                                 </Delay>
                                             </Fallback>
                                         </RetryUntilSuccessful>
-                                        <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple"/>
-                                        <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_zx200_change_pose"/>
-                                        <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="hold_soil_while_turning_pose" subtask_name="subtask_zx200_change_pose"/>
-                                        <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="release_pose" subtask_name="subtask_zx200_change_pose"/>
-                                        <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="release_angle" subtask_name="subtask_zx200_release_simple"/>
-                                        <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="after_release_soil_pose" subtask_name="subtask_zx200_change_pose"/>
+                                        <Sequence>
+                                            <Action ID="WaitForClick" button_info="target_excavate_pose_待機" window_title="target_excavate_pose_待機"/>
+                                            <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple"/>
+                                        </Sequence>
+                                        <Sequence>
+                                            <Action ID="WaitForClick" button_info="hold_soil_while_elevating_pose_待機" window_title="hold_soil_while_elevating_pose_待機"/>
+                                            <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_zx200_change_pose"/>
+                                        </Sequence>
+                                        <Sequence>
+                                            <Action ID="WaitForClick" button_info="hold_soil_while_turning_pose_待機" window_title="hold_soil_while_turning_pose_待機"/>
+                                            <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="hold_soil_while_turning_pose" subtask_name="subtask_zx200_change_pose"/>
+                                        </Sequence>
+                                        <Sequence>
+                                            <Action ID="WaitForClick" button_info="release_pose_待機" window_title="release_pose_待機"/>
+                                            <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="release_pose" subtask_name="subtask_zx200_change_pose"/>
+                                        </Sequence>
+                                        <Sequence>
+                                            <Action ID="WaitForClick" button_info="release_angle_待機" window_title="release_angle_待機"/>
+                                            <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="release_angle" subtask_name="subtask_zx200_release_simple"/>
+                                        </Sequence>
+                                        <Sequence>
+                                            <Action ID="WaitForClick" button_info="after_release_soil_pose_待機" window_title="after_release_soil_pose_待機"/>
+                                            <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="after_release_soil_pose" subtask_name="subtask_zx200_change_pose"/>
+                                        </Sequence>
                                         <Delay delay_msec="3000">
                                             <AlwaysSuccess/>
                                         </Delay>
@@ -126,6 +172,10 @@
             <input_port name="input_value" type="std::string"/>
             <input_port name="mongo_param_name" type="std::string"/>
             <input_port name="mongo_record_name" type="std::string"/>
+        </Action>
+        <Action ID="SetLocalBlackboard">
+            <inout_port name="output_key"/>
+            <input_port name="value"/>
         </Action>
     </TreeNodesModel>
     <!-- ////////// -->

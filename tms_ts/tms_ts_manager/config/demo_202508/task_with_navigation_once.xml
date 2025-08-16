@@ -12,7 +12,11 @@
                     <WhileDoElse>
                         <Action ID="ConditionalExpression" conditional_expression="CONTINUE_FLG == true"/>
                         <Sequence>
-                            <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
+                            <IfThenElse>
+                                <Action ID="ConditionalExpression" conditional_expression="INITIAL_POS_FLG == false"/>
+                                <Action  model_name="zx200" ID="LeafNodeZx200" name="leaf_node_zx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
+                                <AlwaysSuccess/>
+                            </IfThenElse>
                             <Action ID="MongoValueWriter" input_value="true" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                             <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_NEXTPOINT_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="SENSING_NEXTPOINT_FLG"/>
                             <IfThenElse>
@@ -99,9 +103,9 @@
             <inout_port name="key"/>
         </Action>
         <Action ID="BlackboardValueReaderMongo">
-            <input_port name="mongo_param_name"/>
-            <input_port name="mongo_record_name"/>
-            <input_port name="output_port"/>
+            <input_port name="mongo_param_name" type="std::string"/>
+            <input_port name="mongo_record_name" type="std::string"/>
+            <input_port name="output_port" type="std::string"/>
         </Action>
         <Action ID="BlackboardValueWriterSrv">
             <inout_port name="output_key"/>
@@ -112,7 +116,7 @@
             <inout_port name="value"/>
         </Action>
         <Action ID="ConditionalExpression">
-            <input_port name="conditional_expression"/>
+            <input_port name="conditional_expression" type="std::string"/>
         </Action>
         <Action ID="ConditionalExpressionBool">
             <input_port name="conditional_expression_bool"/>
@@ -136,14 +140,14 @@
             <inout_port name="subtask_name"/>
         </Action>
         <Action ID="LeafNodeZx200">
-            <input_port default="zx200" name=" model_name"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <input_port name="model_name" type="float"/>
+            <input_port name="record_name" type="float"/>
+            <input_port name="subtask_name" type="float"/>
         </Action>
         <Action ID="MongoValueWriter">
-            <input_port name="input_value"/>
-            <input_port name="mongo_param_name"/>
-            <input_port name="mongo_record_name"/>
+            <input_port name="input_value" type="std::string"/>
+            <input_port name="mongo_param_name" type="std::string"/>
+            <input_port name="mongo_record_name" type="std::string"/>
         </Action>
         <Action ID="SetLocalBlackboard">
             <inout_port name="output_key"/>
