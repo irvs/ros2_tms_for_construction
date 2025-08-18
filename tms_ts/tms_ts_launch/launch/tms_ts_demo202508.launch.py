@@ -93,6 +93,11 @@ def launch_setup(context, *args, **kwargs):
               namespace = 'zx200'),
         Node(
               package='tms_ts_subtask', 
+              executable='subtask_zx200_change_pose_plan',
+              output='screen',
+              namespace = 'zx200'),
+        Node(
+              package='tms_ts_subtask', 
               executable='subtask_zx200_excavate_simple',
               output='screen',
               namespace = 'zx200'),

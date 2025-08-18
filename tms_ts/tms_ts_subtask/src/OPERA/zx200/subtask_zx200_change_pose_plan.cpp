@@ -34,13 +34,13 @@ SubtaskZx200ChangePose::SubtaskZx200ChangePose() : SubtaskNodeBase("subtask_zx20
     options_client.status_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
   
   action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-      this, "subtask_zx200_change_pose",
+      this, "subtask_zx200_change_pose_plan",
       std::bind(&SubtaskZx200ChangePose::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
       std::bind(&SubtaskZx200ChangePose::handle_cancel, this, std::placeholders::_1),
       std::bind(&SubtaskZx200ChangePose::handle_accepted, this, std::placeholders::_1),
       options_server);
 
-  action_client_ = rclcpp_action::create_client<Zx200ChangePose>(this, "tms_rp_zx200_change_pose",nullptr ,options_client);
+  action_client_ = rclcpp_action::create_client<Zx200ChangePose>(this, "tms_rp_zx200_change_pose_plan",nullptr ,options_client);
   if (action_client_->wait_for_action_server())
   {
     RCLCPP_INFO(this->get_logger(), "Action server is ready");
@@ -56,6 +56,14 @@ rclcpp_action::GoalResponse SubtaskZx200ChangePose::handle_goal(
 {
   used_model_name_ = goal->model_name;
   used_record_name_ = goal->record_name;
+  if(CustomUpdateParamInDB(goal->model_name, goal->record_name, "LOCK_FLG", std::vector<bool>{true}))
+  {
+    RCLCPP_INFO(this->get_logger(), "LOCK_FLG is set to true");
+  }
+  else
+  {
+    RCLCPP_ERROR(this->get_logger(), "Failed to set LOCK_FLG to true");
+  }
   param_from_db_ = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
@@ -206,25 +214,41 @@ void SubtaskZx200ChangePose::result_callback(const std::shared_ptr<GoalHandle> g
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
       RCLCPP_INFO(this->get_logger(), "Subtask execution is aborted");
+      if(CustomUpdateParamInDB(used_model_name_, used_record_name_, "LOCK_FLG", std::vector<bool>{false}))
+      {
+        RCLCPP_INFO(this->get_logger(), "LOCK_FLG is set to false");
+      }
+      else
+      {
+        RCLCPP_ERROR(this->get_logger(), "Failed to set LOCK_FLG to false");
+      }
       break;
     case rclcpp_action::ResultCode::CANCELED:
       result_to_leaf->result = false;
       goal_handle->canceled(result_to_leaf);
       RCLCPP_INFO(this->get_logger(), "Subtask execution is canceled");
+      if(CustomUpdateParamInDB(used_model_name_, used_record_name_, "LOCK_FLG", std::vector<bool>{false}))
+      {
+        RCLCPP_INFO(this->get_logger(), "LOCK_FLG is set to false");
+      }
+      else
+      {
+        RCLCPP_ERROR(this->get_logger(), "Failed to set LOCK_FLG to false");
+      }
       break;
     default:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
       RCLCPP_INFO(this->get_logger(), "Unknown result code");
+      if(CustomUpdateParamInDB(used_model_name_, used_record_name_, "LOCK_FLG", std::vector<bool>{false}))
+      {
+        RCLCPP_INFO(this->get_logger(), "LOCK_FLG is set to false");
+      }
+      else
+      {
+        RCLCPP_ERROR(this->get_logger(), "Failed to set LOCK_FLG to false");
+      }
       break;
-  }
-  if(CustomUpdateParamInDB(used_model_name_, used_record_name_, "LOCK_FLG", std::vector<bool>{false}))
-  {
-    RCLCPP_INFO(this->get_logger(), "LOCK_FLG is set to false");
-  }
-  else
-  {
-    RCLCPP_ERROR(this->get_logger(), "Failed to set LOCK_FLG to false");
   }
 }
 /*******************/
