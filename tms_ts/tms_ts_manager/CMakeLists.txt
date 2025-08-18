@@ -22,6 +22,7 @@ find_package(bsoncxx REQUIRED)
 find_package(mongocxx REQUIRED)
 find_package(tms_ts_subtask REQUIRED)
 find_package(tms_msg_ur REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Core REQUIRED)
 
 set(dependencies_cpp
   rclcpp
@@ -42,7 +43,9 @@ link_directories(
 
 link_libraries(
   mongocxx
-  bsoncxx)
+  bsoncxx
+  Qt5::Widgets
+  Qt5::Core)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/deps)
 

@@ -291,18 +291,18 @@ def launch_setup(context, *args, **kwargs):
               executable="tms_db_reader_parameter",
               output='screen'
               ),
-       Node(
-              package='tms_sp_sensing', 
-              executable='tms_sp_zx200_collision_objects_from_tf',
-              output='screen',
-              parameters=[{"robot_name": "ic120"}]
-        ),
-        Node(
-              package='tms_sp_sensing', 
-              executable='tms_sp_zx200_collision_objects_from_tf',
-              output='screen',
-              parameters=[{"robot_name": "mst110cr"}]
-        ),
+      #  Node(
+      #         package='tms_sp_sensing', 
+      #         executable='tms_sp_zx200_collision_objects_from_tf',
+      #         output='screen',
+      #         parameters=[{"robot_name": "ic120"}]
+      #   ),
+      #   Node(
+      #         package='tms_sp_sensing', 
+      #         executable='tms_sp_zx200_collision_objects_from_tf',
+      #         output='screen',
+      #         parameters=[{"robot_name": "mst110cr"}]
+      #   ),
     ])
     
     return nodes

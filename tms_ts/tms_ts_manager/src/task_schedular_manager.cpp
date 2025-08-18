@@ -39,6 +39,7 @@
 // #include "tms_ts_subtask/zx200/excavation_area_segmenter.hpp"
 #include "tms_ts_subtask/common/KeepRunningUntilFlgup.hpp"
 #include "tms_ts_subtask/common/SetLocalBlackboard.hpp"
+#include "tms_ts_subtask/common/wait_for_click.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -73,6 +74,7 @@ public:
     // factory.registerNodeType<ExcavationAreaSegmenter>("ExcavationAreaSegmenter");
     factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
+    factory.registerNodeType<WaitForClick>("WaitForClick");
 
     // loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SIMIZU");
   }

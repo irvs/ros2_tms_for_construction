@@ -5,12 +5,17 @@
         <Sequence>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_NEXTPOINT_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
             <Decorator ID="KeepRunningUntilFlgup" key="TERMINATE_FLG">
                 <Sequence>
                     <Action ID="BlackboardValueReaderMongo" mongo_param_name="CONTINUE_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="CONTINUE_FLG"/>
                     <WhileDoElse>
                         <Action ID="ConditionalExpression" conditional_expression="CONTINUE_FLG == true"/>
                         <Sequence>
+                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="INITIAL_POS_FLG"/>
                             <IfThenElse>
                                 <Action ID="ConditionalExpression" conditional_expression="INITIAL_POS_FLG == false"/>
                                 <Sequence>
@@ -28,7 +33,7 @@
                                 <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_CHECK_MOUND_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="SENSING_CHECK_MOUND_FLG"/>
                                 <Action ID="BlackboardValueReaderMongo" mongo_param_name="SENSING_NEXTPOINT_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508" output_port="SENSING_NEXTPOINT_FLG"/>
                                 <IfThenElse>
-                                    <Action ID="ConditionalExpression" conditional_expression="ARRIVAL_FLG == true and SENSING_ARRIVAL_FLG == true and SENSING_LOADED_FLG == false and SENSING_CHECK_MOUND_FLG == false "/>
+                                    <Action ID="ConditionalExpression" conditional_expression="ARRIVAL_FLG == true and SENSING_ARRIVAL_FLG == true and LOADED_FLG == false and SENSING_LOADED_FLG == false and SENSING_CHECK_MOUND_FLG == false "/>
                                     <Sequence>
                                         <Action ID="MongoValueWriter" input_value="false" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                         <RetryUntilSuccessful num_attempts="-1">
