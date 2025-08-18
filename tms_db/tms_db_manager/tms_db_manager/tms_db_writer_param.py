@@ -138,7 +138,6 @@ class TmsDbWriterQuery(Node):
                     }
                 }
 
-            ''''''
 
             # ドキュメントの更新
             result = collection.update_one(query, update)

@@ -18,6 +18,8 @@ import pymongo
 import rclpy
 from rclpy.node import Node
 
+from bson import ObjectId 
+
 import tms_db_manager.tms_db_util as db_util
 from tms_msg_db.msg import Tmsdb
 from tms_msg_db.srv import TmsdbGetData
@@ -43,26 +45,30 @@ class TmsDbReaderParam(Node):
 
     def db_reader_srv_callback(self, request, response):
         collection = self.db[request.type]
-
+        datatype = request.flgorparam
         data_result = self.get_latest_data(request, collection)
 
         if data_result is None:
             self.get_logger().warn("No data found for the given request.")
             return response
 
-        if isinstance(data_result, list):
-            for data in data_result:
-                response.tmsdbs.append(self.allocate_tmsdb(data))
-        else:
-            response.tmsdbs.append(self.allocate_tmsdb(data_result))
+        if datatype == "param":
+            if isinstance(data_result, list):
+                for data in data_result:
+                    response.tmsdbs.append(self.allocate_tmsdb(data))
+            else:
+                response.tmsdbs.append(self.allocate_tmsdb(data_result))
 
-        return response
+            return response
+        
+        elif datatype == "flg":
+            response.tmsdbs.append(self.allocate_flg_tmsdb(data_result))
+            return response
 
    #     data: str = self.get_task_data(request.name, collection)
    #     response.tmsdbs = data
    #     return response
         
-    
 
     def get_latest_data(self, request, collection: pymongo.collection.Collection):
         if request.name != "":
@@ -82,7 +88,6 @@ class TmsDbReaderParam(Node):
             return waypointlist
 
         return None
-
     
 
     def allocate_tmsdb(self, data: dict) -> Tmsdb:
@@ -102,18 +107,30 @@ class TmsDbReaderParam(Node):
         tmsdb.msg = json.dumps(pose_data)
         return tmsdb
     
-    def make_pose_list(recordname, data, datalist: dict):
-        pose_data = {
-            "x": data.get("x", []),
-            "y": data.get("y", []),
-            "z": data.get("z", []),
-            "qx": data.get("qx", []),
-            "qy": data.get("qy", []),
-            "qz": data.get("qz", []),
-            "qw": data.get("qw", []),
-        }
-        datalist.append(recordname)
-        datalist.append(pose_data)
+    def convert_objectid(self, obj):
+        if isinstance(obj, ObjectId):
+            return str(obj)
+        elif isinstance(obj, dict):
+            return {k: self.convert_objectid(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self.convert_objectid(v) for v in obj]
+        else:
+            return obj
+
+    def allocate_flg_tmsdb(self, data: dict) -> Tmsdb:
+        tmsdb = Tmsdb()
+        tmsdb.type = data["type"]
+        tmsdb.name = data["record_name"]
+
+        keys_to_exclude = ["type", "record_name"]
+        flg_data_raw = {k: v for k, v in data.items() if k not in keys_to_exclude}
+
+        # ObjectIdを文字列化してからJSON変換
+        flg_data = self.convert_objectid(flg_data_raw)
+        tmsdb.msg = json.dumps(flg_data)
+
+        return tmsdb
+    
 
 
 def main(args=None):

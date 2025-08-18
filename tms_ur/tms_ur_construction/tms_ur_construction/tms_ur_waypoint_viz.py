@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
+from std_msgs.msg import ColorRGBA
 
 from tms_msg_db.srv import TmsdbGetData
 
@@ -54,6 +55,7 @@ class WaypointVisualizer(Node):
         self.req.type = DATA_TYPE
         self.req.id = DATA_ID
         self.req.latest_only = self.latest
+        self.req.flgorparam = "param"
         self.req.name = self.waypoint_points[self.waypoint_points_counter]
      #   self.req.name = self.record_name
         self.req.recordnames = self.waypoint_points
@@ -109,9 +111,9 @@ class WaypointVisualizer(Node):
         marker.type = Marker.SPHERE_LIST
         marker.action = Marker.ADD
 
-        marker.scale.x = 0.5
-        marker.scale.y = 0.5
-        marker.scale.z = 0.5
+        marker.scale.x = 1.0
+        marker.scale.y = 1.0
+        marker.scale.z = 1.0
 
         marker.color.r = 1.0
         marker.color.g = 0.0
@@ -120,8 +122,49 @@ class WaypointVisualizer(Node):
 
         marker.pose.orientation.w = 1.0
         marker.points = self.waypoints
+        # ---- Unityで不要なフィールドを空にする ----
+        marker.text = ""
+        marker.texture_resource = ""
+        marker.texture.data = []
+        marker.texture.format = ""
+        marker.mesh_resource = ""
+        marker.mesh_file.filename = ""
+        marker.mesh_file.data = []
+        marker.uv_coordinates = []
+
+
+        for point in marker.points:
+            c = ColorRGBA()
+            c.r = 1.0
+            c.g = 0.0
+            c.b = 0.0
+            c.a = 1.0
+            marker.colors.append(c)
+      #  marker.colors = []  # Spherical listなら必要ない
 
         self.publisher_.publish(marker)
+
+        # marker = Marker()
+        # marker.header.frame_id = "map"
+        # marker.header.stamp = self.get_clock().now().to_msg()
+        # marker.ns = "waypoints"
+        # marker.id = 0
+        # marker.type = Marker.SPHERE_LIST
+        # marker.action = Marker.ADD
+
+        # marker.scale.x = 0.50
+        # marker.scale.y = 0.50
+        # marker.scale.z = 1.0
+
+        # marker.color.r = 1.0
+        # marker.color.g = 0.0
+        # marker.color.b = 0.0
+        # marker.color.a = 1.0
+
+        # marker.pose.orientation.w = 1.0
+        # marker.points = self.waypoints
+
+        # self.publisher_.publish(marker)
 
 def main(args=None):
     rclpy.init(args=args)

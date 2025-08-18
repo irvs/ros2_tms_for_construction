@@ -38,6 +38,9 @@ READ_DATA_TYPE = "parameter"
 WRITE_DATA_TYPE = "pose_query"
 WRITE_MODE="over_write"
 RECORD_NAME="RELEASE_POINT_test"
+FLG_RECORD_NAME="SAMPLE_BLACKBOARD_SIPDEMO202508"
+
+
 
 class TmsSpMachineOdom(Node):
     """Convert Odometry msg to Tmsdb msg and sent to tms_db_writer."""
@@ -62,7 +65,6 @@ class TmsSpMachineOdom(Node):
             self.get_parameter("latest").get_parameter_value().bool_value
         )
 
-        self.record_name="RELEASE_POINT_test"
 
         self.cli = self.create_client(TmsdbGetData, "tms_db_param_reader")
         while not self.cli.wait_for_service(timeout_sec=0.5):
@@ -70,12 +72,15 @@ class TmsSpMachineOdom(Node):
 
 
         timer_period = 1
-        self.call_timer = self.create_timer(timer_period, self.send_request)
+        self.call_timer = self.create_timer(timer_period, self.send_request_flg)
         self.release_counter = 0
+        self.release_number = 0
         self.Rotation = [0.0, 0.0, 0.0, 0.0]
+        self.initial_X = 0
+        self.initial_Y = 0
 
 
-    def send_request(self):
+    def send_request_flg(self):
         """
         Send request to tms_db_reader to get PoseStamped data.
         """
@@ -83,7 +88,51 @@ class TmsSpMachineOdom(Node):
         self.req.type = READ_DATA_TYPE
         self.req.id = DATA_ID
         self.req.latest_only = self.latest
-        self.req.name = self.record_name
+        self.req.flgorparam = "flg"
+        self.req.name = FLG_RECORD_NAME
+
+        future = self.cli.call_async(self.req)
+        future.add_done_callback(partial(self.callback_flg_response))
+
+    
+    def callback_flg_response(self, future):
+        res = future.result()
+        if not res.tmsdbs:
+            self.get_logger().warn("No data received.")
+            return
+        
+
+        import json
+        msg_data = json.loads(res.tmsdbs[0].msg)
+
+        release_count_raw = msg_data["Release_Count"]
+
+        if isinstance(release_count_raw, list):
+            release_count = int(release_count_raw[0])
+        else:
+            release_count = int(release_count_raw)
+
+        if self.release_counter != release_count: 
+            self.release_counter = release_count
+            self.release_number += 1
+            self.get_logger().info("Counter is changed.")
+            self.send_pose_request()
+
+        else:
+      #      self.get_logger().info("Counter is same.")
+            return
+
+    
+    def send_pose_request(self):
+        """
+        Send request to tms_db_reader to get PoseStamped data.
+        """
+        self.req = TmsdbGetData.Request()
+        self.req.type = READ_DATA_TYPE
+        self.req.id = DATA_ID
+        self.req.latest_only = self.latest
+        self.req.flgorparam = "param"
+        self.req.name = RECORD_NAME
 
         future = self.cli.call_async(self.req)
         future.add_done_callback(partial(self.callback_response))
@@ -99,56 +148,48 @@ class TmsSpMachineOdom(Node):
         import json
         msg_data = json.loads(res.tmsdbs[0].msg)
 
-        x = float(msg_data["x"][0])
-
-
         # x, y, z のリストの先頭要素を取得（または必要に応じて全部使う）
-        if self.release_counter != int(msg_data["Release_Count"]):
-            self.release_counter = int(msg_data["Release_Count"])
+        x = float(msg_data["x"][0])
+        y = float(msg_data["y"][0])
+        z = 0.0
+        qx = float(msg_data["qx"][0])
+        qy = float(msg_data["qy"][0])
+        qz = float(msg_data["qz"][0])
+        qw = float(msg_data["qw"][0])
+        if(self.release_number == 1):
+            self.initial_X = x
+            self.initial_Y = y
+        Rotation = [qx, qy, qz, qw]
+        release_point = self.calculate_position(x,y,Rotation,self.release_number, self.initial_X, self.initial_Y)
+        distance = ((release_point.x - self.initial_X)**2 + (release_point.y - self.initial_Y)**2)**0.5
+        self.get_logger().info(f"Distance from initial: {distance:.2f} m")
+        Max_backward_distance = 10
+        if (distance >= Max_backward_distance):
+            return
 
-            # x, y, z のリストの先頭要素を取得（または必要に応じて全部使う）
-            x = float(msg_data["x"][0])
-            y = float(msg_data["y"][0])
-            z = 0.0
-            qx = float(msg_data["qx"][0])
-            qy = float(msg_data["qy"][0])
-            qz = float(msg_data["qz"][0])
-            qw = float(msg_data["qw"][0])
-            Rotation = [qx, qy, qz, qw]
-            release_point = self.calculate_position(x,y,Rotation,self.release_counter)
-            db_msg = self.create_db_msg(release_point, Rotation)
-            self.publisher_.publish(db_msg)
-        
+        db_msg = self.create_db_msg(release_point, Rotation)
+        self.publisher_.publish(db_msg)
 
         return
 
 
-    def calculate_position(self, X, Y, rotation_quat, Counter):
+    def calculate_position(self, X, Y, rotation_quat, Counter, INITIAL_X, INITIAL_Y):
         
         self.get_logger().info(f"Calculate Release Position")
-     #   self.get_logger().info(f"Calculate Release Position {x}")
-
 
         # 距離（ロボットの後方に取りたい距離[m]）
-        backward_distance = 0.5
-
+        backward_distance = 0.4
 
         rotation = R.from_quat(rotation_quat)
         roll, pitch, yaw = rotation.as_euler('xyz')
 
-        backward_x = X - backward_distance * Counter * math.cos(yaw)
-        backward_y = Y - backward_distance * Counter * math.sin(yaw)
+        backward_x = X - backward_distance * math.cos(yaw)
+        backward_y = Y - backward_distance * math.sin(yaw)
 
 
-        dump_forward = [0,0,yaw - math.pi/2]
-        r = R.from_euler('xyz', dump_forward)
-        quat = r.as_quat()
+        distance = ((INITIAL_X - backward_x)**2 + (INITIAL_Y - backward_y)**2)**0.5
 
         release_pos = Point(x=backward_x, y=backward_y, z=0.0)
-        forward_quat = Quaternion(x=quat[0], y=quat[1], z=quat[2], w=quat[3])
-
-        self.get_logger().info(f"Current position: ({X:.2f}, {Y:.2f}), yaw: {math.degrees(yaw):.2f} deg")
-        self.get_logger().info(f"{backward_distance}m backward position: ({backward_x:.2f}, {backward_y:.2f})")
 
         return release_pos
     
