@@ -13,32 +13,31 @@
 // limitations under the License.
 
 #include <vector>
-#include "tms_ts_subtask/FUJITA/mst2200/subtask_mst2200_navigate_through_poses.hpp"
+#include "tms_ts_subtask/FUJITA/mst2200/subtask_mst2200_swing_align_to_heading.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskMst2200NavigateThroughPoses::SubtaskMst2200NavigateThroughPoses() : SubtaskNodeBase("st_mst2200_navigate_through_poses_node")
+SubtaskMst2200SwingAlignToHeading::SubtaskMst2200SwingAlignToHeading() : SubtaskNodeBase("st_mst2200_swing_align_to_heading_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_mst2200_navigate_through_poses",
-        std::bind(&SubtaskMst2200NavigateThroughPoses::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskMst2200NavigateThroughPoses::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskMst2200NavigateThroughPoses::handle_accepted, this, std::placeholders::_1));
+        this, "st_mst2200_swing_align_to_heading",
+        std::bind(&SubtaskMst2200SwingAlignToHeading::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&SubtaskMst2200SwingAlignToHeading::handle_cancel, this, std::placeholders::_1),
+        std::bind(&SubtaskMst2200SwingAlignToHeading::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "/mst2200vd/navigate_through_poses");
+    action_client_ = rclcpp_action::create_client<SetSwingAngle>(this, "set_swing_angle");
 }
 
-rclcpp_action::GoalResponse SubtaskMst2200NavigateThroughPoses::handle_goal(
+rclcpp_action::GoalResponse SubtaskMst2200SwingAlignToHeading::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
-    parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskMst2200NavigateThroughPoses::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse SubtaskMst2200SwingAlignToHeading::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
     if (client_future_goal_handle_.valid() &&
@@ -50,15 +49,15 @@ rclcpp_action::CancelResponse SubtaskMst2200NavigateThroughPoses::handle_cancel(
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskMst2200NavigateThroughPoses::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void SubtaskMst2200SwingAlignToHeading::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskMst2200NavigateThroughPoses::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&SubtaskMst2200SwingAlignToHeading::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskMst2200NavigateThroughPoses::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void SubtaskMst2200SwingAlignToHeading::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_mst2200_navigate_through_poses) is executing...");
+    RCLCPP_INFO(this->get_logger(), "subtask(st_mst2200_swing_align_to_heading) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -73,36 +72,63 @@ void SubtaskMst2200NavigateThroughPoses::execute(const std::shared_ptr<GoalHandl
         }
     };
 
-    RCLCPP_INFO(this->get_logger(), "Get pose from DB.");
 
-    std::vector<geometry_msgs::msg::PoseStamped> poses;
-    auto goal_msg = NavigateThroughPoses::Goal();
+    const std::string swing_joint = "swing_joint";
 
+    std::promise<sensor_msgs::msg::JointState::SharedPtr> prom;
+    auto fut = prom.get_future();
+    std::atomic<bool> set_once{false};
 
-    int point_num = parameters.size() / 7;
-    std::cout << "Total number of points: " << parameters.size() << std::endl;
-    std::cout << "point_num: " << point_num << std::endl;
-    auto pose = geometry_msgs::msg::PoseStamped();
-    pose.header.frame_id = "map";
-    pose.header.stamp = this->now();
-
-    for (int i=0; i < point_num; i++){
-      pose.pose.position.x = parameters[std::make_pair("x",std::to_string(i))];
-      pose.pose.position.y = parameters[std::make_pair("y",std::to_string(i))];
-      pose.pose.position.z = parameters[std::make_pair("z",std::to_string(i))];
-      pose.pose.orientation.x = parameters[std::make_pair("qx",std::to_string(i))];
-      pose.pose.orientation.y = parameters[std::make_pair("qy",std::to_string(i))];
-      pose.pose.orientation.z = parameters[std::make_pair("qz",std::to_string(i))];
-      pose.pose.orientation.w = parameters[std::make_pair("qw",std::to_string(i))];
-      poses.push_back(pose);
-      std::cout << "Point " << i << ": " << pose.pose.position.x << ", " << pose.pose.position.y << ", " << pose.pose.position.z << std::endl;
-      std::cout << "Pose " << i << ": " << pose.pose.orientation.x << ", " << pose.pose.orientation.y << ", " << pose.pose.orientation.z << ", " << pose.pose.orientation.w << std::endl;
+    auto sub = this->create_subscription<sensor_msgs::msg::JointState>(
+    "joint_states", rclcpp::QoS(10),
+    [&prom, &set_once](sensor_msgs::msg::JointState::SharedPtr msg)
+    {
+        bool expected = false;
+        if (set_once.compare_exchange_strong(expected, true)) {
+        try { prom.set_value(std::move(msg)); } catch (...) {}
+        }
     }
-    goal_msg.poses = poses;
+    );
+
+    // 2秒だけ待つ（ノード本体は既にspin中を想定）
+    if (fut.wait_for(std::chrono::milliseconds(2000)) != std::future_status::ready) {
+    sub.reset();
+    return handle_error("joint_states timeout");
+    }
+    auto js_ptr = fut.get();
+    sub.reset();
+    const auto& js = *js_ptr;
+
+    // ---- swing_joint の現在角度[rad]を取り出し、0 or π に最近傍を選ぶ ----
+    int idx = -1;
+    for (size_t i = 0; i < js.name.size(); ++i) {
+    if (js.name[i] == swing_joint) { idx = static_cast<int>(i); break; }
+    }
+    if (idx < 0 || idx >= static_cast<int>(js.position.size())) {
+    return handle_error("swing_joint not found or no position");
+    }
+
+    double cur = js.position[idx];   // [rad]
+    const double TWO_PI = 2.0 * M_PI;
+    // 最短角差（-π〜π）で距離を比較
+    auto ang_err = [&](double a, double b){
+    return std::fabs(std::remainder(a - b, TWO_PI));
+    };
+
+    // 0 か π のうち近い方を採用
+    const double target_rad = (ang_err(cur, 0.0) <= ang_err(cur, M_PI)) ? 0.0 : 3.14;
+
+    RCLCPP_INFO(this->get_logger(),
+                "swing_joint: current=%.3f rad -> target=%.3f rad",
+                cur, target_rad);
+
+    // ---- goal 作成・送信（[rad] のまま送る）----
+    auto goal_msg = SetSwingAngle::Goal();
+    goal_msg.target_angle = target_rad;
 
 
-    //進捗状況を表示するFeedbackコールバックを設�?
-    auto send_goal_options = rclcpp_action::Client<NavigateThroughPoses>::SendGoalOptions();
+    //進捗状況を表示するFeedbackコールバックを設�?-1.8
+    auto send_goal_options = rclcpp_action::Client<SetSwingAngle>::SendGoalOptions();
     send_goal_options.goal_response_callback = [this](const auto& goal_handle) { goal_response_callback(goal_handle); };
     send_goal_options.feedback_callback = [this](const auto tmp, const auto feedback) {
         feedback_callback(tmp, feedback);
@@ -114,7 +140,7 @@ void SubtaskMst2200NavigateThroughPoses::execute(const std::shared_ptr<GoalHandl
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskMst2200NavigateThroughPoses::goal_response_callback(const GoalHandleMst2200NavigateThroughPoses::SharedPtr& goal_handle)
+void SubtaskMst2200SwingAlignToHeading::goal_response_callback(const GoalHandleMst2200SwingAlignToHeading::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -127,9 +153,9 @@ void SubtaskMst2200NavigateThroughPoses::goal_response_callback(const GoalHandle
 }
 
   
-void SubtaskMst2200NavigateThroughPoses::feedback_callback(
-    const GoalHandleMst2200NavigateThroughPoses::SharedPtr,
-    const std::shared_ptr<const GoalHandleMst2200NavigateThroughPoses::Feedback> feedback)
+void SubtaskMst2200SwingAlignToHeading::feedback_callback(
+    const GoalHandleMst2200SwingAlignToHeading::SharedPtr,
+    const std::shared_ptr<const GoalHandleMst2200SwingAlignToHeading::Feedback> feedback)
 {
   // TODO: Fix to feedback to leaf node
   // RCLCPP_INFO(get_logger(), "Distance remaininf = %f", feedback->distance_remaining);
@@ -137,8 +163,8 @@ void SubtaskMst2200NavigateThroughPoses::feedback_callback(
 
 
 //result
-void SubtaskMst2200NavigateThroughPoses::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandleMst2200NavigateThroughPoses::WrappedResult& result)
+void SubtaskMst2200SwingAlignToHeading::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+                                             const GoalHandleMst2200SwingAlignToHeading::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {
@@ -179,7 +205,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskMst2200NavigateThroughPoses>());
+    rclcpp::spin(std::make_shared<SubtaskMst2200SwingAlignToHeading>());
     rclcpp::shutdown();
     return 0;
 }

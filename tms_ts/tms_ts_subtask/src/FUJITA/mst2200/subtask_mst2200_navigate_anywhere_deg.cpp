@@ -12,38 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_subtask/FUJITA/mst2200/subtask_mst2200_navigate_anywhere.hpp"
+#include "tms_ts_subtask/FUJITA/mst2200/subtask_mst2200_navigate_anywhere_deg.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskMst2200NavigateAnywhere::SubtaskMst2200NavigateAnywhere() : SubtaskNodeBase("st_mst2200_navigate_anywhere_node")
+SubtaskMst2200NavigateAnywhereDeg::SubtaskMst2200NavigateAnywhereDeg() : SubtaskNodeBase("st_mst2200_navigate_anywhere_deg_node")
 {
-    auto options_server = rcl_action_server_get_default_options();
-    options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
-    options_server.result_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
-    options_server.cancel_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
-    options_server.feedback_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
-    options_server.status_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
-
-    auto options_client = rcl_action_client_get_default_options();
-    options_client.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
-    options_client.result_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
-    options_client.cancel_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
-    options_client.feedback_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
-    options_client.status_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
-
-    
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_mst2200_navigate_anywhere",
-        std::bind(&SubtaskMst2200NavigateAnywhere::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskMst2200NavigateAnywhere::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskMst2200NavigateAnywhere::handle_accepted, this, std::placeholders::_1),
-        options_server); 
+        this, "st_mst2200_navigate_anywhere_deg",
+        std::bind(&SubtaskMst2200NavigateAnywhereDeg::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&SubtaskMst2200NavigateAnywhereDeg::handle_cancel, this, std::placeholders::_1),
+        std::bind(&SubtaskMst2200NavigateAnywhereDeg::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "/mst2200vd/navigate_to_pose", nullptr, options_client);
+    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "/mst2200vd/navigate_to_pose");
     // if (action_client_->wait_for_action_server())
     // {
     //     RCLCPP_INFO(this->get_logger(), "Action server is ready");
@@ -54,14 +38,19 @@ SubtaskMst2200NavigateAnywhere::SubtaskMst2200NavigateAnywhere() : SubtaskNodeBa
     // }
 }
 
-rclcpp_action::GoalResponse SubtaskMst2200NavigateAnywhere::handle_goal(
+rclcpp_action::GoalResponse SubtaskMst2200NavigateAnywhereDeg::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
+    if (parameters.empty())
+    {
+        RCLCPP_ERROR(this->get_logger(), "Failed to get parameters from DB");
+        return rclcpp_action::GoalResponse::REJECT;
+    }
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskMst2200NavigateAnywhere::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse SubtaskMst2200NavigateAnywhereDeg::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
     if (client_future_goal_handle_.valid() &&
@@ -73,13 +62,13 @@ rclcpp_action::CancelResponse SubtaskMst2200NavigateAnywhere::handle_cancel(cons
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskMst2200NavigateAnywhere::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void SubtaskMst2200NavigateAnywhereDeg::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskMst2200NavigateAnywhere::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&SubtaskMst2200NavigateAnywhereDeg::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskMst2200NavigateAnywhere::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void SubtaskMst2200NavigateAnywhereDeg::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "subtask(st_mst2200_navigate_anywhere_node) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
@@ -104,15 +93,30 @@ void SubtaskMst2200NavigateAnywhere::execute(const std::shared_ptr<GoalHandle> g
 
     RCLCPP_INFO(this->get_logger(), "Get pose from DB.");
     auto goal_msg = NavigateToPose::Goal();
+    auto pose = geometry_msgs::msg::PoseStamped();
     goal_msg.pose.header.stamp = this->now();
     goal_msg.pose.header.frame_id = "map";
 
-    goal_msg.pose.pose.position.x = parameters["x"];
-    goal_msg.pose.pose.position.y = parameters["y"];
-    goal_msg.pose.pose.orientation.x = parameters["qx"];
-    goal_msg.pose.pose.orientation.y = parameters["qy"];
-    goal_msg.pose.pose.orientation.z = parameters["qz"];
-    goal_msg.pose.pose.orientation.w = parameters["qw"];
+    pose.pose.position.x = parameters["x"];
+    pose.pose.position.y = parameters["y"];
+    pose.pose.position.z = parameters["z"];
+
+    double yaw_rad = parameters["yaw"] * M_PI / 180.0;
+
+    double roll_rad = 0.0;
+    double pitch_rad = 0.0;
+
+    double cy = cos(yaw_rad * 0.5);
+    double sy = sin(yaw_rad * 0.5);
+    double cp = cos(pitch_rad * 0.5);  // = 1.0
+    double sp = sin(pitch_rad * 0.5);  // = 0.0
+    double cr = cos(roll_rad * 0.5);   // = 1.0
+    double sr = sin(roll_rad * 0.5);   // = 0.0
+
+    pose.pose.orientation.w = cr * cp * cy + sr * sp * sy;
+    pose.pose.orientation.x = sr * cp * cy - cr * sp * sy;  // = 0.0
+    pose.pose.orientation.y = cr * sp * cy + sr * cp * sy;  // = 0.0
+    pose.pose.orientation.z = cr * cp * sy - sr * sp * cy;
 
 
     RCLCPP_INFO_STREAM(this->get_logger(), "x:" << std::to_string(parameters["x"]));
@@ -130,7 +134,7 @@ void SubtaskMst2200NavigateAnywhere::execute(const std::shared_ptr<GoalHandle> g
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskMst2200NavigateAnywhere::goal_response_callback(const GoalHandleMst2200NavigateAnywhere::SharedPtr& goal_handle)
+void SubtaskMst2200NavigateAnywhereDeg::goal_response_callback(const GoalHandleMst2200NavigateAnywhere::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -143,7 +147,7 @@ void SubtaskMst2200NavigateAnywhere::goal_response_callback(const GoalHandleMst2
 }
 
   
-void SubtaskMst2200NavigateAnywhere::feedback_callback(
+void SubtaskMst2200NavigateAnywhereDeg::feedback_callback(
     const GoalHandleMst2200NavigateAnywhere::SharedPtr,
     const std::shared_ptr<const GoalHandleMst2200NavigateAnywhere::Feedback> feedback)
 {
@@ -153,7 +157,7 @@ void SubtaskMst2200NavigateAnywhere::feedback_callback(
 
 
 //result
-void SubtaskMst2200NavigateAnywhere::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void SubtaskMst2200NavigateAnywhereDeg::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleMst2200NavigateAnywhere::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -195,7 +199,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskMst2200NavigateAnywhere>());
+    rclcpp::spin(std::make_shared<SubtaskMst2200NavigateAnywhereDeg>());
     rclcpp::shutdown();
     return 0;
 }

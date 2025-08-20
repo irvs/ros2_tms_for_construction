@@ -12,31 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_subtask/FUJITA/mst2200/subtask_mst2200_follow_waypoints.hpp"
+#include "tms_ts_subtask/FUJITA/mst2200/subtask_mst2200_follow_waypoints_deg.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskMst2200FollowWaypointys::SubtaskMst2200FollowWaypointys() : SubtaskNodeBase("st_mst2200_follow_waypoints_node")
+SubtaskMst2200FollowWaypointsDeg::SubtaskMst2200FollowWaypointsDeg() : SubtaskNodeBase("st_mst2200_follow_waypoints_deg_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_mst2200_follow_waypoints",
-        std::bind(&SubtaskMst2200FollowWaypointys::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskMst2200FollowWaypointys::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskMst2200FollowWaypointys::handle_accepted, this, std::placeholders::_1));
+        this, "st_mst2200_follow_waypoints_deg",
+        std::bind(&SubtaskMst2200FollowWaypointsDeg::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&SubtaskMst2200FollowWaypointsDeg::handle_cancel, this, std::placeholders::_1),
+        std::bind(&SubtaskMst2200FollowWaypointsDeg::handle_accepted, this, std::placeholders::_1));
 
-    action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "/mst2200vd/follow_waypoints");
+    action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "follow_waypoints");
 }
 
-rclcpp_action::GoalResponse SubtaskMst2200FollowWaypointys::handle_goal(
+rclcpp_action::GoalResponse SubtaskMst2200FollowWaypointsDeg::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
+    if (parameters.empty())
+    {
+        RCLCPP_ERROR(this->get_logger(), "Failed to get parameters from DB");
+        return rclcpp_action::GoalResponse::REJECT;
+    }
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskMst2200FollowWaypointys::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse SubtaskMst2200FollowWaypointsDeg::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
     if (client_future_goal_handle_.valid() &&
@@ -48,13 +53,13 @@ rclcpp_action::CancelResponse SubtaskMst2200FollowWaypointys::handle_cancel(cons
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskMst2200FollowWaypointys::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void SubtaskMst2200FollowWaypointsDeg::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskMst2200FollowWaypointys::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&SubtaskMst2200FollowWaypointsDeg::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskMst2200FollowWaypointys::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void SubtaskMst2200FollowWaypointsDeg::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "subtask(st_mst2200_follow_waypoints_node) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
@@ -76,21 +81,35 @@ void SubtaskMst2200FollowWaypointys::execute(const std::shared_ptr<GoalHandle> g
     std::vector<geometry_msgs::msg::PoseStamped> poses;
     auto goal_msg = FollowWaypoints::Goal();
     auto pose = geometry_msgs::msg::PoseStamped();
-    int point_num = parameters.size() / 7;
+    int point_num = parameters.size() / 4;
+    std::cout << "Total number of points: " << point_num << std::endl;
     pose.header.stamp = this->now();
     pose.header.frame_id = "map";
 
     for (int i=0; i < point_num; i++){
-      pose.pose.position.x = parameters[std::make_pair("x",std::to_string(i))];
-      pose.pose.position.y = parameters[std::make_pair("y",std::to_string(i))];
-      pose.pose.position.z = parameters[std::make_pair("z",std::to_string(i))];
-      pose.pose.orientation.x = parameters[std::make_pair("qx",std::to_string(i))];
-      pose.pose.orientation.y = parameters[std::make_pair("qy",std::to_string(i))];
-      pose.pose.orientation.z = parameters[std::make_pair("qz",std::to_string(i))];
-      pose.pose.orientation.w = parameters[std::make_pair("qw",std::to_string(i))];
-      poses.push_back(pose);
-      std::cout << "Point " << i << ": " << pose.pose.position.x << ", " << pose.pose.position.y << ", " << pose.pose.position.z << std::endl;
-      std::cout << "Pose " << i << ": " << pose.pose.orientation.x << ", " << pose.pose.orientation.y << ", " << pose.pose.orientation.z << ", " << pose.pose.orientation.w << std::endl;
+        pose.pose.position.x = parameters[std::make_pair("x", std::to_string(i))];
+        pose.pose.position.y = parameters[std::make_pair("y", std::to_string(i))];
+        pose.pose.position.z = parameters[std::make_pair("z", std::to_string(i))];
+
+        double yaw_rad = parameters[std::make_pair("yaw", std::to_string(i))] * M_PI / 180.0;
+
+        double roll_rad = 0.0;
+        double pitch_rad = 0.0;
+
+        double cy = cos(yaw_rad * 0.5);
+        double sy = sin(yaw_rad * 0.5);
+        double cp = cos(pitch_rad * 0.5);  // = 1.0
+        double sp = sin(pitch_rad * 0.5);  // = 0.0
+        double cr = cos(roll_rad * 0.5);   // = 1.0
+        double sr = sin(roll_rad * 0.5);   // = 0.0
+
+        pose.pose.orientation.w = cr * cp * cy + sr * sp * sy;
+        pose.pose.orientation.x = sr * cp * cy - cr * sp * sy;  // = 0.0
+        pose.pose.orientation.y = cr * sp * cy + sr * cp * sy;  // = 0.0
+        pose.pose.orientation.z = cr * cp * sy - sr * sp * cy;
+        poses.push_back(pose);
+        std::cout << "Point " << i << ": " << pose.pose.position.x << ", " << pose.pose.position.y << ", " << pose.pose.position.z << std::endl;
+        std::cout << "Pose " << i << ": " << pose.pose.orientation.x << ", " << pose.pose.orientation.y << ", " << pose.pose.orientation.z << ", " << pose.pose.orientation.w << std::endl;
     }
 
     // goal_msg.number_of_loops = 1;
@@ -108,7 +127,7 @@ void SubtaskMst2200FollowWaypointys::execute(const std::shared_ptr<GoalHandle> g
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskMst2200FollowWaypointys::goal_response_callback(const GoalHandleFollowWaypoints::SharedPtr& goal_handle)
+void SubtaskMst2200FollowWaypointsDeg::goal_response_callback(const GoalHandleFollowWaypoints::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -120,7 +139,7 @@ void SubtaskMst2200FollowWaypointys::goal_response_callback(const GoalHandleFoll
   }
 }
 
-void SubtaskMst2200FollowWaypointys::feedback_callback(
+void SubtaskMst2200FollowWaypointsDeg::feedback_callback(
     const GoalHandleFollowWaypoints::SharedPtr,
     const std::shared_ptr<const GoalHandleFollowWaypoints::Feedback> feedback)
 {
@@ -128,7 +147,7 @@ void SubtaskMst2200FollowWaypointys::feedback_callback(
   // std::cout << "Feedback: " << feedback->current_waypoint << std::endl;
 }
 
-void SubtaskMst2200FollowWaypointys::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void SubtaskMst2200FollowWaypointsDeg::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleFollowWaypoints::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -166,7 +185,7 @@ void SubtaskMst2200FollowWaypointys::result_callback(const std::shared_ptr<GoalH
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskMst2200FollowWaypointys>());
+    rclcpp::spin(std::make_shared<SubtaskMst2200FollowWaypointsDeg>());
     rclcpp::shutdown();
     return 0;
 }

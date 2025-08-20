@@ -13,32 +13,37 @@
 // limitations under the License.
 
 #include <vector>
-#include "tms_ts_subtask/FUJITA/mst2200/subtask_mst2200_navigate_through_poses_deg.hpp"
+#include "tms_ts_subtask/OPERA/mst110cr/subtask_mst110cr_release_soil.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskMst2200NavigateThroughPosesDeg::SubtaskMst2200NavigateThroughPosesDeg() : SubtaskNodeBase("st_mst2200_navigate_through_poses_deg_node")
+SubtaskMst110crReleaseSoil::SubtaskMst110crReleaseSoil() : SubtaskNodeBase("st_mst110cr_release_soil_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_mst2200_navigate_through_poses_deg",
-        std::bind(&SubtaskMst2200NavigateThroughPosesDeg::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskMst2200NavigateThroughPosesDeg::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskMst2200NavigateThroughPosesDeg::handle_accepted, this, std::placeholders::_1));
+        this, "st_mst110cr_release_soil",
+        std::bind(&SubtaskMst110crReleaseSoil::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&SubtaskMst110crReleaseSoil::handle_cancel, this, std::placeholders::_1),
+        std::bind(&SubtaskMst110crReleaseSoil::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "/mst2200vd/navigate_through_poses");
+    action_client_ = rclcpp_action::create_client<SetDumpAngle>(this, "set_dump_angle");
 }
 
-rclcpp_action::GoalResponse SubtaskMst2200NavigateThroughPosesDeg::handle_goal(
+rclcpp_action::GoalResponse SubtaskMst110crReleaseSoil::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
-    parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
+    parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
+    if (parameters.empty())
+    {
+        RCLCPP_ERROR(this->get_logger(), "Failed to get parameters from DB");
+        return rclcpp_action::GoalResponse::REJECT;
+    }
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskMst2200NavigateThroughPosesDeg::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse SubtaskMst110crReleaseSoil::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
     if (client_future_goal_handle_.valid() &&
@@ -50,15 +55,15 @@ rclcpp_action::CancelResponse SubtaskMst2200NavigateThroughPosesDeg::handle_canc
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskMst2200NavigateThroughPosesDeg::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void SubtaskMst110crReleaseSoil::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskMst2200NavigateThroughPosesDeg::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&SubtaskMst110crReleaseSoil::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskMst2200NavigateThroughPosesDeg::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void SubtaskMst110crReleaseSoil::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_mst2200_navigate_through_poses) is executing...");
+    RCLCPP_INFO(this->get_logger(), "subtask(st_mst110cr_release_soil) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -75,47 +80,12 @@ void SubtaskMst2200NavigateThroughPosesDeg::execute(const std::shared_ptr<GoalHa
 
     RCLCPP_INFO(this->get_logger(), "Get pose from DB.");
 
-    std::vector<geometry_msgs::msg::PoseStamped> poses;
-    auto goal_msg = NavigateThroughPoses::Goal();
-
-
-    int point_num = parameters.size() / 4;
-    std::cout << "Total number of points: " << parameters.size() << std::endl;
-    std::cout << "point_num: " << point_num << std::endl;
-    auto pose = geometry_msgs::msg::PoseStamped();
-    pose.header.frame_id = "map";
-    pose.header.stamp = this->now();
-
-    for (int i=0; i < point_num; i++){
-        pose.pose.position.x = parameters[std::make_pair("x", std::to_string(i))];
-        pose.pose.position.y = parameters[std::make_pair("y", std::to_string(i))];
-        pose.pose.position.z = parameters[std::make_pair("z", std::to_string(i))];
-
-        double yaw_rad = parameters[std::make_pair("yaw", std::to_string(i))] * M_PI / 180.0;
-
-        double roll_rad = 0.0;
-        double pitch_rad = 0.0;
-
-        double cy = cos(yaw_rad * 0.5);
-        double sy = sin(yaw_rad * 0.5);
-        double cp = cos(pitch_rad * 0.5);  // = 1.0
-        double sp = sin(pitch_rad * 0.5);  // = 0.0
-        double cr = cos(roll_rad * 0.5);   // = 1.0
-        double sr = sin(roll_rad * 0.5);   // = 0.0
-
-        pose.pose.orientation.w = cr * cp * cy + sr * sp * sy;
-        pose.pose.orientation.x = sr * cp * cy - cr * sp * sy;  // = 0.0
-        pose.pose.orientation.y = cr * sp * cy + sr * cp * sy;  // = 0.0
-        pose.pose.orientation.z = cr * cp * sy - sr * sp * cy;
-        poses.push_back(pose);
-        std::cout << "Point " << i << ": " << pose.pose.position.x << ", " << pose.pose.position.y << ", " << pose.pose.position.z << std::endl;
-        std::cout << "Pose " << i << ": " << pose.pose.orientation.x << ", " << pose.pose.orientation.y << ", " << pose.pose.orientation.z << ", " << pose.pose.orientation.w << std::endl;
-    }
-    goal_msg.poses = poses;
+    auto goal_msg = SetDumpAngle::Goal();
+    goal_msg.target_angle = parameters["target_angle"];
 
 
     //進捗状況を表示するFeedbackコールバックを設�?
-    auto send_goal_options = rclcpp_action::Client<NavigateThroughPoses>::SendGoalOptions();
+    auto send_goal_options = rclcpp_action::Client<SetDumpAngle>::SendGoalOptions();
     send_goal_options.goal_response_callback = [this](const auto& goal_handle) { goal_response_callback(goal_handle); };
     send_goal_options.feedback_callback = [this](const auto tmp, const auto feedback) {
         feedback_callback(tmp, feedback);
@@ -127,7 +97,7 @@ void SubtaskMst2200NavigateThroughPosesDeg::execute(const std::shared_ptr<GoalHa
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskMst2200NavigateThroughPosesDeg::goal_response_callback(const GoalHandleMst2200NavigateThroughPoses::SharedPtr& goal_handle)
+void SubtaskMst110crReleaseSoil::goal_response_callback(const GoalHandleMst110crReleaseSoil::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -140,9 +110,9 @@ void SubtaskMst2200NavigateThroughPosesDeg::goal_response_callback(const GoalHan
 }
 
   
-void SubtaskMst2200NavigateThroughPosesDeg::feedback_callback(
-    const GoalHandleMst2200NavigateThroughPoses::SharedPtr,
-    const std::shared_ptr<const GoalHandleMst2200NavigateThroughPoses::Feedback> feedback)
+void SubtaskMst110crReleaseSoil::feedback_callback(
+    const GoalHandleMst110crReleaseSoil::SharedPtr,
+    const std::shared_ptr<const GoalHandleMst110crReleaseSoil::Feedback> feedback)
 {
   // TODO: Fix to feedback to leaf node
   // RCLCPP_INFO(get_logger(), "Distance remaininf = %f", feedback->distance_remaining);
@@ -150,8 +120,8 @@ void SubtaskMst2200NavigateThroughPosesDeg::feedback_callback(
 
 
 //result
-void SubtaskMst2200NavigateThroughPosesDeg::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandleMst2200NavigateThroughPoses::WrappedResult& result)
+void SubtaskMst110crReleaseSoil::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+                                             const GoalHandleMst110crReleaseSoil::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {
@@ -192,7 +162,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskMst2200NavigateThroughPosesDeg>());
+    rclcpp::spin(std::make_shared<SubtaskMst110crReleaseSoil>());
     rclcpp::shutdown();
     return 0;
 }
