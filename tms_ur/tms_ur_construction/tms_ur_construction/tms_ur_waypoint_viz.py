@@ -35,7 +35,6 @@ class WaypointVisualizer(Node):
         while not self.cli.wait_for_service(timeout_sec=0.5):
             self.get_logger().info("service not available, waiting again...")
 
-        
         self.waypoint_points = ["LOAD_POINT","R1_SIGNAL_POINT","RM1_R1_SIGNAL_POINT","R2_SIGNAL_POINT","R2_GOAL_POINT","RM2_R2_SIGNAL_POINT","R3_RELEASE_SIGNAL_POINT","RELEASE_POINT","RS1_R1_SIGNAL_POINT","RS1_R2_SIGNAL_POINT","RS2_R2_SIGNAL_POINT","RS2_R3_SIGNAL_POINT"]
         self.waypoint_points_counter = 0
         self.PointList = []
@@ -44,7 +43,6 @@ class WaypointVisualizer(Node):
 
         timer_period = 1
         self.call_timer = self.create_timer(timer_period, self.send_request)
-
 
 
     def send_request(self):
@@ -91,16 +89,7 @@ class WaypointVisualizer(Node):
 
     
     def timer_callback(self ,positions):
-        '''
-        # ウェイポイントの定義 (x, y, z)
-        self.waypoints = [
-            Point(x=1.0, y=1.0, z=0.0),
-            Point(x=2.0, y=2.0, z=0.0),
-            Point(x=3.0, y=1.0, z=0.0),
-            Position
 
-        ]
-        '''
         self.waypoints = positions
 
         marker = Marker()
@@ -122,7 +111,7 @@ class WaypointVisualizer(Node):
 
         marker.pose.orientation.w = 1.0
         marker.points = self.waypoints
-        # ---- Unityで不要なフィールドを空にする ----
+        # ---- 不要なフィールドを空にする ----
         marker.text = ""
         marker.texture_resource = ""
         marker.texture.data = []
@@ -131,7 +120,6 @@ class WaypointVisualizer(Node):
         marker.mesh_file.filename = ""
         marker.mesh_file.data = []
         marker.uv_coordinates = []
-
 
         for point in marker.points:
             c = ColorRGBA()
@@ -144,27 +132,6 @@ class WaypointVisualizer(Node):
 
         self.publisher_.publish(marker)
 
-        # marker = Marker()
-        # marker.header.frame_id = "map"
-        # marker.header.stamp = self.get_clock().now().to_msg()
-        # marker.ns = "waypoints"
-        # marker.id = 0
-        # marker.type = Marker.SPHERE_LIST
-        # marker.action = Marker.ADD
-
-        # marker.scale.x = 0.50
-        # marker.scale.y = 0.50
-        # marker.scale.z = 1.0
-
-        # marker.color.r = 1.0
-        # marker.color.g = 0.0
-        # marker.color.b = 0.0
-        # marker.color.a = 1.0
-
-        # marker.pose.orientation.w = 1.0
-        # marker.points = self.waypoints
-
-        # self.publisher_.publish(marker)
 
 def main(args=None):
     rclpy.init(args=args)

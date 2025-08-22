@@ -63,12 +63,7 @@ class TmsDbReaderParam(Node):
         
         elif datatype == "flg":
             response.tmsdbs.append(self.allocate_flg_tmsdb(data_result))
-            return response
-
-   #     data: str = self.get_task_data(request.name, collection)
-   #     response.tmsdbs = data
-   #     return response
-        
+            return response        
 
     def get_latest_data(self, request, collection: pymongo.collection.Collection):
         if request.name != "":
@@ -131,8 +126,6 @@ class TmsDbReaderParam(Node):
 
         return tmsdb
     
-
-
 def main(args=None):
     rclpy.init(args=args)
     tms_db_param_reader = TmsDbReaderParam()

@@ -14,13 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
-import json
+
 import rclpy
 from rclpy.node import Node
 
-from geometry_msgs.msg import PoseStamped
-from geometry_msgs.msg import Point, Quaternion
+from geometry_msgs.msg import Point
 
 from tms_msg_db.msg import TmsdbQuery
 from tms_msg_db.srv import TmsdbGetData
@@ -28,8 +26,6 @@ from tms_msg_db.srv import TmsdbGetData
 from scipy.spatial.transform import Rotation as R
 import math
 
-
-#from tf2_ros import TransformListener, Buffer
 from functools import partial
 
 NODE_NAME = "tms_sp_machine_odom"
@@ -37,8 +33,8 @@ DATA_ID = 3012 #2012
 READ_DATA_TYPE = "parameter"
 WRITE_DATA_TYPE = "pose_query"
 WRITE_MODE="over_write"
-RECORD_NAME="RELEASE_POINT_test"
-FLG_RECORD_NAME="SAMPLE_BLACKBOARD_SIPDEMO202508"
+RECORD_NAME="RELEASE_POINT_test" #放土位置 ####適宜変更
+FLG_RECORD_NAME="SAMPLE_BLACKBOARD_SIPDEMO202508"#放土回数を管理するフラグ####適宜変更
 
 
 
@@ -119,7 +115,6 @@ class TmsSpMachineOdom(Node):
             self.send_pose_request()
 
         else:
-      #      self.get_logger().info("Counter is same.")
             return
 
     
@@ -148,7 +143,6 @@ class TmsSpMachineOdom(Node):
         import json
         msg_data = json.loads(res.tmsdbs[0].msg)
 
-        # x, y, z のリストの先頭要素を取得（または必要に応じて全部使う）
         x = float(msg_data["x"][0])
         y = float(msg_data["y"][0])
         z = 0.0
@@ -177,8 +171,7 @@ class TmsSpMachineOdom(Node):
         
         self.get_logger().info(f"Calculate Release Position")
 
-        # 距離（ロボットの後方に取りたい距離[m]）
-        backward_distance = 0.4
+        backward_distance = 0.25 # 放土0.5回毎に位置を前にずらす距離[m] ####適宜変更
 
         rotation = R.from_quat(rotation_quat)
         roll, pitch, yaw = rotation.as_euler('xyz')
@@ -212,7 +205,6 @@ class TmsSpMachineOdom(Node):
         """
 
         tms_db_msg = TmsdbQuery()
-       # tms_db_msg.time = datetime.now().isoformat()
         tms_db_msg.type = WRITE_DATA_TYPE
         tms_db_msg.writemode = WRITE_MODE
       #  tms_db_msg.id = DATA_ID
