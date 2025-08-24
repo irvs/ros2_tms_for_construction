@@ -34,6 +34,10 @@ DATA_TYPE = "pose_query"
 WRITE_MODE="over_write"
 RECORD_NAME="LOAD_POINT_TEST"       #waypoint1####適宜変更
 RECORD_NAME2="R1_SIGNAL_POINT_TEST" #waypoint2####適宜変更
+backward_distance = 6.0         # 距離（backhoeの後方(waypoint1)に取りたい距離[m]）  ####適宜変更
+dump_forward_distance = 13.0    # 距離（backhoeの右後方(waypoint2)に取りたい距離[m]）####適宜変更
+from_frame = 'map'               ####適宜変更
+to_frame = 'ic120_tf/base_link'  ####適宜変更
 
 class TmsSpMachineOdom(Node):
     """Convert Odometry msg to Tmsdb msg and sent to tms_db_writer."""
@@ -84,9 +88,6 @@ class TmsSpMachineOdom(Node):
         if result is None:
           #  self.get_logger().warn("Transform is None, skipping position calculation")
             return None, None, None
-    
-        backward_distance = 6.0         # 距離（backhoeの後方(waypoint1)に取りたい距離[m]）  ####適宜変更
-        dump_forward_distance = 13.0    # 距離（backhoeの右後方(waypoint2)に取りたい距離[m]）####適宜変更
 
         world_to_map_x, world_to_map_y, world_to_map_z, yaw =self.transform()
 
@@ -111,8 +112,7 @@ class TmsSpMachineOdom(Node):
     
 
     def transform(self):
-        from_frame = 'map'               ####適宜変更
-        to_frame = 'ic120_tf/base_link'  ####適宜変更
+
 
         try:
             now = rclpy.time.Time()

@@ -33,9 +33,10 @@ DATA_ID = 3012 #2012
 READ_DATA_TYPE = "parameter"
 WRITE_DATA_TYPE = "pose_query"
 WRITE_MODE="over_write"
-RECORD_NAME="RELEASE_POINT_test" #放土位置 ####適宜変更
+RECORD_NAME="RELEASE_POINT" #放土位置 ####適宜変更
 FLG_RECORD_NAME="SAMPLE_BLACKBOARD_SIPDEMO202508"#放土回数を管理するフラグ####適宜変更
-
+Max_backward_distance = 10 # 放土位置を前にずらす際の最大値[m] ####適宜変更
+backward_distance = 0.25 # 放土0.5回毎に位置を前にずらす距離[m] ####適宜変更
 
 
 class TmsSpMachineOdom(Node):
@@ -157,7 +158,6 @@ class TmsSpMachineOdom(Node):
         release_point = self.calculate_position(x,y,Rotation,self.release_number, self.initial_X, self.initial_Y)
         distance = ((release_point.x - self.initial_X)**2 + (release_point.y - self.initial_Y)**2)**0.5
         self.get_logger().info(f"Distance from initial: {distance:.2f} m")
-        Max_backward_distance = 10
         if (distance >= Max_backward_distance):
             return
 
@@ -171,7 +171,6 @@ class TmsSpMachineOdom(Node):
         
         self.get_logger().info(f"Calculate Release Position")
 
-        backward_distance = 0.25 # 放土0.5回毎に位置を前にずらす距離[m] ####適宜変更
 
         rotation = R.from_quat(rotation_quat)
         roll, pitch, yaw = rotation.as_euler('xyz')
