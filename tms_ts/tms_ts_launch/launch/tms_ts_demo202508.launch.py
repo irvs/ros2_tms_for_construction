@@ -390,14 +390,14 @@ def launch_setup(context, *args, **kwargs):
               executable="tms_db_reader_parameter",
               output='screen'
               ),
-        Node(
-              package='tms_sp_sensing', 
-              executable='tms_sp_dump_swing_angle',
-              output='screen',
-              parameters=[{"base_frame": "base_link"},
-                          {"robot_names": ["mst110cr_2", "mst2200vd", "ic120_tf"]},
-                          {"record_names": ["SAMPLE_BLACKBOARD_mst110cr_2", "SAMPLE_BLACKBOARD_mst2200", "SAMPLE_BLACKBOARD_ic120"]}]
-        ),
+      #   Node(
+      #         package='tms_sp_sensing', 
+      #         executable='tms_sp_dump_swing_angle',
+      #         output='screen',
+      #         parameters=[{"base_frame": "base_link"},
+      #                     {"robot_names": ["mst110cr_2", "mst2200vd", "ic120_tf"]},
+      #                     {"record_names": ["SAMPLE_BLACKBOARD_mst110cr_2", "SAMPLE_BLACKBOARD_mst2200", "SAMPLE_BLACKBOARD_ic120"]}]
+      #   ),
       #  Node(
       #         package='tms_sp_sensing', 
       #         executable='tms_sp_zx200_collision_objects_from_tf',
