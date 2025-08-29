@@ -33,14 +33,10 @@
 #include "tms_ts_subtask/common/conditional_expression.hpp"
 #include "tms_ts_subtask/common/KeepRunningUntilFlgup.hpp"
 #include "tms_ts_subtask/common/SetLocalBlackboard.hpp"
-<<<<<<< HEAD
 #include "tms_ts_subtask/common/SetLocalBlackboardWithCounter.hpp"
 #include "tms_ts_subtask/common/Counter.hpp"
 #include "tms_ts_subtask/common/wait_for_click.hpp"
 
-=======
-#include "tms_ts_subtask/common/wait_for_click.hpp"
->>>>>>> develop/multiple_ts
 
 using namespace BT;
 using namespace std::chrono_literals;

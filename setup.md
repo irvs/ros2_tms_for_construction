@@ -112,9 +112,10 @@ git clone https://github.com/BehaviorTree/Groot.git "$WS_SRC/Groot"
 cd ~/ros2-tms-for-construction_ws && colcon build --packages-select groot
 ```
 
-### Install nlohmann-json library
+### Install ohter libraries
 ```
 sudo apt install nlohmann-json3-dev
+sudo apt install rapidjson-dev
 ```
 
 ### Setup OPERA
