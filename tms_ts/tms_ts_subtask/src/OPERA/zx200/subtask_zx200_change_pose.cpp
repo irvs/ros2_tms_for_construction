@@ -55,6 +55,11 @@ rclcpp_action::GoalResponse SubtaskZx200ChangePose::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
   param_from_db_ = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
+  if (param_from_db_.empty())
+  {
+    RCLCPP_ERROR(this->get_logger(), "Failed to get parameters from DB");
+    return rclcpp_action::GoalResponse::REJECT;
+  }
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 

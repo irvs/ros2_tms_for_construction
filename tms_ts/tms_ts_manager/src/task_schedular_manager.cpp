@@ -20,22 +20,20 @@
 #include <mongocxx/uri.hpp>
 
 // leaf nodesのインクルード
-#include "tms_ts_subtask/OPERA/sample/zx120/sample_leaf_nodes.hpp"
-#include "tms_ts_subtask/OPERA/sample/zx200/sample_leaf_nodes.hpp"
 #include "tms_ts_subtask/FUJITA/mst2200/leaf_node.hpp"
+#include "tms_ts_subtask/OPERA/d37pxi/leaf_node.hpp"
 #include "tms_ts_subtask/OPERA/ic120/leaf_node.hpp"
 #include "tms_ts_subtask/OPERA/zx200/leaf_node.hpp"
 #include "tms_ts_subtask/OPERA/mst110cr/leaf_node.hpp"
-#include "tms_ts_subtask/common/blackboard_value_checker.hpp"
-#include "tms_ts_subtask/common/blackboard_value_writer_topic.hpp"
-#include "tms_ts_subtask/common/blackboard_value_writer_srv.hpp"
 #include "tms_ts_subtask/common/blackboard_value_reader_mongo.hpp"
 #include "tms_ts_subtask/common/mongo_value_writer.hpp"
 #include "tms_ts_subtask/common/conditional_expression.hpp"
-#include "tms_ts_subtask/common/conditional_expression_bool.hpp"
-// #include "tms_ts_subtask/zx200/excavation_area_segmenter.hpp"
 #include "tms_ts_subtask/common/KeepRunningUntilFlgup.hpp"
 #include "tms_ts_subtask/common/SetLocalBlackboard.hpp"
+#include "tms_ts_subtask/common/SetLocalBlackboardWithCounter.hpp"
+#include "tms_ts_subtask/common/Counter.hpp"
+#include "tms_ts_subtask/common/wait_for_click.hpp"
+
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -50,30 +48,37 @@ public:
     subscription_ = this->create_subscription<std_msgs::msg::String>(
         "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
     
+    factory.registerNodeType<LeafNodeD37pxi>("LeafNodeD37pxi");
     factory.registerNodeType<LeafNodeMst2200>("LeafNodeMst2200");
     factory.registerNodeType<LeafNodeIc120>("LeafNodeIc120");
     factory.registerNodeType<LeafNodeMst110cr>("LeafNodeMst110cr");
-    factory.registerNodeType<LeafNodeSampleZx120>("LeafNodeSampleZx120");
-    factory.registerNodeType<LeafNodeSampleZx200>("LeafNodeSampleZx200");
     factory.registerNodeType<LeafNodeZx200>("LeafNodeZx200");
-    factory.registerNodeType<BlackboardValueChecker>("BlackboardValueChecker");
-    factory.registerNodeType<BlackboardValueWriterTopic>("BlackboardValueWriterTopic");
-    factory.registerNodeType<BlackboardValueWriterSrv>("BlackboardValueWriterSrv");
     factory.registerNodeType<BlackboardValueReaderMongo>("BlackboardValueReaderMongo");
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
-    factory.registerNodeType<ConditionalExpressionBool>("ConditionalExpressionBool");
-    // factory.registerNodeType<ExcavationAreaSegmenter>("ExcavationAreaSegmenter");
     factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
+    factory.registerNodeType<SetLocalBlackboardWithCounter>("SetLocalBlackboardWithCounter");
+    factory.registerNodeType<Counter>("Counter");
+    factory.registerNodeType<WaitForClick>("WaitForClick");
 
-    loadBlackboardFromMongoDB("SAMPLE_BLACKBOARD_SIMIZU");
+    // loadBlackboardFromMongoDB("global_blackboard");
   }
 
   void topic_callback(const std_msgs::msg::String::SharedPtr msg)
   {
     task_sequence_ = std::string(msg->data);
-    tree_ = factory.createTreeFromText(task_sequence_, bb_);
+    // tree_ = factory.createTreeFromText(task_sequence_, bb_);
+
+    try {
+      tree_ = factory.createTreeFromText(task_sequence_, bb_);
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(get_logger(),
+        "Failed to cretae tree: %s", e.what());
+      subscription_.reset();
+      return;
+    }
+
 
     BT::PublisherZMQ publisher_zmq(tree_, 100, 1666, 1777);
     try
@@ -90,7 +95,7 @@ public:
     }
     catch (const std::exception& e)
     {
-      RCLCPP_ERROR(rclcpp::get_logger("exec_task_sequence"), "Behavior tree threw an exception");
+      RCLCPP_ERROR(get_logger(), "Failed to cretae tree: %s", e.what());
       status_ = NodeStatus::FAILURE;
     }
 
@@ -109,61 +114,61 @@ public:
   }
 
 private:
-  void loadBlackboardFromMongoDB(const std::string& record_name)
-  {
-    // mongocxx::instance instance{};
-    mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
-    mongocxx::database db = client["rostmsdb"];
-    mongocxx::collection collection = db["parameter"];
+  // void loadBlackboardFromMongoDB(const std::string& record_name)
+  // {
+  //   // mongocxx::instance instance{};
+  //   mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
+  //   mongocxx::database db = client["rostmsdb"];
+  //   mongocxx::collection collection = db["parameter"];
 
-    bsoncxx::builder::stream::document filter_builder;
-    filter_builder << "record_name" << record_name;
-    auto filter = filter_builder.view();
-    auto doc = collection.find_one(filter);
+  //   bsoncxx::builder::stream::document filter_builder;
+  //   filter_builder << "record_name" << record_name;
+  //   auto filter = filter_builder.view();
+  //   auto doc = collection.find_one(filter);
 
-    if (doc)
-    {
-      auto view = doc->view();
-      for (auto&& element : view)
-      {
-        std::string key = element.key().to_string();
-        auto value = element.get_value();
+  //   if (doc)
+  //   {
+  //     auto view = doc->view();
+  //     for (auto&& element : view)
+  //     {
+  //       std::string key = element.key().to_string();
+  //       auto value = element.get_value();
 
-        if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
+  //       if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
 
-          switch (value.type())
-          {
-            case bsoncxx::type::k_utf8:
-              bb_->set(key, value.get_utf8().value.to_string());
-              break;
-            case bsoncxx::type::k_int32:
-              bb_->set(key, value.get_int32().value);
-              break;
-            case bsoncxx::type::k_int64:
-              bb_->set(key, value.get_int64().value);
-              break;
-            case bsoncxx::type::k_double:
-              bb_->set(key, value.get_double().value);
-              break;
-            case bsoncxx::type::k_bool:
-              bb_->set(key, value.get_bool().value);
-              break;
-            default:
-              std::cerr << "Unsupported BSON type: " << bsoncxx::to_string(value.type()) << std::endl;
-              break;
-          }
-        }
-      }
-    bb_->set("CHECK_TRUE", true);
-    bb_->set("CHECK_FALSE", false);
-    bb_->set("TERMINATE_FLG", false);
-    bb_->set("STANDBY_FLG", false);
-    }
-    else
-    {
-      std::cerr << "Couldn't find document with record_name: " << record_name << std::endl;
-    }
-  }
+  //         switch (value.type())
+  //         {
+  //           case bsoncxx::type::k_utf8:
+  //             bb_->set(key, value.get_utf8().value.to_string());
+  //             break;
+  //           case bsoncxx::type::k_int32:
+  //             bb_->set(key, value.get_int32().value);
+  //             break;
+  //           case bsoncxx::type::k_int64:
+  //             bb_->set(key, value.get_int64().value);
+  //             break;
+  //           case bsoncxx::type::k_double:
+  //             bb_->set(key, value.get_double().value);
+  //             break;
+  //           case bsoncxx::type::k_bool:
+  //             bb_->set(key, value.get_bool().value);
+  //             break;
+  //           default:
+  //             std::cerr << "Unsupported BSON type: " << bsoncxx::to_string(value.type()) << std::endl;
+  //             break;
+  //         }
+  //       }
+  //     }
+  //   bb_->set("CHECK_TRUE", true);
+  //   bb_->set("CHECK_FALSE", false);
+  //   bb_->set("TERMINATE_FLG", false);
+  //   bb_->set("STANDBY_FLG", false);
+  //   }
+  //   else
+  //   {
+  //     std::cerr << "Couldn't find document with record_name: " << record_name << std::endl;
+  //   }
+  // }
 
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
   BehaviorTreeFactory factory;

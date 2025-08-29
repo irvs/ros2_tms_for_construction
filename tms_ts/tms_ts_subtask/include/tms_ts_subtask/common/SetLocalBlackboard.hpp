@@ -27,13 +27,13 @@ private:
     std::string output_key;
     if (!getInput("output_key", output_key))
     {
-      throw RuntimeError("missing port [output_key]");
+      throw RuntimeError("[SetLocalBlackboard] missing port [output_key]");
     }
 
     std::string value_str;
     if (!getInput("value", value_str))
     {
-      throw RuntimeError("missing port [value]");
+      throw RuntimeError("[SetLocalBlackboard] missing port [value]");
     }
 
     // Handle boolean values explicitly

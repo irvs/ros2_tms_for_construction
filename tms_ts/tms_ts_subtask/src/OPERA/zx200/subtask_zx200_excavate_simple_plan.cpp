@@ -65,6 +65,11 @@ rclcpp_action::GoalResponse SubtaskZx200ExcavateSimple::handle_goal(
     RCLCPP_ERROR(this->get_logger(), "Failed to set LOCK_FLG to true");
   }
   param_from_db_ = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
+  if (param_from_db_.empty())
+  {
+    RCLCPP_ERROR(this->get_logger(), "Failed to get parameters from DB");
+    return rclcpp_action::GoalResponse::REJECT;
+  }
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
