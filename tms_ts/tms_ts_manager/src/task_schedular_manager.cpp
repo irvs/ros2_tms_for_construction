@@ -4,6 +4,9 @@
 #include <string>
 #include <cmath>
 #include <thread>
+#include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -30,10 +33,14 @@
 #include "tms_ts_subtask/common/conditional_expression.hpp"
 #include "tms_ts_subtask/common/KeepRunningUntilFlgup.hpp"
 #include "tms_ts_subtask/common/SetLocalBlackboard.hpp"
+<<<<<<< HEAD
 #include "tms_ts_subtask/common/SetLocalBlackboardWithCounter.hpp"
 #include "tms_ts_subtask/common/Counter.hpp"
 #include "tms_ts_subtask/common/wait_for_click.hpp"
 
+=======
+#include "tms_ts_subtask/common/wait_for_click.hpp"
+>>>>>>> develop/multiple_ts
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -45,6 +52,10 @@ class ExecTaskSequence : public rclcpp::Node
 public:
   ExecTaskSequence(std::shared_ptr<Blackboard> bb) : Node("exec_task_sequence"), bb_(bb)
   {
+    this->declare_parameter("task_id", -1);
+    this->declare_parameter("zmq_server_port", 1666);
+    this->declare_parameter("zmq_publisher_port", 1777);
+    
     subscription_ = this->create_subscription<std_msgs::msg::String>(
         "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
     
@@ -67,20 +78,57 @@ public:
 
   void topic_callback(const std_msgs::msg::String::SharedPtr msg)
   {
-    task_sequence_ = std::string(msg->data);
-    // tree_ = factory.createTreeFromText(task_sequence_, bb_);
-
-    try {
+    int task_id = this->get_parameter("task_id").as_int();
+    int zmq_server_port = this->get_parameter("zmq_server_port").as_int();
+    int zmq_publisher_port = this->get_parameter("zmq_publisher_port").as_int();
+    
+    if (task_id == -1) {
+      // 既存の処理：そのままBehavior Treeとして実行
+      task_sequence_ = std::string(msg->data);
       tree_ = factory.createTreeFromText(task_sequence_, bb_);
-    } catch (const std::exception & e) {
-      RCLCPP_ERROR(get_logger(),
-        "Failed to cretae tree: %s", e.what());
-      subscription_.reset();
-      return;
+    } else {
+      // 新しい処理：JSONデータから特定のtask_idのタスクを抽出
+      std::string json_data = std::string(msg->data);
+      
+      rapidjson::Document document;
+      document.Parse(json_data.c_str());
+      
+      if (document.HasParseError()) {
+        RCLCPP_ERROR(this->get_logger(), "JSON parse error");
+        return;
+      }
+      
+      if (!document.HasMember("tasks") || !document["tasks"].IsArray()) {
+        RCLCPP_ERROR(this->get_logger(), "Invalid JSON format: missing 'tasks' array");
+        return;
+      }
+      
+      const rapidjson::Value& tasks = document["tasks"];
+      bool task_found = false;
+      
+      for (rapidjson::SizeType i = 0; i < tasks.Size(); i++) {
+        const rapidjson::Value& task = tasks[i];
+        
+        if (task.HasMember("task_id") && task["task_id"].IsInt() &&
+            task.HasMember("task_sequence") && task["task_sequence"].IsString()) {
+          
+          if (task["task_id"].GetInt() == task_id) {
+            task_sequence_ = task["task_sequence"].GetString();
+            tree_ = factory.createTreeFromText(task_sequence_, bb_);
+            task_found = true;
+            RCLCPP_INFO(this->get_logger(), "Found and executing task_id: %d", task_id);
+            break;
+          }
+        }
+      }
+      
+      if (!task_found) {
+        RCLCPP_ERROR(this->get_logger(), "Task with task_id %d not found in JSON data", task_id);
+        return;
+      }
     }
 
-
-    BT::PublisherZMQ publisher_zmq(tree_, 100, 1666, 1777);
+    BT::PublisherZMQ publisher_zmq(tree_, 100, zmq_server_port, zmq_publisher_port);
     try
     {
       while (rclcpp::ok() && status_ == NodeStatus::RUNNING)

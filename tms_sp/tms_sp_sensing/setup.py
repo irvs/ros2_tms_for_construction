@@ -22,6 +22,7 @@ setup(
         'console_scripts': [
             "tms_sp_zx200_end_effector = tms_sp_sensing.tms_sp_zx200_end_effector:main",
             "tms_sp_zx200_collision_objects = tms_sp_sensing.tms_sp_zx200_collision_objects_ic120:main",
+            "tms_sp_zx200_collision_objects_from_tf = tms_sp_sensing.tms_sp_zx200_collision_objects_from_tf:main",
             "sample = tms_sp_sensing.sample:main",
             "tms_sp_flgs = tms_sp_sensing.tms_sp_flgs:main",
             "tms_sp_flgs_202506 = tms_sp_sensing.tms_sp_flgs_202506:main",
@@ -42,6 +43,8 @@ setup(
             "tms_sp_dig_locations = tms_sp_sensing.tms_sp_dig_locations:main",
             "tms_sp_release_angle = tms_sp_sensing.tms_sp_release_angle:main",
             "tms_sp_release_locations = tms_sp_sensing.tms_sp_release_locations:main"
+            "tms_sp_flgs_202508 = tms_sp_sensing.tms_sp_flgs_202508:main",
+            "tms_sp_dump_swing_angle = tms_sp_sensing.tms_sp_dump_swing_angle:main",
         ],
     },
 )

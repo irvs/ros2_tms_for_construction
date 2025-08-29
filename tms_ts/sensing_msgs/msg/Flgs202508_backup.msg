@@ -1,4 +1,7 @@
 string record_name 
 bool continue_flg
 bool sensing_arrival_flg
+bool sensing_loaded_flg
+bool sensing_check_mound_flg
+bool sensing_nextpoint_flg
 string[] keep_val_flgs

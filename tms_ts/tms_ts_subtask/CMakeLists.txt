@@ -82,6 +82,7 @@ add_executable(subtask_ic120_release_soil src/OPERA/ic120/subtask_ic120_release_
 
 # Subtask Nodes for ZX200
 add_executable(subtask_zx200_change_pose src/OPERA/zx200/subtask_zx200_change_pose.cpp)
+add_executable(subtask_zx200_change_pose_plan src/OPERA/zx200/subtask_zx200_change_pose_plan.cpp)
 add_executable(subtask_zx200_excavate_simple_plan src/OPERA/zx200/subtask_zx200_excavate_simple_plan.cpp)
 add_executable(subtask_zx200_excavate_simple src/OPERA/zx200/subtask_zx200_excavate_simple.cpp)
 add_executable(subtask_zx200_release_simple src/OPERA/zx200/subtask_zx200_release_simple.cpp)
@@ -102,6 +103,7 @@ add_executable(subtask_mst110cr_navigate_through_poses_deg src/OPERA/mst110cr/su
 add_executable(subtask_mst110cr_release_soil src/OPERA/mst110cr/subtask_mst110cr_release_soil.cpp)
 add_executable(subtask_mst110cr_swing src/OPERA/mst110cr/subtask_mst110cr_swing.cpp)
 add_executable(subtask_mst110cr_swing_align_to_heading src/OPERA/mst110cr/subtask_mst110cr_swing_align_to_heading.cpp)
+<<<<<<< HEAD
 
 
 set(TARGETS
@@ -127,16 +129,42 @@ set(TARGETS
   subtask_ic120_navigate_through_poses_deg
   subtask_ic120_navigate_through_poses
   subtask_ic120_release_soil
+=======
+
+set(TARGETS
+  subtask_ic120_follow_waypoints_deg_server
+  subtask_ic120_follow_waypoints_server
+  subtask_ic120_navigate_anywhere_deg_server
+  subtask_ic120_navigate_anywhere_server
+  subtask_ic120_navigate_through_poses_deg_server
+  subtask_ic120_navigate_through_poses_server
+  subtask_ic120_release_soil_server
+  zx120_sample_boom_subtask
+  zx120_sample_swing_subtask
+  zx120_sample_arm_subtask
+  zx120_sample_bucket_subtask
+  zx200_sample_boom_subtask
+  zx200_sample_swing_subtask
+  zx200_sample_arm_subtask
+  zx200_sample_bucket_subtask
+>>>>>>> develop/multiple_ts
   subtask_zx200_change_pose
+  subtask_zx200_change_pose_plan
   subtask_zx200_excavate_simple_plan
   subtask_zx200_excavate_simple
   subtask_zx200_release_simple
+<<<<<<< HEAD
   subtask_zx200_follow_waypoints_deg
   subtask_zx200_follow_waypoints
   subtask_zx200_navigate_anywhere_deg
   subtask_zx200_navigate_anywhere
   subtask_zx200_navigate_through_poses_deg
   subtask_zx200_navigate_through_poses
+=======
+  subtask_zx200_follow_waypoints_server
+  subtask_zx200_navigate_anywhere_server
+  subtask_zx200_navigate_through_poses_server
+>>>>>>> develop/multiple_ts
   subtask_mst110cr_follow_waypoints_deg
   subtask_mst110cr_follow_waypoints
   subtask_mst110cr_navigate_anywhere_deg
@@ -146,6 +174,18 @@ set(TARGETS
   subtask_mst110cr_release_soil
   subtask_mst110cr_swing
   subtask_mst110cr_swing_align_to_heading
+<<<<<<< HEAD
+=======
+  subtask_mst2200_follow_waypoints_deg
+  subtask_mst2200_follow_waypoints
+  subtask_mst2200_navigate_anywhere_deg
+  subtask_mst2200_navigate_anywhere
+  subtask_mst2200_navigate_through_poses_deg
+  subtask_mst2200_navigate_through_poses
+  subtask_mst2200_release_soil
+  subtask_mst2200_swing
+  subtask_mst2200_swing_align_to_heading
+>>>>>>> develop/multiple_ts
 )
 
 set(COMMON_INCLUDE_DIRS

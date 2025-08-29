@@ -19,6 +19,7 @@
                             <IfThenElse>
                                 <Action ID="ConditionalExpression" conditional_expression="INITIAL_POS_FLG == false"/>
                                 <Sequence>
+                                    <Action ID="WaitForClick" button_info="initial_pose_待機" window_title="initial_pose_待機"/>
                                     <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
                                 </Sequence>
                                 <AlwaysSuccess/>
@@ -45,12 +46,15 @@
                                             </Fallback>
                                         </RetryUntilSuccessful>
                                         <Sequence>
+                                            <Action ID="WaitForClick" button_info="target_excavate_pose_待機" window_title="target_excavate_pose_待機"/>
                                             <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple"/>
                                         </Sequence>
                                         <Sequence>
+                                            <Action ID="WaitForClick" button_info="hold_soil_while_elevating_pose_待機" window_title="hold_soil_while_elevating_pose_待機"/>
                                             <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_zx200_change_pose"/>
                                         </Sequence>
                                         <Sequence>
+                                            <Action ID="WaitForClick" button_info="hold_soil_while_turning_pose_待機" window_title="hold_soil_while_turning_pose_待機"/>
                                             <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="hold_soil_while_turning_pose" subtask_name="subtask_zx200_change_pose"/>
                                         </Sequence>
                                         <RetryUntilSuccessful num_attempts="-1">
@@ -62,12 +66,15 @@
                                             </Fallback>
                                         </RetryUntilSuccessful>
                                         <Sequence>
+                                            <Action ID="WaitForClick" button_info="release_pose_待機" window_title="release_pose_待機"/>
                                             <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="target_release_pose" subtask_name="subtask_zx200_change_pose"/>
                                         </Sequence>
                                         <Sequence>
+                                            <Action ID="WaitForClick" button_info="release_angle_待機" window_title="release_angle_待機"/>
                                             <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="release_angle" subtask_name="subtask_zx200_release_simple"/>
                                         </Sequence>
                                         <Sequence>
+                                            <Action ID="WaitForClick" button_info="after_release_soil_pose_待機" window_title="after_release_soil_pose_待機"/>
                                             <Action ID="LeafNodeZx200" model_name="zx200" name="leaf_node_zx200" record_name="after_release_soil_pose" subtask_name="subtask_zx200_change_pose"/>
                                         </Sequence>
                                         <Delay delay_msec="3000">
@@ -156,6 +163,10 @@
         <Action ID="SetLocalBlackboardWithCounter">
             <inout_port name="counter_key"/>
             <input_port name="key"/>
+        </Action>
+        <Action ID="WaitForClick">
+            <input_port name="button_info"/>
+            <input_port name="window_title"/>
         </Action>
     </TreeNodesModel>
     <!-- ////////// -->
