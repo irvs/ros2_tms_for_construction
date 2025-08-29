@@ -47,6 +47,7 @@ setup(
             "tms_ur_ground_mesh = tms_ur_construction.tms_ur_ground_mesh:main",
             "tms_ur_construction_theta_compressed = tms_ur_construction.tms_ur_construction_theta_compressed:main",
             "tms_ur_waypoint_viz = tms_ur_construction.tms_ur_waypoint_viz:main",
+            "tms_ur_construction_dynamic_terrain_heightmap = tms_ur_construction.tms_ur_construction_dynamic_terrain_heightmap:main",
         ],
     },
 )

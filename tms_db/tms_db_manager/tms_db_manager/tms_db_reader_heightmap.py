@@ -87,6 +87,22 @@ class TmsDbReaderGridFSActionServer(Node):
             return self.dynamic_terrain_handler(goal_handle)
         else:
             self.get_logger().info("Please set a terrain type 'static' or 'dynamic'")
+    
+            goal_handle.abort()
+            result = TmsdbTerrainImage.Result()
+            result.result = False
+            result.time = ""
+            result.type = self.request.type
+            result.terrainheight = 0.0
+            result.terrainwidth = 0.0
+            result.terrainelevation = 0.0
+            result.offset_x = 0.0
+            result.offset_y = 0.0
+            result.image = sensor_msgs.msg.Image()
+            result.image.header = Header()
+            result.image.header.stamp = self.get_clock().now().to_msg()
+
+            return result
 
     def static_or_mesh_terrain_handler(self, goal_handle):
         """
@@ -104,6 +120,7 @@ class TmsDbReaderGridFSActionServer(Node):
         """
         self.get_logger().info("Accept a goal of heightmap")
         self.get_logger().info(str(goal_handle.request.type))
+        self.get_logger().info(str(goal_handle.request.filename))
 
         file_obj = None
         while file_obj is None:
@@ -244,9 +261,26 @@ class TmsDbReaderGridFSActionServer(Node):
                         # Feedback
                         goal_handle.publish_feedback(feedback_msg)
                 except Exception as e:
-                    self.get_logger().info(str(e))
+                    self.get_logger().error(f"[dynamic_terrain_handler] Error: {str(e)}")
+
                     result = TmsdbTerrainImage.Result()
+                    result.result = False  # 明示的にFalseを設定（成功していない）
+                    result.time = ""
+                    result.type = "dynamic"
+                    result.terrainheight = 0.0
+                    result.terrainwidth = 0.0
+                    result.terrainelevation = 0.0
+                    result.offset_x = 0.0
+                    result.offset_y = 0.0
+
+                    # 空の画像メッセージを入れる
+                    result.image = sensor_msgs.msg.Image()
+                    result.image.header = Header()
+                    result.image.header.stamp = self.get_clock().now().to_msg()
+
+                    goal_handle.succeed()
                     return result
+
 
     def get_latest_dynamic_terrain_data(self, request) -> gridfs.grid_file.GridOut:
         """
