@@ -17,6 +17,7 @@
 
   <depend>tms_msg_ts</depend>
   <depend>tms_msg_rp</depend>
+  <depend>tms_msg_db</depend>
   <depend>nav2_msgs</depend>
   <depend>com3_msgs</depend>
 

@@ -371,7 +371,7 @@ def generate_launch_description():
                   ),
             Node(
                   package="tms_db_manager", 
-                  executable="tms_db_reader_parameter",
+                  executable="tms_db_reader_param",
                   output='screen'
                   ),
 
