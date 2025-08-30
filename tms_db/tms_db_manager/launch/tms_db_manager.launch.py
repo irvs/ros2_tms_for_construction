@@ -57,6 +57,16 @@ def generate_launch_description():
                   'init_db': LaunchConfiguration('init_db'),
             }]
       )
+      tms_db_param_writer_node = Node(
+            package='tms_db_manager',
+            executable='tms_db_writer_param',
+            output='screen',
+            parameters=[{
+                  'db_host': LaunchConfiguration('db_host'),
+                  'db_port': LaunchConfiguration('db_port'),
+                  'init_db': LaunchConfiguration('init_db'),
+            }]
+      )
       tms_db_reader_node = Node(
             package='tms_db_manager',
             executable='tms_db_reader',
@@ -67,16 +77,16 @@ def generate_launch_description():
             }]
       )
      # tms_db_reader_gridfs_node = Node(
-      # tms_db_reader_heightmap_node = Node(
-      #       package='tms_db_manager',
-      #    #   executable='tms_db_reader_gridfs',
-      #       executable='tms_db_reader_heightmap',
-      #       output='screen',
-      #       parameters=[{
-      #             'db_host': LaunchConfiguration('db_host'),
-      #             'db_port': LaunchConfiguration('db_port'),
-      #       }]
-      # )
+      tms_db_reader_heightmap_node = Node(
+            package='tms_db_manager',
+         #   executable='tms_db_reader_gridfs',
+            executable='tms_db_reader_heightmap',
+            output='screen',
+            parameters=[{
+                  'db_host': LaunchConfiguration('db_host'),
+                  'db_port': LaunchConfiguration('db_port'),
+            }]
+      )
       tms_db_param_reader_node = Node(
             package='tms_db_manager',
             executable='tms_db_reader_param',
@@ -91,10 +101,10 @@ def generate_launch_description():
             db_port,
             init_db,
             tms_db_writer_node,
-            # tms_db_writer_gridfs_node,
+            tms_db_writer_gridfs_node,
             tms_db_param_writer_node,
             tms_db_reader_node,
            # tms_db_reader_gridfs_node,
-            # tms_db_reader_heightmap_node,
+            tms_db_reader_heightmap_node,
             tms_db_param_reader_node,
       ])

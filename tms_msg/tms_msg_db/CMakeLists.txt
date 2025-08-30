@@ -45,10 +45,9 @@ rosidl_generate_interfaces(tms_msg_db
   "msg/TmsData.msg"
   "msg/TmsDataStamped.msg"
   "msg/TmsdbGridFS.msg"
-  "msg/ColoredMesh.msg"
-  "msg/TmsdbCollision.msg"
   "msg/TmsdbQuery.msg"
   "msg/TmsdbTerrainImageMsg.msg"
+  "msg/ColoredMesh.msg"
 
   "srv/TmsdbGetData.srv"
   "srv/TmsdbGridFSGetData.srv"
@@ -62,7 +61,6 @@ rosidl_generate_interfaces(tms_msg_db
   "srv/Tmsdbgetrobotsinfo.srv"
   "srv/Tmsdbgetrobotinfo.srv"
   "srv/TmsdbGetTask.srv"
-  "srv/TmsdbGetParameter.srv"
   "srv/Tmsdbgetpersonbehaviorinfo.srv"
   "srv/Tmsdbgetpcdinfo.srv"
   "srv/Tmsdbgettasklist.srv"
@@ -70,6 +68,7 @@ rosidl_generate_interfaces(tms_msg_db
   "srv/Tmsdbobjdt.srv"
   "srv/TmsdbPlanning.srv"
   "srv/Tmsdbfileconservation.srv"
+  "srv/TmsdbTerrainImageSrv.srv"
   "srv/TmsdbObjectsdata.srv"
   "srv/Tmsdbgetunknownobject.srv"
 

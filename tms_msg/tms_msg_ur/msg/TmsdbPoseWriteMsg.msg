@@ -1,0 +1,9 @@
+string type
+string machine_name
+string machine_kinds
+string record_name
+string record_type
+string description
+string write_target
+geometry_msgs/PoseStamped pose
+sensor_msgs/JointState joints

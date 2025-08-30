@@ -27,36 +27,93 @@ def generate_launch_description():
         name="tms_ur_cv_odom1",
         package="tms_ur_construction",
         executable="tms_ur_cv_odom",
+        #executable="tms_ur_cv_odom_to_posest",
         output="screen",
         remappings=[
-            ("~/output/odom", "/output/backhow1/odom"),
+            ("~/output/odom", "/output/kumagayagumi_crawler/odom"),
         ],
         parameters=[
             {
                 "latest": LaunchConfiguration("latest"),
             },
             {
-                "machine_name": "backhow1",
+                "machine_name": "kumagayagumi_crawler",
             },
         ],
     )
+    
     tms_ur_cv_odom_node2 = Node(
         name="tms_ur_cv_odom2",
         package="tms_ur_construction",
         executable="tms_ur_cv_odom",
         output="screen",
         remappings=[
-            ("~/output/odom", "/output/wheel_loader1/odom"),
+            ("~/output/odom", "/output/kumagayagumi_backhoe/odom"),
         ],
         parameters=[
             {
                 "latest": LaunchConfiguration("latest"),
             },
             {
-                "machine_name": "wheel_loader1",
+                "machine_name": "kumagayagumi_backhoe",
             },
         ],
     )
+
+    tms_ur_cv_joints_node1 = Node(
+        name="tms_ur_cv_joints1",
+        package="tms_ur_construction",
+        executable="tms_ur_cv_joints",
+        output="screen",
+        remappings=[
+            ("~/output/joint", "/output/kumagayagumi_backhoe/Joins_states"),
+        ],
+        parameters=[
+            {
+                "latest": LaunchConfiguration("latest"),
+            },
+            {
+                "machine_name": "kumagayagumi_backhoe",
+            },
+        ],
+    )
+
+    tms_ur_cv_odom_node3 = Node(
+        name="tms_ur_cv_odom3",
+        package="tms_ur_construction",
+        executable="tms_ur_cv_odom",
+        output="screen",
+        remappings=[
+            ("~/output/odom", "/output/yammer_cafe/odom"),
+        ],
+        parameters=[
+            {
+                "latest": LaunchConfiguration("latest"),
+            },
+            {
+                "machine_name": "yammer_cafe",
+            },
+        ],
+    )
+
+    # tms_ur_cv_joints_node2 = Node(
+    #     name="tms_ur_cv_joints2",
+    #     package="tms_ur_construction",
+    #     executable="tms_ur_cv_joints",
+    #     output="screen",
+    #     remappings=[
+    #         ("~/output/joint", "/output/ic120/joint_states"),
+    #     ],
+    #     parameters=[
+    #         {
+    #             "latest": LaunchConfiguration("latest"),
+    #         },
+    #         {
+    #             "machine_name": "ic120_1",
+    #         },
+    #     ],
+    # )
+    '''
     tms_ur_cv_odom_node3 = Node(
         name="tms_ur_cv_odom3",
         package="tms_ur_construction",
@@ -108,6 +165,7 @@ def generate_launch_description():
             },
         ],
     )
+    '''
 
     return LaunchDescription(
         [
@@ -115,7 +173,10 @@ def generate_launch_description():
             tms_ur_cv_odom_node1,
             tms_ur_cv_odom_node2,
             tms_ur_cv_odom_node3,
-            tms_ur_cv_odom_node4,
-            tms_ur_cv_odom_node5,
+            tms_ur_cv_joints_node1,
+            # tms_ur_cv_joints_node2,
+        #    tms_ur_cv_odom_node3,
+         #   tms_ur_cv_odom_node4,
+          #  tms_ur_cv_odom_node5,
         ]
     )

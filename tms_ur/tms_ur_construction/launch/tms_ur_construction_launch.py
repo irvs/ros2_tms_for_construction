@@ -78,6 +78,22 @@ def generate_launch_description():
             }
         ],
     )
+    tms_ur_construction_terrain_heightmap_image_node = Node(
+        package="tms_ur_construction",
+        executable="tms_ur_construction_terrain_heightmap",
+        output="screen",
+        remappings=[
+            (
+                "~/output/terrain/heightmap_srv",
+                LaunchConfiguration("output/terrain/heightmap/image"),
+            ),
+        ],
+        parameters=[
+            {
+                "latest": LaunchConfiguration("latest"),
+            }
+        ],
+    )
 
     return LaunchDescription(
         [
@@ -89,5 +105,6 @@ def generate_launch_description():
             tms_ur_construction_ground_node,
             tms_ur_cv_odom_node,
             tms_ur_construction_terrain_dynamic_node,
+            tms_ur_construction_terrain_heightmap_image_node,
         ]
     )
