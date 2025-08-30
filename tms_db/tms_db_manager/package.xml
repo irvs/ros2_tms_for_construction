@@ -4,7 +4,7 @@
   <version>1.0.2</version>
   <description>The tms_db_manager package</description>
 
-  <maintainer email="maeda@ait.kyushu-u.ac.jp">Ryuichi Maeda</maintainer>
+  <maintainer email="kasahara.yuichiro.res@gmail.com">Yuichiro Kasahara</maintainer>
 
   <license>Apache License, Version 2.0</license>
 
@@ -15,6 +15,7 @@
   <author email="sms0432@irvs.ait.kyushu-u.ac.jp">Minsoo Song</author>
   <author email="kiyoyama@irvs.ait.kyushu-u.ac.jp">Kouhei Kiyoyama</author>
   <author email="maeda@irvs.ait.kyushu-u.ac.jp">Ryuichi Maeda</author>
+  <author email="kasahara.yuichiro.res@gmail.com">Yuichiro Kasahara</author>
 
   <build_depend>rclpy</build_depend>
   <build_depend>std_msgs</build_depend>

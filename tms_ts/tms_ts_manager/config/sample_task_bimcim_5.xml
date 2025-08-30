@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <SetBlackboard output_key="N" value="0"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="FORCE_STOP_FLG" mongo_record_name="false"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="global_blackboard"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="global_blackboard"/>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADED_FLG" mongo_record_name="global_blackboard"/>
+            <Action ID="BlackboardValueReaderMongo" mongo_param_name="dig_num" mongo_record_name="total_num_of_dig_location" output_port="dig_num"/>
+            <Action ID="SetLocalBlackboard" output_key="number_of_dig_cycle_n" value="number_of_dig_cycle_0"/>
+            <Action ID="SetLocalBlackboard" output_key="initial_position_n" value="initial_position_0"/>
+            <Action ID="SetLocalBlackboard" output_key="initial_pose_n" value="initial_pose_0"/>
+            <Action ID="SetLocalBlackboard" output_key="excavate_pose_n" value="excavate_pose_0"/>
+            <Action ID="SetLocalBlackboard" output_key="hold_soil_while_elevating_pose_n" value="hold_soil_while_elevating_pose_0"/>
+            <Action ID="SetLocalBlackboard" output_key="hold_soil_while_turning_pose_n" value="hold_soil_while_turning_pose_0"/>
+            <Action ID="SetLocalBlackboard" output_key="release_pose_n" value="release_pose_0"/>
+            <Action ID="SetLocalBlackboard" output_key="release_angle_n" value="release_angle_0"/>
+            <Action ID="SetLocalBlackboard" output_key="after_release_soil_pose_n" value="after_release_soil_pose_0"/>
+            <Action ID="SetLocalBlackboard" output_key="counter_flg_1" value="false"/>
+            <Action ID="SetLocalBlackboard" output_key="counter_flg_2" value="false"/>
+            <Action ID="SetLocalBlackboard" output_key="dig_num" value="0"/>
+            <Action ID="SetLocalBlackboard" output_key="PointN" value="0"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="BlackboardValueReaderMongo">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+        </Action>
+        <Action ID="ConditionalExpression">
+            <input_port name="conditional_expression"/>
+        </Action>
+        <Action ID="Counter">
+            <input_port name="key"/>
+        </Action>
+        <Decorator ID="KeepRunningUntilFlgup">
+            <input_port name="key"/>
+        </Decorator>
+        <Action ID="LeafNodeD37pxi">
+            <input_port default="d37pxi" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeIc120">
+            <input_port default="ic120" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeMst110cr">
+            <input_port default="mst110cr" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeMst2200">
+            <input_port default="mst2200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeZx200">
+            <input_port default="zx200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="MongoValueWriter">
+            <input_port name="input_value"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+        </Action>
+        <Action ID="SetLocalBlackboard">
+            <inout_port name="output_key"/>
+            <input_port name="value"/>
+        </Action>
+        <Action ID="SetLocalBlackboardWithCounter">
+            <inout_port name="counter_key"/>
+            <input_port name="key"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>

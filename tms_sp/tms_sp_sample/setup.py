@@ -15,8 +15,8 @@ setup(
     zip_safe=True,
     author='Ryuichi Maeda',
     author_email='maeda@irvs.ait.kyushu-u.ac.jp',
-    maintainer='maeda',
-    maintainer_email='maeda@irvs.ait.kyushu-u.ac.jp',
+    maintainer='kasahara',
+    maintainer_email='kasahara.yuichiro.res@gmail.com',
     keywords=['ROS'],
     classifiers=[
         'Intended Audience :: Developers',

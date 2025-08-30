@@ -21,11 +21,13 @@ from pymongo import MongoClient
 import re
 import threading
 import time
+import json
+from tms_msg_db.srv import TmsdbGetTask
 
 from rclpy.node import Node
 
-MONGODB_IPADDRESS = '127.0.0.1'
-MONGODB_PORTNUMBER = 27017
+# MONGODB_IPADDRESS = '127.0.0.1'
+# MONGODB_PORTNUMBER = 27017
 
 
 class GUI_button(Node):
@@ -33,16 +35,29 @@ class GUI_button(Node):
     def __init__(self):
         super().__init__('button_input_bt')
 
+        self.declare_parameter('task_ids', [-1])
         self.declare_parameter('task_id', 3)
         self.task_id = self.get_parameter("task_id").get_parameter_value().integer_value
         self.emergency_signal_publisher = self.create_publisher(Bool, '/emergency_signal', 10)
         self.publisher_ = self.create_publisher(String, '/task_sequence', 10)
+        self.client = self.create_client(TmsdbGetTask, '/tms_db_reader_task')
+
+        while not self.client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('Service not available, waiting...')
+
+        task_ids = self.get_parameter("task_ids").get_parameter_value().integer_array_value
+        if task_ids and len(task_ids) > 0 and task_ids[0] != -1:
+            task_ids_str = ", ".join(map(str, task_ids))
+            button_text = f"task_ids: {task_ids_str}\n\nExecute multiple tasks"
+        else:
+            button_text = f"task_id: {self.task_id}\n\nExecute the task corresponding to the specified task ID"
+
         root = tk.Tk()
         root.title("CONTROL PANEL")
         root.geometry("800x200")
         self.emergency_button = tk.Button(root, text="EMERGENCY" + "\n" + "\n" + "Urgently stops a running task", command=self.emergency_button_click, width=50, height=8, bg="red")
         self.emergency_button.pack(side="right")
-        self.ts_button = tk.Button(root, text="task_id :  " + str(self.task_id)+"\n" + "\n"+ "Execute the task corresponding to the specified task ID", command = self.button_click, width=50, height=8, bg="green")
+        self.ts_button = tk.Button(root, text=button_text, command=self.button_click, width=50, height=8, bg="green")
         self.ts_button.pack(side="right")
         
         root.mainloop()
@@ -67,50 +82,97 @@ class GUI_button(Node):
         self.search_task()
         if self._is_valid_taskid == True:
             msg = String()
-            msg.data = self.task_sequence
+            
+            task_ids = self.get_parameter("task_ids").get_parameter_value().integer_array_value
+            
+            if task_ids and len(task_ids) > 0 and task_ids[0] != -1:
+                # 複数タスクの場合、JSONで送信
+                task_data = {
+                    "tasks": self.task_list
+                }
+                msg.data = json.dumps(task_data, ensure_ascii=False)
+                self.get_logger().info(f"Publishing multiple tasks as JSON: {len(self.task_list)} tasks")
+            else:
+                msg.data = self.task_sequence
+            
             self.publisher_.publish(msg)
         else:
-            self.get_logger().error(f"Stop the Task Scheduler because of the invalid task ID({self.task_id})")
+            task_ids = self.get_parameter("task_ids").get_parameter_value().integer_array_value
+            if task_ids and len(task_ids) > 0 and task_ids[0] != -1:
+                task_ids_str = ", ".join(map(str, task_ids))
+                self.get_logger().error(f"Stop the Task Scheduler because of the invalid task IDs({task_ids_str})")
+            else:
+                self.get_logger().error(f"Stop the Task Scheduler because of the invalid task ID({self.task_id})")
     
     # タスクIDに対応するタスクをTMS_DBから検索する関数
     def search_task(self):
-        client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
-        db = client['rostmsdb']
-        collection = db['task']
-        self.task_info = collection.find_one({"task_id": self.task_id})
-        if self.task_info != None:
+        # task_idsパラメータを取得
+        task_ids = self.get_parameter("task_ids").get_parameter_value().integer_array_value
+        
+        if task_ids and len(task_ids) > 0 and task_ids[0] != -1:
+            self.task_sequence = ""
             self._is_valid_taskid = True
-            self.task_sequence = self.task_info["task_sequence"]
-            self.set_parameters()
-            self.get_logger().info(f"Execute the task corresponding to the specified task ID({self.task_id})")
+            self.task_list = []  # 複数タスクの情報を保存するリスト
+            
+            for task_id in task_ids:
+                request = TmsdbGetTask.Request()
+                request.task_id = task_id
+                self.get_logger().info(f"Sending request for task_id: {request.task_id}")
+                future = self.client.call_async(request)
+                rclpy.spin_until_future_complete(self, future)
+                response = future.result()
+
+                if response != None and response.task != "":
+                    self.task_list.append({
+                        "task_id": task_id,
+                        "task_sequence": response.task
+                    })
+                    self.get_logger().info(f"Execute the task corresponding to the specified task ID({task_id})")
+                else:
+                    self.get_logger().info(f"The task corresponding to the specified task ID({task_id}) does not exist under the default collection in the rostmsdb database")
+                    self._is_valid_taskid = False
+                    break  # 一つでも無効なタスクIDがあれば処理を停止
         else:
-            self.get_logger().info(f"The task corresponding to the specified task ID({self.task_id}) does not exist under the default collection in the rostmsdb database")
-            self._is_valid_taskid = False
+            request = TmsdbGetTask.Request()
+            request.task_id = self.task_id 
+            self.get_logger().info(f"Sending request for task_id: {request.task_id}")
+            future = self.client.call_async(request)
+            rclpy.spin_until_future_complete(self, future)
+            response = future.result()
+
+            if response != None and response.task != "":
+                self.task_sequence = response.task
+                # self.set_parameters()
+                self.get_logger().info(f"Execute the task corresponding to the specified task ID({self.task_id})")
+                self._is_valid_taskid = True
+            else:
+                self.get_logger().info(f"The task corresponding to the specified task ID({self.task_id}) does not exist under the default collection in the rostmsdb database")
+                self._is_valid_taskid = False
 
     # タスク列に動的にパラメータを埋め込むための関数
-    def set_parameters(self):
-        # 任意のパラメータ判別用記号(例: ${parameter})などをtask_sequenceの中に入れて、この部分を置き換えるプログラムを作成する
-        client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
-        db = client['rostmsdb']
-        collection = db['parameter']
-        subtask_raw_list = re.findall(r'\$\[.*\]', self.task_sequence)
-        if(len(subtask_raw_list) >= 1):
-            for subtask_raw in subtask_raw_list:
-                parts_task_sequence = self.task_sequence.split(subtask_raw)
-                subtask_raw = subtask_raw.replace("$", "")
-                subtask_raw = subtask_raw.replace("[", "")
-                subtask_raw = subtask_raw.replace("]", "")
-                parameter_tag = subtask_raw.split(":")
-                parameter_id_tag = int(parameter_tag[0])
-                parameter_value_tag = str(parameter_tag[1])
-                self.parameter_info = collection.find_one({"parameter_id": parameter_id_tag})
-                self.parameter_value = self.parameter_info[parameter_value_tag]
-                # self.get_logger().info(f"subtask_raw {subtask_raw}")
-                # self.get_logger().info(f"parameter_value {self.parameter_value}")
-                # self.get_logger().info(parts_task_sequence[0])
-                # self.get_logger().info(parts_task_sequence[1])
-                self.task_sequence = parts_task_sequence[0] + str(self.parameter_value) + parts_task_sequence[1]
-                # self.get_logger().info("RESULT" + self.task_sequence)
+    # def set_parameters(self):
+    #     # 任意のパラメータ判別用記号(例: ${parameter})などをtask_sequenceの中に入れて、この部分を置き換えるプログラムを作成する
+    #     client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
+    #     db = client['rostmsdb']
+    #     collection = db['parameter']
+    #     subtask_raw_list = re.findall(r'\$\[.*\]', self.task_sequence)
+    #     if(len(subtask_raw_list) >= 1):
+    #         for subtask_raw in subtask_raw_list:
+    #             parts_task_sequence = self.task_sequence.split(subtask_raw)
+    #             subtask_raw = subtask_raw.replace("$", "")
+    #             subtask_raw = subtask_raw.replace("[", "")
+    #             subtask_raw = subtask_raw.replace("]", "")
+    #             parameter_tag = subtask_raw.split(":")
+    #             parameter_id_tag = int(parameter_tag[0])
+    #             parameter_value_tag = str(parameter_tag[1])
+    #             self.parameter_info = collection.find_one({"parameter_id": parameter_id_tag})
+    #             self.parameter_value = self.parameter_info[parameter_value_tag]
+    #             # self.get_logger().info(f"subtask_raw {subtask_raw}")
+    #             # self.get_logger().info(f"parameter_value {self.parameter_value}")
+    #             # self.get_logger().info(parts_task_sequence[0])
+    #             # self.get_logger().info(parts_task_sequence[1])
+    #             self.task_sequence = parts_task_sequence[0] + str(self.parameter_value) + parts_task_sequence[1]
+    #             # self.get_logger().info("RESULT" + self.task_sequence)
 
 
 def main(args=None):

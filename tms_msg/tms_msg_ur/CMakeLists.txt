@@ -12,20 +12,25 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+
+# メッセージとサービスのファイルリストを明確に定義
+set(msg_files
+  "msg/Demo202412.msg"
+  "msg/TmsdbPoseWriteMsg.msg"
+)
 
 set(srv_files
   "srv/SpeakerSrv.srv"
+  "srv/TmsdbTerrainDBPoseWriteSrv.srv"
 )
 
-set(msg_files
-  "msg/Demo202412.msg"
-)
-
+# インターフェースの生成
 rosidl_generate_interfaces(${PROJECT_NAME}
-  ${srv_files}
   ${msg_files}
-  DEPENDENCIES builtin_interfaces 
+  ${srv_files}
+  DEPENDENCIES builtin_interfaces geometry_msgs sensor_msgs
 )
-
 
 ament_package()

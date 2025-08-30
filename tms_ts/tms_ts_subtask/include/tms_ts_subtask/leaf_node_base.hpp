@@ -45,20 +45,32 @@ using namespace std::chrono_literals;
 class LeafNodeBase : public CoroActionNode{
 public:
     LeafNodeBase(const std::string& name, const NodeConfiguration& config);
+
+    static PortsList providedPorts()
+    {
+        return {
+            InputPort<std::string>("model_name"),   
+            InputPort<std::string>("record_name"),    
+            InputPort<std::string>("subtask_name")    
+        };
+    }
+
     NodeStatus tick() override;
+
     std::mutex db_instance_mutex;
     bool should_send_goal_ = true;
     bool goal_result_available_ = false;
     bool goal_updated_ = false;
-    int cancel_process_count_ = 10;
+    int cancel_process_count_ = 5;
     
     std::string subtask_name_;
 
     void createActionClient(const std::string & action_name_); 
 
     void send_new_goal();
+    void halt_bef();
     void halt() override;
-    // on_wait_for_result()はserverから返ってきたfeedbackを�?��?する関数。長くブロ�?キングが生じる処�?は実�?しな�?こと
+    // on_wait_for_result()はserverから返ってきたfeedbackを�?��?する関数。長くブロ�?キングが生じる処�?は実�?しな�?こと
     bool should_cancel_goal();
     bool is_future_goal_handle_complete(std::chrono::milliseconds & elapsed);
 

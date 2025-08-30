@@ -34,8 +34,23 @@ public:
   template <typename K, typename T>
   std::map<K, T> CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool> = true);
 
+  template <typename T>
+  bool CustomUpdateParamInDB(std::string model_name, std::string record_name, const std::string& target_key, const std::vector<T>& new_values);
+
 private:
 };
+
+static inline std::string bson_type_name(bsoncxx::type t) {
+  switch (t) {
+    case bsoncxx::type::k_double:   return "double";
+    case bsoncxx::type::k_utf8:     return "string";
+    case bsoncxx::type::k_array:    return "array";
+    case bsoncxx::type::k_int32:    return "int32";
+    case bsoncxx::type::k_int64:    return "int64";
+    default:                        return "unknown";
+  }
+}
+
 
 // This function is to get array-type parameters from the database. (This function only supports 2D arrays.)
 template <typename K, typename T>
@@ -51,11 +66,12 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
   if (result)
   {
     std::map<K,T> dataMap;
+    auto view = result->view();
+    std::cout << "Loaded parameter data:\n" << bsoncxx::to_json(view) << "\n\n";
 
     for (auto&& element : result->view()) {
         int index = 0;
         std::string key = element.key().to_string();
-        std::cout << "A" << std::endl;
         if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
             auto array = element.get_array().value;
             for (auto&& item : array) { 
@@ -81,6 +97,16 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
                 std::cout << value << std::endl;
               }else{
                 std::cout << "Type error" << std::endl;
+                bsoncxx::builder::basic::document tmp_doc{};
+                tmp_doc.append(bsoncxx::builder::basic::kvp(key, element.get_value()));
+                std::string type_name = bson_type_name(element.type());
+                bsoncxx::builder::basic::document tmp{};
+                tmp.append(bsoncxx::builder::basic::kvp(key, element.get_value()));
+                std::cout << "[TypeError] key=\"" << key
+                          << "\"  type=" << type_name
+                          << "  raw_value=" << bsoncxx::to_json(tmp.view())
+                          << "\n";
+                std::cout << "This node only supports array type. Types such as int32, int64, and double cannot be used, so please rewrite your parameter data accordingly." << std::endl;
               }
             }  
             // for (auto&& item : array) { 
@@ -89,7 +115,6 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
             // }
         }
     }
-
     return dataMap;
   }
   else
@@ -111,10 +136,11 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
   filter_builder << "model_name" << model_name << "record_name" << record_name;
   auto filter = filter_builder.view();
   auto result = collection.find_one(filter);
-  std::cout << "B" << std::endl;
   if (result)
   {
     std::map<K,T> dataMap;
+    auto view = result->view();
+    std::cout << "Loaded parameter data:\n" << bsoncxx::to_json(view) << "\n\n";
 
     for (auto&& element : result->view())
     {
@@ -140,6 +166,16 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
           std::cout << value << std::endl;
         }else{
           std::cout << "Type error" << std::endl;
+        bsoncxx::builder::basic::document tmp_doc{};
+        tmp_doc.append(bsoncxx::builder::basic::kvp(key, element.get_value()));
+        std::string type_name = bson_type_name(element.type());
+        bsoncxx::builder::basic::document tmp{};
+        tmp.append(bsoncxx::builder::basic::kvp(key, element.get_value()));
+        std::cout << "[TypeError] key=\"" << key
+                  << "\"  type=" << type_name
+                  << "  raw_value=" << bsoncxx::to_json(tmp.view())
+                  << "\n";
+        std::cout << "This node only supports int32, int64, and double types. Types such as arrays cannot be used, so please rewrite your parameter data accordingly." << std::endl;
         }
       }
     }
@@ -153,4 +189,52 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
   }
 }
 
+template <typename T>
+bool SubtaskNodeBase::CustomUpdateParamInDB(std::string model_name, std::string record_name, const std::string& target_key, const std::vector<T>& new_values)
+{
+  try {
+    mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
+    mongocxx::database db = client["rostmsdb"];
+    mongocxx::collection collection = db["parameter"];
+
+    bsoncxx::builder::stream::document filter_builder;
+    filter_builder << "model_name" << model_name << "record_name" << record_name;
+    auto filter = filter_builder.view();
+
+    bsoncxx::builder::basic::array array_builder;
+    for (const auto& val : new_values) {
+      array_builder.append(val);
+    }
+
+    bsoncxx::builder::stream::document update_builder;
+    update_builder << "$set" << bsoncxx::builder::stream::open_document;
+
+    if (new_values.size() == 1) {
+      // スカラー値として保存
+      update_builder << target_key << new_values[0];
+    } else {
+      // 配列として保存
+      bsoncxx::builder::basic::array array_builder;
+      for (const auto& val : new_values) {
+        array_builder.append(val);
+      }
+      update_builder << target_key << array_builder.view();
+    }
+
+    update_builder << bsoncxx::builder::stream::close_document;
+
+    auto result = collection.update_one(filter, update_builder.view());
+
+    if (result && result->modified_count() > 0) {
+      RCLCPP_INFO(this->get_logger(), "Successfully updated \"%s\" field.", target_key.c_str());
+      return true;
+    } else {
+      RCLCPP_WARN(this->get_logger(), "No document updated. (model_name: %s, record_name: %s)", model_name.c_str(), record_name.c_str());
+      return false;
+    }
+  } catch (const std::exception& e) {
+    RCLCPP_ERROR(this->get_logger(), "Exception during MongoDB update: %s", e.what());
+    return false;
+  }
+}
 #endif // SUBTASK_NODE_BASE_HPP

@@ -1,6 +1,8 @@
 # tms_ur_construction
 
-tms_ur_construction is a package for getting construction data (ex. machine's location, terrain, hardness of ground) and publishing them.
+tms_ur_construction is a package for getting construction data (ex. machine's location, terrain, hardness of ground) and publishing them.In addition loadging and publishing data, operation parameters for autonomous behavior can be written to MongoDB from "OperaSimVR".
+
+
 
 # Usecase
 
@@ -23,6 +25,12 @@ ros2 launch tms_db_manager tms_db_manager.launch.py db_host:=localhost db_port:=
 ```
 
 ## 2. Run tms_ur_construction
+
+### 1. odometry, joint angle
+```
+ros2 launch tms_ur_construction tms_ur_cv_odom_demo_launch.py
+```
+
 
 ### 1. cv_odom, construction_ground, construction_terrain
 

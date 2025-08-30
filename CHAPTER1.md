@@ -1,59 +1,72 @@
-### 1. Store data
+### 3. Store and get data simultaneously in real-time
 
-At first, you need to store static terrain data in MongoDB with running the following commands.
+Run the following commands to store data in MongoDB and get the data.
+
+
 
 #### Launch
 
-Please run the following commands in separate terminals.
+Run the following commands to store data in MongoDB.
 
 ```
 # MongoDB manager
-ros2 launch tms_db_manager tms_db_writer.launch.py init_db:=true
+ros2 launch tms_db_manager tms_db_manager.launch.py
 
-# Terrain
-ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/terrain/static/pointcloud2:=/demo2/terrain/static
+# Odometry and JointStats
+ros2 launch tms_sp_machine tms_sp_machine_odom_and_joints_launch.py
+```
+The position and orientation data of the construction machine is stored in "rostmsdb/machine_pose" on MongoDB, while joint core information is stored in "rostmsdb/machine_joints" on MongoDB.
 
-# Static terrain
-ros2 launch tms_ss_terrain_static tms_ss_terrain_static_launch.py filename:=demo.pcd filename_mesh:=demo.ply filename_dem:=demo.npy voxel_size:=0.1 octree_depth:=8 density_th:=0.1 fill_nan_type:=avg resolution:=0.1
+#### Launch tms_ur_construction
+
+Run the following commands to get data from MongoDB.
+
+```
+# MongoDB manager(if it is not running)
+ros2 launch tms_db_manager tms_db_manager.launch.py
+
+# Get odometry and jointstates
+ros2 launch tms_ur_construction tms_ur_cv_odom_demo_launch.py
 ```
 
+<!--
 #### Play rosbag
-
 ```
-ros2 bag play -l ./src/ros2_tms_for_construction/demo/demo2/rosbag2_1
-```
-
-If the following message appears on the terminal where tms_sd_terrain is executed, stop the terminal playing rosbag.
-
-```
-Static terrain info was received!
+ros2 bag play -l ./src/ros2_tms_for_construction/demo/demo2/rosbag2_2
 ```
 
-Then, run the following commands to store other data in MongoDB.
-
-#### Launch
-
-```
-# Odometry
-ros2 launch tms_sp_machine tms_sp_machine_odom_launch.py input/odom:=/demo2/odom machine_name:=demo_machine
-
-# Ground 2D map
-ros2 launch tms_sd_ground tms_sd_ground_launch.py input/occupancy_grid:=/demo2/map_2d ground_name:=demo_ground
-
-# Terrain
-ros2 launch tms_sd_terrain tms_sd_terrain_launch.py input/terrain/dynamic/pointcloud2:=/demo2/terrain/dynamic
-```
-
-#### Play rosbag
-
-```
-ros2 bag play ./src/ros2_tms_for_construction/demo/demo2/rosbag2_2
-```
-
-After the end of rosbag, please check whether the data is stored to fs.chunks, fs.files, machine and sensor collection in your MongoDB.
 
 GUI tool of MongoDB like a MongoDB Compass is easy to check them.
 
 Here is an example. It may be a little different than yours, but as long as it is roughly the same, you should be fine.
 
 ![](demo/demo2/demo_mongodb_compass.png)
+-->
+
+### about terrain data
+
+Since static terrain data does not need to be acquired in real time, it can be pre-generated in cyberspace.
+
+**store static terrain data in MongoDB**
+
+Point cloud data in .las format is converted and stored in MongoDB as a .png format heightmap and RGB image (terrain color image).
+
+| data  | file type | output |
+| -- | -- | -- |
+| static terrain | .las(point cloud data) | .png(heightmap) & .png(terrain coloc image) & terrain scale|
+
+
+```
+# Static terrain
+cd ros2-tms-for-construction_ws/src/ros2-tms-for-construction/tms_ss/tms_ss_terrain_static/tms_ss_terrain_static/las_to_heightmap
+
+python save_image_to_mongodb.py <inputFile>.las --output <outputImage>.png
+```
+
+**road static terrain data from MongoDB**
+
+Read the .png format heightmap and RGB image (terrain color image) stored in MongoDB and send them to "OperaSimVR" using ROS 2 service communication.
+```
+# Static terrain data
+ros2 launch tms_ur_construction tms_ur_construction_terrain_mesh_launch.py filename_mesh:=<filename>
+```

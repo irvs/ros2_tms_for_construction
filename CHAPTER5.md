@@ -28,33 +28,48 @@ Additionally, to successfully execute the tasks with task_id ranging from 3 to 7
 ※ It is not necessary to execute the following command when running sample tasks (task_id: 1 ~ 3).
 
 #### Packages for operating OPERA-compatible ZX200 on the OperaSim-PhysX using MoveIt! (task_id: 4, 5)
+
+Please open terminals and execute the following commands separately.
+
 ```
 # Open the 1st terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch ros_tcp_endpoint endpoint.py
-
+```
+```
 # Open the 2nd terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
-ros2 launch zx200_unity zx200_standby.launch.py
-
+ros2 launch zx200_bringup vehicle.launch.py command_interface_name:=velocity use_rviz:=true
+```
+```
 # Open the 3rd terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch tms_if_for_opera tms_if_for_opera.launch.py
+```
 
+```
 # Open the 4th terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch tms_ts_launch tms_ts_construction.launch.py task_id:=<task_id>
 ```
+
 #### Packages for operating OPOERA-compatible IC120 on the OperaSim-PhysX using Nav2! (task_id: 6, 7) 
+
+Please open terminals and execute the following commands separately.
+
 ```
 # Open the 1st terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch ros_tcp_endpoint endpoint.py
+```
 
+```
 # Open the 2nd terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch ic120_unity ic120_standby_ekf.launch.py
+```
 
+```
 # Open the 3rd terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch tms_ts_launch tms_ts_construction.launch.py task_id:=<task_id>

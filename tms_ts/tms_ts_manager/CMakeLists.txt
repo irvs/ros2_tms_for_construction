@@ -22,6 +22,8 @@ find_package(bsoncxx REQUIRED)
 find_package(mongocxx REQUIRED)
 find_package(tms_ts_subtask REQUIRED)
 find_package(tms_msg_ur REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Core REQUIRED)
+
 
 set(dependencies_cpp
   rclcpp
@@ -35,17 +37,19 @@ set(dependencies_cpp
   tms_ts_subtask
   bsoncxx
   mongocxx
-  tms_msg_ur)
+  tms_msg_ur
+  )
 
 link_directories(
   /usr/local/lib)
 
 link_libraries(
   mongocxx
-  bsoncxx)
+  bsoncxx
+  Qt5::Widgets
+  Qt5::Core)
 
-# ExprTk �̃C���N���[�h�f�B���N�g����ǉ�
-include_directories(/usr/local/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
 add_executable(task_schedular_manager src/task_schedular_manager.cpp)
 ament_target_dependencies(task_schedular_manager ${dependencies_cpp})
@@ -96,5 +100,10 @@ install(TARGETS
 install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME}
 )
+
+install(DIRECTORY deps
+  DESTINATION share/${PROJECT_NAME}
+)
+
 
 ament_package()

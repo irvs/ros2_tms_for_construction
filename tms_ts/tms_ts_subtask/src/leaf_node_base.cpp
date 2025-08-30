@@ -24,18 +24,26 @@ LeafNodeBase::LeafNodeBase(const std::string& name, const NodeConfiguration& con
   callback_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive, false);
   callback_group_executor_.add_callback_group(callback_group_, node_->get_node_base_interface());
   Optional<std::string> model_name = getInput<std::string>("model_name");
-  Optional<std::string> record_name = getInput<std::string>("record_name");
+  // Optional<std::string> record_name = getInput<std::string>("record_name");
   Optional<std::string> subtask_name = getInput<std::string>("subtask_name");
   goal_.model_name = model_name.value();
-  goal_.record_name = record_name.value();
-  subtask_name_ = subtask_name.value();
+
+    // if (!model_name || !record_name || !subtask_name) {
+    //   RCLCPP_ERROR(node_->get_logger(),
+    //     "[LeafNode] missing port or placeholder not expanded"
+    //   );
+    //   throw RuntimeError("missing port");
+    // }
+
+  // goal_.record_name = record_name.value();
+  subtask_name_ = model_name.value() + "/" + subtask_name.value();
   RCLCPP_INFO(node_->get_logger(), "model_name: %s", goal_.model_name.c_str());
-  RCLCPP_INFO(node_->get_logger(), "record_name: %s", goal_.record_name.c_str());
+  // RCLCPP_INFO(node_->get_logger(), "record_name: %s", goal_.record_name.c_str());
   result_ = rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::WrappedResult();
   LeafNodeBase::createActionClient(subtask_name_);
 }
 
-// action clientを新たに作�?�する関数
+// action clientを新たに作�?�する関数
 void LeafNodeBase::createActionClient(const std::string& subtask_name)
 {
   auto options_client = rcl_action_client_get_default_options();
@@ -55,7 +63,7 @@ void LeafNodeBase::createActionClient(const std::string& subtask_name)
   }
 }
 
-// action clientのgoal,feedback,resultに対応するcallback関数をこの関数�?で定義
+// action clientのgoal,feedback,resultに対応するcallback関数をこの関数�?で定義
 void LeafNodeBase::send_new_goal()
 {
   goal_result_available_ = false;
@@ -88,20 +96,22 @@ void LeafNodeBase::send_new_goal()
 bool LeafNodeBase::is_future_goal_handle_complete(std::chrono::milliseconds& elapsed)
 {
   auto remaining = server_timeout_ - elapsed;
-  if (remaining <= std::chrono::milliseconds(0))
+  if (remaining <= std::chrono::milliseconds(0)) // 1: Faied to send goal becaseuse of timeout defined by user on Action Client.
   {
-    future_goal_handle_.reset(); // �C�����1
+    future_goal_handle_.reset(); 
+    this -> halt_bef();
     return false;
   }
   auto timeout = remaining > bt_loop_duration_ ? bt_loop_duration_ : remaining;
   auto result = callback_group_executor_.spin_until_future_complete(*future_goal_handle_, timeout);
   elapsed += timeout;
-  if (result == rclcpp::FutureReturnCode::INTERRUPTED)
+  if (result == rclcpp::FutureReturnCode::INTERRUPTED) // 2: Goal request was interrupted by errors caused on Action Client. (e.g., node shutdown or external interruption).
   {
-    future_goal_handle_.reset(); // �C�����2
+    this -> halt_bef();
+    future_goal_handle_.reset(); 
     throw std::runtime_error("send_goal failed");
   }
-  if (result == rclcpp::FutureReturnCode::SUCCESS)
+  if (result == rclcpp::FutureReturnCode::SUCCESS) // 3: Succeeded to send goal. Action Server received the goal and returned the goal response.
   {
     goal_handle_ = future_goal_handle_->get();
     future_goal_handle_.reset();
@@ -111,7 +121,33 @@ bool LeafNodeBase::is_future_goal_handle_complete(std::chrono::milliseconds& ela
     }
     return true;
   }
+  // 4: Timed out while waiting for the Action Server to respond to the goal request. (rclcpp::FutureReturnCode::TIMEOUT)
   return false;
+}
+
+void LeafNodeBase::halt_bef() 
+{
+    RCLCPP_WARN(node_->get_logger(), "Attempting to cancel all goals..."); 
+
+    bool cancel_success = false;
+
+    while (true) {
+        auto future_cancel = action_client_->async_cancel_all_goals();
+        auto cancel_result = rclcpp::spin_until_future_complete(node_->get_node_base_interface(), future_cancel, std::chrono::seconds(1));
+
+        if (cancel_result == rclcpp::FutureReturnCode::SUCCESS) {
+            RCLCPP_INFO(node_->get_logger(), "All goals have been successfully cancelled on attempt.");
+            cancel_success = true;
+            break;
+        } else if (cancel_result == rclcpp::FutureReturnCode::TIMEOUT) {
+            RCLCPP_WARN(node_->get_logger(), "Timeout while cancelling all goals. Retrying... ");
+        } else if (cancel_result == rclcpp::FutureReturnCode::INTERRUPTED) {
+            RCLCPP_WARN(node_->get_logger(), "Cancellation interrupted. Retrying... ");
+        } else {
+            RCLCPP_WARN(node_->get_logger(), "Failed to cancel all goals. Retrying... ");
+        }
+    }
+    setStatus(BT::NodeStatus::IDLE);
 }
 
 
@@ -125,47 +161,146 @@ void LeafNodeBase::halt()
 
         while (true) 
         {
-            cancel_result = callback_group_executor_.spin_until_future_complete(future_cancel, server_timeout_);
+            cancel_result = callback_group_executor_.spin_until_future_complete(future_cancel, std::chrono::milliseconds(1000));
 
             if (cancel_result == rclcpp::FutureReturnCode::SUCCESS)
             {
-                RCLCPP_INFO(node_->get_logger(), "Goal for %s successfully canceled.", subtask_name_.c_str());
+                RCLCPP_INFO(node_->get_logger(), "Action server implemented on %s is received the cancel request.", subtask_name_.c_str());
                 
                 callback_group_executor_.spin_some(); 
                 auto status = goal_handle_->get_status();
-                if (status == action_msgs::msg::GoalStatus::STATUS_CANCELED)
+
+                // STATUS: 0 = STATUS_UNKNOWN, 1 = STATUS_ACCEPTED, 2 = STATUS_EXECUTING, 3 = STATUS_CANCELING,
+                //         4 = STATUS_SUCCEEDED, 5 = STATUS_ABORTED, 6 = STATUS_CANCELED, 7 = STATUS_LOST
+
+                if (status == 6 )
                 {
                     RCLCPP_INFO(node_->get_logger(), "Server confirmed goal cancellation for %s", subtask_name_.c_str());
                     break; 
                 }
+                else if (status == 5)
+                {
+                    RCLCPP_WARN(node_->get_logger(), "Server aborted the goal for %s", subtask_name_.c_str());
+                    break;
+                }
+                else if (status == 3)
+                {
+                    RCLCPP_WARN(node_->get_logger(), "Server is processing the goal cancellation for %s...", subtask_name_.c_str());
+                }
                 else
                 {
-                    RCLCPP_WARN(node_->get_logger(), "Server did not confirm cancellation, retrying...");
-                    future_cancel = action_client_->async_cancel_goal(goal_handle_); 
+                    RCLCPP_WARN(node_->get_logger(), "The status of %s is lost. Serching...", subtask_name_.c_str());
+                    RCLCPP_INFO(node_->get_logger(), "Node status: %d", status);
+                    cancel_process_count_= cancel_process_count_ - 1;
                 }
             }
             else if (cancel_result == rclcpp::FutureReturnCode::INTERRUPTED)
             {
                 RCLCPP_WARN(node_->get_logger(), "Cancellation interrupted for %s. After %d trial, all nodes will be forcibly shutdown. ", subtask_name_.c_str(),cancel_process_count_);
+                future_cancel = action_client_->async_cancel_goal(goal_handle_); 
                 cancel_process_count_= cancel_process_count_ - 1;
-                if (cancel_process_count_ == 0)
-                {
-                    RCLCPP_ERROR(node_->get_logger(), "All nodes will be forcibly shutdown. ");
-                    rclcpp::shutdown();
-                }
             }
             else
             {
                 RCLCPP_WARN(node_->get_logger(), "Waiting for goal cancellation to complete for %s...", subtask_name_.c_str());
+                cancel_process_count_= cancel_process_count_ - 1;
+            }
+
+            if (cancel_process_count_ == 0)
+            {
+                RCLCPP_ERROR(node_->get_logger(), "[EMERGENCY] Failed to cancel all goals after %d attempts. Please try to kill all nodes in another way.");
+                // system(script_command);
             }
         }
     }
-    else
-    {
-        RCLCPP_WARN(node_->get_logger(), "No active goal to cancel for %s", subtask_name_.c_str());
-    }
     setStatus(BT::NodeStatus::IDLE);
 }
+
+
+// 今後、pkillしていた部分に第2系統のキャンセル処理を追加する予定のため、halt_bef関数は消さないこと
+// void LeafNodeBase::halt_bef() // Since goal_handle_ is invalid, all goals on the Action Client are canceled using async_cancel_all_goals().
+// {
+//     auto future_cancel = action_client_->async_cancel_all_goals();
+//     auto cancel_result = rclcpp::spin_until_future_complete(node_->get_node_base_interface(), future_cancel, std::chrono::seconds(1));
+//     const char* script_command = "pkill -9 -f ros";
+
+//     if (cancel_result == rclcpp::FutureReturnCode::SUCCESS) {
+//       RCLCPP_INFO(node_->get_logger(), "All goals have been successfully cancelled.");
+//     } else if (cancel_result == rclcpp::FutureReturnCode::TIMEOUT) {
+//       RCLCPP_ERROR(node_->get_logger(), "Timeout occurred while cancelling all goals. For the safety, executing script to kill ROS processes...");
+//       system(script_command);
+//     } else if (cancel_result == rclcpp::FutureReturnCode::INTERRUPTED) {
+//       RCLCPP_ERROR(node_->get_logger(), "Cancellation was interrupted. For the safety, executing script to kill ROS processes...");
+//       system(script_command);
+//     } else {
+//       RCLCPP_ERROR(node_->get_logger(), "Failed to cancel all goals. For the safety, executing script to kill ROS processes...");
+//       system(script_command);
+//     }
+//     setStatus(BT::NodeStatus::IDLE);
+// }
+
+
+// 今後、pkillしていた部分に第2系統のキャンセル処理を追加する予定のため、halt関数は消さないこと
+// void LeafNodeBase::halt()
+// {
+//     if (should_cancel_goal())
+//     {
+//         RCLCPP_INFO(node_->get_logger(), "Attempting to cancel goal for %s", subtask_name_.c_str());
+//         auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
+//         auto cancel_result = rclcpp::FutureReturnCode::TIMEOUT;
+//         const char* script_command = "pkill -9 -f ros";
+
+//         while (true) 
+//         {
+//             cancel_result = callback_group_executor_.spin_until_future_complete(future_cancel, std::chrono::milliseconds(100));
+
+//             if (cancel_result == rclcpp::FutureReturnCode::SUCCESS)
+//             {
+//                 RCLCPP_INFO(node_->get_logger(), "Action server implemented on %s is received the cancel request.", subtask_name_.c_str());
+                
+//                 callback_group_executor_.spin_some(); 
+//                 auto status = goal_handle_->get_status();
+
+//                 // STATUS: 0 = STATUS_UNKNOWN, 1 = STATUS_ACCEPTED, 2 = STATUS_EXECUTING, 3 = STATUS_CANCELING, 
+//                 //         4 = STATUS_SUCCEEDED, 5 = STATUS_ABORTED, 6 = STATUS_CANCELED, 7 = STATUS_LOST
+
+//                 if (status == 6)
+//                 {
+//                     RCLCPP_INFO(node_->get_logger(), "Server confirmed goal cancellation for %s", subtask_name_.c_str());
+//                     break; 
+//                 }
+//                 else if (status == 3)
+//                 {
+//                     RCLCPP_WARN(node_->get_logger(), "Server is processing the goal cancellation for %s...", subtask_name_.c_str());
+//                 }
+//                 else
+//                 {
+//                     RCLCPP_WARN(node_->get_logger(), "The status of %s is lost. Serching...", subtask_name_.c_str());
+//                     // RCLCPP_INFO(node_->get_logger(), "Node status: %d", status);
+//                     cancel_process_count_= cancel_process_count_ - 1;
+//                 }
+//             }
+//             else if (cancel_result == rclcpp::FutureReturnCode::INTERRUPTED)
+//             {
+//                 RCLCPP_WARN(node_->get_logger(), "Cancellation interrupted for %s. After %d trial, all nodes will be forcibly shutdown. ", subtask_name_.c_str(),cancel_process_count_);
+//                 future_cancel = action_client_->async_cancel_goal(goal_handle_); 
+//                 cancel_process_count_= cancel_process_count_ - 1;
+//             }
+//             else
+//             {
+//                 RCLCPP_WARN(node_->get_logger(), "Waiting for goal cancellation to complete for %s...", subtask_name_.c_str());
+//                 cancel_process_count_= cancel_process_count_ - 1;
+//             }
+
+//             if (cancel_process_count_ == 0)
+//             {
+//                 RCLCPP_ERROR(node_->get_logger(), "For the safety, executing script to kill ROS processes... ");
+//                 system(script_command);
+//             }
+//         }
+//     }
+//     setStatus(BT::NodeStatus::IDLE);
+// }
 
 
 
@@ -194,6 +329,15 @@ NodeStatus LeafNodeBase::tick()
   {
     setStatus(NodeStatus::RUNNING);
     should_send_goal_ = true;
+
+    Optional<std::string> record_name = getInput<std::string>("record_name");
+    if (!record_name) {
+      RCLCPP_ERROR(node_->get_logger(),
+        "record_name port not provided: %s", record_name.error().c_str());
+      return NodeStatus::FAILURE;
+    }
+    goal_.record_name = record_name.value();
+
     if (!should_send_goal_)
     {
       return NodeStatus::FAILURE;
@@ -212,19 +356,9 @@ NodeStatus LeafNodeBase::tick()
         {
           return BT::NodeStatus::RUNNING;
         }
-        RCLCPP_WARN(node_->get_logger(), "Timed out while waiting for subtask to acknowledge goal request for %s",
-                    subtask_name_.c_str());
-        future_goal_handle_.reset(); 
-        this->halt(); 
-
-        if (!should_cancel_goal())
-        {
-            RCLCPP_INFO(node_->get_logger(), "Server confirmed cancellation or goal was already stopped.");
-        }
-        else
-        {
-            RCLCPP_WARN(node_->get_logger(), "Server failed to confirm cancellation.");
-        }        
+        RCLCPP_WARN(node_->get_logger(), "Timed out while waiting for subtask to acknowledge goal request for %s",subtask_name_.c_str());
+        this->halt_bef();
+        future_goal_handle_.reset();   
 
         return BT::NodeStatus::FAILURE;
       }
@@ -234,7 +368,7 @@ NodeStatus LeafNodeBase::tick()
     {
       feedback_.reset();
       auto goal_status = goal_handle_->get_status();
-      if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING || // goal_update�ϐ���false�ŏ���������Ă���̂ŁA���̏����͏��false
+      if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING || 
                             goal_status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED))
       {
         goal_updated_ = false;
@@ -275,8 +409,7 @@ NodeStatus LeafNodeBase::tick()
   }
   catch (const std::runtime_error& e)
   {
-    if (e.what() == std::string("send_goal failed") || e.what() == std::string("Goal was rejected by the action "
-                                                                               "server"))
+    if (e.what() == std::string("send_goal failed") || e.what() == std::string("Goal was rejected by the action server"))
     {
       return BT::NodeStatus::FAILURE;
     }

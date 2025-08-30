@@ -26,8 +26,13 @@ import tms_db_manager.tms_db_util as db_util
 
 
 NODE_NAME = "tms_ur_cv_odom"
+<<<<<<< HEAD
 DATA_ID = 2012
 DATA_TYPE = "machine"
+=======
+DATA_ID = 3012#2012
+DATA_TYPE = "machine_pose"
+>>>>>>> develop/operasimvr
 
 
 class TmsUrCvOdomNode(Node):

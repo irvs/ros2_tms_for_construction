@@ -1,167 +1,155 @@
-// Copyright 2023, IRVS Laboratory, Kyushu University, Japan.
- 
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
- 
-//      http://www.apache.org/licenses/LICENSE-2.0
- 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 #ifndef CONDITIONAL_EXPRESSION_NODE_HPP
 #define CONDITIONAL_EXPRESSION_NODE_HPP
 
+// Copyright 2023, IRVS Laboratory, Kyushu University, Japan.
+// Licensed under the Apache License, Version 2.0 (the "License");
+
 #include "rclcpp/rclcpp.hpp"
 #include <thread>
-#include <bsoncxx/json.hpp>
-#include <bsoncxx/builder/stream/document.hpp>
-#include <mongocxx/client.hpp>
-#include <mongocxx/instance.hpp>
-#include <mongocxx/uri.hpp>
-#include <mongocxx/stdx.hpp>
-#include <mongocxx/pool.hpp>
-#include "behaviortree_cpp_v3/action_node.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
-#include "exprtk.hpp"
+#include <algorithm>
+#include <cctype>
 #include <sstream>
-#include <stdexcept>
-#include <unordered_map>
-#include <typeinfo>
+#include <unordered_set>
+#include <regex>
+#include "behaviortree_cpp_v3/action_node.h"
+#include "exprtk.hpp"
 
 using namespace BT;
+
+static std::string trim(const std::string& s) {
+    auto it1 = std::find_if_not(s.begin(), s.end(), [](char c){ return std::isspace((unsigned char)c); });
+    auto it2 = std::find_if_not(s.rbegin(), s.rend(), [](char c){ return std::isspace((unsigned char)c); }).base();
+    return (it1 < it2) ? std::string(it1, it2) : std::string();
+}
 
 class ConditionalExpression : public SyncActionNode
 {
 public:
     ConditionalExpression(const std::string& name, const NodeConfiguration& config)
-        : SyncActionNode(name, config), pool_(mongocxx::uri{})
+      : SyncActionNode(name, config)
     {
         node_ = rclcpp::Node::make_shared("conditional_expression");
-        spin_thread_ = std::thread([this]() { rclcpp::spin(node_); });
+        spin_thread_ = std::thread([this](){ rclcpp::spin(node_); });
     }
 
     ~ConditionalExpression()
     {
         rclcpp::shutdown();
-        if (spin_thread_.joinable()) {
-            spin_thread_.join();
-        }
+        if (spin_thread_.joinable()) spin_thread_.join();
     }
 
     static PortsList providedPorts()
     {
-        return {
-            InputPort<std::string>("conditional_expression")
-        };
+        return { InputPort<std::string>("conditional_expression") };
     }
 
     NodeStatus tick() override
     {
-        Optional<std::string> expr_str = getInput<std::string>("conditional_expression");
-
-        if (!expr_str)
-        {
-            std::cout << "[ConditionalExpression] Missing required input." << std::endl;
+        Optional<std::string> opt = getInput<std::string>("conditional_expression");
+        if (!opt) {
+            RCLCPP_ERROR(node_->get_logger(), "[ConditionalExpression] Missing required input.");
             return NodeStatus::FAILURE;
         }
-
-        bool result;
-        if (!evaluateCondition(expr_str.value(), result))
-        {
-            std::cout << "[ConditionalExpression] Failed to evaluate condition." << std::endl;
+        bool result = false;
+        if (!evaluateCondition(opt.value(), result)) {
+            RCLCPP_ERROR(node_->get_logger(), "[ConditionalExpression] Evaluation error.");
             return NodeStatus::FAILURE;
         }
-
-        std::cout << "[ConditionalExpression] Evaluated condition: " << expr_str.value() 
-                  << " Result: " << std::boolalpha << result << std::endl;
-
         return result ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
     }
 
 private:
     rclcpp::Node::SharedPtr node_;
     std::thread spin_thread_;
-    mongocxx::pool pool_;
 
-    bool evaluateCondition(const std::string& condition, bool& result)
+    bool evaluateCondition(std::string expr, bool& result)
     {
+        auto bb = config().blackboard;
+        RCLCPP_DEBUG(node_->get_logger(), "[ConditionalExpression] Raw expr: %s", expr.c_str());
+
+        // 1) Substitute identifiers: non-quoted words for blackboard
+        static const std::unordered_set<std::string> reserved = {
+            "and","or","true","false","==","!=","<",">","<=",">="
+        };
+        static const std::regex word_re(R"REGEX([A-Za-z_]\w*)REGEX");
+        static const std::regex num_re(R"REGEX(^[+-]?(?:\d+\.?\d*|\.\d+)$)REGEX");
+
+        std::string out;
+        size_t pos = 0;
+        while (pos < expr.size()) {
+            if (expr[pos] == '"' || (!std::isalpha(static_cast<unsigned char>(expr[pos])) && expr[pos] != '_')) {
+                out += expr[pos++];
+            } else {
+                std::smatch wm;
+                std::string tail(expr.begin()+pos, expr.end());
+                if (std::regex_search(tail, wm, word_re) && wm.position() == 0) {
+                    std::string tok = wm.str();
+                    std::string sub = tok;
+                    bool is_num  = std::regex_match(tok, num_re);
+                    bool is_bool = (tok == "true" || tok == "false");
+                    if (!reserved.count(tok) && !is_num && !is_bool) {
+                        if (auto anyv = bb->getAny(tok)) {
+                            if (anyv->type() == typeid(std::string)) {
+                                sub = "\"" + anyv->cast<std::string>() + "\"";
+                            } else if (anyv->type() == typeid(bool)) {
+                                sub = anyv->cast<bool>() ? "true" : "false";
+                            } else if (anyv->type() == typeid(int)) {
+                                sub = std::to_string(anyv->cast<int>());
+                            } else if (anyv->type() == typeid(double)) {
+                                sub = std::to_string(anyv->cast<double>());
+                            }
+                        } else {
+                            sub = "\"\"";
+                        }
+                    }
+                    out += sub;
+                    pos += tok.size();
+                    continue;
+                }
+                out += expr[pos++];
+            }
+        }
+        expr.swap(out);
+        RCLCPP_DEBUG(node_->get_logger(), "[ConditionalExpression] After key subst: %s", expr.c_str());
+        // prepare regex matcher for subsequent string comparisons
+        std::smatch m;
+
+        // 2) Pre-evaluate explicit string comparisons generated by substitution
+        static const std::regex str_cmp_re(R"REGEX("([^"]*)"\s*(==|!=)\s*"([^"]*)")REGEX");
+        while (std::regex_search(expr, m, str_cmp_re)) {
+            std::string a  = m[1].str();
+            std::string op = m[2].str();
+            std::string b  = m[3].str();
+            bool cmp = (op == "==") ? (a == b) : (a != b);
+            expr = m.prefix().str() + (cmp ? "true" : "false") + m.suffix().str();
+        }
+        RCLCPP_DEBUG(node_->get_logger(), "[ConditionalExpression] After string cmp: %s", expr.c_str());
+
+        // Log final expr before ExprTK
+        RCLCPP_INFO(node_->get_logger(), "[ConditionalExpression] ExprTK input: %s", expr.c_str());
+
+        // 3) Final evaluation via ExprTK
         typedef exprtk::symbol_table<double> symbol_table_t;
         typedef exprtk::expression<double>   expression_t;
         typedef exprtk::parser<double>       parser_t;
-
         symbol_table_t symbol_table;
         expression_t   expression;
         parser_t       parser;
 
-        auto blackboard_ptr = config().blackboard;
-        auto blackboard_keys = blackboard_ptr->getKeys();
-
-        static std::unordered_map<std::string, double> variable_storage;
-
-        for (const auto& key_view : blackboard_keys)
-        {
-            try
-            {
-                std::string key(key_view.data(), key_view.size());
-                auto value_any = blackboard_ptr->getAny(key);
-                if (value_any)
-                {
-                    if (value_any->type() == typeid(bool))
-                    {
-                        bool value = value_any->cast<bool>();
-                        variable_storage[key] = value ? 1.0 : 0.0;
-                    }
-                    else if (value_any->type() == typeid(int))
-                    {
-                        variable_storage[key] = static_cast<double>(value_any->cast<int>());
-                    }
-                    else if (value_any->type() == typeid(double))
-                    {
-                        variable_storage[key] = value_any->cast<double>();
-                    }
-                    else
-                    {
-                        std::cerr << "[ConditionalExpression] Unsupported type for key: " << key << std::endl;
-                    }
-                }
-            }
-            catch (const std::exception& e)
-            {
-                std::cerr << "[ConditionalExpression] Error retrieving variable " << key_view << ": " << e.what() << std::endl;
-                return false;
-            }
-        }
-
-        for (auto& var : variable_storage)
-        {
-            double& value = variable_storage[var.first];
-            std::cout << "[ConditionalExpression Debug] Variable: " << var.first 
-                      << " Value: " << value << std::endl;
-            symbol_table.add_variable(var.first, value);
-        }
-
+        symbol_table.add_constant("true",  1.0);
+        symbol_table.add_constant("false", 0.0);
         symbol_table.add_constants();
         expression.register_symbol_table(symbol_table);
 
-        if (!parser.compile(condition, expression))
-        {
-            std::cerr << "[ConditionalExpression] Parsing Error: " << parser.error() << std::endl;
-            for (std::size_t i = 0; i < parser.error_count(); ++i) {
-                exprtk::parser_error::type error = parser.get_error(i);
-                std::cerr << "[ConditionalExpression] Error: " << error.diagnostic
-                          << " at position: " << error.token.position << std::endl;
-            }
+        if (!parser.compile(expr, expression)) {
+            RCLCPP_ERROR(node_->get_logger(), "[ConditionalExpression] ExprTK parse failed: %s", parser.error().c_str());
             return false;
         }
-
-        result = expression.value() != 0.0;
-        std::cout << "[ConditionalExpression] Condition Result: " << result << std::endl;
+        double val = expression.value();
+        result = (val != 0.0);
+        RCLCPP_INFO(node_->get_logger(), "[ConditionalExpression] Final eval '%s' -> %s", expr.c_str(), result?"true":"false");
         return true;
     }
 };
 
-#endif
+#endif // CONDITIONAL_EXPRESSION_NODE_HPP

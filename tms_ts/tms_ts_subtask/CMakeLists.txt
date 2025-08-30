@@ -21,29 +21,18 @@ find_package(nlohmann_json REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(rosidl_default_runtime REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(bsoncxx REQUIRED)
 find_package(mongocxx REQUIRED)
 find_package(tms_msg_ts REQUIRED)
 find_package(tms_msg_rp REQUIRED)
+find_package(tms_msg_db REQUIRED)
 find_package(glog REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(com3_msgs)
-
-set(dependencies_cpp
-  rclcpp
-  rclcpp_action
-  std_msgs
-  ament_cmake
-  behaviortree_cpp_v3
-  nlohmann_json
-  geometry_msgs
-  tms_msg_ts
-  tms_msg_rp
-  nav2_msgs
-  com3_msgs)
-
+find_package(Qt5Widgets REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
   src/leaf_node_base.cpp
@@ -63,371 +52,145 @@ target_link_libraries(${PROJECT_NAME}
 mongocxx
 bsoncxx)
 
-ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
-add_executable(subtask_ic120_follow_waypoints_deg_server src/ic120/subtask_ic120_follow_waypoints_deg_server.cpp)
-add_executable(subtask_ic120_follow_waypoints_server src/ic120/subtask_ic120_follow_waypoints_server.cpp)
-add_executable(subtask_ic120_navigate_anywhere_deg_server src/ic120/subtask_ic120_navigate_anywhere_deg_server.cpp)
-add_executable(subtask_ic120_navigate_anywhere_server src/ic120/subtask_ic120_navigate_anywhere_server.cpp)
-add_executable(subtask_ic120_navigate_through_poses_deg_server src/ic120/subtask_ic120_navigate_through_poses_deg_server.cpp)
-add_executable(subtask_ic120_navigate_through_poses_server src/ic120/subtask_ic120_navigate_through_poses_server.cpp)
-add_executable(subtask_ic120_release_soil_server src/ic120/subtask_ic120_release_soil_server.cpp)
-add_executable(zx120_sample_boom_subtask src/sample/zx120/sample_boom_subtask.cpp)
-add_executable(zx120_sample_swing_subtask src/sample/zx120/sample_swing_subtask.cpp)
-add_executable(zx120_sample_arm_subtask src/sample/zx120/sample_arm_subtask.cpp)
-add_executable(zx120_sample_bucket_subtask src/sample/zx120/sample_bucket_subtask.cpp)
-add_executable(zx200_sample_boom_subtask src/sample/zx200/sample_boom_subtask.cpp)
-add_executable(zx200_sample_swing_subtask src/sample/zx200/sample_swing_subtask.cpp)
-add_executable(zx200_sample_arm_subtask src/sample/zx200/sample_arm_subtask.cpp)
-add_executable(zx200_sample_bucket_subtask src/sample/zx200/sample_bucket_subtask.cpp)
-add_executable(subtask_zx200_change_pose src/zx200/subtask_zx200_change_pose.cpp)
-add_executable(subtask_zx200_excavate_simple src/zx200/subtask_zx200_excavate_simple.cpp)
-add_executable(subtask_zx200_release_simple src/zx200/subtask_zx200_release_simple.cpp)
-# add_executable(param_publisher src/common/param_publisher.cpp)
+# Subtask Nodes for D37PXI 
+add_executable(subtask_d37pxi_follow_waypoints_deg src/OPERA/d37pxi/subtask_d37pxi_follow_waypoints_deg.cpp)
+add_executable(subtask_d37pxi_follow_waypoints src/OPERA/d37pxi/subtask_d37pxi_follow_waypoints.cpp)
+add_executable(subtask_d37pxi_navigate_anywhere_deg src/OPERA/d37pxi/subtask_d37pxi_navigate_anywhere_deg.cpp)
+add_executable(subtask_d37pxi_navigate_anywhere src/OPERA/d37pxi/subtask_d37pxi_navigate_anywhere.cpp)
+add_executable(subtask_d37pxi_navigate_through_poses_deg src/OPERA/d37pxi/subtask_d37pxi_navigate_through_poses_deg.cpp)
+add_executable(subtask_d37pxi_navigate_through_poses src/OPERA/d37pxi/subtask_d37pxi_navigate_through_poses.cpp)
 
-target_include_directories(subtask_ic120_follow_waypoints_deg_server PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
+# Subtask Nodes for MST2200
+add_executable(subtask_mst2200_follow_waypoints_deg src/FUJITA/mst2200/subtask_mst2200_follow_waypoints_deg.cpp)
+add_executable(subtask_mst2200_follow_waypoints src/FUJITA/mst2200/subtask_mst2200_follow_waypoints.cpp)
+add_executable(subtask_mst2200_navigate_anywhere_deg src/FUJITA/mst2200/subtask_mst2200_navigate_anywhere_deg.cpp)
+add_executable(subtask_mst2200_navigate_anywhere src/FUJITA/mst2200/subtask_mst2200_navigate_anywhere.cpp)
+add_executable(subtask_mst2200_navigate_through_poses_deg src/FUJITA/mst2200/subtask_mst2200_navigate_through_poses_deg.cpp)
+add_executable(subtask_mst2200_navigate_through_poses src/FUJITA/mst2200/subtask_mst2200_navigate_through_poses.cpp)
+add_executable(subtask_mst2200_release_soil src/FUJITA/mst2200/subtask_mst2200_release_soil.cpp)
+add_executable(subtask_mst2200_swing src/FUJITA/mst2200/subtask_mst2200_swing.cpp)
+add_executable(subtask_mst2200_swing_align_to_heading src/FUJITA/mst2200/subtask_mst2200_swing_align_to_heading.cpp)
 
-target_include_directories(subtask_ic120_follow_waypoints_server PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
+# Subtask Nodes for IC120
+add_executable(subtask_ic120_follow_waypoints_deg src/OPERA/ic120/subtask_ic120_follow_waypoints_deg.cpp)
+add_executable(subtask_ic120_follow_waypoints src/OPERA/ic120/subtask_ic120_follow_waypoints.cpp)
+add_executable(subtask_ic120_navigate_anywhere_deg src/OPERA/ic120/subtask_ic120_navigate_anywhere_deg.cpp)
+add_executable(subtask_ic120_navigate_anywhere src/OPERA/ic120/subtask_ic120_navigate_anywhere.cpp)
+add_executable(subtask_ic120_navigate_through_poses_deg src/OPERA/ic120/subtask_ic120_navigate_through_poses_deg.cpp)
+add_executable(subtask_ic120_navigate_through_poses src/OPERA/ic120/subtask_ic120_navigate_through_poses.cpp)
+add_executable(subtask_ic120_release_soil src/OPERA/ic120/subtask_ic120_release_soil.cpp)
 
-  target_include_directories(subtask_ic120_navigate_anywhere_deg_server PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
+# Subtask Nodes for ZX200
+add_executable(subtask_zx200_change_pose src/OPERA/zx200/subtask_zx200_change_pose.cpp)
+add_executable(subtask_zx200_change_pose_plan src/OPERA/zx200/subtask_zx200_change_pose_plan.cpp)
+add_executable(subtask_zx200_excavate_simple_plan src/OPERA/zx200/subtask_zx200_excavate_simple_plan.cpp)
+add_executable(subtask_zx200_excavate_simple src/OPERA/zx200/subtask_zx200_excavate_simple.cpp)
+add_executable(subtask_zx200_release_simple src/OPERA/zx200/subtask_zx200_release_simple.cpp)
+add_executable(subtask_zx200_follow_waypoints src/OPERA/zx200/subtask_zx200_follow_waypoints.cpp)
+add_executable(subtask_zx200_follow_waypoints_deg src/OPERA/zx200/subtask_zx200_follow_waypoints_deg.cpp)
+add_executable(subtask_zx200_navigate_anywhere src/OPERA/zx200/subtask_zx200_navigate_anywhere.cpp)
+add_executable(subtask_zx200_navigate_anywhere_deg src/OPERA/zx200/subtask_zx200_navigate_anywhere_deg.cpp)
+add_executable(subtask_zx200_navigate_through_poses src/OPERA/zx200/subtask_zx200_navigate_through_poses.cpp)
+add_executable(subtask_zx200_navigate_through_poses_deg src/OPERA/zx200/subtask_zx200_navigate_through_poses_deg.cpp)
 
-target_include_directories(subtask_ic120_navigate_anywhere_server PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
+# Substak Nodes for MST110CR
+add_executable(subtask_mst110cr_follow_waypoints src/OPERA/mst110cr/subtask_mst110cr_follow_waypoints.cpp)
+add_executable(subtask_mst110cr_follow_waypoints_deg src/OPERA/mst110cr/subtask_mst110cr_follow_waypoints_deg.cpp)
+add_executable(subtask_mst110cr_navigate_anywhere src/OPERA/mst110cr/subtask_mst110cr_navigate_anywhere.cpp)
+add_executable(subtask_mst110cr_navigate_anywhere_deg src/OPERA/mst110cr/subtask_mst110cr_navigate_anywhere_deg.cpp)
+add_executable(subtask_mst110cr_navigate_through_poses src/OPERA/mst110cr/subtask_mst110cr_navigate_through_poses.cpp)
+add_executable(subtask_mst110cr_navigate_through_poses_deg src/OPERA/mst110cr/subtask_mst110cr_navigate_through_poses_deg.cpp)
+add_executable(subtask_mst110cr_release_soil src/OPERA/mst110cr/subtask_mst110cr_release_soil.cpp)
+add_executable(subtask_mst110cr_swing src/OPERA/mst110cr/subtask_mst110cr_swing.cpp)
+add_executable(subtask_mst110cr_swing_align_to_heading src/OPERA/mst110cr/subtask_mst110cr_swing_align_to_heading.cpp)
 
-  target_include_directories(subtask_ic120_navigate_through_poses_deg_server PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)  
 
-  target_include_directories(subtask_ic120_navigate_through_poses_server PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)  
-
-  target_include_directories(subtask_ic120_release_soil_server PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
-
-target_include_directories(zx120_sample_boom_subtask PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
-
-target_include_directories(zx120_sample_swing_subtask PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
-
-target_include_directories(zx120_sample_arm_subtask PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
-
-target_include_directories(zx120_sample_bucket_subtask PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
-
-  target_include_directories(zx200_sample_boom_subtask PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
-
-target_include_directories(zx200_sample_swing_subtask PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
-
-target_include_directories(zx200_sample_arm_subtask PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
-
-target_include_directories(zx200_sample_bucket_subtask PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
-
-target_include_directories(subtask_zx200_change_pose PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
-
-target_include_directories(subtask_zx200_excavate_simple PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
-
-target_include_directories(subtask_zx200_release_simple PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  /usr/local/include/mongocxx/v_noabi
-  /usr/local/include/bsoncxx/v_noabi)
-
-  # target_include_directories(param_publisher PUBLIC
-  # $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  # $<INSTALL_INTERFACE:include>
-  # /usr/local/include/mongocxx/v_noabi
-  # /usr/local/include/bsoncxx/v_noabi)
-
-  target_link_directories(subtask_ic120_follow_waypoints_deg_server PUBLIC
-  /usr/local/lib)
-
-target_link_directories(subtask_ic120_follow_waypoints_server PUBLIC
-/usr/local/lib)
-
-target_link_directories(subtask_ic120_navigate_anywhere_deg_server PUBLIC
-/usr/local/lib)
-
-target_link_directories(subtask_ic120_navigate_anywhere_server PUBLIC
-/usr/local/lib)
-
-target_link_directories(subtask_ic120_navigate_through_poses_deg_server PUBLIC
-/usr/local/lib)
-
-target_link_directories(subtask_ic120_navigate_through_poses_server PUBLIC
-/usr/local/lib)
-
-target_link_directories(subtask_ic120_release_soil_server PUBLIC
-/usr/local/lib)
-
-target_link_directories(zx120_sample_boom_subtask PUBLIC
-/usr/local/lib)
-
-target_link_directories(zx120_sample_swing_subtask PUBLIC
-/usr/local/lib)
-
-target_link_directories(zx120_sample_arm_subtask PUBLIC
-/usr/local/lib)
-
-target_link_directories(zx120_sample_bucket_subtask PUBLIC
-/usr/local/lib)
-
-target_link_directories(zx200_sample_boom_subtask PUBLIC
-/usr/local/lib)
-
-target_link_directories(zx200_sample_swing_subtask PUBLIC
-/usr/local/lib)
-
-target_link_directories(zx200_sample_arm_subtask PUBLIC
-/usr/local/lib)
-
-target_link_directories(zx200_sample_bucket_subtask PUBLIC
-/usr/local/lib)
-
-target_link_directories(subtask_zx200_change_pose PUBLIC
-/usr/local/lib)
-
-target_link_directories(subtask_zx200_excavate_simple PUBLIC
-/usr/local/lib)
-
-target_link_directories(subtask_zx200_release_simple PUBLIC
-/usr/local/lib)
-
-# target_link_directories(param_publisher PUBLIC
-# /usr/local/lib)
-
-target_link_libraries(subtask_ic120_follow_waypoints_deg_server
-${PROJECT_NAME}
-mongocxx
-bsoncxx
-glog::glog
-)
-
-target_link_libraries(subtask_ic120_follow_waypoints_server
-${PROJECT_NAME}
-mongocxx
-bsoncxx
-glog::glog
-)
-
-target_link_libraries(subtask_ic120_navigate_anywhere_deg_server
-${PROJECT_NAME}
-mongocxx
-bsoncxx
-glog::glog
-)
-
-target_link_libraries(subtask_ic120_navigate_anywhere_server
-${PROJECT_NAME}
-mongocxx
-bsoncxx
-glog::glog
-)
-
-target_link_libraries(subtask_ic120_navigate_through_poses_deg_server
-${PROJECT_NAME}
-mongocxx
-bsoncxx
-glog::glog
-)
-
-target_link_libraries(subtask_ic120_navigate_through_poses_server
-${PROJECT_NAME}
-mongocxx
-bsoncxx
-glog::glog
-)
-
-target_link_libraries(subtask_ic120_release_soil_server
-${PROJECT_NAME}
-mongocxx
-bsoncxx
-glog::glog
-)
-
-target_link_libraries(zx120_sample_boom_subtask
-  ${PROJECT_NAME}
-  mongocxx
-  bsoncxx
-  glog::glog
-)
-
-target_link_libraries(zx120_sample_swing_subtask
-  ${PROJECT_NAME}
-  mongocxx
-  bsoncxx
-  glog::glog
-)
-
-target_link_libraries(zx120_sample_arm_subtask
-  ${PROJECT_NAME}
-  mongocxx
-  bsoncxx
-  glog::glog
-)
-
-target_link_libraries(zx120_sample_bucket_subtask
-  ${PROJECT_NAME}
-  mongocxx
-  bsoncxx
-  glog::glog
-)
-
-target_link_libraries(zx200_sample_boom_subtask
-  ${PROJECT_NAME}
-  mongocxx
-  bsoncxx
-  glog::glog
-)
-
-target_link_libraries(zx200_sample_swing_subtask
-  ${PROJECT_NAME}
-  mongocxx
-  bsoncxx
-  glog::glog
-)
-
-target_link_libraries(zx200_sample_arm_subtask
-  ${PROJECT_NAME}
-  mongocxx
-  bsoncxx
-  glog::glog
-)
-
-target_link_libraries(zx200_sample_bucket_subtask
-  ${PROJECT_NAME}
-  mongocxx
-  bsoncxx
-  glog::glog
-)
-
-target_link_libraries(subtask_zx200_change_pose
-  ${PROJECT_NAME}
-  mongocxx
-  bsoncxx
-  glog::glog
-)
-
-target_link_libraries(subtask_zx200_excavate_simple
-  ${PROJECT_NAME}
-  mongocxx
-  bsoncxx
-  glog::glog
-)
-
-target_link_libraries(subtask_zx200_release_simple
-  ${PROJECT_NAME}
-  mongocxx
-  bsoncxx
-  glog::glog
-)
-
-# target_link_libraries(param_publisher
-#   ${PROJECT_NAME}
-#   mongocxx
-#   bsoncxx
-#   glog::glog
-# )
-
-ament_target_dependencies(subtask_ic120_follow_waypoints_deg_server ${dependencies_cpp})
-ament_target_dependencies(subtask_ic120_follow_waypoints_server ${dependencies_cpp})
-ament_target_dependencies(subtask_ic120_navigate_anywhere_deg_server ${dependencies_cpp})
-ament_target_dependencies(subtask_ic120_navigate_anywhere_server ${dependencies_cpp})
-ament_target_dependencies(subtask_ic120_navigate_through_poses_deg_server ${dependencies_cpp})
-ament_target_dependencies(subtask_ic120_navigate_through_poses_server ${dependencies_cpp})
-ament_target_dependencies(subtask_ic120_release_soil_server ${dependencies_cpp})
-ament_target_dependencies(zx120_sample_boom_subtask ${dependencies_cpp})
-ament_target_dependencies(zx120_sample_swing_subtask ${dependencies_cpp})
-ament_target_dependencies(zx120_sample_arm_subtask ${dependencies_cpp})
-ament_target_dependencies(zx120_sample_bucket_subtask ${dependencies_cpp})
-ament_target_dependencies(zx200_sample_boom_subtask ${dependencies_cpp})
-ament_target_dependencies(zx200_sample_swing_subtask ${dependencies_cpp})
-ament_target_dependencies(zx200_sample_arm_subtask ${dependencies_cpp})
-ament_target_dependencies(zx200_sample_bucket_subtask ${dependencies_cpp})
-ament_target_dependencies(subtask_zx200_change_pose ${dependencies_cpp})
-ament_target_dependencies(subtask_zx200_excavate_simple ${dependencies_cpp})
-ament_target_dependencies(subtask_zx200_release_simple ${dependencies_cpp})
-# ament_target_dependencies(param_publisher ${dependencies_cpp})
-
-install(TARGETS
-  subtask_ic120_follow_waypoints_deg_server
-  subtask_ic120_follow_waypoints_server
-  subtask_ic120_navigate_anywhere_deg_server
-  subtask_ic120_navigate_anywhere_server
-  subtask_ic120_navigate_through_poses_deg_server
-  subtask_ic120_navigate_through_poses_server
-  subtask_ic120_release_soil_server
-  zx120_sample_boom_subtask
-  zx120_sample_swing_subtask
-  zx120_sample_arm_subtask
-  zx120_sample_bucket_subtask
-  zx200_sample_boom_subtask
-  zx200_sample_swing_subtask
-  zx200_sample_arm_subtask
-  zx200_sample_bucket_subtask
+set(TARGETS
+  subtask_d37pxi_follow_waypoints_deg
+  subtask_d37pxi_follow_waypoints
+  subtask_d37pxi_navigate_anywhere_deg
+  subtask_d37pxi_navigate_anywhere
+  subtask_d37pxi_navigate_through_poses_deg
+  subtask_d37pxi_navigate_through_poses
+  subtask_mst2200_follow_waypoints_deg
+  subtask_mst2200_follow_waypoints
+  subtask_mst2200_navigate_anywhere_deg
+  subtask_mst2200_navigate_anywhere
+  subtask_mst2200_navigate_through_poses_deg
+  subtask_mst2200_navigate_through_poses
+  subtask_mst2200_release_soil
+  subtask_mst2200_swing
+  subtask_mst2200_swing_align_to_heading
+  subtask_ic120_follow_waypoints_deg
+  subtask_ic120_follow_waypoints
+  subtask_ic120_navigate_anywhere_deg
+  subtask_ic120_navigate_anywhere
+  subtask_ic120_navigate_through_poses_deg
+  subtask_ic120_navigate_through_poses
+  subtask_ic120_release_soil
   subtask_zx200_change_pose
+  subtask_zx200_change_pose_plan
+  subtask_zx200_excavate_simple_plan
   subtask_zx200_excavate_simple
   subtask_zx200_release_simple
-  # param_publisher
+  subtask_zx200_follow_waypoints_deg
+  subtask_zx200_follow_waypoints
+  subtask_zx200_navigate_anywhere_deg
+  subtask_zx200_navigate_anywhere
+  subtask_zx200_navigate_through_poses_deg
+  subtask_zx200_navigate_through_poses
+  subtask_mst110cr_follow_waypoints_deg
+  subtask_mst110cr_follow_waypoints
+  subtask_mst110cr_navigate_anywhere_deg
+  subtask_mst110cr_navigate_anywhere
+  subtask_mst110cr_navigate_through_poses_deg
+  subtask_mst110cr_navigate_through_poses
+  subtask_mst110cr_release_soil
+  subtask_mst110cr_swing
+  subtask_mst110cr_swing_align_to_heading
+)
+
+set(COMMON_INCLUDE_DIRS
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  /usr/local/include/mongocxx/v_noabi
+  /usr/local/include/bsoncxx/v_noabi
+)
+
+set(COMMON_LINK_DIR /usr/local/lib)
+
+set(COMMON_LIBS
+  ${PROJECT_NAME}
+  mongocxx
+  bsoncxx
+  glog::glog
+)
+
+set(dependencies_cpp
+  rclcpp
+  rclcpp_action
+  std_msgs
+  ament_cmake
+  behaviortree_cpp_v3
+  nlohmann_json
+  geometry_msgs
+  sensor_msgs
+  tms_msg_ts
+  tms_msg_rp
+  tms_msg_db
+  nav2_msgs
+  com3_msgs
+  Qt5Widgets)
+
+foreach(target IN LISTS TARGETS)
+target_include_directories(${target} PUBLIC ${COMMON_INCLUDE_DIRS})
+  target_link_directories(${target} PUBLIC ${COMMON_LINK_DIR})
+  target_link_libraries(${target} ${COMMON_LIBS})
+endforeach()
+
+ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
+
+install(TARGETS ${TARGETS}
   DESTINATION lib/${PROJECT_NAME}
 )
 

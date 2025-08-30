@@ -16,6 +16,7 @@ from datetime import datetime
 import json
 import rclpy
 from rclpy.node import Node
+from rclpy.executors import MultiThreadedExecutor
 
 from geometry_msgs.msg import Pose
 from std_msgs.msg import String
@@ -31,7 +32,7 @@ DATA_ID = 10000
 DATA_TYPE = 'parameter' 
 DATA_NAME = 'data_name'
 
-class UpdateDB_Parameter(Node):
+class UpdateDbParameter(Node):
     def __init__(self):
         super().__init__("tms_sp_zx200_end_effector")
         self.subscription = self.create_subscription(
@@ -46,18 +47,24 @@ class UpdateDB_Parameter(Node):
         collection = db['parameter']
         query = {"model_name": msg.model_name, "type" : "dynamic", "record_name": msg.record_name}
         update_parameter_info= {"x": None, "y": None, "z": None, "theta_w": None}
-        parameter_info = collection.find_one(query)
-        # self.get_logger().info(f"BEFORE: parameter_info: {update_parameter_info}")
-        for update_val in update_parameter_info:
-            if update_parameter_info[update_val] == None:
-                update_parameter_info[update_val] = eval(f"msg.{update_val}")
-        # self.get_logger().info(f"AFTER: parameter_info: {update_parameter_info}")
-        update_query = {"$set": update_parameter_info}
-        collection.update_one(query, update_query)
+        parameter_info = collection.find_one(query)        
+        LOCK_FLG = bool(parameter_info["LOCK_FLG"]) 
+        self.get_logger().info(f"LOCK_FLG is {LOCK_FLG}")
+
+        if LOCK_FLG == False:
+            for update_val in update_parameter_info:
+                if update_parameter_info[update_val] == None:
+                    update_parameter_info[update_val] = eval(f"msg.{update_val}")
+            update_query = {"$set": update_parameter_info}
+            collection.update_one(query, update_query)
+        else :
+            self.get_logger().info("LOCK_FLG parameter is true. So, update process is cancelled.")
+        
+
 
 def main(args=None):
     rclpy.init(args=args)
-    update_db_parameter = UpdateDB_Parameter()
+    update_db_parameter = UpdateDbParameter()
     rclpy.spin(update_db_parameter)
     update_db_parameter.destroy_node()
     rclpy.shutdown()

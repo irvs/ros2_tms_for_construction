@@ -22,25 +22,58 @@ def generate_launch_description():
     output_mesh = DeclareLaunchArgument(
         'output/terrain/mesh_srv', default_value='output/terrain/mesh_srv'
     )
+    output_texture = DeclareLaunchArgument(
+        'output/terrain/texture', default_value='output/terrain/texture'
+    )
     filename_mesh = DeclareLaunchArgument(
         'filename_mesh', default_value='filename_mesh'
     )
+    DATA_TYPE = DeclareLaunchArgument(
+        'DATA_TYPE_TERRAIN', default_value='heightmap', description='Type of the data (heightmap or other)'
+    )
+    DATA_TYPE_TEXTURE = DeclareLaunchArgument(
+        'DATA_TYPE_TEXTURE', default_value='texture', description='Type of the data (heightmap or other)'
+    )
 
     # Nodes
-    tms_ur_construction_terrain_mesh_node = Node(
+    #tms_ur_construction_terrain_mesh_node = Node(
+    tms_ur_construction_terrain_heightmap_node = Node(
         package='tms_ur_construction',
-        executable='tms_ur_construction_terrain_mesh',
+      #  executable='tms_ur_construction_terrain_mesh',
+        executable='tms_ur_construction_terrain_heightmap',
         output='screen',
         remappings=[
             ('~/output/terrain/mesh_srv', LaunchConfiguration('output/terrain/mesh_srv')),
         ],
         parameters=[{
             'filename_mesh': LaunchConfiguration('filename_mesh'),
+            'DATA_TYPE': LaunchConfiguration('DATA_TYPE_TERRAIN'),
         }]
     )
+
+    # Nodes
+    #tms_ur_construction_terrain_mesh_node = Node(
+    tms_ur_construction_terrain_texture_node = Node(
+        package='tms_ur_construction',
+      #  executable='tms_ur_construction_terrain_mesh',
+        executable='tms_ur_construction_terrain_heightmap',
+        output='screen',
+        remappings=[
+            ('~/output/terrain/mesh_srv', LaunchConfiguration('output/terrain/mesh_srv')),
+        ],
+        parameters=[{
+            'filename_mesh': LaunchConfiguration('filename_mesh'),
+            'DATA_TYPE': LaunchConfiguration('DATA_TYPE_TEXTURE'),
+        }]
+    )
+
 
     return LaunchDescription([
         output_mesh,
         filename_mesh,
-        tms_ur_construction_terrain_mesh_node,
+        DATA_TYPE,
+        DATA_TYPE_TEXTURE,
+        tms_ur_construction_terrain_heightmap_node,
+        tms_ur_construction_terrain_texture_node,
+        #tms_ur_construction_terrain_mesh_node,
     ])

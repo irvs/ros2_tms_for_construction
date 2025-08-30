@@ -19,8 +19,8 @@ setup(
     zip_safe=True,
     author='Esteve Fernandez',
     author_email='esteve@osrfoundation.org',
-    maintainer='maeda',
-    maintainer_email='maeda@irvs.ait.kyushu-u.ac.jp',
+    maintainer='kasahara',
+    maintainer_email='kashara.yuichiro.res@gmail.com',
     keywords=['ROS'],
     classifiers=[
         'Intended Audience :: Developers',
@@ -36,10 +36,13 @@ setup(
         'console_scripts': [
             'tms_db_reader = tms_db_manager.tms_db_reader:main',
             'tms_db_reader_gridfs = tms_db_manager.tms_db_reader_gridfs:main',
+            'tms_db_reader_heightmap = tms_db_manager.tms_db_reader_heightmap:main',
             'tms_db_reader_task = tms_db_manager.tms_db_reader_task:main',
             'tms_db_writer = tms_db_manager.tms_db_writer:main',
             'tms_db_writer_gridfs = tms_db_manager.tms_db_writer_gridfs:main',
             'tms_db_writer_task = tms_db_manager.tms_db_writer_task:main',
+            'tms_db_writer_param = tms_db_manager.tms_db_writer_param:main',
+            'tms_db_reader_param = tms_db_manager.tms_db_reader_param:main',
         ],
     },
 )

@@ -1,6 +1,8 @@
 string type
 int32  id
 bool   latest_only
+string flgorparam
 string name
+string[] recordnames
 ---
 tms_msg_db/Tmsdb[]  tmsdbs

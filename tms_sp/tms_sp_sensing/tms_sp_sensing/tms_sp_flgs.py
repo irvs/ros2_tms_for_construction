@@ -51,7 +51,7 @@ class UpdateDB_Parameter(Node):
         msg_fields = list(msg_fields_and_types.keys())
 
         for key, value in parameter_info.items():
-           if key != "_id" and key!="model_name" and key != "type" and key != "record_name":
+           if key != "_id" and key != "type" and key != "record_name":
                 if key in msg.keep_val_flgs:
                     print(f"msga.{key}")
                     update_parameter_info[key] = value

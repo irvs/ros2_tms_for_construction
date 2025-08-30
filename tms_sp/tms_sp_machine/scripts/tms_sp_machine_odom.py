@@ -30,8 +30,8 @@ import tms_db_manager.tms_db_util as db_util
 
 
 NODE_NAME = "tms_sp_machine_odom"
-DATA_ID = 2012
-DATA_TYPE = "machine"
+DATA_ID = 3012 #2012
+DATA_TYPE = "machine_pose"
 
 
 class TmsSpMachineOdom(Node):
@@ -82,8 +82,10 @@ class TmsSpMachineOdom(Node):
             self.get_logger().info(f"Received {self.machine_name}'s Odometry msg")
             self.is_received = True
 
+       # self.get_logger().info(msg.pose.pose.position)
+
         # Transform
-        msg = self.transform(msg)
+       # msg = self.transform(msg)
 
         db_msg = self.create_db_msg(msg)
         self.publisher_.publish(db_msg)

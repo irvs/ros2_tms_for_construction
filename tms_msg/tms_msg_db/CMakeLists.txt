@@ -38,12 +38,15 @@ ament_lint_auto_find_test_dependencies()
 ################################################
 rosidl_generate_interfaces(tms_msg_db
   "action/TmsdbGridFS.action"
+  "action/TmsdbTerrainImage.action"
 
   "msg/Tmsdb.msg"
   "msg/TmsdbStamped.msg"
   "msg/TmsData.msg"
   "msg/TmsDataStamped.msg"
   "msg/TmsdbGridFS.msg"
+  "msg/TmsdbQuery.msg"
+  "msg/TmsdbTerrainImageMsg.msg"
   "msg/ColoredMesh.msg"
 
   "srv/TmsdbGetData.srv"
@@ -65,6 +68,7 @@ rosidl_generate_interfaces(tms_msg_db
   "srv/Tmsdbobjdt.srv"
   "srv/TmsdbPlanning.srv"
   "srv/Tmsdbfileconservation.srv"
+  "srv/TmsdbTerrainImageSrv.srv"
   "srv/TmsdbObjectsdata.srv"
   "srv/Tmsdbgetunknownobject.srv"
 

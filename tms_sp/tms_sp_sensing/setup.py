@@ -22,8 +22,29 @@ setup(
         'console_scripts': [
             "tms_sp_zx200_end_effector = tms_sp_sensing.tms_sp_zx200_end_effector:main",
             "tms_sp_zx200_collision_objects = tms_sp_sensing.tms_sp_zx200_collision_objects_ic120:main",
+            "tms_sp_zx200_collision_objects_from_tf = tms_sp_sensing.tms_sp_zx200_collision_objects_from_tf:main",
             "sample = tms_sp_sensing.sample:main",
             "tms_sp_flgs = tms_sp_sensing.tms_sp_flgs:main",
+            "tms_sp_flgs_202506 = tms_sp_sensing.tms_sp_flgs_202506:main",
+
+            "tms_sp_navigate_anywhere = tms_sp_sensing.tms_sp_navigate_anywhere:main",
+            "tms_sp_navigate_anywhere_deg = tms_sp_sensing.tms_sp_navigate_anywhere_deg:main",
+            "tms_sp_follow_waypoints = tms_sp_sensing.tms_sp_follow_waypoints:main",
+            "tms_sp_follow_waypoints_deg = tms_sp_sensing.tms_sp_follow_waypoints_deg:main",
+            "tms_sp_navigate_through_poses = tms_sp_sensing.tms_sp_navigate_through_poses:main",
+            "tms_sp_navigate_through_poses_deg = tms_sp_sensing.tms_sp_navigate_through_poses_deg:main",
+            "tms_sp_release_soil = tms_sp_sensing.tms_sp_release_soil:main",
+            "tms_sp_change_pose = tms_sp_sensing.tms_sp_change_pose:main",
+            "tms_sp_excavate_simple = tms_sp_sensing.tms_sp_excavate_simple:main",
+            "tms_sp_excavate_simple_plan = tms_sp_sensing.tms_sp_excavate_simple_plan:main",
+            "tms_sp_release_simple = tms_sp_sensing.tms_sp_release_simple:main",
+            
+            "tms_sp_dig_cycle = tms_sp_sensing.tms_sp_dig_cycle:main",
+            "tms_sp_dig_locations = tms_sp_sensing.tms_sp_dig_locations:main",
+            "tms_sp_release_angle = tms_sp_sensing.tms_sp_release_angle:main",
+            "tms_sp_release_locations = tms_sp_sensing.tms_sp_release_locations:main"
+            "tms_sp_flgs_202508 = tms_sp_sensing.tms_sp_flgs_202508:main",
+            "tms_sp_dump_swing_angle = tms_sp_sensing.tms_sp_dump_swing_angle:main",
         ],
     },
 )
