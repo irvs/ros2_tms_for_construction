@@ -30,13 +30,13 @@ find_package(geometry_msgs REQUIRED)
 
 set(msg_files
   "msg/TmsRpErrorCodes.msg"
-  "msg/TmsRpZx200PositionWithAngle.msg"
+  "msg/TmsRpExcavatorPositionWithAngle.msg"
 )
 
 set(action_files
-  "action/TmsRpZx200ChangePose.action"
-  "action/TmsRpZx200ExcavateSimple.action"
-  "action/TmsRpZx200ReleaseSimple.action"
+  "action/TmsRpExcavatorChangePose.action"
+  "action/TmsRpExcavatorExcavateSimple.action"
+  "action/TmsRpExcavatorReleaseSimple.action"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
