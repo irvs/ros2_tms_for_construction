@@ -17,7 +17,7 @@
 
 using namespace std::chrono_literals;
 
-SubtaskExcavatorChangePose::SubtaskExcavatorChangePose() : SubtaskNodeBase("subtask_excavator_change_pose_node")
+SubtaskExcavatorChangePose::SubtaskExcavatorChangePose() : SubtaskNodeBase("subtask_excavator_change_pose_plan_node")
 {
     auto options_server = rcl_action_server_get_default_options();
     options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
