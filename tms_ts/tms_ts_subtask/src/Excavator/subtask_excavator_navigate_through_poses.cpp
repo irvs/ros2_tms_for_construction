@@ -28,7 +28,7 @@ SubtaskExcavatorNavigateThroughPoses::SubtaskExcavatorNavigateThroughPoses() : S
         std::bind(&SubtaskExcavatorNavigateThroughPoses::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "tms_rp_excavator_navigate_through_poses");
+    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "tms_rp_navigate_through_poses");
 }
 
 rclcpp_action::GoalResponse SubtaskExcavatorNavigateThroughPoses::handle_goal(

@@ -28,7 +28,7 @@ SubtaskCrawlerDumpSwing::SubtaskCrawlerDumpSwing() : SubtaskNodeBase("st_crawler
         std::bind(&SubtaskCrawlerDumpSwing::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<SetSwingAngle>(this, "set_swing_angle");
+    action_client_ = rclcpp_action::create_client<TmsRpCrawlerDumpSwingAngle>(this, "tms_rp_set_swing_angle");
 }
 
 rclcpp_action::GoalResponse SubtaskCrawlerDumpSwing::handle_goal(
@@ -80,14 +80,14 @@ void SubtaskCrawlerDumpSwing::execute(const std::shared_ptr<GoalHandle> goal_han
 
     RCLCPP_INFO(this->get_logger(), "Get pose from DB.");
 
-    auto goal_msg = SetSwingAngle::Goal();
+    auto goal_msg = TmsRpCrawlerDumpSwingAngle::Goal();
     goal_msg.target_angle = parameters["target_angle"];
 
     RCLCPP_INFO(this->get_logger(), "target_angle: %d", parameters["target_angle"]);
 
 
     //進捗状況を表示するFeedbackコールバックを設�?
-    auto send_goal_options = rclcpp_action::Client<SetSwingAngle>::SendGoalOptions();
+    auto send_goal_options = rclcpp_action::Client<TmsRpCrawlerDumpSwingAngle>::SendGoalOptions();
     send_goal_options.goal_response_callback = [this](const auto& goal_handle) { goal_response_callback(goal_handle); };
     send_goal_options.feedback_callback = [this](const auto tmp, const auto feedback) {
         feedback_callback(tmp, feedback);

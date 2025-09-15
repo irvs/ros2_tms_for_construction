@@ -29,15 +29,15 @@
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
-#include "com3_msgs/action/set_swing_angle.hpp"
+#include "tms_msg_rp/action/tms_rp_crawler_dump_swing_angle.hpp"
 
 
 class SubtaskCrawlerDumpSwingAlignToHeading : public SubtaskNodeBase
 {
 public:
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
-    using SetSwingAngle = com3_msgs::action::SetSwingAngle;
-    using GoalHandleCrawlerDumpSwingAlignToHeading = rclcpp_action::ClientGoalHandle<SetSwingAngle>;
+    using TmsRpCrawlerDumpSwingAngle = tms_msg_rp::action::TmsRpCrawlerDumpSwingAngle;
+    using GoalHandleCrawlerDumpSwingAlignToHeading = rclcpp_action::ClientGoalHandle<TmsRpCrawlerDumpSwingAngle>;
     SubtaskCrawlerDumpSwingAlignToHeading();
 
 private:
@@ -48,12 +48,12 @@ private:
     rclcpp_action::CancelResponse handle_cancel(const std::shared_ptr<GoalHandle> goal_handle);
     void handle_accepted(const std::shared_ptr<GoalHandle> goal_handle);
     void execute(const std::shared_ptr<GoalHandle> goal_handle);
-    rclcpp_action::Client<SetSwingAngle>::SharedPtr action_client_;
+    rclcpp_action::Client<TmsRpCrawlerDumpSwingAngle>::SharedPtr action_client_;
     std::shared_future<GoalHandleCrawlerDumpSwingAlignToHeading::SharedPtr> client_future_goal_handle_;
     std::map<std::string, double> parameters;
     void goal_response_callback(const GoalHandleCrawlerDumpSwingAlignToHeading::SharedPtr& goal_handle);
     void feedback_callback(GoalHandleCrawlerDumpSwingAlignToHeading::SharedPtr,
-                            const std::shared_ptr<const SetSwingAngle::Feedback> feedback);
+                            const std::shared_ptr<const TmsRpCrawlerDumpSwingAngle::Feedback> feedback);
     void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                         const GoalHandleCrawlerDumpSwingAlignToHeading::WrappedResult& result);
 };

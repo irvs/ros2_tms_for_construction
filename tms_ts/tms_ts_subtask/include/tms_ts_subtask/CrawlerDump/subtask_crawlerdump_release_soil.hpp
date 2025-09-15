@@ -34,7 +34,7 @@
 #include "tms_ts_subtask/subtask_node_base.hpp"
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
-#include "com3_msgs/action/set_dump_angle.hpp"
+#include "tms_msg_rp/action/tms_rp_crawler_dump_dump_angle.hpp"
 #include "nav2_msgs/action/navigate_through_poses.hpp"
 
 
@@ -42,8 +42,8 @@ class SubtaskCrawlerDumpReleaseSoil : public SubtaskNodeBase
 {
 public:
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
-    using SetDumpAngle = com3_msgs::action::SetDumpAngle;
-    using GoalHandleCrawlerDumpReleaseSoil = rclcpp_action::ClientGoalHandle<SetDumpAngle>;
+    using TmsRpCrawlerDumpDumpAngle = tms_msg_rp::action::TmsRpCrawlerDumpDumpAngle;
+    using GoalHandleCrawlerDumpReleaseSoil = rclcpp_action::ClientGoalHandle<TmsRpCrawlerDumpDumpAngle>;
     SubtaskCrawlerDumpReleaseSoil();
 
 
@@ -57,12 +57,12 @@ private:
     void execute(const std::shared_ptr<GoalHandle> goal_handle);
 
     // Member as an action client
-    rclcpp_action::Client<SetDumpAngle>::SharedPtr action_client_;
+    rclcpp_action::Client<TmsRpCrawlerDumpDumpAngle>::SharedPtr action_client_;
     std::shared_future<GoalHandleCrawlerDumpReleaseSoil::SharedPtr> client_future_goal_handle_;
     std::map<std::string, double> parameters;
     void goal_response_callback(const GoalHandleCrawlerDumpReleaseSoil::SharedPtr& goal_handle);
     void feedback_callback(GoalHandleCrawlerDumpReleaseSoil::SharedPtr,
-                            const std::shared_ptr<const SetDumpAngle::Feedback> feedback);
+                            const std::shared_ptr<const TmsRpCrawlerDumpDumpAngle::Feedback> feedback);
     void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                         const GoalHandleCrawlerDumpReleaseSoil::WrappedResult& result);
 };

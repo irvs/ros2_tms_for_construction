@@ -40,7 +40,7 @@ SubtaskExcavatorExcavateSimple::SubtaskExcavatorExcavateSimple() : SubtaskNodeBa
       std::bind(&SubtaskExcavatorExcavateSimple::handle_accepted, this, std::placeholders::_1),
       options_server);
 
-  action_client_ = rclcpp_action::create_client<ExcavatorExcavateSimple>(this, "tms_rp_excavator_excavate_simple_plan", nullptr, options_client);
+  action_client_ = rclcpp_action::create_client<ExcavatorExcavateSimple>(this, "tms_rp_excavate_simple_plan", nullptr, options_client);
   if (action_client_->wait_for_action_server())
   {
     RCLCPP_INFO(this->get_logger(), "Action server is ready");

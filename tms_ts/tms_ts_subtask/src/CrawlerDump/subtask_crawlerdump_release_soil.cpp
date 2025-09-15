@@ -28,7 +28,7 @@ SubtaskCrawlerDumpReleaseSoil::SubtaskCrawlerDumpReleaseSoil() : SubtaskNodeBase
         std::bind(&SubtaskCrawlerDumpReleaseSoil::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<SetDumpAngle>(this, "set_dump_angle");
+    action_client_ = rclcpp_action::create_client<TmsRpCrawlerDumpDumpAngle>(this, "tms_rp_set_dump_angle");
 }
 
 rclcpp_action::GoalResponse SubtaskCrawlerDumpReleaseSoil::handle_goal(
@@ -80,12 +80,12 @@ void SubtaskCrawlerDumpReleaseSoil::execute(const std::shared_ptr<GoalHandle> go
 
     RCLCPP_INFO(this->get_logger(), "Get pose from DB.");
 
-    auto goal_msg = SetDumpAngle::Goal();
+    auto goal_msg = TmsRpCrawlerDumpDumpAngle::Goal();
     goal_msg.target_angle = parameters["target_angle"];
 
 
     //進捗状況を表示するFeedbackコールバックを設�?
-    auto send_goal_options = rclcpp_action::Client<SetDumpAngle>::SendGoalOptions();
+    auto send_goal_options = rclcpp_action::Client<TmsRpCrawlerDumpDumpAngle>::SendGoalOptions();
     send_goal_options.goal_response_callback = [this](const auto& goal_handle) { goal_response_callback(goal_handle); };
     send_goal_options.feedback_callback = [this](const auto tmp, const auto feedback) {
         feedback_callback(tmp, feedback);

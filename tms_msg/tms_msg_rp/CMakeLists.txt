@@ -37,6 +37,8 @@ set(action_files
   "action/TmsRpExcavatorChangePose.action"
   "action/TmsRpExcavatorExcavateSimple.action"
   "action/TmsRpExcavatorReleaseSimple.action"
+  "action/TmsRpCrawlerDumpDumpAngle.action"
+  "action/TmsRpCrawlerDumpSwingAngle.action"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}

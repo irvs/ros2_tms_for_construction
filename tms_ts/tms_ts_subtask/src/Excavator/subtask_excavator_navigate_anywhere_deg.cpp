@@ -27,7 +27,7 @@ SubtaskExcavatorNavigateAnywhereDeg::SubtaskExcavatorNavigateAnywhereDeg() : Sub
         std::bind(&SubtaskExcavatorNavigateAnywhereDeg::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "navigate_to_pose");
+    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "tms_rp_navigate_anywhere_deg");
     // if (action_client_->wait_for_action_server())
     // {
     //     RCLCPP_INFO(this->get_logger(), "Action server is ready");

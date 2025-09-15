@@ -28,15 +28,15 @@
 #include "tms_ts_subtask/subtask_node_base.hpp"
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
-#include "com3_msgs/action/set_swing_angle.hpp"
+#include "tms_msg_rp/action/tms_rp_crawler_dump_swing_angle.hpp"
 
 
 class SubtaskCrawlerDumpSwing : public SubtaskNodeBase
 {
 public:
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
-    using SetSwingAngle = com3_msgs::action::SetSwingAngle;
-    using GoalHandleCrawlerDumpSwing = rclcpp_action::ClientGoalHandle<SetSwingAngle>;
+    using TmsRpCrawlerDumpSwingAngle = tms_msg_rp::action::TmsRpCrawlerDumpSwingAngle;
+    using GoalHandleCrawlerDumpSwing = rclcpp_action::ClientGoalHandle<TmsRpCrawlerDumpSwingAngle>;
     SubtaskCrawlerDumpSwing();
 
 
@@ -50,12 +50,12 @@ private:
     void execute(const std::shared_ptr<GoalHandle> goal_handle);
 
     // Member as an action client
-    rclcpp_action::Client<SetSwingAngle>::SharedPtr action_client_;
+    rclcpp_action::Client<TmsRpCrawlerDumpSwingAngle>::SharedPtr action_client_;
     std::shared_future<GoalHandleCrawlerDumpSwing::SharedPtr> client_future_goal_handle_;
     std::map<std::string, double> parameters;
     void goal_response_callback(const GoalHandleCrawlerDumpSwing::SharedPtr& goal_handle);
     void feedback_callback(GoalHandleCrawlerDumpSwing::SharedPtr,
-                            const std::shared_ptr<const SetSwingAngle::Feedback> feedback);
+                            const std::shared_ptr<const TmsRpCrawlerDumpSwingAngle::Feedback> feedback);
     void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                         const GoalHandleCrawlerDumpSwing::WrappedResult& result);
 };

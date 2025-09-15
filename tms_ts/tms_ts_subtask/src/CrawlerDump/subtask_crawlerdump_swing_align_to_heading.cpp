@@ -28,7 +28,7 @@ SubtaskCrawlerDumpSwingAlignToHeading::SubtaskCrawlerDumpSwingAlignToHeading() :
         std::bind(&SubtaskCrawlerDumpSwingAlignToHeading::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<SetSwingAngle>(this, "set_swing_angle");
+    action_client_ = rclcpp_action::create_client<TmsRpCrawlerDumpSwingAngle>(this, "tms_rp_set_swing_angle_align_to_heading");
 }
 
 rclcpp_action::GoalResponse SubtaskCrawlerDumpSwingAlignToHeading::handle_goal(
@@ -123,12 +123,12 @@ void SubtaskCrawlerDumpSwingAlignToHeading::execute(const std::shared_ptr<GoalHa
                 cur, target_rad);
 
     // ---- goal 作成・送信（[rad] のまま送る）----
-    auto goal_msg = SetSwingAngle::Goal();
+    auto goal_msg = TmsRpCrawlerDumpSwingAngle::Goal();
     goal_msg.target_angle = target_rad;
 
 
     //進捗状況を表示するFeedbackコールバックを設�?-1.8
-    auto send_goal_options = rclcpp_action::Client<SetSwingAngle>::SendGoalOptions();
+    auto send_goal_options = rclcpp_action::Client<TmsRpCrawlerDumpSwingAngle>::SendGoalOptions();
     send_goal_options.goal_response_callback = [this](const auto& goal_handle) { goal_response_callback(goal_handle); };
     send_goal_options.feedback_callback = [this](const auto tmp, const auto feedback) {
         feedback_callback(tmp, feedback);
