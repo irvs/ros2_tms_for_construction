@@ -44,15 +44,15 @@ def generate_launch_description():
             # subtasks
             Node(
                   package='tms_ts_subtask', 
-                  executable='subtask_zx200_change_pose',
+                  executable='subtask_excavator_change_pose',
                   output='screen'),
             Node(
                   package='tms_ts_subtask', 
-                  executable='subtask_zx200_excavate_simple',
+                  executable='subtask_excavator_excavate_simple',
                   output='screen'),
             Node(
                   package='tms_ts_subtask', 
-                  executable='subtask_zx200_release_simple',
+                  executable='subtask_excavator_release_simple',
                   output='screen'),
             
             
