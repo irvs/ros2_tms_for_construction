@@ -1,0 +1,12 @@
+# Goal definition
+tms_msg_rp/TmsRpExcavatorPositionWithAngle position_with_angle
+
+---
+
+# Result definition
+TmsRpErrorCodes error_code
+
+---
+
+# Feedback definition
+string state
