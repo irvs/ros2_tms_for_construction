@@ -25,6 +25,7 @@ setup(
             "tms_sp_zx200_collision_objects_from_tf = tms_sp_sensing.tms_sp_zx200_collision_objects_from_tf:main",
             "sample = tms_sp_sensing.sample:main",
             "tms_sp_flgs = tms_sp_sensing.tms_sp_flgs:main",
+            "tms_sp_flgs_shimizu = tms_sp_sensing.tms_sp_flgs_shimizu:main",
             "tms_sp_flgs_202506 = tms_sp_sensing.tms_sp_flgs_202506:main",
             "tms_sp_flgs_202508 = tms_sp_sensing.tms_sp_flgs_202508:main",
 

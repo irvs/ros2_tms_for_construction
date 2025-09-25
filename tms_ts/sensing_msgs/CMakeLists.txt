@@ -29,6 +29,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Zx200EndEffector.msg"
   "msg/Zx200CollisionObjects.msg"
   "msg/Flgs.msg"
+  "msg/FlgsShimizu.msg"
   "msg/Flgs202506.msg"
   "msg/Flgs202508.msg"
   "msg/DigCycle.msg"
