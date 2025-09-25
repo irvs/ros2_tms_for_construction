@@ -27,7 +27,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ChangePose.msg"
   "msg/Sample.msg"
   "msg/Zx200EndEffector.msg"
-  "msg/Zx200CollisionObjectsIc120.msg"
+  "msg/Zx200CollisionObjects.msg"
   "msg/Flgs.msg"
   "msg/Flgs202506.msg"
   "msg/Flgs202508.msg"
