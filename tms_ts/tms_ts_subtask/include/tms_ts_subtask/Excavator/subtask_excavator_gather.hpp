@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SUBTASK_EXCAVATOR_LEVEL_HPP
-#define SUBTASK_EXCAVATOR_LEVEL_HPP
+#ifndef SUBTASK_EXCAVATOR_GATHER_HPP
+#define SUBTASK_EXCAVATOR_GATHER_HPP
 
 #include <memory>
 #include <map>
@@ -35,7 +35,7 @@
 #include <rclcpp/qos.hpp>   
 #include <rmw/qos_profiles.h>  
 
-class SubtaskExcavatorLevel : public SubtaskNodeBase
+class SubtaskExcavatorGather : public SubtaskNodeBase
 {
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
@@ -43,7 +43,7 @@ public:
   using ExcavatorChangePose = tms_msg_rp::action::TmsRpExcavatorChangePose;
   using GoalHandleExcavatorChangePose = rclcpp_action::ClientGoalHandle<ExcavatorChangePose>;
 
-  SubtaskExcavatorLevel();
+  SubtaskExcavatorGather();
 
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;

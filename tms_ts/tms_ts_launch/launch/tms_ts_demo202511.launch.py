@@ -103,6 +103,11 @@ def launch_setup(context, *args, **kwargs):
               namespace = 'zx200'),
         Node(
               package='tms_ts_subtask', 
+              executable='subtask_excavator_gather',
+              output='screen',
+              namespace = 'zx200'),
+        Node(
+              package='tms_ts_subtask', 
               executable='subtask_excavator_excavate_simple',
               output='screen',
               namespace = 'zx200'),
