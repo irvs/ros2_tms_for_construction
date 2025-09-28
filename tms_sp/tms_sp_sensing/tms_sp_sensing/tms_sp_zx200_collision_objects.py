@@ -20,7 +20,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import Pose
 from std_msgs.msg import String
 from pymongo import MongoClient
-from sensing_msgs.msg import Zx200CollisionObjectsIc120
+from sensing_msgs.msg import Zx200CollisionObjects
 
 import tms_db_manager.tms_db_util as db_util
 
@@ -33,14 +33,14 @@ DATA_NAME = 'data_name'
 
 class UpdateDB_Parameter(Node):
     def __init__(self):
-        super().__init__("tms_sp_zx200_collison_objects_ic120")
+        super().__init__("tms_sp_zx200_collison_objects")
         self.subscription = self.create_subscription(
-            Zx200CollisionObjectsIc120,
-            '/zx200/collison_objects_ic120',
+            Zx200CollisionObjects,
+            '/zx200/collison_objects,
             self.update_db_parameter,
             10) 
     
-    def update_db_parameter(self, msg: Zx200CollisionObjectsIc120) -> None:
+    def update_db_parameter(self, msg: Zx200CollisionObjects) -> None:
         client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client['rostmsdb']
         collection = db['parameter']

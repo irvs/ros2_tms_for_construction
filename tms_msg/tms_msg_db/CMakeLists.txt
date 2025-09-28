@@ -47,6 +47,7 @@ rosidl_generate_interfaces(tms_msg_db
   "msg/TmsdbGridFS.msg"
   "msg/TmsdbQuery.msg"
   "msg/TmsdbTerrainImageMsg.msg"
+  "msg/TmsdbCollision.msg"
   "msg/ColoredMesh.msg"
 
   "srv/TmsdbGetData.srv"

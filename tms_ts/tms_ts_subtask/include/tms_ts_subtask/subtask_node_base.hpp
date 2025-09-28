@@ -70,49 +70,88 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
     std::cout << "Loaded parameter data:\n" << bsoncxx::to_json(view) << "\n\n";
 
     for (auto&& element : result->view()) {
-        int index = 0;
         std::string key = element.key().to_string();
         if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
-            auto array = element.get_array().value;
-            for (auto&& item : array) { 
-              if (item.type() == bsoncxx::type::k_double)
-              {
-                T value = static_cast<T>(item.get_double());
-                dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = value;
-                index++;
-                std::cout << value << std::endl;
-              }
-              else if (item.type() == bsoncxx::type::k_int32)
-              {
-                T value = static_cast<T>(item.get_int32());
-                dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = value;
-                index++;
-                std::cout << value << std::endl;
-              }
-              else if (item.type() == bsoncxx::type::k_int64)
-              {
-                T value = static_cast<T>(item.get_int64());
-                dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = value;
-                index++;
-                std::cout << value << std::endl;
-              }else{
-                std::cout << "Type error" << std::endl;
-                bsoncxx::builder::basic::document tmp_doc{};
-                tmp_doc.append(bsoncxx::builder::basic::kvp(key, element.get_value()));
-                std::string type_name = bson_type_name(element.type());
-                bsoncxx::builder::basic::document tmp{};
-                tmp.append(bsoncxx::builder::basic::kvp(key, element.get_value()));
-                std::cout << "[TypeError] key=\"" << key
-                          << "\"  type=" << type_name
-                          << "  raw_value=" << bsoncxx::to_json(tmp.view())
-                          << "\n";
-                std::cout << "This node only supports array type. Types such as int32, int64, and double cannot be used, so please rewrite your parameter data accordingly." << std::endl;
-              }
-            }  
-            // for (auto&& item : array) { 
-            //     dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = static_cast<T>(item.get_double());
-            //     index++;
-            // }
+            
+            // 配列型の場合
+            if (element.type() == bsoncxx::type::k_array) {
+                int index = 0;
+                auto array = element.get_array().value;
+                for (auto&& item : array) { 
+                  if (item.type() == bsoncxx::type::k_double)
+                  {
+                    T value = static_cast<T>(item.get_double());
+                    dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = value;
+                    index++;
+                    std::cout << value << std::endl;
+                  }
+                  else if (item.type() == bsoncxx::type::k_int32)
+                  {
+                    T value = static_cast<T>(item.get_int32());
+                    dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = value;
+                    index++;
+                    std::cout << value << std::endl;
+                  }
+                  else if (item.type() == bsoncxx::type::k_int64)
+                  {
+                    T value = static_cast<T>(item.get_int64());
+                    dataMap[std::make_pair(element.key().to_string(), std::to_string(index))] = value;
+                    index++;
+                    std::cout << value << std::endl;
+                  }else{
+                    std::cout << "Type error in array element" << std::endl;
+                    std::string type_name = bson_type_name(item.type());
+                    bsoncxx::builder::basic::document tmp{};
+                    if (element.type() == bsoncxx::type::k_utf8) {
+                      tmp.append(bsoncxx::builder::basic::kvp(key, element.get_utf8().value.to_string()));
+                    } else if (element.type() == bsoncxx::type::k_bool) {
+                        tmp.append(bsoncxx::builder::basic::kvp(key, element.get_bool().value));
+                    } else {
+                        tmp.append(bsoncxx::builder::basic::kvp(key, "unsupported_type"));
+                    }   
+                    std::cout << "[TypeError] array_item_type=" << type_name
+                              << "  raw_value=" << bsoncxx::to_json(tmp.view())
+                              << "\n";
+                  }
+                }
+            }
+            // 配列型でない場合（スカラー値）
+            else {
+                if (element.type() == bsoncxx::type::k_double)
+                {
+                  T value = static_cast<T>(element.get_double());
+                  dataMap[std::make_pair(element.key().to_string(), "")] = value;
+                  std::cout << "Scalar value: " << value << std::endl;
+                }
+                else if (element.type() == bsoncxx::type::k_int32)
+                {
+                  T value = static_cast<T>(element.get_int32());
+                  dataMap[std::make_pair(element.key().to_string(), "")] = value;
+                  std::cout << "Scalar value: " << value << std::endl;
+                }
+                else if (element.type() == bsoncxx::type::k_int64)
+                {
+                  T value = static_cast<T>(element.get_int64());
+                  dataMap[std::make_pair(element.key().to_string(), "")] = value;
+                  std::cout << "Scalar value: " << value << std::endl;
+                }
+                else {
+                  std::cout << "Unsupported scalar type" << std::endl;
+                  std::string type_name = bson_type_name(element.type());
+                  bsoncxx::builder::basic::document tmp{};
+                  if (element.type() == bsoncxx::type::k_utf8) {
+                    tmp.append(bsoncxx::builder::basic::kvp(key, element.get_utf8().value.to_string()));
+                  } else if (element.type() == bsoncxx::type::k_bool) {
+                      tmp.append(bsoncxx::builder::basic::kvp(key, element.get_bool().value));
+                  } else {
+                      tmp.append(bsoncxx::builder::basic::kvp(key, "unsupported_type"));
+                  }           
+                  std::cout << "[TypeError] key=\"" << key
+                            << "\"  type=" << type_name
+                            << "  raw_value=" << bsoncxx::to_json(tmp.view())
+                            << "\n";
+                }
+            }
         }
     }
     return dataMap;
@@ -123,7 +162,6 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
     return std::map<K, T>();
   }
 }
-
 // This function is to get non-array-type parameters from the database.
 template <typename K, typename T>
 std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::string>, bool>) {

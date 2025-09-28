@@ -71,8 +71,10 @@ add_executable(subtask_crawlerdump_release_soil src/CrawlerDump/subtask_crawlerd
 add_executable(subtask_crawlerdump_swing src/CrawlerDump/subtask_crawlerdump_swing.cpp)
 add_executable(subtask_crawlerdump_swing_align_to_heading src/CrawlerDump/subtask_crawlerdump_swing_align_to_heading.cpp)
 
-# Subtask Nodes for ZX200
+# Subtask Nodes for Excavator
 add_executable(subtask_excavator_change_pose src/Excavator/subtask_excavator_change_pose.cpp)
+add_executable(subtask_excavator_level src/Excavator/subtask_excavator_level.cpp)
+add_executable(subtask_excavator_gather src/Excavator/subtask_excavator_gather.cpp)
 add_executable(subtask_excavator_change_pose_plan src/Excavator/subtask_excavator_change_pose_plan.cpp)
 add_executable(subtask_excavator_excavate_simple_plan src/Excavator/subtask_excavator_excavate_simple_plan.cpp)
 add_executable(subtask_excavator_excavate_simple src/Excavator/subtask_excavator_excavate_simple.cpp)
@@ -102,6 +104,8 @@ set(TARGETS
   subtask_crawlerdump_swing
   subtask_crawlerdump_swing_align_to_heading
   subtask_excavator_change_pose
+  subtask_excavator_level
+  subtask_excavator_gather
   subtask_excavator_change_pose_plan
   subtask_excavator_excavate_simple_plan
   subtask_excavator_excavate_simple
