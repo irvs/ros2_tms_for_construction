@@ -28,7 +28,7 @@ SubtaskCrawlerDumpNavigateThroughPosesDeg::SubtaskCrawlerDumpNavigateThroughPose
         std::bind(&SubtaskCrawlerDumpNavigateThroughPosesDeg::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "navigate_through_poses");
+    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "tms_rp_navigate_through_poses_deg");
 }
 
 rclcpp_action::GoalResponse SubtaskCrawlerDumpNavigateThroughPosesDeg::handle_goal(

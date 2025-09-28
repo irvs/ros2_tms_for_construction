@@ -26,7 +26,7 @@ SubtaskBulldozerFollowWaypointsDeg::SubtaskBulldozerFollowWaypointsDeg() : Subta
         std::bind(&SubtaskBulldozerFollowWaypointsDeg::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskBulldozerFollowWaypointsDeg::handle_accepted, this, std::placeholders::_1));
 
-    action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "follow_waypoints");
+    action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "tms_rp_navigate_follow_waypoints_deg");
 }
 
 rclcpp_action::GoalResponse SubtaskBulldozerFollowWaypointsDeg::handle_goal(

@@ -28,7 +28,7 @@ SubtaskBulldozerNavigateThroughPoses::SubtaskBulldozerNavigateThroughPoses() : S
         std::bind(&SubtaskBulldozerNavigateThroughPoses::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "navigate_through_poses");
+    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "tms_rp_navigate_through_poses");
 }
 
 rclcpp_action::GoalResponse SubtaskBulldozerNavigateThroughPoses::handle_goal(

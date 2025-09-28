@@ -26,7 +26,7 @@ SubtaskCrawlerDumpFollowWaypointsDeg::SubtaskCrawlerDumpFollowWaypointsDeg() : S
         std::bind(&SubtaskCrawlerDumpFollowWaypointsDeg::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskCrawlerDumpFollowWaypointsDeg::handle_accepted, this, std::placeholders::_1));
 
-    action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "follow_waypoints");
+    action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "tms_rp_navigate_follow_waypoints_deg");
 }
 
 rclcpp_action::GoalResponse SubtaskCrawlerDumpFollowWaypointsDeg::handle_goal(
