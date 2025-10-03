@@ -7,7 +7,9 @@ mongodb:
 
 # 初期化するパラメータ設定
 initial_parameters:
-  - record_name: "BLACKBOARD_SHIMIZU"
+  - record_name: "SAMPLE_BLACKBOARD_SIPDEMO202508"
     values:
-      SENSING_ARRIVAL_FLG : true
+      SENSING_ARRIVAL_FLG : false
       SENSING_LOADED_FLG : false
+      SENSING_NEXTPOINT_FLG : false
+      LOADED_FLG : false
