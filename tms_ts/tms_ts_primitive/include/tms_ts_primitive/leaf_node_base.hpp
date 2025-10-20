@@ -51,7 +51,7 @@ public:
         return {
             InputPort<std::string>("model_name"),   
             InputPort<std::string>("record_name"),    
-            InputPort<std::string>("subtask_name")    
+            InputPort<std::string>("primitive_name")    
         };
     }
 

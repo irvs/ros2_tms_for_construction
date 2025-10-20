@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LEAF_NODE_CRAWLERDUMP_HPP_
-#define LEAF_NODE_CRAWLERDUMP_HPP_
+#ifndef LEAF_NODE_BULLDOZER_HPP_
+#define LEAF_NODE_BULLDOZER_HPP_
 
 #include <chrono>
 #include <functional>
@@ -28,19 +28,19 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-#include "tms_ts_subtask/leaf_node_base.hpp"
+#include "tms_ts_primitive/leaf_node_base.hpp"
 
 using namespace BT;
 using namespace std::chrono_literals;
 
-class LeafNodeCrawlerDump : public LeafNodeBase
+class LeafNodeBulldozer : public LeafNodeBase
 {
 public:
-  inline LeafNodeCrawlerDump(const std::string& name, const NodeConfiguration& config)
-    : LeafNodeBase("leaf_node_CrawlerDump", config){};
+  inline LeafNodeBulldozer(const std::string& name, const NodeConfiguration& config)
+    : LeafNodeBase("leaf_node_Bulldozer", config){};
   inline static PortsList providedPorts()
   {
-    return { InputPort<std::string>("model_name"), InputPort<std::string>("record_name"), InputPort<std::string>("subtask_name") };
+    return { InputPort<std::string>("model_name"), InputPort<std::string>("record_name"), InputPort<std::string>("pimitive_name") };
   };
 };
 
