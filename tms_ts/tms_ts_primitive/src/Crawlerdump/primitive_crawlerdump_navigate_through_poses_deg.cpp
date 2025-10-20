@@ -13,28 +13,28 @@
 // limitations under the License.
 
 #include <vector>
-#include "tms_ts_primitive/CrawlerDump/primitive_crawlerdump_release_soil.hpp"
+#include "tms_ts_primitive/Crawlerdump/primitive_crawlerdump_navigate_through_poses_deg.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-PrimitiveCrawlerDumpReleaseSoil::PrimitiveCrawlerDumpReleaseSoil() : PrimitiveNodeBase("primitive_crawlerdump_release_soil_node")
+PrimitiveCrawlerdumpNavigateThroughPosesDeg::PrimitiveCrawlerdumpNavigateThroughPosesDeg() : PrimitiveNodeBase("primitive_crawlerdump_navigate_through_poses_deg_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "primitive_crawlerdump_release_soil",
-        std::bind(&PrimitiveCrawlerDumpReleaseSoil::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&PrimitiveCrawlerDumpReleaseSoil::handle_cancel, this, std::placeholders::_1),
-        std::bind(&PrimitiveCrawlerDumpReleaseSoil::handle_accepted, this, std::placeholders::_1));
+        this, "primitive_crawlerdump_navigate_through_poses_deg",
+        std::bind(&PrimitiveCrawlerdumpNavigateThroughPosesDeg::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&PrimitiveCrawlerdumpNavigateThroughPosesDeg::handle_cancel, this, std::placeholders::_1),
+        std::bind(&PrimitiveCrawlerdumpNavigateThroughPosesDeg::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<TmsRpCrawlerDumpDumpAngle>(this, "tms_rp_set_dump_angle");
+    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "tms_rp_navigate_through_poses_deg");
 }
 
-rclcpp_action::GoalResponse PrimitiveCrawlerDumpReleaseSoil::handle_goal(
+rclcpp_action::GoalResponse PrimitiveCrawlerdumpNavigateThroughPosesDeg::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
-    parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
+    parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
     if (parameters.empty())
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to get parameters from DB");
@@ -43,7 +43,7 @@ rclcpp_action::GoalResponse PrimitiveCrawlerDumpReleaseSoil::handle_goal(
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse PrimitiveCrawlerDumpReleaseSoil::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveCrawlerdumpNavigateThroughPosesDeg::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
     if (client_future_goal_handle_.valid() &&
@@ -55,15 +55,15 @@ rclcpp_action::CancelResponse PrimitiveCrawlerDumpReleaseSoil::handle_cancel(con
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void PrimitiveCrawlerDumpReleaseSoil::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerdumpNavigateThroughPosesDeg::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&PrimitiveCrawlerDumpReleaseSoil::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&PrimitiveCrawlerdumpNavigateThroughPosesDeg::execute, this, _1), goal_handle }.detach();
 }
 
-void PrimitiveCrawlerDumpReleaseSoil::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerdumpNavigateThroughPosesDeg::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "primitive(primitive_crawlerdump_release_soil) is executing...");
+    RCLCPP_INFO(this->get_logger(), "primitive(primitive_crawlerdump_navigate_through_poses) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -80,12 +80,47 @@ void PrimitiveCrawlerDumpReleaseSoil::execute(const std::shared_ptr<GoalHandle> 
 
     RCLCPP_INFO(this->get_logger(), "Get pose from DB.");
 
-    auto goal_msg = TmsRpCrawlerDumpDumpAngle::Goal();
-    goal_msg.target_angle = parameters["target_angle"];
+    std::vector<geometry_msgs::msg::PoseStamped> poses;
+    auto goal_msg = NavigateThroughPoses::Goal();
+
+
+    int point_num = parameters.size() / 4;
+    std::cout << "Total number of points: " << parameters.size() << std::endl;
+    std::cout << "point_num: " << point_num << std::endl;
+    auto pose = geometry_msgs::msg::PoseStamped();
+    pose.header.frame_id = "map";
+    pose.header.stamp = this->now();
+
+    for (int i=0; i < point_num; i++){
+        pose.pose.position.x = parameters[std::make_pair("x", std::to_string(i))];
+        pose.pose.position.y = parameters[std::make_pair("y", std::to_string(i))];
+        pose.pose.position.z = parameters[std::make_pair("z", std::to_string(i))];
+
+        double yaw_rad = parameters[std::make_pair("yaw", std::to_string(i))] * M_PI / 180.0;
+
+        double roll_rad = 0.0;
+        double pitch_rad = 0.0;
+
+        double cy = cos(yaw_rad * 0.5);
+        double sy = sin(yaw_rad * 0.5);
+        double cp = cos(pitch_rad * 0.5);  // = 1.0
+        double sp = sin(pitch_rad * 0.5);  // = 0.0
+        double cr = cos(roll_rad * 0.5);   // = 1.0
+        double sr = sin(roll_rad * 0.5);   // = 0.0
+
+        pose.pose.orientation.w = cr * cp * cy + sr * sp * sy;
+        pose.pose.orientation.x = sr * cp * cy - cr * sp * sy;  // = 0.0
+        pose.pose.orientation.y = cr * sp * cy + sr * cp * sy;  // = 0.0
+        pose.pose.orientation.z = cr * cp * sy - sr * sp * cy;
+        poses.push_back(pose);
+        std::cout << "Point " << i << ": " << pose.pose.position.x << ", " << pose.pose.position.y << ", " << pose.pose.position.z << std::endl;
+        std::cout << "Pose " << i << ": " << pose.pose.orientation.x << ", " << pose.pose.orientation.y << ", " << pose.pose.orientation.z << ", " << pose.pose.orientation.w << std::endl;
+    }
+    goal_msg.poses = poses;
 
 
     //進捗状況を表示するFeedbackコールバックを設�?
-    auto send_goal_options = rclcpp_action::Client<TmsRpCrawlerDumpDumpAngle>::SendGoalOptions();
+    auto send_goal_options = rclcpp_action::Client<NavigateThroughPoses>::SendGoalOptions();
     send_goal_options.goal_response_callback = [this](const auto& goal_handle) { goal_response_callback(goal_handle); };
     send_goal_options.feedback_callback = [this](const auto tmp, const auto feedback) {
         feedback_callback(tmp, feedback);
@@ -97,7 +132,7 @@ void PrimitiveCrawlerDumpReleaseSoil::execute(const std::shared_ptr<GoalHandle> 
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void PrimitiveCrawlerDumpReleaseSoil::goal_response_callback(const GoalHandleCrawlerDumpReleaseSoil::SharedPtr& goal_handle)
+void PrimitiveCrawlerdumpNavigateThroughPosesDeg::goal_response_callback(const GoalHandleCrawlerdumpNavigateThroughPoses::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -110,9 +145,9 @@ void PrimitiveCrawlerDumpReleaseSoil::goal_response_callback(const GoalHandleCra
 }
 
   
-void PrimitiveCrawlerDumpReleaseSoil::feedback_callback(
-    const GoalHandleCrawlerDumpReleaseSoil::SharedPtr,
-    const std::shared_ptr<const GoalHandleCrawlerDumpReleaseSoil::Feedback> feedback)
+void PrimitiveCrawlerdumpNavigateThroughPosesDeg::feedback_callback(
+    const GoalHandleCrawlerdumpNavigateThroughPoses::SharedPtr,
+    const std::shared_ptr<const GoalHandleCrawlerdumpNavigateThroughPoses::Feedback> feedback)
 {
   // TODO: Fix to feedback to leaf node
   // RCLCPP_INFO(get_logger(), "Distance remaininf = %f", feedback->distance_remaining);
@@ -120,8 +155,8 @@ void PrimitiveCrawlerDumpReleaseSoil::feedback_callback(
 
 
 //result
-void PrimitiveCrawlerDumpReleaseSoil::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandleCrawlerDumpReleaseSoil::WrappedResult& result)
+void PrimitiveCrawlerdumpNavigateThroughPosesDeg::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+                                             const GoalHandleCrawlerdumpNavigateThroughPoses::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {
@@ -162,7 +197,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<PrimitiveCrawlerDumpReleaseSoil>());
+    rclcpp::spin(std::make_shared<PrimitiveCrawlerdumpNavigateThroughPosesDeg>());
     rclcpp::shutdown();
     return 0;
 }

@@ -20,7 +20,7 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(bsoncxx REQUIRED)
 find_package(mongocxx REQUIRED)
-find_package(tms_ts_subtask REQUIRED)
+find_package(tms_ts_primitive REQUIRED)
 find_package(tms_msg_ur REQUIRED)
 find_package(Qt5 COMPONENTS Widgets Core REQUIRED)
 
@@ -34,7 +34,7 @@ set(dependencies_cpp
   nlohmann_json
   geometry_msgs
   rclpy
-  tms_ts_subtask
+  tms_ts_primitive
   bsoncxx
   mongocxx
   tms_msg_ur

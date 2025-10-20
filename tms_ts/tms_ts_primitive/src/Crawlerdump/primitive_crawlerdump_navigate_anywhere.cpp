@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_primitive/CrawlerDump/primitive_crawlerdump_navigate_anywhere.hpp"
+#include "tms_ts_primitive/Crawlerdump/primitive_crawlerdump_navigate_anywhere.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-PrimitiveCrawlerDumpNavigateAnywhere::PrimitiveCrawlerDumpNavigateAnywhere() : PrimitiveNodeBase("primitive_crawlerdump_navigate_anywhere_node")
+PrimitiveCrawlerdumpNavigateAnywhere::PrimitiveCrawlerdumpNavigateAnywhere() : PrimitiveNodeBase("primitive_crawlerdump_navigate_anywhere_node")
 {
     auto options_server = rcl_action_server_get_default_options();
     options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
@@ -37,9 +37,9 @@ PrimitiveCrawlerDumpNavigateAnywhere::PrimitiveCrawlerDumpNavigateAnywhere() : P
     
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
         this, "primitive_crawlerdump_navigate_anywhere",
-        std::bind(&PrimitiveCrawlerDumpNavigateAnywhere::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&PrimitiveCrawlerDumpNavigateAnywhere::handle_cancel, this, std::placeholders::_1),
-        std::bind(&PrimitiveCrawlerDumpNavigateAnywhere::handle_accepted, this, std::placeholders::_1),
+        std::bind(&PrimitiveCrawlerdumpNavigateAnywhere::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&PrimitiveCrawlerdumpNavigateAnywhere::handle_cancel, this, std::placeholders::_1),
+        std::bind(&PrimitiveCrawlerdumpNavigateAnywhere::handle_accepted, this, std::placeholders::_1),
         options_server); 
 
     
@@ -54,7 +54,7 @@ PrimitiveCrawlerDumpNavigateAnywhere::PrimitiveCrawlerDumpNavigateAnywhere() : P
     // }
 }
 
-rclcpp_action::GoalResponse PrimitiveCrawlerDumpNavigateAnywhere::handle_goal(
+rclcpp_action::GoalResponse PrimitiveCrawlerdumpNavigateAnywhere::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
@@ -66,7 +66,7 @@ rclcpp_action::GoalResponse PrimitiveCrawlerDumpNavigateAnywhere::handle_goal(
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse PrimitiveCrawlerDumpNavigateAnywhere::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveCrawlerdumpNavigateAnywhere::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
     if (client_future_goal_handle_.valid() &&
@@ -78,13 +78,13 @@ rclcpp_action::CancelResponse PrimitiveCrawlerDumpNavigateAnywhere::handle_cance
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void PrimitiveCrawlerDumpNavigateAnywhere::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerdumpNavigateAnywhere::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&PrimitiveCrawlerDumpNavigateAnywhere::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&PrimitiveCrawlerdumpNavigateAnywhere::execute, this, _1), goal_handle }.detach();
 }
 
-void PrimitiveCrawlerDumpNavigateAnywhere::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerdumpNavigateAnywhere::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "primitive(primitive_crawlerdump_navigate_anywhere_node) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
@@ -135,7 +135,7 @@ void PrimitiveCrawlerDumpNavigateAnywhere::execute(const std::shared_ptr<GoalHan
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void PrimitiveCrawlerDumpNavigateAnywhere::goal_response_callback(const GoalHandleCrawlerDumpNavigateAnywhere::SharedPtr& goal_handle)
+void PrimitiveCrawlerdumpNavigateAnywhere::goal_response_callback(const GoalHandleCrawlerdumpNavigateAnywhere::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -148,9 +148,9 @@ void PrimitiveCrawlerDumpNavigateAnywhere::goal_response_callback(const GoalHand
 }
 
   
-void PrimitiveCrawlerDumpNavigateAnywhere::feedback_callback(
-    const GoalHandleCrawlerDumpNavigateAnywhere::SharedPtr,
-    const std::shared_ptr<const GoalHandleCrawlerDumpNavigateAnywhere::Feedback> feedback)
+void PrimitiveCrawlerdumpNavigateAnywhere::feedback_callback(
+    const GoalHandleCrawlerdumpNavigateAnywhere::SharedPtr,
+    const std::shared_ptr<const GoalHandleCrawlerdumpNavigateAnywhere::Feedback> feedback)
 {
   // TODO: Fix to feedback to leaf node
   RCLCPP_INFO(get_logger(), "Distance remaininf = %f", feedback->distance_remaining);
@@ -158,8 +158,8 @@ void PrimitiveCrawlerDumpNavigateAnywhere::feedback_callback(
 
 
 //result
-void PrimitiveCrawlerDumpNavigateAnywhere::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandleCrawlerDumpNavigateAnywhere::WrappedResult& result)
+void PrimitiveCrawlerdumpNavigateAnywhere::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+                                             const GoalHandleCrawlerdumpNavigateAnywhere::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {
@@ -200,7 +200,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<PrimitiveCrawlerDumpNavigateAnywhere>());
+    rclcpp::spin(std::make_shared<PrimitiveCrawlerdumpNavigateAnywhere>());
     rclcpp::shutdown();
     return 0;
 }

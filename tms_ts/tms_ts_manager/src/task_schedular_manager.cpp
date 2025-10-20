@@ -23,17 +23,17 @@
 #include <mongocxx/uri.hpp>
 
 // leaf nodesのインクルード
-#include "tms_ts_subtask/Excavator/leaf_node.hpp"
-#include "tms_ts_subtask/CrawlerDump/leaf_node.hpp"
-#include "tms_ts_subtask/Bulldozer/leaf_node.hpp"
-#include "tms_ts_subtask/common/blackboard_value_reader_mongo.hpp"
-#include "tms_ts_subtask/common/mongo_value_writer.hpp"
-#include "tms_ts_subtask/common/conditional_expression.hpp"
-#include "tms_ts_subtask/common/KeepRunningUntilFlgup.hpp"
-#include "tms_ts_subtask/common/SetLocalBlackboard.hpp"
-#include "tms_ts_subtask/common/SetLocalBlackboardWithCounter.hpp"
-#include "tms_ts_subtask/common/Counter.hpp"
-#include "tms_ts_subtask/common/wait_for_click.hpp"
+#include "tms_ts_primitive/Excavator/leaf_node.hpp"
+#include "tms_ts_primitive/Crawlerdump/leaf_node.hpp"
+#include "tms_ts_primitive/Bulldozer/leaf_node.hpp"
+#include "tms_ts_primitive/common/blackboard_value_reader_mongo.hpp"
+#include "tms_ts_primitive/common/mongo_value_writer.hpp"
+#include "tms_ts_primitive/common/conditional_expression.hpp"
+#include "tms_ts_primitive/common/KeepRunningUntilFlgup.hpp"
+#include "tms_ts_primitive/common/SetLocalBlackboard.hpp"
+#include "tms_ts_primitive/common/SetLocalBlackboardWithCounter.hpp"
+#include "tms_ts_primitive/common/Counter.hpp"
+#include "tms_ts_primitive/common/wait_for_click.hpp"
 
 
 using namespace BT;
@@ -54,7 +54,7 @@ public:
         "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
     
     factory.registerNodeType<LeafNodeExcavator>("LeafNodeExcavator");
-    factory.registerNodeType<LeafNodeCrawlerDump>("LeafNodeCrawlerDump");
+    factory.registerNodeType<LeafNodeCrawlerdump>("LeafNodeCrawlerdump");
     factory.registerNodeType<LeafNodeBulldozer>("LeafNodeBulldozer");
     factory.registerNodeType<BlackboardValueReaderMongo>("BlackboardValueReaderMongo");
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
