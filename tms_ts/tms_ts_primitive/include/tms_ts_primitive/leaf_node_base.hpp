@@ -63,7 +63,7 @@ public:
     bool goal_updated_ = false;
     int cancel_process_count_ = 5;
     
-    std::string subtask_name_;
+    std::string primitive_name_;
 
     void createActionClient(const std::string & action_name_); 
 

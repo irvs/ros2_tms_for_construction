@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_subtask/Excavator/subtask_excavator_change_pose.hpp"
+#include "tms_ts_primitive/Excavator/primitive_excavator_change_pose.hpp"
 #include <glog/logging.h>
 
 using namespace std::chrono_literals;
 
-SubtaskExcavatorChangePose::SubtaskExcavatorChangePose() : SubtaskNodeBase("subtask_excavator_change_pose_plan_node")
+PrimitiveExcavatorChangePose::PrimitiveExcavatorChangePose() : PrimitiveNodeBase("primitive_excavator_change_pose_plan_node")
 {
     auto options_server = rcl_action_server_get_default_options();
     options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
@@ -34,10 +34,10 @@ SubtaskExcavatorChangePose::SubtaskExcavatorChangePose() : SubtaskNodeBase("subt
     options_client.status_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
   
   action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-      this, "subtask_excavator_change_pose_plan",
-      std::bind(&SubtaskExcavatorChangePose::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-      std::bind(&SubtaskExcavatorChangePose::handle_cancel, this, std::placeholders::_1),
-      std::bind(&SubtaskExcavatorChangePose::handle_accepted, this, std::placeholders::_1),
+      this, "primitive_excavator_change_pose_plan",
+      std::bind(&PrimitiveExcavatorChangePose::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+      std::bind(&PrimitiveExcavatorChangePose::handle_cancel, this, std::placeholders::_1),
+      std::bind(&PrimitiveExcavatorChangePose::handle_accepted, this, std::placeholders::_1),
       options_server);
 
   action_client_ = rclcpp_action::create_client<ExcavatorChangePose>(this, "tms_rp_change_pose_plan",nullptr ,options_client);
@@ -51,7 +51,7 @@ SubtaskExcavatorChangePose::SubtaskExcavatorChangePose() : SubtaskNodeBase("subt
   }
 }
 
-rclcpp_action::GoalResponse SubtaskExcavatorChangePose::handle_goal(
+rclcpp_action::GoalResponse PrimitiveExcavatorChangePose::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
   used_model_name_ = goal->model_name;
@@ -68,9 +68,9 @@ rclcpp_action::GoalResponse SubtaskExcavatorChangePose::handle_goal(
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskExcavatorChangePose::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveExcavatorChangePose::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
-  RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
+  RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
   if (client_future_goal_handle_.valid() &&
       client_future_goal_handle_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
   {
@@ -80,13 +80,13 @@ rclcpp_action::CancelResponse SubtaskExcavatorChangePose::handle_cancel(const st
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskExcavatorChangePose::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveExcavatorChangePose::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
   using namespace std::placeholders;
-  std::thread{ std::bind(&SubtaskExcavatorChangePose::execute, this, _1), goal_handle }.detach();
+  std::thread{ std::bind(&PrimitiveExcavatorChangePose::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskExcavatorChangePose::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveExcavatorChangePose::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
   auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
 
@@ -104,7 +104,7 @@ void SubtaskExcavatorChangePose::execute(const std::shared_ptr<GoalHandle> goal_
     }
   };
 
-  // RCLCPP_INFO(this->get_logger(), "subtask is executing...");
+  // RCLCPP_INFO(this->get_logger(), "primitive is executing...");
 
   if (!action_client_->action_server_is_ready())
   {
@@ -173,7 +173,7 @@ void SubtaskExcavatorChangePose::execute(const std::shared_ptr<GoalHandle> goal_
   client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskExcavatorChangePose::goal_response_callback(const GoalHandleExcavatorChangePose::SharedPtr& goal_handle)
+void PrimitiveExcavatorChangePose::goal_response_callback(const GoalHandleExcavatorChangePose::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -185,7 +185,7 @@ void SubtaskExcavatorChangePose::goal_response_callback(const GoalHandleExcavato
   }
 }
 
-void SubtaskExcavatorChangePose::feedback_callback(
+void PrimitiveExcavatorChangePose::feedback_callback(
     const GoalHandleExcavatorChangePose::SharedPtr,
     const std::shared_ptr<const GoalHandleExcavatorChangePose::Feedback> feedback)
 {
@@ -193,7 +193,7 @@ void SubtaskExcavatorChangePose::feedback_callback(
   RCLCPP_INFO(this->get_logger(), "Feedback received: %s", feedback->state.c_str());
 }
 
-void SubtaskExcavatorChangePose::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void PrimitiveExcavatorChangePose::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleExcavatorChangePose::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -208,12 +208,12 @@ void SubtaskExcavatorChangePose::result_callback(const std::shared_ptr<GoalHandl
     case rclcpp_action::ResultCode::SUCCEEDED:
       result_to_leaf->result = true;
       goal_handle->succeed(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is succeeded");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is succeeded");
       break;
     case rclcpp_action::ResultCode::ABORTED:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is aborted");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is aborted");
       if(CustomUpdateParamInDB(used_model_name_, used_record_name_, "LOCK_FLG", std::vector<bool>{false}))
       {
         RCLCPP_INFO(this->get_logger(), "LOCK_FLG is set to false");
@@ -226,7 +226,7 @@ void SubtaskExcavatorChangePose::result_callback(const std::shared_ptr<GoalHandl
     case rclcpp_action::ResultCode::CANCELED:
       result_to_leaf->result = false;
       goal_handle->canceled(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is canceled");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is canceled");
       if(CustomUpdateParamInDB(used_model_name_, used_record_name_, "LOCK_FLG", std::vector<bool>{false}))
       {
         RCLCPP_INFO(this->get_logger(), "LOCK_FLG is set to false");
@@ -260,7 +260,7 @@ int main(int argc, char* argv[])
   google::InstallFailureSignalHandler();
 
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<SubtaskExcavatorChangePose>());
+  rclcpp::spin(std::make_shared<PrimitiveExcavatorChangePose>());
   rclcpp::shutdown();
   return 0;
 }

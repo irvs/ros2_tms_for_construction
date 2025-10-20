@@ -1,5 +1,5 @@
-#ifndef SUBTASK_NODE_BASE_HPP
-#define SUBTASK_NODE_BASE_HPP
+#ifndef PRIMITIVE_NODE_BASE_HPP
+#define PRIMITIVE_NODE_BASE_HPP
 
 #include <chrono>
 #include <functional>
@@ -19,10 +19,10 @@
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 
-class SubtaskNodeBase : public rclcpp::Node
+class PrimitiveNodeBase : public rclcpp::Node
 {
 public:
-  SubtaskNodeBase(const std::string& node_name_);
+  PrimitiveNodeBase(const std::string& node_name_);
 
   static mongocxx::instance inst;
 
@@ -54,7 +54,7 @@ static inline std::string bson_type_name(bsoncxx::type t) {
 
 // This function is to get array-type parameters from the database. (This function only supports 2D arrays.)
 template <typename K, typename T>
-std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool>) {
+std::map<K, T> PrimitiveNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool>) {
   mongocxx::client client{ mongocxx::uri{ "mongodb://localhost:27017" } };
   mongocxx::database db = client["rostmsdb"];
   mongocxx::collection collection = db["parameter"];
@@ -164,7 +164,7 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
 }
 // This function is to get non-array-type parameters from the database.
 template <typename K, typename T>
-std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::string>, bool>) {
+std::map<K, T> PrimitiveNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::string>, bool>) {
   mongocxx::client client{ mongocxx::uri{ "mongodb://localhost:27017" } };
   mongocxx::database db = client["rostmsdb"];
   mongocxx::collection collection = db["parameter"];
@@ -228,7 +228,7 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
 }
 
 template <typename T>
-bool SubtaskNodeBase::CustomUpdateParamInDB(std::string model_name, std::string record_name, const std::string& target_key, const std::vector<T>& new_values)
+bool PrimitiveNodeBase::CustomUpdateParamInDB(std::string model_name, std::string record_name, const std::string& target_key, const std::vector<T>& new_values)
 {
   try {
     mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
@@ -275,4 +275,4 @@ bool SubtaskNodeBase::CustomUpdateParamInDB(std::string model_name, std::string 
     return false;
   }
 }
-#endif // SUBTASK_NODE_BASE_HPP
+#endif // PRIMITIVE_NODE_BASE_HPP

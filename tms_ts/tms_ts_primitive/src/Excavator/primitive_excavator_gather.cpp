@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_subtask/Excavator/subtask_excavator_gather.hpp"
+#include "tms_ts_primitive/Excavator/primitive_excavator_gather.hpp"
 #include <glog/logging.h>
 
 using namespace std::chrono_literals;
 
-SubtaskExcavatorGather::SubtaskExcavatorGather() : SubtaskNodeBase("subtask_excavator_gather_node")
+PrimitiveExcavatorGather::PrimitiveExcavatorGather() : PrimitiveNodeBase("primitive_excavator_gather_node")
 {
     auto options_server = rcl_action_server_get_default_options();
     options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
@@ -34,10 +34,10 @@ SubtaskExcavatorGather::SubtaskExcavatorGather() : SubtaskNodeBase("subtask_exca
     options_client.status_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
   
   action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-      this, "subtask_excavator_gather",
-      std::bind(&SubtaskExcavatorGather::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-      std::bind(&SubtaskExcavatorGather::handle_cancel, this, std::placeholders::_1),
-      std::bind(&SubtaskExcavatorGather::handle_accepted, this, std::placeholders::_1),
+      this, "primitive_excavator_gather",
+      std::bind(&PrimitiveExcavatorGather::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+      std::bind(&PrimitiveExcavatorGather::handle_cancel, this, std::placeholders::_1),
+      std::bind(&PrimitiveExcavatorGather::handle_accepted, this, std::placeholders::_1),
       options_server);
 
   action_client_ = rclcpp_action::create_client<ExcavatorChangePose>(this, "tms_rp_gather",nullptr ,options_client);
@@ -51,7 +51,7 @@ SubtaskExcavatorGather::SubtaskExcavatorGather() : SubtaskNodeBase("subtask_exca
   }
 }
 
-rclcpp_action::GoalResponse SubtaskExcavatorGather::handle_goal(
+rclcpp_action::GoalResponse PrimitiveExcavatorGather::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
   used_model_name_ = goal->model_name;
@@ -65,9 +65,9 @@ rclcpp_action::GoalResponse SubtaskExcavatorGather::handle_goal(
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskExcavatorGather::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveExcavatorGather::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
-  RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
+  RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
   if (client_future_goal_handle_.valid() &&
       client_future_goal_handle_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
   {
@@ -77,13 +77,13 @@ rclcpp_action::CancelResponse SubtaskExcavatorGather::handle_cancel(const std::s
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskExcavatorGather::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveExcavatorGather::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
   using namespace std::placeholders;
-  std::thread{ std::bind(&SubtaskExcavatorGather::execute, this, _1), goal_handle }.detach();
+  std::thread{ std::bind(&PrimitiveExcavatorGather::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskExcavatorGather::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveExcavatorGather::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
   auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
 
@@ -101,7 +101,7 @@ void SubtaskExcavatorGather::execute(const std::shared_ptr<GoalHandle> goal_hand
     }
   };
 
-  // RCLCPP_INFO(this->get_logger(), "subtask is executing...");
+  // RCLCPP_INFO(this->get_logger(), "primitive is executing...");
 
   if (!action_client_->action_server_is_ready())
   {
@@ -199,7 +199,7 @@ void SubtaskExcavatorGather::execute(const std::shared_ptr<GoalHandle> goal_hand
   client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskExcavatorGather::goal_response_callback(const GoalHandleExcavatorChangePose::SharedPtr& goal_handle)
+void PrimitiveExcavatorGather::goal_response_callback(const GoalHandleExcavatorChangePose::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -211,7 +211,7 @@ void SubtaskExcavatorGather::goal_response_callback(const GoalHandleExcavatorCha
   }
 }
 
-void SubtaskExcavatorGather::feedback_callback(
+void PrimitiveExcavatorGather::feedback_callback(
     const GoalHandleExcavatorChangePose::SharedPtr,
     const std::shared_ptr<const GoalHandleExcavatorChangePose::Feedback> feedback)
 {
@@ -219,7 +219,7 @@ void SubtaskExcavatorGather::feedback_callback(
   RCLCPP_INFO(this->get_logger(), "Feedback received: %s", feedback->state.c_str());
 }
 
-void SubtaskExcavatorGather::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void PrimitiveExcavatorGather::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleExcavatorChangePose::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -234,17 +234,17 @@ void SubtaskExcavatorGather::result_callback(const std::shared_ptr<GoalHandle> g
     case rclcpp_action::ResultCode::SUCCEEDED:
       result_to_leaf->result = true;
       goal_handle->succeed(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is succeeded");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is succeeded");
       break;
     case rclcpp_action::ResultCode::ABORTED:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is aborted");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is aborted");
       break;
     case rclcpp_action::ResultCode::CANCELED:
       result_to_leaf->result = false;
       goal_handle->canceled(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is canceled");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is canceled");
       break;
     default:
       result_to_leaf->result = false;
@@ -270,7 +270,7 @@ int main(int argc, char* argv[])
   google::InstallFailureSignalHandler();
 
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<SubtaskExcavatorGather>());
+  rclcpp::spin(std::make_shared<PrimitiveExcavatorGather>());
   rclcpp::shutdown();
   return 0;
 }

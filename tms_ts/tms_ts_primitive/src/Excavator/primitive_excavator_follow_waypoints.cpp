@@ -12,24 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_subtask/Excavator/subtask_excavator_follow_waypoints.hpp"
+#include "tms_ts_primitive/Excavator/primitive_excavator_follow_waypoints.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskExcavatorFollowWaypointys::SubtaskExcavatorFollowWaypointys() : SubtaskNodeBase("st_excavator_follow_waypoints_node")
+PrimitiveExcavatorFollowWaypointys::PrimitiveExcavatorFollowWaypointys() : PrimitiveNodeBase("primitive_excavator_follow_waypoints_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_excavator_follow_waypoints",
-        std::bind(&SubtaskExcavatorFollowWaypointys::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskExcavatorFollowWaypointys::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskExcavatorFollowWaypointys::handle_accepted, this, std::placeholders::_1));
+        this, "primitive_excavator_follow_waypoints",
+        std::bind(&PrimitiveExcavatorFollowWaypointys::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&PrimitiveExcavatorFollowWaypointys::handle_cancel, this, std::placeholders::_1),
+        std::bind(&PrimitiveExcavatorFollowWaypointys::handle_accepted, this, std::placeholders::_1));
 
     action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "tms_rp_navigate_follow_waypoints");
 }
 
-rclcpp_action::GoalResponse SubtaskExcavatorFollowWaypointys::handle_goal(
+rclcpp_action::GoalResponse PrimitiveExcavatorFollowWaypointys::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
@@ -41,9 +41,9 @@ rclcpp_action::GoalResponse SubtaskExcavatorFollowWaypointys::handle_goal(
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskExcavatorFollowWaypointys::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveExcavatorFollowWaypointys::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
+    RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
     if (client_future_goal_handle_.valid() &&
         client_future_goal_handle_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
@@ -54,15 +54,15 @@ rclcpp_action::CancelResponse SubtaskExcavatorFollowWaypointys::handle_cancel(co
 }
 
 
-void SubtaskExcavatorFollowWaypointys::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveExcavatorFollowWaypointys::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskExcavatorFollowWaypointys::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&PrimitiveExcavatorFollowWaypointys::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskExcavatorFollowWaypointys::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveExcavatorFollowWaypointys::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_excavator_follow_waypoints_node) is executing...");
+    RCLCPP_INFO(this->get_logger(), "primitive(primitive_excavator_follow_waypoints_node) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -114,7 +114,7 @@ void SubtaskExcavatorFollowWaypointys::execute(const std::shared_ptr<GoalHandle>
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskExcavatorFollowWaypointys::goal_response_callback(const GoalHandleFollowWaypoints::SharedPtr& goal_handle)
+void PrimitiveExcavatorFollowWaypointys::goal_response_callback(const GoalHandleFollowWaypoints::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -126,7 +126,7 @@ void SubtaskExcavatorFollowWaypointys::goal_response_callback(const GoalHandleFo
   }
 }
 
-void SubtaskExcavatorFollowWaypointys::feedback_callback(
+void PrimitiveExcavatorFollowWaypointys::feedback_callback(
     const GoalHandleFollowWaypoints::SharedPtr,
     const std::shared_ptr<const GoalHandleFollowWaypoints::Feedback> feedback)
 {
@@ -134,7 +134,7 @@ void SubtaskExcavatorFollowWaypointys::feedback_callback(
   // std::cout << "Feedback: " << feedback->current_waypoint << std::endl;
 }
 
-void SubtaskExcavatorFollowWaypointys::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void PrimitiveExcavatorFollowWaypointys::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleFollowWaypoints::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -149,17 +149,17 @@ void SubtaskExcavatorFollowWaypointys::result_callback(const std::shared_ptr<Goa
     case rclcpp_action::ResultCode::SUCCEEDED:
       result_to_leaf->result = true;
       goal_handle->succeed(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is succeeded");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is succeeded");
       break;
     case rclcpp_action::ResultCode::ABORTED:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is aborted");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is aborted");
       break;
     case rclcpp_action::ResultCode::CANCELED:
       result_to_leaf->result = false;
       goal_handle->canceled(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is canceled");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is canceled");
       break;
     default:
       result_to_leaf->result = false;
@@ -172,7 +172,7 @@ void SubtaskExcavatorFollowWaypointys::result_callback(const std::shared_ptr<Goa
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskExcavatorFollowWaypointys>());
+    rclcpp::spin(std::make_shared<PrimitiveExcavatorFollowWaypointys>());
     rclcpp::shutdown();
     return 0;
 }

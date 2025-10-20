@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SUBTASK_EXCAVATOR_LEVEL_HPP
-#define SUBTASK_EXCAVATOR_LEVEL_HPP
+#ifndef PRIMITIVE_EXCAVATOR_LEVEL_HPP
+#define PRIMITIVE_EXCAVATOR_LEVEL_HPP
 
 #include <memory>
 #include <map>
@@ -28,14 +28,14 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "tms_msg_ts/action/leaf_node_base.hpp"
-#include "tms_ts_subtask/subtask_node_base.hpp"
+#include "tms_ts_primitive/primitive_node_base.hpp"
 
 #include "tms_msg_rp/action/tms_rp_excavator_change_pose.hpp"
 
 #include <rclcpp/qos.hpp>   
 #include <rmw/qos_profiles.h>  
 
-class SubtaskExcavatorLevel : public SubtaskNodeBase
+class PrimitiveExcavatorLevel : public PrimitiveNodeBase
 {
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
@@ -43,7 +43,7 @@ public:
   using ExcavatorChangePose = tms_msg_rp::action::TmsRpExcavatorChangePose;
   using GoalHandleExcavatorChangePose = rclcpp_action::ClientGoalHandle<ExcavatorChangePose>;
 
-  SubtaskExcavatorLevel();
+  PrimitiveExcavatorLevel();
 
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;

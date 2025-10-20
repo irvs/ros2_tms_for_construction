@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SAMPLE_SUBTASK_CRAWLERDUMP_NAVIGATE_ANYWHERE_HPP
-#define SAMPLE_SUBTASK__NAVIGATE_ANYWHERE_HPP
+#ifndef SAMPLE_PRIMITIVE_CRAWLERDUMP_NAVIGATE_ANYWHERE_HPP
+#define SAMPLE_PRIMITIVE__NAVIGATE_ANYWHERE_HPP
 
 #include <memory>
 #include <map>
@@ -31,20 +31,20 @@
 #include "std_msgs/msg/float64.hpp"
 
 #include "tms_msg_ts/action/leaf_node_base.hpp"
-#include "tms_ts_subtask/subtask_node_base.hpp"
+#include "tms_ts_primitive/primitive_node_base.hpp"
 
 #include "nav2_msgs/action/navigate_to_pose.hpp"
 
 #include <rclcpp/qos.hpp>   
 #include <rmw/qos_profiles.h>  
 
-class SubtaskCrawlerDumpNavigateAnywhere : public SubtaskNodeBase
+class PrimitiveCrawlerDumpNavigateAnywhere : public PrimitiveNodeBase
 {
 public:
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
     using NavigateToPose = nav2_msgs::action::NavigateToPose;
     using GoalHandleCrawlerDumpNavigateAnywhere = rclcpp_action::ClientGoalHandle<NavigateToPose>;
-    SubtaskCrawlerDumpNavigateAnywhere();
+    PrimitiveCrawlerDumpNavigateAnywhere();
 
 private:
     rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;

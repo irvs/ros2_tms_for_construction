@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_subtask/Excavator/subtask_excavator_navigate_anywhere_deg.hpp"
+#include "tms_ts_primitive/Excavator/primitive_excavator_navigate_anywhere_deg.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskExcavatorNavigateAnywhereDeg::SubtaskExcavatorNavigateAnywhereDeg() : SubtaskNodeBase("st_excavator_navigate_anywhere_deg_node")
+PrimitiveExcavatorNavigateAnywhereDeg::PrimitiveExcavatorNavigateAnywhereDeg() : PrimitiveNodeBase("primitive_excavator_navigate_anywhere_deg_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_excavator_navigate_anywhere_deg",
-        std::bind(&SubtaskExcavatorNavigateAnywhereDeg::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskExcavatorNavigateAnywhereDeg::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskExcavatorNavigateAnywhereDeg::handle_accepted, this, std::placeholders::_1));
+        this, "primitive_excavator_navigate_anywhere_deg",
+        std::bind(&PrimitiveExcavatorNavigateAnywhereDeg::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&PrimitiveExcavatorNavigateAnywhereDeg::handle_cancel, this, std::placeholders::_1),
+        std::bind(&PrimitiveExcavatorNavigateAnywhereDeg::handle_accepted, this, std::placeholders::_1));
 
     
     action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "tms_rp_navigate_anywhere_deg");
@@ -38,7 +38,7 @@ SubtaskExcavatorNavigateAnywhereDeg::SubtaskExcavatorNavigateAnywhereDeg() : Sub
     // }
 }
 
-rclcpp_action::GoalResponse SubtaskExcavatorNavigateAnywhereDeg::handle_goal(
+rclcpp_action::GoalResponse PrimitiveExcavatorNavigateAnywhereDeg::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
@@ -50,9 +50,9 @@ rclcpp_action::GoalResponse SubtaskExcavatorNavigateAnywhereDeg::handle_goal(
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskExcavatorNavigateAnywhereDeg::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveExcavatorNavigateAnywhereDeg::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
+    RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
     if (client_future_goal_handle_.valid() &&
         client_future_goal_handle_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
@@ -62,15 +62,15 @@ rclcpp_action::CancelResponse SubtaskExcavatorNavigateAnywhereDeg::handle_cancel
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskExcavatorNavigateAnywhereDeg::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveExcavatorNavigateAnywhereDeg::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskExcavatorNavigateAnywhereDeg::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&PrimitiveExcavatorNavigateAnywhereDeg::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskExcavatorNavigateAnywhereDeg::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveExcavatorNavigateAnywhereDeg::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_excavator_navigate_anywhere_node) is executing...");
+    RCLCPP_INFO(this->get_logger(), "primitive(primitive_excavator_navigate_anywhere_node) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -134,7 +134,7 @@ void SubtaskExcavatorNavigateAnywhereDeg::execute(const std::shared_ptr<GoalHand
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskExcavatorNavigateAnywhereDeg::goal_response_callback(const GoalHandleExcavatorNavigateAnywhereDeg::SharedPtr& goal_handle)
+void PrimitiveExcavatorNavigateAnywhereDeg::goal_response_callback(const GoalHandleExcavatorNavigateAnywhereDeg::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -147,7 +147,7 @@ void SubtaskExcavatorNavigateAnywhereDeg::goal_response_callback(const GoalHandl
 }
 
   
-void SubtaskExcavatorNavigateAnywhereDeg::feedback_callback(
+void PrimitiveExcavatorNavigateAnywhereDeg::feedback_callback(
     const GoalHandleExcavatorNavigateAnywhereDeg::SharedPtr,
     const std::shared_ptr<const GoalHandleExcavatorNavigateAnywhereDeg::Feedback> feedback)
 {
@@ -157,7 +157,7 @@ void SubtaskExcavatorNavigateAnywhereDeg::feedback_callback(
 
 
 //result
-void SubtaskExcavatorNavigateAnywhereDeg::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void PrimitiveExcavatorNavigateAnywhereDeg::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleExcavatorNavigateAnywhereDeg::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -172,17 +172,17 @@ void SubtaskExcavatorNavigateAnywhereDeg::result_callback(const std::shared_ptr<
     case rclcpp_action::ResultCode::SUCCEEDED:
       result_to_leaf->result = true;
       goal_handle->succeed(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is succeeded");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is succeeded");
       break;
     case rclcpp_action::ResultCode::ABORTED:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is aborted");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is aborted");
       break;
     case rclcpp_action::ResultCode::CANCELED:
       result_to_leaf->result = false;
       goal_handle->canceled(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is canceled");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is canceled");
       break;
     default:
       result_to_leaf->result = false;
@@ -199,7 +199,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskExcavatorNavigateAnywhereDeg>());
+    rclcpp::spin(std::make_shared<PrimitiveExcavatorNavigateAnywhereDeg>());
     rclcpp::shutdown();
     return 0;
 }

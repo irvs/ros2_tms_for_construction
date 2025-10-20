@@ -12,33 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_subtask/Bulldozer/subtask_bulldozer_follow_waypoints.hpp"
+#include "tms_ts_primitive/Bulldozer/primitive_bulldozer_follow_waypoints.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskBulldozerFollowWaypointys::SubtaskBulldozerFollowWaypointys() : SubtaskNodeBase("st_bulldozer_follow_waypoints_node")
+PrimitiveBulldozerFollowWaypointys::PrimitiveBulldozerFollowWaypointys() : PrimitiveNodeBase("primitive_bulldozer_follow_waypoints_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_bulldozer_follow_waypoints",
-        std::bind(&SubtaskBulldozerFollowWaypointys::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskBulldozerFollowWaypointys::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskBulldozerFollowWaypointys::handle_accepted, this, std::placeholders::_1));
+        this, "primitive_bulldozer_follow_waypoints",
+        std::bind(&PrimitiveBulldozerFollowWaypointys::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&PrimitiveBulldozerFollowWaypointys::handle_cancel, this, std::placeholders::_1),
+        std::bind(&PrimitiveBulldozerFollowWaypointys::handle_accepted, this, std::placeholders::_1));
 
     action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "tms_rp_navigate_follow_waypoints");
 }
 
-rclcpp_action::GoalResponse SubtaskBulldozerFollowWaypointys::handle_goal(
+rclcpp_action::GoalResponse PrimitiveBulldozerFollowWaypointys::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskBulldozerFollowWaypointys::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveBulldozerFollowWaypointys::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
+    RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
     if (client_future_goal_handle_.valid() &&
         client_future_goal_handle_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
@@ -49,15 +49,15 @@ rclcpp_action::CancelResponse SubtaskBulldozerFollowWaypointys::handle_cancel(co
 }
 
 
-void SubtaskBulldozerFollowWaypointys::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveBulldozerFollowWaypointys::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskBulldozerFollowWaypointys::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&PrimitiveBulldozerFollowWaypointys::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskBulldozerFollowWaypointys::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveBulldozerFollowWaypointys::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_bulldozer_follow_waypoints_node) is executing...");
+    RCLCPP_INFO(this->get_logger(), "primitive(primitive_bulldozer_follow_waypoints_node) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -109,7 +109,7 @@ void SubtaskBulldozerFollowWaypointys::execute(const std::shared_ptr<GoalHandle>
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskBulldozerFollowWaypointys::goal_response_callback(const GoalHandleFollowWaypoints::SharedPtr& goal_handle)
+void PrimitiveBulldozerFollowWaypointys::goal_response_callback(const GoalHandleFollowWaypoints::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -121,7 +121,7 @@ void SubtaskBulldozerFollowWaypointys::goal_response_callback(const GoalHandleFo
   }
 }
 
-void SubtaskBulldozerFollowWaypointys::feedback_callback(
+void PrimitiveBulldozerFollowWaypointys::feedback_callback(
     const GoalHandleFollowWaypoints::SharedPtr,
     const std::shared_ptr<const GoalHandleFollowWaypoints::Feedback> feedback)
 {
@@ -129,7 +129,7 @@ void SubtaskBulldozerFollowWaypointys::feedback_callback(
   // std::cout << "Feedback: " << feedback->current_waypoint << std::endl;
 }
 
-void SubtaskBulldozerFollowWaypointys::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void PrimitiveBulldozerFollowWaypointys::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleFollowWaypoints::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -144,17 +144,17 @@ void SubtaskBulldozerFollowWaypointys::result_callback(const std::shared_ptr<Goa
     case rclcpp_action::ResultCode::SUCCEEDED:
       result_to_leaf->result = true;
       goal_handle->succeed(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is succeeded");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is succeeded");
       break;
     case rclcpp_action::ResultCode::ABORTED:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is aborted");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is aborted");
       break;
     case rclcpp_action::ResultCode::CANCELED:
       result_to_leaf->result = false;
       goal_handle->canceled(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is canceled");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is canceled");
       break;
     default:
       result_to_leaf->result = false;
@@ -167,7 +167,7 @@ void SubtaskBulldozerFollowWaypointys::result_callback(const std::shared_ptr<Goa
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskBulldozerFollowWaypointys>());
+    rclcpp::spin(std::make_shared<PrimitiveBulldozerFollowWaypointys>());
     rclcpp::shutdown();
     return 0;
 }

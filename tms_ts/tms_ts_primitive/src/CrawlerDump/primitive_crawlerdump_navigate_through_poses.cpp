@@ -13,25 +13,25 @@
 // limitations under the License.
 
 #include <vector>
-#include "tms_ts_subtask/CrawlerDump/subtask_crawlerdump_navigate_through_poses.hpp"
+#include "tms_ts_primitive/CrawlerDump/primitive_crawlerdump_navigate_through_poses.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskCrawlerDumpNavigateThroughPoses::SubtaskCrawlerDumpNavigateThroughPoses() : SubtaskNodeBase("st_crawlerdump_navigate_through_poses_node")
+PrimitiveCrawlerDumpNavigateThroughPoses::PrimitiveCrawlerDumpNavigateThroughPoses() : PrimitiveNodeBase("primitive_crawlerdump_navigate_through_poses_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_crawlerdump_navigate_through_poses",
-        std::bind(&SubtaskCrawlerDumpNavigateThroughPoses::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskCrawlerDumpNavigateThroughPoses::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskCrawlerDumpNavigateThroughPoses::handle_accepted, this, std::placeholders::_1));
+        this, "primitive_crawlerdump_navigate_through_poses",
+        std::bind(&PrimitiveCrawlerDumpNavigateThroughPoses::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&PrimitiveCrawlerDumpNavigateThroughPoses::handle_cancel, this, std::placeholders::_1),
+        std::bind(&PrimitiveCrawlerDumpNavigateThroughPoses::handle_accepted, this, std::placeholders::_1));
 
     
     action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "tms_rp_navigate_through_poses");
 }
 
-rclcpp_action::GoalResponse SubtaskCrawlerDumpNavigateThroughPoses::handle_goal(
+rclcpp_action::GoalResponse PrimitiveCrawlerDumpNavigateThroughPoses::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
@@ -43,9 +43,9 @@ rclcpp_action::GoalResponse SubtaskCrawlerDumpNavigateThroughPoses::handle_goal(
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskCrawlerDumpNavigateThroughPoses::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveCrawlerDumpNavigateThroughPoses::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
+    RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
     if (client_future_goal_handle_.valid() &&
         client_future_goal_handle_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
@@ -55,15 +55,15 @@ rclcpp_action::CancelResponse SubtaskCrawlerDumpNavigateThroughPoses::handle_can
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskCrawlerDumpNavigateThroughPoses::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerDumpNavigateThroughPoses::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskCrawlerDumpNavigateThroughPoses::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&PrimitiveCrawlerDumpNavigateThroughPoses::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskCrawlerDumpNavigateThroughPoses::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerDumpNavigateThroughPoses::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_crawlerdump_navigate_through_poses) is executing...");
+    RCLCPP_INFO(this->get_logger(), "primitive(primitive_crawlerdump_navigate_through_poses) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -119,7 +119,7 @@ void SubtaskCrawlerDumpNavigateThroughPoses::execute(const std::shared_ptr<GoalH
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskCrawlerDumpNavigateThroughPoses::goal_response_callback(const GoalHandleCrawlerDumpNavigateThroughPoses::SharedPtr& goal_handle)
+void PrimitiveCrawlerDumpNavigateThroughPoses::goal_response_callback(const GoalHandleCrawlerDumpNavigateThroughPoses::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -132,7 +132,7 @@ void SubtaskCrawlerDumpNavigateThroughPoses::goal_response_callback(const GoalHa
 }
 
   
-void SubtaskCrawlerDumpNavigateThroughPoses::feedback_callback(
+void PrimitiveCrawlerDumpNavigateThroughPoses::feedback_callback(
     const GoalHandleCrawlerDumpNavigateThroughPoses::SharedPtr,
     const std::shared_ptr<const GoalHandleCrawlerDumpNavigateThroughPoses::Feedback> feedback)
 {
@@ -142,7 +142,7 @@ void SubtaskCrawlerDumpNavigateThroughPoses::feedback_callback(
 
 
 //result
-void SubtaskCrawlerDumpNavigateThroughPoses::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void PrimitiveCrawlerDumpNavigateThroughPoses::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleCrawlerDumpNavigateThroughPoses::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -157,17 +157,17 @@ void SubtaskCrawlerDumpNavigateThroughPoses::result_callback(const std::shared_p
     case rclcpp_action::ResultCode::SUCCEEDED:
       result_to_leaf->result = true;
       goal_handle->succeed(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is succeeded");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is succeeded");
       break;
     case rclcpp_action::ResultCode::ABORTED:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is aborted");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is aborted");
       break;
     case rclcpp_action::ResultCode::CANCELED:
       result_to_leaf->result = false;
       goal_handle->canceled(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is canceled");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is canceled");
       break;
     default:
       result_to_leaf->result = false;
@@ -184,7 +184,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskCrawlerDumpNavigateThroughPoses>());
+    rclcpp::spin(std::make_shared<PrimitiveCrawlerDumpNavigateThroughPoses>());
     rclcpp::shutdown();
     return 0;
 }

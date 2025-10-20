@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SUBTASK_EXCAVATOR_RELEASE_SIMPLE_HPP
-#define SUBTASK_EXCAVATOR_RELEASE_SIMPLE_HPP
+#ifndef PRIMITIVE_EXCAVATOR_RELEASE_SIMPLE_HPP
+#define PRIMITIVE_EXCAVATOR_RELEASE_SIMPLE_HPP
 
 #include <memory>
 #include <map>
@@ -28,14 +28,14 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "tms_msg_ts/action/leaf_node_base.hpp"
-#include "tms_ts_subtask/subtask_node_base.hpp"
+#include "tms_ts_primitive/primitive_node_base.hpp"
 
 #include "tms_msg_rp/action/tms_rp_excavator_release_simple.hpp"
 
 #include <rclcpp/qos.hpp>   
 #include <rmw/qos_profiles.h>  
 
-class SubtaskExcavatorReleaseSimple : public SubtaskNodeBase
+class PrimitiveExcavatorReleaseSimple : public PrimitiveNodeBase
 {
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
@@ -43,7 +43,7 @@ public:
   using ExcavatorReleaseSimple = tms_msg_rp::action::TmsRpExcavatorReleaseSimple;
   using GoalHandleExcavatorReleaseSimple = rclcpp_action::ClientGoalHandle<ExcavatorReleaseSimple>;
 
-  SubtaskExcavatorReleaseSimple();
+  PrimitiveExcavatorReleaseSimple();
 
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;

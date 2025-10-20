@@ -13,34 +13,34 @@
 // limitations under the License.
 
 #include <vector>
-#include "tms_ts_subtask/Bulldozer/subtask_bulldozer_navigate_through_poses_deg.hpp"
+#include "tms_ts_primitive/Bulldozer/primitive_bulldozer_navigate_through_poses_deg.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskBulldozerNavigateThroughPosesDeg::SubtaskBulldozerNavigateThroughPosesDeg() : SubtaskNodeBase("st_bulldozer_navigate_through_poses_deg_node")
+PrimitiveBulldozerNavigateThroughPosesDeg::PrimitiveBulldozerNavigateThroughPosesDeg() : PrimitiveNodeBase("primitive_bulldozer_navigate_through_poses_deg_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_bulldozer_navigate_through_poses_deg",
-        std::bind(&SubtaskBulldozerNavigateThroughPosesDeg::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskBulldozerNavigateThroughPosesDeg::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskBulldozerNavigateThroughPosesDeg::handle_accepted, this, std::placeholders::_1));
+        this, "primitive_bulldozer_navigate_through_poses_deg",
+        std::bind(&PrimitiveBulldozerNavigateThroughPosesDeg::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&PrimitiveBulldozerNavigateThroughPosesDeg::handle_cancel, this, std::placeholders::_1),
+        std::bind(&PrimitiveBulldozerNavigateThroughPosesDeg::handle_accepted, this, std::placeholders::_1));
 
     
     action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "tms_rp_navigate_through_poses_deg");
 }
 
-rclcpp_action::GoalResponse SubtaskBulldozerNavigateThroughPosesDeg::handle_goal(
+rclcpp_action::GoalResponse PrimitiveBulldozerNavigateThroughPosesDeg::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskBulldozerNavigateThroughPosesDeg::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveBulldozerNavigateThroughPosesDeg::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
+    RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
     if (client_future_goal_handle_.valid() &&
         client_future_goal_handle_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
@@ -50,15 +50,15 @@ rclcpp_action::CancelResponse SubtaskBulldozerNavigateThroughPosesDeg::handle_ca
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskBulldozerNavigateThroughPosesDeg::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveBulldozerNavigateThroughPosesDeg::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskBulldozerNavigateThroughPosesDeg::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&PrimitiveBulldozerNavigateThroughPosesDeg::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskBulldozerNavigateThroughPosesDeg::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveBulldozerNavigateThroughPosesDeg::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_bulldozer_navigate_through_poses) is executing...");
+    RCLCPP_INFO(this->get_logger(), "primitive(primitive_bulldozer_navigate_through_poses) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -127,7 +127,7 @@ void SubtaskBulldozerNavigateThroughPosesDeg::execute(const std::shared_ptr<Goal
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskBulldozerNavigateThroughPosesDeg::goal_response_callback(const GoalHandleBulldozerNavigateThroughPoses::SharedPtr& goal_handle)
+void PrimitiveBulldozerNavigateThroughPosesDeg::goal_response_callback(const GoalHandleBulldozerNavigateThroughPoses::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -140,7 +140,7 @@ void SubtaskBulldozerNavigateThroughPosesDeg::goal_response_callback(const GoalH
 }
 
   
-void SubtaskBulldozerNavigateThroughPosesDeg::feedback_callback(
+void PrimitiveBulldozerNavigateThroughPosesDeg::feedback_callback(
     const GoalHandleBulldozerNavigateThroughPoses::SharedPtr,
     const std::shared_ptr<const GoalHandleBulldozerNavigateThroughPoses::Feedback> feedback)
 {
@@ -150,7 +150,7 @@ void SubtaskBulldozerNavigateThroughPosesDeg::feedback_callback(
 
 
 //result
-void SubtaskBulldozerNavigateThroughPosesDeg::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void PrimitiveBulldozerNavigateThroughPosesDeg::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleBulldozerNavigateThroughPoses::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -165,17 +165,17 @@ void SubtaskBulldozerNavigateThroughPosesDeg::result_callback(const std::shared_
     case rclcpp_action::ResultCode::SUCCEEDED:
       result_to_leaf->result = true;
       goal_handle->succeed(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is succeeded");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is succeeded");
       break;
     case rclcpp_action::ResultCode::ABORTED:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is aborted");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is aborted");
       break;
     case rclcpp_action::ResultCode::CANCELED:
       result_to_leaf->result = false;
       goal_handle->canceled(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is canceled");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is canceled");
       break;
     default:
       result_to_leaf->result = false;
@@ -192,7 +192,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskBulldozerNavigateThroughPosesDeg>());
+    rclcpp::spin(std::make_shared<PrimitiveBulldozerNavigateThroughPosesDeg>());
     rclcpp::shutdown();
     return 0;
 }

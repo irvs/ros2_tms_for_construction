@@ -13,25 +13,25 @@
 // limitations under the License.
 
 #include <vector>
-#include "tms_ts_subtask/CrawlerDump/subtask_crawlerdump_swing.hpp"
+#include "tms_ts_primitive/CrawlerDump/primitive_crawlerdump_swing.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskCrawlerDumpSwing::SubtaskCrawlerDumpSwing() : SubtaskNodeBase("st_crawlerdump_swing_node")
+PrimitiveCrawlerDumpSwing::PrimitiveCrawlerDumpSwing() : PrimitiveNodeBase("primitive_crawlerdump_swing_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_crawlerdump_swing",
-        std::bind(&SubtaskCrawlerDumpSwing::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskCrawlerDumpSwing::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskCrawlerDumpSwing::handle_accepted, this, std::placeholders::_1));
+        this, "primitive_crawlerdump_swing",
+        std::bind(&PrimitiveCrawlerDumpSwing::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&PrimitiveCrawlerDumpSwing::handle_cancel, this, std::placeholders::_1),
+        std::bind(&PrimitiveCrawlerDumpSwing::handle_accepted, this, std::placeholders::_1));
 
     
     action_client_ = rclcpp_action::create_client<TmsRpCrawlerDumpSwingAngle>(this, "tms_rp_set_swing_angle");
 }
 
-rclcpp_action::GoalResponse SubtaskCrawlerDumpSwing::handle_goal(
+rclcpp_action::GoalResponse PrimitiveCrawlerDumpSwing::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
@@ -43,9 +43,9 @@ rclcpp_action::GoalResponse SubtaskCrawlerDumpSwing::handle_goal(
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskCrawlerDumpSwing::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveCrawlerDumpSwing::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
+    RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
     if (client_future_goal_handle_.valid() &&
         client_future_goal_handle_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
@@ -55,15 +55,15 @@ rclcpp_action::CancelResponse SubtaskCrawlerDumpSwing::handle_cancel(const std::
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskCrawlerDumpSwing::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerDumpSwing::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskCrawlerDumpSwing::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&PrimitiveCrawlerDumpSwing::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskCrawlerDumpSwing::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerDumpSwing::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_crawlerdump_swing) is executing...");
+    RCLCPP_INFO(this->get_logger(), "primitive(primitive_crawlerdump_swing) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -99,7 +99,7 @@ void SubtaskCrawlerDumpSwing::execute(const std::shared_ptr<GoalHandle> goal_han
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskCrawlerDumpSwing::goal_response_callback(const GoalHandleCrawlerDumpSwing::SharedPtr& goal_handle)
+void PrimitiveCrawlerDumpSwing::goal_response_callback(const GoalHandleCrawlerDumpSwing::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -112,7 +112,7 @@ void SubtaskCrawlerDumpSwing::goal_response_callback(const GoalHandleCrawlerDump
 }
 
   
-void SubtaskCrawlerDumpSwing::feedback_callback(
+void PrimitiveCrawlerDumpSwing::feedback_callback(
     const GoalHandleCrawlerDumpSwing::SharedPtr,
     const std::shared_ptr<const GoalHandleCrawlerDumpSwing::Feedback> feedback)
 {
@@ -122,7 +122,7 @@ void SubtaskCrawlerDumpSwing::feedback_callback(
 
 
 //result
-void SubtaskCrawlerDumpSwing::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void PrimitiveCrawlerDumpSwing::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleCrawlerDumpSwing::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -137,17 +137,17 @@ void SubtaskCrawlerDumpSwing::result_callback(const std::shared_ptr<GoalHandle> 
     case rclcpp_action::ResultCode::SUCCEEDED:
       result_to_leaf->result = true;
       goal_handle->succeed(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is succeeded");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is succeeded");
       break;
     case rclcpp_action::ResultCode::ABORTED:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is aborted");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is aborted");
       break;
     case rclcpp_action::ResultCode::CANCELED:
       result_to_leaf->result = false;
       goal_handle->canceled(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is canceled");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is canceled");
       break;
     default:
       result_to_leaf->result = false;
@@ -164,7 +164,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskCrawlerDumpSwing>());
+    rclcpp::spin(std::make_shared<PrimitiveCrawlerDumpSwing>());
     rclcpp::shutdown();
     return 0;
 }

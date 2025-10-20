@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_subtask/subtask_node_base.hpp"
+#include "tms_ts_primitive/primitive_node_base.hpp"
 
-mongocxx::instance SubtaskNodeBase::inst{};   
+mongocxx::instance PrimitiveNodeBase::inst{};   
 
 
-SubtaskNodeBase::SubtaskNodeBase(const std::string& node_name_) : rclcpp::Node(node_name_) {};
+PrimitiveNodeBase::PrimitiveNodeBase(const std::string& node_name_) : rclcpp::Node(node_name_) {};

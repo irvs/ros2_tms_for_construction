@@ -13,33 +13,33 @@
 // limitations under the License.
 
 #include <vector>
-#include "tms_ts_subtask/CrawlerDump/subtask_crawlerdump_swing_align_to_heading.hpp"
+#include "tms_ts_primitive/CrawlerDump/primitive_crawlerdump_swing_align_to_heading.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskCrawlerDumpSwingAlignToHeading::SubtaskCrawlerDumpSwingAlignToHeading() : SubtaskNodeBase("st_crawlerdump_swing_align_to_heading_node")
+PrimitiveCrawlerDumpSwingAlignToHeading::PrimitiveCrawlerDumpSwingAlignToHeading() : PrimitiveNodeBase("primitive_crawlerdump_swing_align_to_heading_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_crawlerdump_swing_align_to_heading",
-        std::bind(&SubtaskCrawlerDumpSwingAlignToHeading::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskCrawlerDumpSwingAlignToHeading::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskCrawlerDumpSwingAlignToHeading::handle_accepted, this, std::placeholders::_1));
+        this, "primitive_crawlerdump_swing_align_to_heading",
+        std::bind(&PrimitiveCrawlerDumpSwingAlignToHeading::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&PrimitiveCrawlerDumpSwingAlignToHeading::handle_cancel, this, std::placeholders::_1),
+        std::bind(&PrimitiveCrawlerDumpSwingAlignToHeading::handle_accepted, this, std::placeholders::_1));
 
     
     action_client_ = rclcpp_action::create_client<TmsRpCrawlerDumpSwingAngle>(this, "tms_rp_set_swing_angle_align_to_heading");
 }
 
-rclcpp_action::GoalResponse SubtaskCrawlerDumpSwingAlignToHeading::handle_goal(
+rclcpp_action::GoalResponse PrimitiveCrawlerDumpSwingAlignToHeading::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskCrawlerDumpSwingAlignToHeading::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveCrawlerDumpSwingAlignToHeading::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
+    RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
     if (client_future_goal_handle_.valid() &&
         client_future_goal_handle_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
@@ -49,15 +49,15 @@ rclcpp_action::CancelResponse SubtaskCrawlerDumpSwingAlignToHeading::handle_canc
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskCrawlerDumpSwingAlignToHeading::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerDumpSwingAlignToHeading::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskCrawlerDumpSwingAlignToHeading::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&PrimitiveCrawlerDumpSwingAlignToHeading::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskCrawlerDumpSwingAlignToHeading::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerDumpSwingAlignToHeading::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_crawlerdump_swing_align_to_heading) is executing...");
+    RCLCPP_INFO(this->get_logger(), "primitive(primitive_crawlerdump_swing_align_to_heading) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -140,7 +140,7 @@ void SubtaskCrawlerDumpSwingAlignToHeading::execute(const std::shared_ptr<GoalHa
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskCrawlerDumpSwingAlignToHeading::goal_response_callback(const GoalHandleCrawlerDumpSwingAlignToHeading::SharedPtr& goal_handle)
+void PrimitiveCrawlerDumpSwingAlignToHeading::goal_response_callback(const GoalHandleCrawlerDumpSwingAlignToHeading::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -153,7 +153,7 @@ void SubtaskCrawlerDumpSwingAlignToHeading::goal_response_callback(const GoalHan
 }
 
   
-void SubtaskCrawlerDumpSwingAlignToHeading::feedback_callback(
+void PrimitiveCrawlerDumpSwingAlignToHeading::feedback_callback(
     const GoalHandleCrawlerDumpSwingAlignToHeading::SharedPtr,
     const std::shared_ptr<const GoalHandleCrawlerDumpSwingAlignToHeading::Feedback> feedback)
 {
@@ -163,7 +163,7 @@ void SubtaskCrawlerDumpSwingAlignToHeading::feedback_callback(
 
 
 //result
-void SubtaskCrawlerDumpSwingAlignToHeading::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void PrimitiveCrawlerDumpSwingAlignToHeading::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleCrawlerDumpSwingAlignToHeading::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -178,17 +178,17 @@ void SubtaskCrawlerDumpSwingAlignToHeading::result_callback(const std::shared_pt
     case rclcpp_action::ResultCode::SUCCEEDED:
       result_to_leaf->result = true;
       goal_handle->succeed(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is succeeded");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is succeeded");
       break;
     case rclcpp_action::ResultCode::ABORTED:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is aborted");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is aborted");
       break;
     case rclcpp_action::ResultCode::CANCELED:
       result_to_leaf->result = false;
       goal_handle->canceled(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is canceled");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is canceled");
       break;
     default:
       result_to_leaf->result = false;
@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskCrawlerDumpSwingAlignToHeading>());
+    rclcpp::spin(std::make_shared<PrimitiveCrawlerDumpSwingAlignToHeading>());
     rclcpp::shutdown();
     return 0;
 }

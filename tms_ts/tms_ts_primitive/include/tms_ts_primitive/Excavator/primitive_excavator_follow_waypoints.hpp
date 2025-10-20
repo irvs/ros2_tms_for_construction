@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TMS_TS_SUBTASK_EXCAVATOR_FOLLOW_WAYPOINTS_HPP
-#define TMS_TS_SUBTASK_EXCAVATOR_FOLLOW_WAYPOINTS_HPP
+#ifndef TMS_TS_PRIMITIVE_EXCAVATOR_FOLLOW_WAYPOINTS_HPP
+#define TMS_TS_PRIMITIVE_EXCAVATOR_FOLLOW_WAYPOINTS_HPP
 
 #include <memory>
 #include <map>
@@ -30,16 +30,16 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "tms_msg_ts/action/leaf_node_base.hpp"
 #include "nav2_msgs/action/follow_waypoints.hpp"
-#include "tms_ts_subtask/subtask_node_base.hpp"
+#include "tms_ts_primitive/primitive_node_base.hpp"
 
-class SubtaskExcavatorFollowWaypointys : public SubtaskNodeBase
+class PrimitiveExcavatorFollowWaypointys : public PrimitiveNodeBase
 {
 public:
     using FollowWaypoints = nav2_msgs::action::FollowWaypoints;
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
     using GoalHandleFollowWaypoints = rclcpp_action::ClientGoalHandle<FollowWaypoints>;
 
-    SubtaskExcavatorFollowWaypointys();
+    PrimitiveExcavatorFollowWaypointys();
 
 private:
     rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
@@ -60,4 +60,4 @@ private:
                          const GoalHandleFollowWaypoints::WrappedResult& result);
 };
 
-#endif  // TMS_TS_SUBTASK_EXCAVATOR_FOLLOW_WAYPOINTS_HPP
+#endif  // TMS_TS_PRIMITIVE_EXCAVATOR_FOLLOW_WAYPOINTS_HPP

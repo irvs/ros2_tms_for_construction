@@ -13,25 +13,25 @@
 // limitations under the License.
 
 #include <vector>
-#include "tms_ts_subtask/CrawlerDump/subtask_crawlerdump_release_soil.hpp"
+#include "tms_ts_primitive/CrawlerDump/primitive_crawlerdump_release_soil.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskCrawlerDumpReleaseSoil::SubtaskCrawlerDumpReleaseSoil() : SubtaskNodeBase("st_crawlerdump_release_soil_node")
+PrimitiveCrawlerDumpReleaseSoil::PrimitiveCrawlerDumpReleaseSoil() : PrimitiveNodeBase("primitive_crawlerdump_release_soil_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_crawlerdump_release_soil",
-        std::bind(&SubtaskCrawlerDumpReleaseSoil::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&SubtaskCrawlerDumpReleaseSoil::handle_cancel, this, std::placeholders::_1),
-        std::bind(&SubtaskCrawlerDumpReleaseSoil::handle_accepted, this, std::placeholders::_1));
+        this, "primitive_crawlerdump_release_soil",
+        std::bind(&PrimitiveCrawlerDumpReleaseSoil::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&PrimitiveCrawlerDumpReleaseSoil::handle_cancel, this, std::placeholders::_1),
+        std::bind(&PrimitiveCrawlerDumpReleaseSoil::handle_accepted, this, std::placeholders::_1));
 
     
     action_client_ = rclcpp_action::create_client<TmsRpCrawlerDumpDumpAngle>(this, "tms_rp_set_dump_angle");
 }
 
-rclcpp_action::GoalResponse SubtaskCrawlerDumpReleaseSoil::handle_goal(
+rclcpp_action::GoalResponse PrimitiveCrawlerDumpReleaseSoil::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
@@ -43,9 +43,9 @@ rclcpp_action::GoalResponse SubtaskCrawlerDumpReleaseSoil::handle_goal(
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse SubtaskCrawlerDumpReleaseSoil::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveCrawlerDumpReleaseSoil::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "Received request to cancel subtask node");
+    RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
     if (client_future_goal_handle_.valid() &&
         client_future_goal_handle_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
@@ -55,15 +55,15 @@ rclcpp_action::CancelResponse SubtaskCrawlerDumpReleaseSoil::handle_cancel(const
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void SubtaskCrawlerDumpReleaseSoil::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerDumpReleaseSoil::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&SubtaskCrawlerDumpReleaseSoil::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&PrimitiveCrawlerDumpReleaseSoil::execute, this, _1), goal_handle }.detach();
 }
 
-void SubtaskCrawlerDumpReleaseSoil::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerDumpReleaseSoil::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_crawlerdump_release_soil) is executing...");
+    RCLCPP_INFO(this->get_logger(), "primitive(primitive_crawlerdump_release_soil) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -97,7 +97,7 @@ void SubtaskCrawlerDumpReleaseSoil::execute(const std::shared_ptr<GoalHandle> go
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void SubtaskCrawlerDumpReleaseSoil::goal_response_callback(const GoalHandleCrawlerDumpReleaseSoil::SharedPtr& goal_handle)
+void PrimitiveCrawlerDumpReleaseSoil::goal_response_callback(const GoalHandleCrawlerDumpReleaseSoil::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -110,7 +110,7 @@ void SubtaskCrawlerDumpReleaseSoil::goal_response_callback(const GoalHandleCrawl
 }
 
   
-void SubtaskCrawlerDumpReleaseSoil::feedback_callback(
+void PrimitiveCrawlerDumpReleaseSoil::feedback_callback(
     const GoalHandleCrawlerDumpReleaseSoil::SharedPtr,
     const std::shared_ptr<const GoalHandleCrawlerDumpReleaseSoil::Feedback> feedback)
 {
@@ -120,7 +120,7 @@ void SubtaskCrawlerDumpReleaseSoil::feedback_callback(
 
 
 //result
-void SubtaskCrawlerDumpReleaseSoil::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void PrimitiveCrawlerDumpReleaseSoil::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleCrawlerDumpReleaseSoil::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -135,17 +135,17 @@ void SubtaskCrawlerDumpReleaseSoil::result_callback(const std::shared_ptr<GoalHa
     case rclcpp_action::ResultCode::SUCCEEDED:
       result_to_leaf->result = true;
       goal_handle->succeed(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is succeeded");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is succeeded");
       break;
     case rclcpp_action::ResultCode::ABORTED:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is aborted");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is aborted");
       break;
     case rclcpp_action::ResultCode::CANCELED:
       result_to_leaf->result = false;
       goal_handle->canceled(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Subtask execution is canceled");
+      RCLCPP_INFO(this->get_logger(), "Primitive execution is canceled");
       break;
     default:
       result_to_leaf->result = false;
@@ -162,7 +162,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<SubtaskCrawlerDumpReleaseSoil>());
+    rclcpp::spin(std::make_shared<PrimitiveCrawlerDumpReleaseSoil>());
     rclcpp::shutdown();
     return 0;
 }

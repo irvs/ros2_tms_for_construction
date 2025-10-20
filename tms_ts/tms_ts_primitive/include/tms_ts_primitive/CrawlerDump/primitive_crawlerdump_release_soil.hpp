@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SAMPLE_SUBTASK_CRAWLERDUMP_RELEASE_SOIL_HPP
-#define SAMPLE_SUBTASK_CRAWLERDUMP_RELEASE_SOIL_HPP
+#ifndef SAMPLE_PRIMITIVE_CRAWLERDUMP_RELEASE_SOIL_HPP
+#define SAMPLE_PRIMITIVE_CRAWLERDUMP_RELEASE_SOIL_HPP
 
 #include <memory>
 #include <map>
@@ -31,20 +31,20 @@
 #include "std_msgs/msg/float64.hpp"
 
 #include "tms_msg_ts/action/leaf_node_base.hpp"
-#include "tms_ts_subtask/subtask_node_base.hpp"
+#include "tms_ts_primitive/primitive_node_base.hpp"
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "tms_msg_rp/action/tms_rp_crawler_dump_dump_angle.hpp"
 #include "nav2_msgs/action/navigate_through_poses.hpp"
 
 
-class SubtaskCrawlerDumpReleaseSoil : public SubtaskNodeBase
+class PrimitiveCrawlerDumpReleaseSoil : public PrimitiveNodeBase
 {
 public:
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
     using TmsRpCrawlerDumpDumpAngle = tms_msg_rp::action::TmsRpCrawlerDumpDumpAngle;
     using GoalHandleCrawlerDumpReleaseSoil = rclcpp_action::ClientGoalHandle<TmsRpCrawlerDumpDumpAngle>;
-    SubtaskCrawlerDumpReleaseSoil();
+    PrimitiveCrawlerDumpReleaseSoil();
 
 
 private:
