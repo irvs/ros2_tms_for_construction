@@ -57,6 +57,11 @@
         <Action ID="WaitForClick">
             <input_port name="window_title"/>
             <input_port name="button_info"/>
+        </Action>     
+
+        <Action ID="ExecuteSubtask">
+            <input_port name="task_name"/>
+            <input_port name="parameter"/>
         </Action>      
 
     </TreeNodesModel>
