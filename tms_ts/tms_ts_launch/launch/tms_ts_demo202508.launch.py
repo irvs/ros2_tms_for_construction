@@ -148,45 +148,45 @@ def launch_setup(context, *args, **kwargs):
             output='screen',
             parameters=[{"task_ids": task_ids}]),
         
-        # subtasks
+        # primitives
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_excavator_change_pose',
+              package='tms_ts_primitive', 
+              executable='primitive_excavator_change_pose',
               output='screen',
               namespace = 'zx200'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_excavator_change_pose_plan',
+              package='tms_ts_primitive', 
+              executable='primitive_excavator_change_pose_plan',
               output='screen',
               namespace = 'zx200'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_excavator_excavate_simple',
+              package='tms_ts_primitive', 
+              executable='primitive_excavator_excavate_simple',
               output='screen',
               namespace = 'zx200'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_excavator_excavate_simple_plan',
+              package='tms_ts_primitive', 
+              executable='primitive_excavator_excavate_simple_plan',
               output='screen',
               namespace = 'zx200'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_excavator_release_simple',
+              package='tms_ts_primitive', 
+              executable='primitive_excavator_release_simple',
               output='screen',
               namespace = 'zx200'),
         Node(
-              package='tms_ts_subtask',
-              executable='subtask_excavator_follow_waypoints',
+              package='tms_ts_primitive',
+              executable='primitive_excavator_follow_waypoints',
               output='screen',
               namespace = 'zx200'),
         Node(
-              package='tms_ts_subtask',
-              executable='subtask_excavator_navigate_anywhere',
+              package='tms_ts_primitive',
+              executable='primitive_excavator_navigate_anywhere',
               output='screen',
               namespace = 'zx200'),
         Node(
-              package='tms_ts_subtask',
-              executable='subtask_excavator_navigate_through_poses',
+              package='tms_ts_primitive',
+              executable='primitive_excavator_navigate_through_poses',
               output='screen',
               namespace = 'zx200'),
         
@@ -194,235 +194,235 @@ def launch_setup(context, *args, **kwargs):
         # sample ###
         #ic120用
       #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_follow_waypoints_deg_server',
+      #         package='tms_ts_primitive',
+      #         executable='primitive_ic120_follow_waypoints_deg_server',
       #         output='screen',
       #         namespace='ic120_1'),
       #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_follow_waypoints_server',
+      #         package='tms_ts_primitive',
+      #         executable='primitive_ic120_follow_waypoints_server',
       #         output='screen',
       #         namespace='ic120_1'),
       #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_anywhere_deg_server',
+      #         package='tms_ts_primitive',
+      #         executable='primitive_ic120_navigate_anywhere_deg_server',
       #         output='screen',
       #         namespace='ic120_1'),
       #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_anywhere_server',
-      #         output='screen',
-      #         namespace='ic120_1'),
-
-      #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_through_poses_deg_server',
-      #         output='screen',
-      #         namespace='ic120_1'),
-      #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_through_poses_server',
-      #         output='screen',
-      #         namespace='ic120_1'),
-      #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_release_soil_server',
+      #         package='tms_ts_primitive',
+      #         executable='primitive_ic120_navigate_anywhere_server',
       #         output='screen',
       #         namespace='ic120_1'),
 
       #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_follow_waypoints_deg_server',
+      #         package='tms_ts_primitive',
+      #         executable='primitive_ic120_navigate_through_poses_deg_server',
+      #         output='screen',
+      #         namespace='ic120_1'),
+      #   Node(
+      #         package='tms_ts_primitive',
+      #         executable='primitive_ic120_navigate_through_poses_server',
+      #         output='screen',
+      #         namespace='ic120_1'),
+      #   Node(
+      #         package='tms_ts_primitive',
+      #         executable='primitive_ic120_release_soil_server',
+      #         output='screen',
+      #         namespace='ic120_1'),
+
+      #   Node(
+      #         package='tms_ts_primitive',
+      #         executable='primitive_ic120_follow_waypoints_deg_server',
       #         output='screen',
       #         namespace='ic120_2'),
       #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_follow_waypoints_server',
+      #         package='tms_ts_primitive',
+      #         executable='primitive_ic120_follow_waypoints_server',
       #         output='screen',
       #         namespace='ic120_2'),
       #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_anywhere_deg_server',
+      #         package='tms_ts_primitive',
+      #         executable='primitive_ic120_navigate_anywhere_deg_server',
       #         output='screen',
       #         namespace='ic120_2'),
       #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_anywhere_server',
+      #         package='tms_ts_primitive',
+      #         executable='primitive_ic120_navigate_anywhere_server',
       #         output='screen',
       #         namespace='ic120_2'),
 
       #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_through_poses_deg_server',
+      #         package='tms_ts_primitive',
+      #         executable='primitive_ic120_navigate_through_poses_deg_server',
       #         output='screen',
       #         namespace='ic120_2'),
       #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_through_poses_server',
+      #         package='tms_ts_primitive',
+      #         executable='primitive_ic120_navigate_through_poses_server',
       #         output='screen',
       #         namespace='ic120_2'),
       #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_release_soil_server',
+      #         package='tms_ts_primitive',
+      #         executable='primitive_ic120_release_soil_server',
       #         output='screen',
       #         namespace='ic120_2'),
         
         # zx120用
       #   Node(
-      #         package='tms_ts_subtask', 
-      #         executable='zx120_sample_boom_subtask',
+      #         package='tms_ts_primitive', 
+      #         executable='zx120_sample_boom_primitive',
       #         output='screen'),
       #   Node(
-      #         package='tms_ts_subtask', 
-      #         executable='zx120_sample_swing_subtask',
+      #         package='tms_ts_primitive', 
+      #         executable='zx120_sample_swing_primitive',
       #         output='screen'),
       #   Node(
-      #         package='tms_ts_subtask', 
-      #         executable='zx120_sample_arm_subtask',
+      #         package='tms_ts_primitive', 
+      #         executable='zx120_sample_arm_primitive',
       #         output='screen'),
       #   Node(
-      #         package='tms_ts_subtask', 
-      #         executable='zx120_sample_bucket_subtask',
+      #         package='tms_ts_primitive', 
+      #         executable='zx120_sample_bucket_primitive',
       #         output='screen'),
         
         # zx200用
         # Node(
-        #       package='tms_ts_subtask', 
-        #       executable='zx200_sample_boom_subtask',
+        #       package='tms_ts_primitive', 
+        #       executable='zx200_sample_boom_primitive',
         #       output='screen'),
         # Node(
-        #       package='tms_ts_subtask', 
-        #       executable='zx200_sample_swing_subtask',
+        #       package='tms_ts_primitive', 
+        #       executable='zx200_sample_swing_primitive',
         #       output='screen'),
         # Node(
-        #       package='tms_ts_subtask', 
-        #       executable='zx200_sample_arm_subtask',
+        #       package='tms_ts_primitive', 
+        #       executable='zx200_sample_arm_primitive',
         #       output='screen'),
         # Node(
-        #       package='tms_ts_subtask', 
-        #       executable='zx200_sample_bucket_subtask',
+        #       package='tms_ts_primitive', 
+        #       executable='zx200_sample_bucket_primitive',
         #       output='screen'),
 
         # mst2200用
       #   Node(
-      #         package='tms_ts_subtask', 
-      #         executable='subtask_mst2200_follow_waypoints_deg_server',
+      #         package='tms_ts_primitive', 
+      #         executable='primitive_mst2200_follow_waypoints_deg_server',
       #         output='screen'),
       #   Node(
-      #         package='tms_ts_subtask', 
-      #         executable='subtask_mst2200_follow_waypoints_server',
+      #         package='tms_ts_primitive', 
+      #         executable='primitive_mst2200_follow_waypoints_server',
       #         output='screen'),
       #   Node(
-      #         package='tms_ts_subtask', 
-      #         executable='subtask_mst2200_navigate_anywhere_deg_server',
+      #         package='tms_ts_primitive', 
+      #         executable='primitive_mst2200_navigate_anywhere_deg_server',
       #         output='screen'),
       #   Node(
-      #         package='tms_ts_subtask', 
-      #         executable='subtask_mst2200_navigate_anywhere_server',
+      #         package='tms_ts_primitive', 
+      #         executable='primitive_mst2200_navigate_anywhere_server',
       #         output='screen'),
       #   Node(
-      #         package='tms_ts_subtask', 
-      #         executable='subtask_mst2200_navigate_through_poses_deg_server',
+      #         package='tms_ts_primitive', 
+      #         executable='primitive_mst2200_navigate_through_poses_deg_server',
       #         output='screen'),
       #   Node(
-      #         package='tms_ts_subtask', 
-      #         executable='subtask_mst2200_navigate_through_poses_server',
+      #         package='tms_ts_primitive', 
+      #         executable='primitive_mst2200_navigate_through_poses_server',
       #         output='screen'),
       #   Node(
-      #         package='tms_ts_subtask', 
-      #         executable='subtask_mst2200_release_soil_server',
+      #         package='tms_ts_primitive', 
+      #         executable='primitive_mst2200_release_soil_server',
       #         output='screen'),
 
             # mst110cr用
       Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_follow_waypoints_deg',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_follow_waypoints_deg',
               output='screen',
               namespace='mst110cr_2'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_follow_waypoints',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_follow_waypoints',
               output='screen',
               namespace='mst110cr_2'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_navigate_anywhere_deg',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_navigate_anywhere_deg',
               output='screen',
               namespace='mst110cr_2'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_navigate_anywhere',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_navigate_anywhere',
               output='screen',
               namespace='mst110cr_2'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_navigate_through_poses_deg',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_navigate_through_poses_deg',
               output='screen',
               namespace='mst110cr_2'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_navigate_through_poses',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_navigate_through_poses',
               output='screen',
               namespace='mst110cr_2'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_release_soil',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_release_soil',
               output='screen',
               namespace='mst110cr_2'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_swing_align_to_heading',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_swing_align_to_heading',
               output='screen',
               namespace='mst110cr_2'),   
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_swing',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_swing',
               output='screen',
               namespace='mst110cr_2'),
         # mst2200vd用
         Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_crawlerdump_follow_waypoints_deg',
+                  package='tms_ts_primitive', 
+                  executable='primitive_crawlerdump_follow_waypoints_deg',
                   output='screen',
                   namespace='mst2200vd'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_follow_waypoints',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_follow_waypoints',
               output='screen',
               namespace='mst2200vd'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_navigate_anywhere_deg',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_navigate_anywhere_deg',
               output='screen',
               namespace='mst2200vd'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_navigate_anywhere',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_navigate_anywhere',
               output='screen',
               namespace='mst2200vd'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_navigate_through_poses_deg',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_navigate_through_poses_deg',
               output='screen',
               namespace='mst2200vd'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_navigate_through_poses',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_navigate_through_poses',
               output='screen',
               namespace='mst2200vd'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_release_soil',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_release_soil',
               output='screen',
               namespace='mst2200vd'),
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_swing_align_to_heading',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_swing_align_to_heading',
               output='screen',
               namespace='mst2200vd'),   
         Node(
-              package='tms_ts_subtask', 
-              executable='subtask_crawlerdump_swing',
+              package='tms_ts_primitive', 
+              executable='primitive_crawlerdump_swing',
               output='screen',
               namespace='mst2200vd'),
        
