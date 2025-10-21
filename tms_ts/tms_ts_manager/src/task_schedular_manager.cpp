@@ -7,6 +7,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+#include <regex>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -77,6 +78,14 @@ public:
     if (task_id == -1) {
       // 既存の処理：そのままBehavior Treeとして実行
       task_sequence_ = std::string(msg->data);
+
+      RCLCPP_INFO(this->get_logger(), "Updated task_sequence_:\n%s", task_sequence_.c_str());
+      
+      std::string updated_sequence = replace_whole_execute_subtask_tags(task_sequence_);
+      RCLCPP_INFO(this->get_logger(), "Updated task_sequence_:\n%s", updated_sequence.c_str());
+
+
+
       tree_ = factory.createTreeFromText(task_sequence_, bb_);
     } else {
       // 新しい処理：JSONデータから特定のtask_idのタスクを抽出
@@ -152,6 +161,62 @@ public:
 
     subscription_.reset();
   }
+
+  std::string process_whole_tag(const std::string& full_tag) {
+    // parameter 値の抽出
+    std::regex param_regex(R"(task_name="([^"]*))");
+    std::smatch param_match;
+
+    std::string new_tag = full_tag;
+
+    if (std::regex_search(full_tag, param_match, param_regex)) {
+        std::string param_value = param_match[1];
+        std::string new_param_value = param_value + "_MODIFIED";
+
+        // parameter の値を置換
+       // new_tag.replace(param_match.position(1),
+       //                 param_value.length(),
+       //                 new_param_value);
+       new_tag = "< />";
+    }
+
+    // 他の処理例：task_name を変更したり、属性を追加したりも可能
+    // 属性を追加（例：updated="true" を末尾に追加）
+    size_t insert_pos = new_tag.find("/>");
+    if (insert_pos != std::string::npos) {
+        new_tag.insert(insert_pos, R"( updated="true")");
+    }
+
+    return new_tag;
+}
+
+std::string replace_whole_execute_subtask_tags(const std::string& xml) {
+    std::string modified = xml;
+
+    // タグ全体にマッチ：<Action ID="ExecuteSubtask" ... />
+    std::regex action_regex(R"(<Action\s+ID="ExecuteSubtask"[^/>]*/>)");
+    std::smatch match;
+    std::string::const_iterator searchStart(modified.cbegin());
+
+    while (std::regex_search(searchStart, modified.cend(), match, action_regex)) {
+        std::string original_tag = match.str();
+        std::string new_tag = process_whole_tag(original_tag);
+
+        // 文字列全体から該当位置を探して置換
+        size_t pos = modified.find(original_tag, searchStart - modified.cbegin());
+        if (pos != std::string::npos) {
+            modified.replace(pos, original_tag.length(), new_tag);
+            searchStart = modified.begin() + pos + new_tag.length();
+        } else {
+            break;
+        }
+    }
+
+    return modified;
+}
+
+
+
 
 private:
   // void loadBlackboardFromMongoDB(const std::string& record_name)
