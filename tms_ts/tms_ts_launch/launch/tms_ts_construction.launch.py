@@ -308,6 +308,11 @@ def generate_launch_description():
                   ),
             Node(
                   package="tms_db_manager", 
+                  executable="tms_db_reader_subtask",
+                  output='screen'
+                  ),
+            Node(
+                  package="tms_db_manager", 
                   executable="tms_db_reader_param",
                   output='screen'
                   ),

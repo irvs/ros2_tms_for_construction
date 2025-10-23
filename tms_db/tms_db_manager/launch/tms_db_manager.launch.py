@@ -101,7 +101,7 @@ def generate_launch_description():
             db_port,
             init_db,
             tms_db_writer_node,
-            tms_db_writer_gridfs_node,
+          #  tms_db_writer_gridfs_node,
             tms_db_param_writer_node,
             tms_db_reader_node,
            # tms_db_reader_gridfs_node,

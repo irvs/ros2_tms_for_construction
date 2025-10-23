@@ -22,11 +22,11 @@ import tms_db_manager.tms_db_util as db_util
 from tms_msg_db.srv import TmsdbGetTask
 
 
-class TmsDbReaderTask(Node):
+class TmsDbReaderSubTask(Node):
     """Read task data from MongoDB."""
 
     def __init__(self):
-        super().__init__('tms_db_reader_task')
+        super().__init__('tms_db_reader_subtask')
 
         # Declare parameters
         self.declare_parameter('db_host', 'localhost')
@@ -37,33 +37,31 @@ class TmsDbReaderTask(Node):
         self.db_port: int = self.get_parameter('db_port').get_parameter_value().integer_value
 
         self.db: pymongo.database.Database  = db_util.connect_db('rostmsdb', self.db_host, self.db_port)
-        self.srv = self.create_service(TmsdbGetTask, 'tms_db_reader_task', self.db_reader_srv_callback)
+        self.srv = self.create_service(TmsdbGetTask, 'tms_db_reader_subtask', self.db_reader_srv_callback)
 
 
     def db_reader_srv_callback(self, request, response):
-        if(request.task_or_subtask=="subtask"):
-            collection: pymongo.collection.Collection = self.db["subtask"]
-        else:
-            collection: pymongo.collection.Collection = self.db["task"]
-        task: str = self.get_task_data(request.task_id, collection)
+        collection: pymongo.collection.Collection = self.db["subtask"]
+        self.get_logger().info(f"Finding the task name({request.task_name})")
+        task: str = self.get_task_data(request.task_name, collection)
         response.task = task
         return response
         
     
-    def get_task_data(self, task_id, collection: pymongo.collection.Collection) -> str:
-        doc = collection.find_one({"task_id": task_id})
+    def get_task_data(self, task_name, collection: pymongo.collection.Collection) -> str:
+        doc = collection.find_one({"task_name": task_name})
 
         if doc == None:
-            self.get_logger().info(f"The task ID({task_id}) does not exist under the task collection in the rostmsdb database")
+            self.get_logger().info(f"The task ID({task_name}) does not exist under the task collection in the rostmsdb database")
             return ''
         
-        self.get_logger().info(f"Successfully retrieved the task (ID: {task_id})")
+        self.get_logger().info(f"Successfully retrieved the task (ID: {task_name})")
         return str(doc["task_sequence"])
 
 
 def main(args=None):
     rclpy.init(args=args)
-    tms_db_reader_task = TmsDbReaderTask()
+    tms_db_reader_task = TmsDbReaderSubTask()
     rclpy.spin(tms_db_reader_task)
     tms_db_reader_task.destroy_node()
     rclpy.shutdown()

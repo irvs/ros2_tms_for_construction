@@ -15,6 +15,7 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
+#include "tms_msg_db/srv/tmsdb_get_task.hpp"
 
 // MongoDB関連のインクルード
 #include <bsoncxx/json.hpp>
@@ -39,8 +40,162 @@
 
 using namespace BT;
 using namespace std::chrono_literals;
+using std::placeholders::_1;
+using std::placeholders::_2;
 
 bool cancelRequested = false;
+
+
+
+class TaskSearcher : public rclcpp::Node
+{
+public:
+    TaskSearcher() : Node("task_searcher")
+    {
+        client_ = this->create_client<tms_msg_db::srv::TmsdbGetTask>("/tms_db_reader_subtask");
+        
+        // パラメータの宣言
+      //  this->declare_parameter<std::vector<int64_t>>("task_ids", std::vector<int64_t>{-1});
+      //  this->declare_parameter<int64_t>("task_id", -1);
+    }
+    std::optional<std::string> get_task_by_name(const std::string& task_name)
+    {
+        // task_list_は (task_id, task_sequence の JSON or XML文字列) のペア
+        for (const auto& [id, task_str] : task_list_)
+        {
+            // task_strはJSONならrapidjsonでパースしてtask_nameフィールドを探す例
+            rapidjson::Document doc;
+            doc.Parse(task_str.c_str());
+            if (doc.HasParseError()) continue;
+            if (doc.HasMember("task_name") && doc["task_name"].IsString())
+            {
+                std::string name_in_task = doc["task_name"].GetString();
+                if (name_in_task == task_name)
+                {
+                    // task_sequence文字列を返す（例えば doc["task_sequence"] を文字列化）
+                    if (doc.HasMember("task_sequence") && doc["task_sequence"].IsString())
+                    {
+                        return std::string(doc["task_sequence"].GetString());
+                    }
+                    else
+                    {
+                        // task_sequenceフィールドがない場合はtask_strをそのまま返すかnullopt
+                        return std::nullopt;
+                    }
+                }
+            }
+        }
+        return std::nullopt;
+    }
+
+    bool is_valid_taskid() const { return is_valid_taskid_; }
+    std::string get_task_sequence() const { return task_sequence_; }
+
+    // 実行
+    void search_task(const std::string& task_name)
+    {
+    search_task_impl(task_name);  // 外からはこっちが呼ばれる
+    }
+
+private:
+    rclcpp::Client<tms_msg_db::srv::TmsdbGetTask>::SharedPtr client_;
+    std::vector<std::pair<int64_t, std::string>> task_list_;
+    std::string task_sequence_;
+    bool is_valid_taskid_ = false;
+
+    void search_task_impl(const std::string& task_name)
+    {
+        task_list_.clear();
+        is_valid_taskid_ = false;
+
+        // クライアントの準備ができるまで待機
+        while (!client_->wait_for_service(std::chrono::seconds(1))) {
+            RCLCPP_INFO(this->get_logger(), "Waiting for service /tms_db_reader_task...");
+        }
+
+        auto request = std::make_shared<tms_msg_db::srv::TmsdbGetTask::Request>();
+        request->task_name = task_name;
+
+        //RCLCPP_INFO(this->get_logger(), "Sending request for task_id: %ld", task_id);
+        //auto future = client_->async_send_request(request);
+
+        //if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), future) ==
+        //  rclcpp::FutureReturnCode::SUCCESS)
+        //{
+        //  auto response = future.get();
+        //  if (!response->task.empty()) {
+        //    task_sequence_ = response->task;
+        //    RCLCPP_INFO(this->get_logger(), "Execute the task corresponding to task ID (%ld)", task_id);
+        //    is_valid_taskid_ = true;
+        //  } else {
+        //    RCLCPP_WARN(this->get_logger(), "Task ID (%ld) does not exist in DB.", task_id);
+        //    is_valid_taskid_ = false;
+        //  }
+        //} else {
+        //  RCLCPP_ERROR(this->get_logger(), "Service call failed for task_id: %ld", task_id);
+        //  is_valid_taskid_ = false;
+        //}
+        auto future = client_->async_send_request(request);
+        if (future.wait_for(std::chrono::seconds(3)) != std::future_status::ready) {
+          RCLCPP_ERROR(this->get_logger(), "Service call failed while searching task_name: %s", task_name.c_str());
+          return;
+        }
+
+        auto response = future.get();
+        if (response->task.empty()) {
+          RCLCPP_WARN(this->get_logger(), "No tasks found in response.");
+          return;
+        }
+
+        // 複数タスクの文字列をパース
+        std::string tasks_str = response->task;
+        // <root>タグを削除
+        std::regex action_regex(R"(<root\s+main_tree_to_execute="BehaviorTree">\s*<BehaviorTree\s+ID="BehaviorTree">|</root>)");
+        std::string tasks_str_remove_root = std::regex_replace(tasks_str, action_regex, "");
+        std::regex after_regex(R"(</BehaviorTree><TreeNodesModel>[\s\S]*)");
+        std::string tasks_str_remove_last = std::regex_replace(tasks_str_remove_root, after_regex, "");
+
+        RCLCPP_INFO(this->get_logger(), "Received task: %s", tasks_str_remove_last.c_str());
+
+        // JSONとして解析
+  //      rapidjson::Document document;
+  //      document.Parse(tasks_str.c_str());
+  //      if (document.HasParseError()) {
+  //        RCLCPP_ERROR(this->get_logger(), "Failed to parse task list JSON.");
+  //        return;
+  //      }
+
+  //      if (!document.HasMember("tasks") || !document["tasks"].IsArray()) {
+  //        RCLCPP_ERROR(this->get_logger(), "Invalid task list format: missing 'tasks' array.");
+  //        return;
+  //      }
+
+  //      const auto& tasks = document["tasks"];
+  //      for (const auto& task : tasks.GetArray()) {
+  //        if (task.HasMember("task_name") && task["task_name"].IsString() &&
+  //          task.HasMember("task_sequence") && task["task_sequence"].IsString() &&
+  //          task.HasMember("task_id") && task["task_id"].IsInt())
+  //        {
+  //          if (task["task_name"].GetString() == task_name) {
+  //              task_sequence_ = task["task_sequence"].GetString();
+  //              int64_t task_id = task["task_id"].GetInt();
+  //              task_list_.emplace_back(task_id, task_sequence_);
+  //              is_valid_taskid_ = true;
+
+  //              RCLCPP_INFO(this->get_logger(), "Task found: %s (ID: %ld)", task_name.c_str(), task_id);
+  //              return;
+  //          }
+  //        }
+  //      }
+
+  //    RCLCPP_WARN(this->get_logger(), "Task with name '%s' not found in DB.", task_name.c_str());
+      task_sequence_ = tasks_str_remove_last;
+      is_valid_taskid_ = true;
+
+    }
+};
+
+
 
 class ExecTaskSequence : public rclcpp::Node
 {
@@ -71,63 +226,90 @@ public:
 
   void topic_callback(const std_msgs::msg::String::SharedPtr msg)
   {
-    int task_id = this->get_parameter("task_id").as_int();
+    status_ = NodeStatus::RUNNING;
+    
+    std::string task_name = this->get_parameter("task_name").as_string();
     int zmq_server_port = this->get_parameter("zmq_server_port").as_int();
     int zmq_publisher_port = this->get_parameter("zmq_publisher_port").as_int();
     
-    if (task_id == -1) {
-      // 既存の処理：そのままBehavior Treeとして実行
-      task_sequence_ = std::string(msg->data);
+    if (!task_name.empty() && task_searcher_) {
+        task_searcher_->search_task(task_name);
+        if (task_searcher_->is_valid_taskid()) {
+            task_sequence_ = task_searcher_->get_task_sequence();
 
-      RCLCPP_INFO(this->get_logger(), "Updated task_sequence_:\n%s", task_sequence_.c_str());
-      
-      std::string updated_sequence = replace_whole_execute_subtask_tags(task_sequence_);
-      RCLCPP_INFO(this->get_logger(), "Updated task_sequence_:\n%s", updated_sequence.c_str());
-
-
-
-      tree_ = factory.createTreeFromText(task_sequence_, bb_);
-    } else {
-      // 新しい処理：JSONデータから特定のtask_idのタスクを抽出
-      std::string json_data = std::string(msg->data);
-      
-      rapidjson::Document document;
-      document.Parse(json_data.c_str());
-      
-      if (document.HasParseError()) {
-        RCLCPP_ERROR(this->get_logger(), "JSON parse error");
-        return;
-      }
-      
-      if (!document.HasMember("tasks") || !document["tasks"].IsArray()) {
-        RCLCPP_ERROR(this->get_logger(), "Invalid JSON format: missing 'tasks' array");
-        return;
-      }
-      
-      const rapidjson::Value& tasks = document["tasks"];
-      bool task_found = false;
-      
-      for (rapidjson::SizeType i = 0; i < tasks.Size(); i++) {
-        const rapidjson::Value& task = tasks[i];
-        
-        if (task.HasMember("task_id") && task["task_id"].IsInt() &&
-            task.HasMember("task_sequence") && task["task_sequence"].IsString()) {
-          
-          if (task["task_id"].GetInt() == task_id) {
-            task_sequence_ = task["task_sequence"].GetString();
-            tree_ = factory.createTreeFromText(task_sequence_, bb_);
-            task_found = true;
-            RCLCPP_INFO(this->get_logger(), "Found and executing task_id: %d", task_id);
-            break;
-          }
+            RCLCPP_INFO(this->get_logger(), "Found task for name: %s", task_name.c_str());
+            std::string updated_sequence = replace_whole_execute_subtask_tags(task_sequence_);
+            RCLCPP_INFO(this->get_logger(), "Replaced task: %s", updated_sequence.c_str());
+            tree_ = factory.createTreeFromText(updated_sequence, bb_);
+        } else {
+            RCLCPP_ERROR(this->get_logger(), "No task found for task_name: %s", task_name.c_str());
+            return;
         }
-      }
-      
-      if (!task_found) {
-        RCLCPP_ERROR(this->get_logger(), "Task with task_id %d not found in JSON data", task_id);
-        return;
-      }
+    } else {
+        // fallback: 直接渡された task_sequence を使用
+        task_sequence_ = std::string(msg->data);
+
+        RCLCPP_INFO(this->get_logger(), "Updated task_sequence_:\n%s", task_sequence_.c_str());
+
+        std::string updated_sequence = replace_whole_execute_subtask_tags(task_sequence_);
+        RCLCPP_INFO(this->get_logger(), "Replaced task: %s", updated_sequence.c_str());
+        tree_ = factory.createTreeFromText(updated_sequence, bb_);
     }
+
+
+//    if (task_id == -1) {
+      // 既存の処理：そのままBehavior Treeとして実行
+//      task_sequence_ = std::string(msg->data);
+
+//      RCLCPP_INFO(this->get_logger(), "Updated task_sequence_:\n%s", task_sequence_.c_str());
+      
+//      std::string updated_sequence = replace_whole_execute_subtask_tags(task_sequence_);
+//      RCLCPP_INFO(this->get_logger(), "Updated task_sequence_:\n%s", updated_sequence.c_str());
+
+
+
+//      tree_ = factory.createTreeFromText(task_sequence_, bb_);
+//    } else {
+      // 新しい処理：JSONデータから特定のtask_idのタスクを抽出
+//      std::string json_data = std::string(msg->data);
+      
+//      rapidjson::Document document;
+//      document.Parse(json_data.c_str());
+      
+//      if (document.HasParseError()) {
+//        RCLCPP_ERROR(this->get_logger(), "JSON parse error");
+//        return;
+//      }
+      
+//      if (!document.HasMember("tasks") || !document["tasks"].IsArray()) {
+//        RCLCPP_ERROR(this->get_logger(), "Invalid JSON format: missing 'tasks' array");
+//        return;
+//      }
+      
+//      const rapidjson::Value& tasks = document["tasks"];
+//      bool task_found = false;
+      
+//      for (rapidjson::SizeType i = 0; i < tasks.Size(); i++) {
+//        const rapidjson::Value& task = tasks[i];
+        
+//        if (task.HasMember("task_id") && task["task_id"].IsInt() &&
+//            task.HasMember("task_sequence") && task["task_sequence"].IsString()) {
+          
+//          if (task["task_id"].GetInt() == task_id) {
+//            task_sequence_ = task["task_sequence"].GetString();
+//            tree_ = factory.createTreeFromText(task_sequence_, bb_);
+//            task_found = true;
+//            RCLCPP_INFO(this->get_logger(), "Found and executing task_id: %d", task_id);
+//            break;
+//          }
+//        }
+//      }
+      
+//      if (!task_found) {
+//        RCLCPP_ERROR(this->get_logger(), "Task with task_id %d not found in JSON data", task_id);
+//        return;
+//      }
+//    }
 
     BT::PublisherZMQ publisher_zmq(tree_, 100, zmq_server_port, zmq_publisher_port);
     try
@@ -157,40 +339,54 @@ public:
       case NodeStatus::FAILURE:
         RCLCPP_INFO_STREAM(rclcpp::get_logger("exec_task_sequence"), "Task is canceled.");
         break;
+      case NodeStatus::RUNNING:
+      case NodeStatus::IDLE:
+        break;
     }
 
     subscription_.reset();
   }
 
   std::string process_whole_tag(const std::string& full_tag) {
-    // parameter 値の抽出
     std::regex param_regex(R"(task_name="([^"]*))");
     std::smatch param_match;
-
     std::string new_tag = full_tag;
 
     if (std::regex_search(full_tag, param_match, param_regex)) {
-        std::string param_value = param_match[1];
-        std::string new_param_value = param_value + "_MODIFIED";
+        std::string task_name = param_match[1];
+        RCLCPP_INFO(this->get_logger(), "Looking up task_name: %s", task_name.c_str());
 
-        // parameter の値を置換
-       // new_tag.replace(param_match.position(1),
-       //                 param_value.length(),
-       //                 new_param_value);
-       new_tag = "< />";
+        //if (task_searcher_) {
+        //    auto maybe_task = task_searcher_->search_task_impl(task_name);
+        //    //auto maybe_task = task_searcher_->get_task_by_name(task_name);
+        //    if (maybe_task) {
+        //        std::string task_sequence = *maybe_task;
+        //        // <Action ID="ExecuteSubtask" ... />タグを実際のtask_sequenceに置換
+        //        new_tag = task_sequence;
+        //    } else {
+        //        RCLCPP_WARN(this->get_logger(), "No task found for name: %s", task_name.c_str());
+        //        new_tag = "<!-- Task not found -->";
+        //    }
+        //}
+        if (task_searcher_) {
+          task_searcher_->search_task(task_name);
+          if (task_searcher_->is_valid_taskid()) {
+          std::string task_sequence = task_searcher_->get_task_sequence();
+          new_tag = task_sequence;
+        } else {
+          RCLCPP_WARN(this->get_logger(), "No task found for name: %s", task_name.c_str());
+          new_tag = "<!-- Task not found -->";
+        }
+      }
     }
-
-    // 他の処理例：task_name を変更したり、属性を追加したりも可能
-    // 属性を追加（例：updated="true" を末尾に追加）
-    size_t insert_pos = new_tag.find("/>");
-    if (insert_pos != std::string::npos) {
-        new_tag.insert(insert_pos, R"( updated="true")");
-    }
+   // TaskSearcher task_searcher;
+   // new_tag = task_searcher.search_task_impl(42);
 
     return new_tag;
-}
+  }
 
-std::string replace_whole_execute_subtask_tags(const std::string& xml) {
+
+  std::string replace_whole_execute_subtask_tags(const std::string& xml) {
     std::string modified = xml;
 
     // タグ全体にマッチ：<Action ID="ExecuteSubtask" ... />
@@ -213,9 +409,38 @@ std::string replace_whole_execute_subtask_tags(const std::string& xml) {
     }
 
     return modified;
-}
+  }
 
+  std::string replace_roots(const std::string& xml) {
+    std::string modified = xml;
 
+    // タグ全体にマッチ：<Action ID="ExecuteSubtask" ... />
+    std::regex action_regex(R"(</root>(?:\s*<root\s+main_tree_to_execute="BehaviorTree">\s*<BehaviorTree\s+ID="BehaviorTree">)?)");
+    modified = std::regex_replace(modified, action_regex, "");
+  /*  std::smatch match;
+    std::string::const_iterator searchStart(modified.cbegin());
+
+    while (std::regex_search(searchStart, modified.cend(), match, action_regex)) {
+        std::string original_tag = match.str();
+        std::string new_tag = process_whole_tag(original_tag);
+
+        // 文字列全体から該当位置を探して置換
+        size_t pos = modified.find(original_tag, searchStart - modified.cbegin());
+        if (pos != std::string::npos) {
+            modified.replace(pos, original_tag.length(), new_tag);
+            searchStart = modified.begin() + pos + new_tag.length();
+        } else {
+            break;
+        }
+    }
+*/
+    return modified;
+  }
+
+  void set_task_searcher(std::shared_ptr<TaskSearcher> task_searcher)
+  {
+    task_searcher_ = task_searcher;
+  }
 
 
 private:
@@ -281,6 +506,7 @@ private:
   std::shared_ptr<Blackboard> bb_;
   std::string task_sequence_;
   NodeStatus status_ = NodeStatus::RUNNING;
+  std::shared_ptr<TaskSearcher> task_searcher_;  // ← 追加
 };
 
 class ForceQuietNode : public rclcpp::Node
@@ -305,16 +531,26 @@ private:
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr shutdown_subscription;
 };
 
+
 int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
-  auto bb = Blackboard::create();
+  auto bb = BT::Blackboard::create();
+
+  auto task_searcher = std::make_shared<TaskSearcher>();
+  auto exec_task_sequence = std::make_shared<ExecTaskSequence>(bb);
+
+  exec_task_sequence->declare_parameter<std::string>("task_name", "");
+
+  exec_task_sequence->set_task_searcher(task_searcher);  // ← 接続！
 
   rclcpp::executors::MultiThreadedExecutor exec;
-  auto task_schedular_node = std::make_shared<ExecTaskSequence>(bb);
-  exec.add_node(task_schedular_node);
+  exec.add_node(task_searcher);
+  exec.add_node(exec_task_sequence);
+
   auto force_quiet_node = std::make_shared<ForceQuietNode>();
   exec.add_node(force_quiet_node);
+
   exec.spin();
   rclcpp::shutdown();
   return 0;

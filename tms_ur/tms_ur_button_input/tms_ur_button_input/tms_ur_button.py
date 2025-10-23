@@ -117,6 +117,7 @@ class GUI_button(Node):
             for task_id in task_ids:
                 request = TmsdbGetTask.Request()
                 request.task_id = task_id
+                request.task_or_subtask = "task"
                 self.get_logger().info(f"Sending request for task_id: {request.task_id}")
                 future = self.client.call_async(request)
                 rclpy.spin_until_future_complete(self, future)
