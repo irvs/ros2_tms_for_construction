@@ -53,10 +53,6 @@ public:
     TaskSearcher() : Node("task_searcher")
     {
         client_ = this->create_client<tms_msg_db::srv::TmsdbGetTask>("/tms_db_reader_subtask");
-        
-        // パラメータの宣言
-      //  this->declare_parameter<std::vector<int64_t>>("task_ids", std::vector<int64_t>{-1});
-      //  this->declare_parameter<int64_t>("task_id", -1);
     }
     std::optional<std::string> get_task_by_name(const std::string& task_name)
     {
@@ -116,25 +112,6 @@ private:
         auto request = std::make_shared<tms_msg_db::srv::TmsdbGetTask::Request>();
         request->task_name = task_name;
 
-        //RCLCPP_INFO(this->get_logger(), "Sending request for task_id: %ld", task_id);
-        //auto future = client_->async_send_request(request);
-
-        //if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), future) ==
-        //  rclcpp::FutureReturnCode::SUCCESS)
-        //{
-        //  auto response = future.get();
-        //  if (!response->task.empty()) {
-        //    task_sequence_ = response->task;
-        //    RCLCPP_INFO(this->get_logger(), "Execute the task corresponding to task ID (%ld)", task_id);
-        //    is_valid_taskid_ = true;
-        //  } else {
-        //    RCLCPP_WARN(this->get_logger(), "Task ID (%ld) does not exist in DB.", task_id);
-        //    is_valid_taskid_ = false;
-        //  }
-        //} else {
-        //  RCLCPP_ERROR(this->get_logger(), "Service call failed for task_id: %ld", task_id);
-        //  is_valid_taskid_ = false;
-        //}
         auto future = client_->async_send_request(request);
         if (future.wait_for(std::chrono::seconds(3)) != std::future_status::ready) {
           RCLCPP_ERROR(this->get_logger(), "Service call failed while searching task_name: %s", task_name.c_str());
@@ -157,38 +134,6 @@ private:
 
         RCLCPP_INFO(this->get_logger(), "Received task: %s", tasks_str_remove_last.c_str());
 
-        // JSONとして解析
-  //      rapidjson::Document document;
-  //      document.Parse(tasks_str.c_str());
-  //      if (document.HasParseError()) {
-  //        RCLCPP_ERROR(this->get_logger(), "Failed to parse task list JSON.");
-  //        return;
-  //      }
-
-  //      if (!document.HasMember("tasks") || !document["tasks"].IsArray()) {
-  //        RCLCPP_ERROR(this->get_logger(), "Invalid task list format: missing 'tasks' array.");
-  //        return;
-  //      }
-
-  //      const auto& tasks = document["tasks"];
-  //      for (const auto& task : tasks.GetArray()) {
-  //        if (task.HasMember("task_name") && task["task_name"].IsString() &&
-  //          task.HasMember("task_sequence") && task["task_sequence"].IsString() &&
-  //          task.HasMember("task_id") && task["task_id"].IsInt())
-  //        {
-  //          if (task["task_name"].GetString() == task_name) {
-  //              task_sequence_ = task["task_sequence"].GetString();
-  //              int64_t task_id = task["task_id"].GetInt();
-  //              task_list_.emplace_back(task_id, task_sequence_);
-  //              is_valid_taskid_ = true;
-
-  //              RCLCPP_INFO(this->get_logger(), "Task found: %s (ID: %ld)", task_name.c_str(), task_id);
-  //              return;
-  //          }
-  //        }
-  //      }
-
-  //    RCLCPP_WARN(this->get_logger(), "Task with name '%s' not found in DB.", task_name.c_str());
       task_sequence_ = tasks_str_remove_last;
       is_valid_taskid_ = true;
 
@@ -356,18 +301,6 @@ public:
         std::string task_name = param_match[1];
         RCLCPP_INFO(this->get_logger(), "Looking up task_name: %s", task_name.c_str());
 
-        //if (task_searcher_) {
-        //    auto maybe_task = task_searcher_->search_task_impl(task_name);
-        //    //auto maybe_task = task_searcher_->get_task_by_name(task_name);
-        //    if (maybe_task) {
-        //        std::string task_sequence = *maybe_task;
-        //        // <Action ID="ExecuteSubtask" ... />タグを実際のtask_sequenceに置換
-        //        new_tag = task_sequence;
-        //    } else {
-        //        RCLCPP_WARN(this->get_logger(), "No task found for name: %s", task_name.c_str());
-        //        new_tag = "<!-- Task not found -->";
-        //    }
-        //}
         if (task_searcher_) {
           task_searcher_->search_task(task_name);
           if (task_searcher_->is_valid_taskid()) {
@@ -379,8 +312,6 @@ public:
         }
       }
     }
-   // TaskSearcher task_searcher;
-   // new_tag = task_searcher.search_task_impl(42);
 
     return new_tag;
   }
@@ -408,32 +339,6 @@ public:
         }
     }
 
-    return modified;
-  }
-
-  std::string replace_roots(const std::string& xml) {
-    std::string modified = xml;
-
-    // タグ全体にマッチ：<Action ID="ExecuteSubtask" ... />
-    std::regex action_regex(R"(</root>(?:\s*<root\s+main_tree_to_execute="BehaviorTree">\s*<BehaviorTree\s+ID="BehaviorTree">)?)");
-    modified = std::regex_replace(modified, action_regex, "");
-  /*  std::smatch match;
-    std::string::const_iterator searchStart(modified.cbegin());
-
-    while (std::regex_search(searchStart, modified.cend(), match, action_regex)) {
-        std::string original_tag = match.str();
-        std::string new_tag = process_whole_tag(original_tag);
-
-        // 文字列全体から該当位置を探して置換
-        size_t pos = modified.find(original_tag, searchStart - modified.cbegin());
-        if (pos != std::string::npos) {
-            modified.replace(pos, original_tag.length(), new_tag);
-            searchStart = modified.begin() + pos + new_tag.length();
-        } else {
-            break;
-        }
-    }
-*/
     return modified;
   }
 
