@@ -4,20 +4,20 @@
         <Action ID="LeafNodeBulldozer">
             <input_port name=" model_name" default="d37pxi"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/> 
+            <inout_port name="primitive_name"/> 
         </Action>
         
         
         <Action ID="LeafNodeCrawlerdump">
             <input_port name=" model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/> 
+            <inout_port name="primitive_name"/> 
         </Action>
 
         <Action ID="LeafNodeExcavator">
             <input_port name=" model_name" default="zx200"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/> 
+            <inout_port name="primitive_name"/> 
         </Action>
 
         <Action ID="BlackboardValueReaderMongo">
