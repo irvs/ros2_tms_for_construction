@@ -35,21 +35,31 @@
 #include <rclcpp/qos.hpp>   
 #include <rmw/qos_profiles.h>  
 
-class PrimitiveExcavatorChangePose : public PrimitiveNodeBase
+#include <moveit_msgs/msg/constraints.hpp>
+#include <moveit_msgs/msg/joint_constraint.hpp>
+#include <moveit_msgs/msg/position_constraint.hpp>
+#include <moveit_msgs/msg/orientation_constraint.hpp>
+#include <moveit_msgs/msg/visibility_constraint.hpp>
+#include <moveit_msgs/msg/planning_scene.hpp>
+#include <moveit_msgs/msg/collision_object.hpp>
+#include <shape_msgs/msg/solid_primitive.hpp>
+#include <geometry_msgs/msg/pose.hpp>
+
+class PrimitiveExcavatorChangePoseFromPose : public PrimitiveNodeBase
 {
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
 
-  using ExcavatorChangePose = tms_msg_rp::action::TmsRpExcavatorChangePose;
-  using GoalHandleExcavatorChangePose = rclcpp_action::ClientGoalHandle<ExcavatorChangePose>;
+  using ExcavatorChangePoseFromPose = tms_msg_rp::action::TmsRpExcavatorChangePose;
+  using GoalHandleExcavatorChangePoseFromPose = rclcpp_action::ClientGoalHandle<ExcavatorChangePoseFromPose>;
 
-  PrimitiveExcavatorChangePose();
+  PrimitiveExcavatorChangePoseFromPose();
 
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
-  std::map<std::string, double> param_from_db_;
   std::string used_model_name_;
   std::string used_record_name_;
+  std::map<std::string, std::string> param_from_db_;
 
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
                                           std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal);
@@ -58,13 +68,13 @@ private:
   void execute(const std::shared_ptr<GoalHandle> goal_handle);
 
   // Member as an action client
-  rclcpp_action::Client<ExcavatorChangePose>::SharedPtr action_client_;
-  std::shared_future<GoalHandleExcavatorChangePose::SharedPtr> client_future_goal_handle_;
-  void goal_response_callback(const GoalHandleExcavatorChangePose::SharedPtr& goal_handle);
-  void feedback_callback(GoalHandleExcavatorChangePose::SharedPtr,
-                         const std::shared_ptr<const ExcavatorChangePose::Feedback> feedback);
+  rclcpp_action::Client<ExcavatorChangePoseFromPose>::SharedPtr action_client_;
+  std::shared_future<GoalHandleExcavatorChangePoseFromPose::SharedPtr> client_future_goal_handle_;
+  void goal_response_callback(const GoalHandleExcavatorChangePoseFromPose::SharedPtr& goal_handle);
+  void feedback_callback(GoalHandleExcavatorChangePoseFromPose::SharedPtr,
+                         const std::shared_ptr<const ExcavatorChangePoseFromPose::Feedback> feedback);
   void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                       const GoalHandleExcavatorChangePose::WrappedResult& result);
+                       const GoalHandleExcavatorChangePoseFromPose::WrappedResult& result);
 };
 
 #endif

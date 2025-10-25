@@ -37,24 +37,14 @@ def generate_launch_description():
             # primitives
             Node(
                   package='tms_ts_primitive', 
-                  executable='primitive_excavator_change_pose',
+                  executable='primitive_excavator_change_pose_from_pose',
                   output='screen',
                   namespace = 'zx200'),
             Node(
                   package='tms_ts_primitive', 
-                  executable='primitive_excavator_excavate_simple',
+                  executable='primitive_excavator_change_pose_from_poses',
                   output='screen',
-                  namespace = 'zx200'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_excavator_excavate_simple_plan',
-                  output='screen',
-                  namespace = 'zx200'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_excavator_release_simple',
-                  output='screen',
-                  namespace = 'zx200'),
+                  namespace = 'zx200'),   
             Node(
                   package='tms_ts_primitive',
                   executable='primitive_excavator_follow_waypoints_deg',

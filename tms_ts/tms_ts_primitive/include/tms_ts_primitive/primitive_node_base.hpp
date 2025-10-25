@@ -28,11 +28,16 @@ public:
 
   // std::map<std::string, float> GetParamFromDB(std::string model_name, std::string record_name);
 
-  template <typename K, typename T>
-  std::map<K, T> CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::string>, bool> = true);
-
+  // 統合版: 全てのパラメータ型を扱える関数
+  std::map<std::string, std::string> GetParamFromDBAsJson(std::string model_name, std::string record_name);
+  
+  // 後方互換性のための既存関数（配列型）
   template <typename K, typename T>
   std::map<K, T> CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool> = true);
+
+  // 後方互換性のための既存関数（非配列型）
+  template <typename K, typename T>
+  std::map<K, T> CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::string>, bool> = true);
 
   template <typename T>
   bool CustomUpdateParamInDB(std::string model_name, std::string record_name, const std::string& target_key, const std::vector<T>& new_values);
@@ -51,6 +56,59 @@ static inline std::string bson_type_name(bsoncxx::type t) {
   }
 }
 
+// 統合版: 全てのパラメータ型（配列、ドキュメント、スカラー値）をJSON文字列として取得
+inline std::map<std::string, std::string> PrimitiveNodeBase::GetParamFromDBAsJson(std::string model_name, std::string record_name) {
+  mongocxx::client client{ mongocxx::uri{ "mongodb://localhost:27017" } };
+  mongocxx::database db = client["rostmsdb"];
+  mongocxx::collection collection = db["parameter"];
+
+  bsoncxx::builder::stream::document filter_builder;
+  filter_builder << "model_name" << model_name << "record_name" << record_name;
+  auto filter = filter_builder.view();
+  auto result = collection.find_one(filter);
+
+  std::map<std::string, std::string> dataMap;
+
+  if (result) {
+    auto view = result->view();
+    // std::cout << "Loaded parameter data:\n" << bsoncxx::to_json(view) << "\n\n";
+
+    for (auto&& element : view) {
+      std::string key = element.key().to_string();
+      if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
+        // 各要素を個別のJSONドキュメントとして保存
+        bsoncxx::builder::basic::document doc;
+        
+        if (element.type() == bsoncxx::type::k_array) {
+          doc.append(bsoncxx::builder::basic::kvp(key, element.get_array().value));
+        } else if (element.type() == bsoncxx::type::k_document) {
+          doc.append(bsoncxx::builder::basic::kvp(key, element.get_document().value));
+        } else if (element.type() == bsoncxx::type::k_double) {
+          doc.append(bsoncxx::builder::basic::kvp(key, element.get_double().value));
+        } else if (element.type() == bsoncxx::type::k_int32) {
+          doc.append(bsoncxx::builder::basic::kvp(key, element.get_int32().value));
+        } else if (element.type() == bsoncxx::type::k_int64) {
+          doc.append(bsoncxx::builder::basic::kvp(key, element.get_int64().value));
+        } else if (element.type() == bsoncxx::type::k_bool) {
+          doc.append(bsoncxx::builder::basic::kvp(key, element.get_bool().value));
+        } else if (element.type() == bsoncxx::type::k_utf8) {
+          doc.append(bsoncxx::builder::basic::kvp(key, element.get_utf8().value));
+        } else {
+          std::cout << "Unsupported type for key \"" << key << "\": " << bson_type_name(element.type()) << std::endl;
+          continue;
+        }
+        
+        std::string json_str = bsoncxx::to_json(doc.view());
+        dataMap[key] = json_str;
+        std::cout << "Stored: " << key << " = " << json_str << std::endl;
+      }
+    }
+  } else {
+    std::cout << "Dynamic parameter not found in your parameter collection" << std::endl;
+  }
+
+  return dataMap;
+}
 
 // This function is to get array-type parameters from the database. (This function only supports 2D arrays.)
 template <typename K, typename T>
@@ -185,7 +243,7 @@ std::map<K, T> PrimitiveNodeBase::CustomGetParamFromDB(std::string model_name, s
       std::string key = element.key().to_string();
       if (key != "_id" && key != "model_name" && key != "type" && key != "record_name")
       {
-        if (element.type() == bsoncxx::type::k_double)
+                if (element.type() == bsoncxx::type::k_double)
         {
           T value = static_cast<T>(element.get_double());
           dataMap[key] = value;
