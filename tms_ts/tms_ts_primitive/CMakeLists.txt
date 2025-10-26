@@ -72,7 +72,6 @@ add_executable(primitive_crawlerdump_swing src/Crawlerdump/primitive_crawlerdump
 add_executable(primitive_crawlerdump_swing_align_to_heading src/Crawlerdump/primitive_crawlerdump_swing_align_to_heading.cpp)
 
 # Primitive Nodes for Excavator
-add_executable(primitive_excavator_change_pose_from_pose src/Excavator/primitive_excavator_change_pose_from_pose.cpp)
 add_executable(primitive_excavator_change_pose_from_poses src/Excavator/primitive_excavator_change_pose_from_poses.cpp)
 add_executable(primitive_excavator_follow_waypoints src/Excavator/primitive_excavator_follow_waypoints.cpp)
 add_executable(primitive_excavator_follow_waypoints_deg src/Excavator/primitive_excavator_follow_waypoints_deg.cpp)
@@ -98,7 +97,6 @@ set(TARGETS
   primitive_crawlerdump_release_soil
   primitive_crawlerdump_swing
   primitive_crawlerdump_swing_align_to_heading
-  primitive_excavator_change_pose_from_pose
   primitive_excavator_change_pose_from_poses
   primitive_excavator_follow_waypoints_deg
   primitive_excavator_follow_waypoints

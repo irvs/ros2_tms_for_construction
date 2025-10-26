@@ -143,16 +143,6 @@ void PrimitiveExcavatorChangePoseFromPose::execute(const std::shared_ptr<GoalHan
     }
     
     auto position_array = position_with_angle_element.get_array().value;
-    size_t array_size = std::distance(position_array.begin(), position_array.end());
-    
-    // 配列サイズのチェック（2個以上必要）
-    if (array_size < 2) {
-      RCLCPP_ERROR(this->get_logger(), "position_with_angle array must contain at least 2 elements, but got %zu", array_size);
-      handle_error("position_with_angle array must contain at least 2 elements");
-      return;
-    }
-    
-    RCLCPP_INFO(this->get_logger(), "Found %zu positions in position_with_angle array", array_size);
     
     // 各位置データを処理
     for (auto&& pos_element : position_array) {
