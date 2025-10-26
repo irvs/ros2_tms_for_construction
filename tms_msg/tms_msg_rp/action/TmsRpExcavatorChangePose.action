@@ -2,6 +2,9 @@
 # Target Pose
 tms_msg_rp/TmsRpExcavatorPositionWithAngle[] position_with_angle_sequence
 
+# Target Joint Values
+tms_msg_rp/TmsRpExcavatorJointValues[] joint_values_sequence
+
 # Constraints
 moveit_msgs/Constraints constraints
 

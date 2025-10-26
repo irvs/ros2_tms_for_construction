@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PRIMITIVE_EXCAVATOR_CHANGE_POSE_FROM_POSES_HPP
-#define PRIMITIVE_EXCAVATOR_CHANGE_POSE_FROM_POSES_HPP
+#ifndef PRIMITIVE_EXCAVATOR_CHANGE_POSE_FROM_JOINT_VALUES_HPP
+#define PRIMITIVE_EXCAVATOR_CHANGE_POSE_FROM_JOINT_VALUES_HPP
 
 #include <memory>
 #include <map>
@@ -31,6 +31,7 @@
 #include "tms_ts_primitive/primitive_node_base.hpp"
 
 #include "tms_msg_rp/action/tms_rp_excavator_change_pose.hpp"
+#include "tms_msg_rp/msg/tms_rp_excavator_joint_values.hpp"
 
 #include <rclcpp/qos.hpp>   
 #include <rmw/qos_profiles.h>  
@@ -45,15 +46,15 @@
 #include <shape_msgs/msg/solid_primitive.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
-class PrimitiveExcavatorChangePoseFromPose : public PrimitiveNodeBase
+class PrimitiveExcavatorChangePoseFromJointValues : public PrimitiveNodeBase
 {
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
 
-  using ExcavatorChangePoseFromPose = tms_msg_rp::action::TmsRpExcavatorChangePose;
-  using GoalHandleExcavatorChangePoseFromPose = rclcpp_action::ClientGoalHandle<ExcavatorChangePoseFromPose>;
+  using ExcavatorChangePoseFromJointValues = tms_msg_rp::action::TmsRpExcavatorChangePose;
+  using GoalHandleExcavatorChangePoseFromJointValues = rclcpp_action::ClientGoalHandle<ExcavatorChangePoseFromJointValues>;
 
-  PrimitiveExcavatorChangePoseFromPose();
+  PrimitiveExcavatorChangePoseFromJointValues();
 
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
@@ -68,13 +69,13 @@ private:
   void execute(const std::shared_ptr<GoalHandle> goal_handle);
 
   // Member as an action client
-  rclcpp_action::Client<ExcavatorChangePoseFromPose>::SharedPtr action_client_;
-  std::shared_future<GoalHandleExcavatorChangePoseFromPose::SharedPtr> client_future_goal_handle_;
-  void goal_response_callback(const GoalHandleExcavatorChangePoseFromPose::SharedPtr& goal_handle);
-  void feedback_callback(GoalHandleExcavatorChangePoseFromPose::SharedPtr,
-                         const std::shared_ptr<const ExcavatorChangePoseFromPose::Feedback> feedback);
+  rclcpp_action::Client<ExcavatorChangePoseFromJointValues>::SharedPtr action_client_;
+  std::shared_future<GoalHandleExcavatorChangePoseFromJointValues::SharedPtr> client_future_goal_handle_;
+  void goal_response_callback(const GoalHandleExcavatorChangePoseFromJointValues::SharedPtr& goal_handle);
+  void feedback_callback(GoalHandleExcavatorChangePoseFromJointValues::SharedPtr,
+                         const std::shared_ptr<const ExcavatorChangePoseFromJointValues::Feedback> feedback);
   void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                       const GoalHandleExcavatorChangePoseFromPose::WrappedResult& result);
+                       const GoalHandleExcavatorChangePoseFromJointValues::WrappedResult& result);
 };
 
 #endif

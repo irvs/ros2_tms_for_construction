@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_primitive/Excavator/primitive_excavator_change_pose_from_poses.hpp"
+#include "tms_ts_primitive/Excavator/primitive_excavator_change_pose_from_joint_values.hpp"
 #include <glog/logging.h>
 
 using namespace std::chrono_literals;
@@ -46,7 +46,7 @@ namespace {
   }
 }
 
-PrimitiveExcavatorChangePoseFromPose::PrimitiveExcavatorChangePoseFromPose() : PrimitiveNodeBase("primitive_excavator_change_pose_from_pose_node")
+PrimitiveExcavatorChangePoseFromJointValues::PrimitiveExcavatorChangePoseFromJointValues() : PrimitiveNodeBase("primitive_excavator_change_pose_from_joint_values_node")
 {
     auto options_server = rcl_action_server_get_default_options();
     options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
@@ -63,13 +63,13 @@ PrimitiveExcavatorChangePoseFromPose::PrimitiveExcavatorChangePoseFromPose() : P
     options_client.status_topic_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
   
   action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-      this, "primitive_excavator_change_pose_from_poses",
-      std::bind(&PrimitiveExcavatorChangePoseFromPose::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-      std::bind(&PrimitiveExcavatorChangePoseFromPose::handle_cancel, this, std::placeholders::_1),
-      std::bind(&PrimitiveExcavatorChangePoseFromPose::handle_accepted, this, std::placeholders::_1),
+      this, "primitive_excavator_change_pose_from_joint_values",
+      std::bind(&PrimitiveExcavatorChangePoseFromJointValues::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+      std::bind(&PrimitiveExcavatorChangePoseFromJointValues::handle_cancel, this, std::placeholders::_1),
+      std::bind(&PrimitiveExcavatorChangePoseFromJointValues::handle_accepted, this, std::placeholders::_1),
       options_server);
 
-  action_client_ = rclcpp_action::create_client<ExcavatorChangePoseFromPose>(this, "tms_rp_excavator_change_pose_from_poses",nullptr ,options_client);
+  action_client_ = rclcpp_action::create_client<ExcavatorChangePoseFromJointValues>(this, "tms_rp_excavator_change_pose_from_joint_values",nullptr ,options_client);
   if (action_client_->wait_for_action_server())
   {
     RCLCPP_INFO(this->get_logger(), "Action server is ready");
@@ -80,7 +80,7 @@ PrimitiveExcavatorChangePoseFromPose::PrimitiveExcavatorChangePoseFromPose() : P
   }
 }
 
-rclcpp_action::GoalResponse PrimitiveExcavatorChangePoseFromPose::handle_goal(
+rclcpp_action::GoalResponse PrimitiveExcavatorChangePoseFromJointValues::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
   used_model_name_ = goal->model_name;
@@ -94,7 +94,7 @@ rclcpp_action::GoalResponse PrimitiveExcavatorChangePoseFromPose::handle_goal(
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse PrimitiveExcavatorChangePoseFromPose::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveExcavatorChangePoseFromJointValues::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
   RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
   if (client_future_goal_handle_.valid() &&
@@ -106,13 +106,13 @@ rclcpp_action::CancelResponse PrimitiveExcavatorChangePoseFromPose::handle_cance
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void PrimitiveExcavatorChangePoseFromPose::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveExcavatorChangePoseFromJointValues::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
   using namespace std::placeholders;
-  std::thread{ std::bind(&PrimitiveExcavatorChangePoseFromPose::execute, this, _1), goal_handle }.detach();
+  std::thread{ std::bind(&PrimitiveExcavatorChangePoseFromJointValues::execute, this, _1), goal_handle }.detach();
 }
 
-void PrimitiveExcavatorChangePoseFromPose::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveExcavatorChangePoseFromJointValues::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
   auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
 
@@ -135,10 +135,9 @@ void PrimitiveExcavatorChangePoseFromPose::execute(const std::shared_ptr<GoalHan
     return;
   }
 
-  auto goal_msg = ExcavatorChangePoseFromPose::Goal();
-  goal_msg.joint_values_sequence.clear();
-  
-  RCLCPP_INFO(this->get_logger(), "Get pose from DB.");
+  auto goal_msg = ExcavatorChangePoseFromJointValues::Goal();
+  goal_msg.position_with_angle_sequence.clear();
+  RCLCPP_INFO(this->get_logger(), "Get joint values from DB.");
 
   RCLCPP_INFO(this->get_logger(), "param_from_db_ contents:");
   for (const auto& [key, value] : param_from_db_)
@@ -148,62 +147,62 @@ void PrimitiveExcavatorChangePoseFromPose::execute(const std::shared_ptr<GoalHan
 
   // JSON文字列からBSONドキュメントに変換してメッセージ型に設定
   try {
-    // position_with_angleパラメータのチェック
-    if (!param_from_db_.count("position_with_angle")) {
-      RCLCPP_ERROR(this->get_logger(), "Missing required parameter: position_with_angle");
-      handle_error("Missing required parameter: position_with_angle");
+    // joint_valuesパラメータのチェック
+    if (!param_from_db_.count("joint_values")) {
+      RCLCPP_ERROR(this->get_logger(), "Missing required parameter: joint_values");
+      handle_error("Missing required parameter: joint_values");
       return;
     }
 
-    // position_with_angle配列のパース
-    auto doc = bsoncxx::from_json(param_from_db_["position_with_angle"]);
+    // joint_values配列のパース
+    auto doc = bsoncxx::from_json(param_from_db_["joint_values"]);
     auto view = doc.view();
     
-    if (!view["position_with_angle"]) {
-      RCLCPP_ERROR(this->get_logger(), "position_with_angle field not found in JSON");
-      handle_error("position_with_angle field not found");
+    if (!view["joint_values"]) {
+      RCLCPP_ERROR(this->get_logger(), "joint_values field not found in JSON");
+      handle_error("joint_values field not found");
       return;
     }
     
-    auto position_with_angle_element = view["position_with_angle"];
+    auto joint_values_element = view["joint_values"];
     
-    if (position_with_angle_element.type() != bsoncxx::type::k_array) {
-      RCLCPP_ERROR(this->get_logger(), "position_with_angle must be an array");
-      handle_error("position_with_angle must be an array");
+    if (joint_values_element.type() != bsoncxx::type::k_array) {
+      RCLCPP_ERROR(this->get_logger(), "joint_values must be an array");
+      handle_error("joint_values must be an array");
       return;
     }
     
-    auto position_array = position_with_angle_element.get_array().value;
+    auto joint_values_array = joint_values_element.get_array().value;
     
-    // 各位置データを処理
-    for (auto&& pos_element : position_array) {
-      if (pos_element.type() != bsoncxx::type::k_document) {
-        RCLCPP_ERROR(this->get_logger(), "Each element in position_with_angle must be a document");
+    // 各ジョイント値データを処理
+    for (auto&& jv_element : joint_values_array) {
+      if (jv_element.type() != bsoncxx::type::k_document) {
+        RCLCPP_ERROR(this->get_logger(), "Each element in joint_values must be a document");
         continue;
       }
       
-      auto pos_doc = pos_element.get_document().value;
-      tms_msg_rp::msg::TmsRpExcavatorPositionWithAngle target_pose;
+      auto jv_doc = jv_element.get_document().value;
+      tms_msg_rp::msg::TmsRpExcavatorJointValues target_joint_values;
       
-      // x, y, z, theta_wの抽出
-      if (!pos_doc["x"] || !pos_doc["y"] || !pos_doc["z"] || !pos_doc["theta_w"]) {
-        RCLCPP_ERROR(this->get_logger(), "Missing required fields (x, y, z, theta_w) in position element");
-        continue;
+      // 各要素からjoint_namesと値を取得
+      for (auto&& field : jv_doc) {
+        target_joint_values.joint_names.push_back(field.key().to_string());
+        target_joint_values.joint_values.push_back(get_numeric_value(field));
       }
       
-      target_pose.position.x = get_numeric_value(pos_doc["x"]);
-      target_pose.position.y = get_numeric_value(pos_doc["y"]);
-      target_pose.position.z = get_numeric_value(pos_doc["z"]);
-      target_pose.theta_w = get_numeric_value(pos_doc["theta_w"]);
+      goal_msg.joint_values_sequence.push_back(target_joint_values);
       
-      goal_msg.position_with_angle_sequence.push_back(target_pose);
-      RCLCPP_INFO(this->get_logger(), "Added target pose: x=%f, y=%f, z=%f, theta_w=%f", 
-                  target_pose.position.x, target_pose.position.y, target_pose.position.z, target_pose.theta_w);
+      RCLCPP_INFO(this->get_logger(), "Added target joint values:");
+      for (size_t i = 0; i < target_joint_values.joint_names.size(); ++i) {
+        RCLCPP_INFO(this->get_logger(), "  %s=%f", 
+                    target_joint_values.joint_names[i].c_str(), 
+                    target_joint_values.joint_values[i]);
+      }
     }
     
-    if (goal_msg.position_with_angle_sequence.empty()) {
-      RCLCPP_ERROR(this->get_logger(), "No valid positions were added to the sequence");
-      handle_error("No valid positions in position_with_angle array");
+    if (goal_msg.joint_values_sequence.empty()) {
+      RCLCPP_ERROR(this->get_logger(), "No valid joint values were added to the sequence");
+      handle_error("No valid joint values in joint_values array");
       return;
     }
 
@@ -474,7 +473,7 @@ void PrimitiveExcavatorChangePoseFromPose::execute(const std::shared_ptr<GoalHan
   }
 
   // Send goal to TMS_RP
-  auto send_goal_options = rclcpp_action::Client<ExcavatorChangePoseFromPose>::SendGoalOptions();
+  auto send_goal_options = rclcpp_action::Client<ExcavatorChangePoseFromJointValues>::SendGoalOptions();
   send_goal_options.goal_response_callback = [this](const auto& goal_handle) { goal_response_callback(goal_handle); };
   send_goal_options.feedback_callback = [this](const auto tmp, const auto feedback) {
     feedback_callback(tmp, feedback);
@@ -486,7 +485,7 @@ void PrimitiveExcavatorChangePoseFromPose::execute(const std::shared_ptr<GoalHan
   client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void PrimitiveExcavatorChangePoseFromPose::goal_response_callback(const GoalHandleExcavatorChangePoseFromPose::SharedPtr& goal_handle)
+void PrimitiveExcavatorChangePoseFromJointValues::goal_response_callback(const GoalHandleExcavatorChangePoseFromJointValues::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -498,16 +497,16 @@ void PrimitiveExcavatorChangePoseFromPose::goal_response_callback(const GoalHand
   }
 }
 
-void PrimitiveExcavatorChangePoseFromPose::feedback_callback(
-    const GoalHandleExcavatorChangePoseFromPose::SharedPtr,
-    const std::shared_ptr<const GoalHandleExcavatorChangePoseFromPose::Feedback> feedback)
+void PrimitiveExcavatorChangePoseFromJointValues::feedback_callback(
+    const GoalHandleExcavatorChangePoseFromJointValues::SharedPtr,
+    const std::shared_ptr<const GoalHandleExcavatorChangePoseFromJointValues::Feedback> feedback)
 {
   // TODO: Fix to feedback to leaf node
   RCLCPP_INFO(this->get_logger(), "Feedback received: %s", feedback->state.c_str());
 }
 
-void PrimitiveExcavatorChangePoseFromPose::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandleExcavatorChangePoseFromPose::WrappedResult& result)
+void PrimitiveExcavatorChangePoseFromJointValues::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+                                             const GoalHandleExcavatorChangePoseFromJointValues::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {
@@ -557,7 +556,7 @@ int main(int argc, char* argv[])
   google::InstallFailureSignalHandler();
 
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<PrimitiveExcavatorChangePoseFromPose>());
+  rclcpp::spin(std::make_shared<PrimitiveExcavatorChangePoseFromJointValues>());
   rclcpp::shutdown();
   return 0;
 }

@@ -42,6 +42,11 @@ def generate_launch_description():
                   namespace = 'zx200'),   
             Node(
                   package='tms_ts_primitive',
+                  executable='primitive_excavator_change_pose_from_joint_values',
+                  output='screen',
+                  namespace = 'zx200'),
+            Node(
+                  package='tms_ts_primitive',
                   executable='primitive_excavator_follow_waypoints_deg',
                   output='screen',
                   namespace = 'zx200'),

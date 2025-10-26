@@ -32,6 +32,7 @@ find_package(moveit_msgs REQUIRED)
 set(msg_files
   "msg/TmsRpErrorCodes.msg"
   "msg/TmsRpExcavatorPositionWithAngle.msg"
+  "msg/TmsRpExcavatorJointValues.msg"
 )
 
 set(action_files
