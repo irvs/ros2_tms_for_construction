@@ -464,7 +464,195 @@ void PrimitiveExcavatorChangePoseFromJointValues::execute(const std::shared_ptr<
       }
     }
 
-    // TODO: Planning Sceneの設定（必要に応じて追加）
+    // collision_avoidanceの設定
+    if (param_from_db_.count("collision_avoidance")) {
+      auto doc = bsoncxx::from_json(param_from_db_["collision_avoidance"]);
+      auto view = doc.view();
+      
+      if (view["collision_avoidance"]) {
+        RCLCPP_INFO(this->get_logger(), "Parsing collision_avoidance from JSON");
+        auto collision_avoidance_doc = view["collision_avoidance"].get_document().value;
+        
+        // model_nameの取得
+        // std::string base_frame_id = used_model_name_ + "/base_link";
+        std::string base_frame_id = "base_link";
+        
+        // constantの処理
+        if (collision_avoidance_doc["constant"]) {
+          auto constant_doc = collision_avoidance_doc["constant"].get_document().value;
+          moveit_msgs::msg::PlanningScene planning_scene;
+          
+          // primitives の処理
+          if (constant_doc["primitives"]) {
+            auto primitives_array = constant_doc["primitives"].get_array().value;
+            for (auto&& prim : primitives_array) {
+              auto prim_doc = prim.get_document().value;
+              moveit_msgs::msg::CollisionObject collision_object;
+              
+              // ID の設定
+              if (prim_doc["id"]) {
+                collision_object.id = prim_doc["id"].get_string().value.to_string();
+              }
+              
+              // header の設定
+              collision_object.header.frame_id = base_frame_id;
+              
+              // primitive の設定
+              if (prim_doc["primitive"]) {
+                auto primitive_doc = prim_doc["primitive"].get_document().value;
+                shape_msgs::msg::SolidPrimitive solid_primitive;
+                
+                // type の設定
+                if (primitive_doc["type"]) {
+                  std::string type_str = primitive_doc["type"].get_string().value.to_string();
+                  if (type_str == "box") {
+                    solid_primitive.type = shape_msgs::msg::SolidPrimitive::BOX;
+                  } else if (type_str == "sphere") {
+                    solid_primitive.type = shape_msgs::msg::SolidPrimitive::SPHERE;
+                  } else if (type_str == "cylinder") {
+                    solid_primitive.type = shape_msgs::msg::SolidPrimitive::CYLINDER;
+                  } else if (type_str == "cone") {
+                    solid_primitive.type = shape_msgs::msg::SolidPrimitive::CONE;
+                  }
+                }
+                
+                // dimensions の設定
+                if (primitive_doc["dimensions"]) {
+                  auto dimensions_array = primitive_doc["dimensions"].get_array().value;
+                  for (auto&& dim : dimensions_array) {
+                    solid_primitive.dimensions.push_back(get_numeric_value(dim));
+                  }
+                }
+                
+                collision_object.primitives.push_back(solid_primitive);
+              }
+              
+              // pose の設定
+              if (prim_doc["pose"]) {
+                auto pose_doc = prim_doc["pose"].get_document().value;
+                geometry_msgs::msg::Pose pose;
+                
+                if (pose_doc["position"]) {
+                  auto pos = pose_doc["position"].get_document().value;
+                  if (pos["x"]) pose.position.x = get_numeric_value(pos["x"]);
+                  if (pos["y"]) pose.position.y = get_numeric_value(pos["y"]);
+                  if (pos["z"]) pose.position.z = get_numeric_value(pos["z"]);
+                }
+                
+                if (pose_doc["orientation"]) {
+                  auto ori = pose_doc["orientation"].get_document().value;
+                  if (ori["x"]) pose.orientation.x = get_numeric_value(ori["x"]);
+                  if (ori["y"]) pose.orientation.y = get_numeric_value(ori["y"]);
+                  if (ori["z"]) pose.orientation.z = get_numeric_value(ori["z"]);
+                  if (ori["w"]) pose.orientation.w = get_numeric_value(ori["w"]);
+                }
+                
+                collision_object.primitive_poses.push_back(pose);
+              }
+              
+              // operation の設定（追加）
+              collision_object.operation = moveit_msgs::msg::CollisionObject::ADD;
+              
+              planning_scene.world.collision_objects.push_back(collision_object);
+              RCLCPP_INFO(this->get_logger(), "Added collision object: %s", collision_object.id.c_str());
+            }
+          }
+          
+          // planes の処理
+          if (constant_doc["planes"]) {
+            auto planes_array = constant_doc["planes"].get_array().value;
+            for (auto&& plane : planes_array) {
+              auto plane_doc = plane.get_document().value;
+              moveit_msgs::msg::CollisionObject collision_object;
+              
+              // ID の設定
+              if (plane_doc["id"]) {
+                collision_object.id = plane_doc["id"].get_string().value.to_string();
+              }
+              
+              // header の設定
+              collision_object.header.frame_id = base_frame_id;
+              
+              // plane の設定
+              if (plane_doc["plane"]) {
+                auto plane_info = plane_doc["plane"].get_document().value;
+                shape_msgs::msg::Plane plane_shape;
+                
+                // coef の設定 (a, b, c, d)
+                if (plane_info["coef"]) {
+                  auto coef_array = plane_info["coef"].get_array().value;
+                  auto it = coef_array.begin();
+                  if (it != coef_array.end()) plane_shape.coef[0] = get_numeric_value(*it++);
+                  if (it != coef_array.end()) plane_shape.coef[1] = get_numeric_value(*it++);
+                  if (it != coef_array.end()) plane_shape.coef[2] = get_numeric_value(*it++);
+                  if (it != coef_array.end()) plane_shape.coef[3] = get_numeric_value(*it++);
+                }
+                
+                collision_object.planes.push_back(plane_shape);
+              }
+              
+              // pose の設定
+              if (plane_doc["pose"]) {
+                auto pose_doc = plane_doc["pose"].get_document().value;
+                geometry_msgs::msg::Pose pose;
+                
+                if (pose_doc["position"]) {
+                  auto pos = pose_doc["position"].get_document().value;
+                  if (pos["x"]) pose.position.x = get_numeric_value(pos["x"]);
+                  if (pos["y"]) pose.position.y = get_numeric_value(pos["y"]);
+                  if (pos["z"]) pose.position.z = get_numeric_value(pos["z"]);
+                }
+                
+                if (pose_doc["orientation"]) {
+                  auto ori = pose_doc["orientation"].get_document().value;
+                  if (ori["x"]) pose.orientation.x = get_numeric_value(ori["x"]);
+                  if (ori["y"]) pose.orientation.y = get_numeric_value(ori["y"]);
+                  if (ori["z"]) pose.orientation.z = get_numeric_value(ori["z"]);
+                  if (ori["w"]) pose.orientation.w = get_numeric_value(ori["w"]);
+                }
+                
+                collision_object.plane_poses.push_back(pose);
+              }
+              
+              // operation の設定（追加）
+              collision_object.operation = moveit_msgs::msg::CollisionObject::ADD;
+              
+              planning_scene.world.collision_objects.push_back(collision_object);
+              RCLCPP_INFO(this->get_logger(), "Added plane object: %s", collision_object.id.c_str());
+            }
+          }
+          
+          // Planning Sceneをgoal_msgに設定
+          goal_msg.planning_scene = planning_scene;
+          RCLCPP_INFO(this->get_logger(), "Added %zu collision objects to planning scene", 
+                      planning_scene.world.collision_objects.size());
+        }
+        
+        // link_paddingの処理
+        if (collision_avoidance_doc["link_padding"]) {
+          RCLCPP_INFO(this->get_logger(), "Parsing link_padding from JSON");
+          auto link_padding_doc = collision_avoidance_doc["link_padding"].get_document().value;
+          
+          // 各リンク名とpadding値を取得
+          for (auto&& element : link_padding_doc) {
+            std::string link_name = element.key().to_string();
+            double padding_value = get_numeric_value(element);
+            
+            moveit_msgs::msg::LinkPadding link_padding;
+            link_padding.link_name = link_name;
+            link_padding.padding = padding_value;
+            
+            goal_msg.planning_scene.link_padding.push_back(link_padding);
+            RCLCPP_INFO(this->get_logger(), "Added link padding: %s = %f", 
+                        link_name.c_str(), padding_value);
+          }
+          
+          RCLCPP_INFO(this->get_logger(), "Added %zu link padding entries", 
+                      goal_msg.planning_scene.link_padding.size());
+        }
+        goal_msg.planning_scene.is_diff = true;
+      }
+    }
 
   } catch (const std::exception& e) {
     RCLCPP_ERROR(this->get_logger(), "Failed to parse parameters: %s", e.what());
