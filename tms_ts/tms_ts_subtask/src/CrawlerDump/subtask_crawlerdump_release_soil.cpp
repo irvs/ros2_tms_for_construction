@@ -22,7 +22,7 @@ using std::placeholders::_2;
 SubtaskCrawlerDumpReleaseSoil::SubtaskCrawlerDumpReleaseSoil() : SubtaskNodeBase("st_crawlerdump_release_soil_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_crawlerdump_release_soil",
+        this, "subtask_crawlerdump_release_soil",
         std::bind(&SubtaskCrawlerDumpReleaseSoil::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&SubtaskCrawlerDumpReleaseSoil::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskCrawlerDumpReleaseSoil::handle_accepted, this, std::placeholders::_1));

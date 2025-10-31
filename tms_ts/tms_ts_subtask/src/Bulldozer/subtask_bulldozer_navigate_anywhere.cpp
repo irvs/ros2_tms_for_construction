@@ -42,16 +42,9 @@ SubtaskBulldozerNavigateAnywhere::SubtaskBulldozerNavigateAnywhere() : SubtaskNo
         std::bind(&SubtaskBulldozerNavigateAnywhere::handle_accepted, this, std::placeholders::_1),
         options_server); 
 
-    
-    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "tms_rp_navigate_anywhere", nullptr, options_client);
-    // if (action_client_->wait_for_action_server())
-    // {
-    //     RCLCPP_INFO(this->get_logger(), "Action server is ready");
-    // }
-    // else
-    // {
-    //     RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
-    // }
+    // tms_ifを介する場合にはtms_rp_navigate_anywhereを、そうでなければnavigate_to_poseのコメントアウトを解除
+    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "navigate_to_pose");
+    // action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "tms_rp_navigate_anywhere", nullptr, options_client);
 }
 
 rclcpp_action::GoalResponse SubtaskBulldozerNavigateAnywhere::handle_goal(

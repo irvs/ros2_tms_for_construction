@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="sample1" subtask_name="st_ic120_follow_waypoints"/>
+            <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="sample2" subtask_name="st_ic120_follow_waypoints"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="BlackboardValueReaderMongo">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+        </Action>
+        <Action ID="ConditionalExpression">
+            <input_port name="conditional_expression"/>
+        </Action>
+        <Action ID="Counter">
+            <input_port name="key"/>
+        </Action>
+        <Decorator ID="KeepRunningUntilFlgup">
+            <input_port name="key"/>
+        </Decorator>
+        <Action ID="LeafNodeBulldozer">
+            <input_port default="d37pxi" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeCrawlerDump">
+            <input_port name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LeafNodeExcavator">
+            <input_port default="zx200" name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="MongoValueWriter">
+            <input_port name="input_value"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+        </Action>
+        <Action ID="SetLocalBlackboard">
+            <inout_port name="output_key"/>
+            <input_port name="value"/>
+        </Action>
+        <Action ID="SetLocalBlackboardWithCounter">
+            <inout_port name="counter_key"/>
+            <input_port name="key"/>
+        </Action>
+        <Action ID="WaitForClick">
+            <input_port name="button_info"/>
+            <input_port name="window_title"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>

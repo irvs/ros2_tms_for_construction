@@ -22,7 +22,7 @@ using std::placeholders::_2;
 SubtaskCrawlerDumpSwingAlignToHeading::SubtaskCrawlerDumpSwingAlignToHeading() : SubtaskNodeBase("st_crawlerdump_swing_align_to_heading_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_crawlerdump_swing_align_to_heading",
+        this, "subtask_crawlerdump_swing_align_to_heading",
         std::bind(&SubtaskCrawlerDumpSwingAlignToHeading::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&SubtaskCrawlerDumpSwingAlignToHeading::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskCrawlerDumpSwingAlignToHeading::handle_accepted, this, std::placeholders::_1));

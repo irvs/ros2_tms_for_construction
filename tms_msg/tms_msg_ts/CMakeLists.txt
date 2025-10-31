@@ -26,6 +26,7 @@ endif()
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  "action/SimpleConnectorHFSMBTH.action"
   "action/ActionSample.action"
   "action/LeafNodeBase.action"
   "srv/BlackboardParameters.srv"

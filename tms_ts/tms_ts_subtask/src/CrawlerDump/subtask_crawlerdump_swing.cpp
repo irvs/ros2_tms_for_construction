@@ -22,7 +22,7 @@ using std::placeholders::_2;
 SubtaskCrawlerDumpSwing::SubtaskCrawlerDumpSwing() : SubtaskNodeBase("st_crawlerdump_swing_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_crawlerdump_swing",
+        this, "subtask_crawlerdump_swing",
         std::bind(&SubtaskCrawlerDumpSwing::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&SubtaskCrawlerDumpSwing::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskCrawlerDumpSwing::handle_accepted, this, std::placeholders::_1));

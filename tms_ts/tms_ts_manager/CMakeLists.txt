@@ -54,6 +54,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/deps)
 add_executable(task_schedular_manager src/task_schedular_manager.cpp)
 ament_target_dependencies(task_schedular_manager ${dependencies_cpp})
 
+add_executable(task_schedular_manager_NextTS src/task_schedular_manager_NextTS.cpp)
+ament_target_dependencies(task_schedular_manager_NextTS ${dependencies_cpp})
+
 # -- end C++
 
 # -- for Python
@@ -78,6 +81,11 @@ install(PROGRAMS
 
 install(TARGETS
   task_schedular_manager
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(TARGETS
+  task_schedular_manager_NextTS
   DESTINATION lib/${PROJECT_NAME}
 )
 

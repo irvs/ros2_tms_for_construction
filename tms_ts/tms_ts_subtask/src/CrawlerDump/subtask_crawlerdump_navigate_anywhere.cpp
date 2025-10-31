@@ -36,14 +36,16 @@ SubtaskCrawlerDumpNavigateAnywhere::SubtaskCrawlerDumpNavigateAnywhere() : Subta
 
     
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_crawlerdump_navigate_anywhere",
+        this, "subtask_crawlerdump_navigate_anywhere",
         std::bind(&SubtaskCrawlerDumpNavigateAnywhere::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&SubtaskCrawlerDumpNavigateAnywhere::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskCrawlerDumpNavigateAnywhere::handle_accepted, this, std::placeholders::_1),
         options_server); 
-
     
-    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "tms_rp_navigate_anywhere", nullptr, options_client);
+    // tms_ifを介する場合にはtms_rp_navigate_anywhereを、そうでなければnavigate_to_poseのコメントアウトを解除
+    action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "navigate_to_pose");
+    // action_client_ = rclcpp_action::create_client<NavigateToPose>(this, "tms_rp_navigate_anywhere", nullptr, options_client);
+
     // if (action_client_->wait_for_action_server())
     // {
     //     RCLCPP_INFO(this->get_logger(), "Action server is ready");

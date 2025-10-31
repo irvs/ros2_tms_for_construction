@@ -21,17 +21,11 @@ def generate_launch_description():
 
       return LaunchDescription([
 
-            DeclareLaunchArgument('task_id', default_value="44"),
-
             Node(
                   package='tms_ts_manager',
-                  executable='task_schedular_manager',
-                  output='screen'),
-            Node(
-                  package='tms_ur_button_input', 
-                  executable='tms_ur_button',
-                  output='screen', 
-                  parameters=[{"task_id": LaunchConfiguration('task_id')}]), # You must define task_id that you want to execute. Default task_id is 2.
+                  executable='task_schedular_manager_NextTS',
+                  output='screen',
+                  namespace='ic120'),
             
             
             # subtasks

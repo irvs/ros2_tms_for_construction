@@ -1,0 +1,10 @@
+# Goal
+int32 task_id
+---
+# Result
+uint8 result_code
+# RESULT_OK         = 0
+# RESULT_FAILED     = 1
+# RESULT_ABORTED    = 2
+---
+# Feedback

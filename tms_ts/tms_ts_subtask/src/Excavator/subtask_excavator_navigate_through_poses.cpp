@@ -27,8 +27,9 @@ SubtaskExcavatorNavigateThroughPoses::SubtaskExcavatorNavigateThroughPoses() : S
         std::bind(&SubtaskExcavatorNavigateThroughPoses::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskExcavatorNavigateThroughPoses::handle_accepted, this, std::placeholders::_1));
 
-    
-    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "tms_rp_navigate_through_poses");
+    // tms_ifを介する場合にはtms_rp_navigate_through_posesを、そうでなければnavigate_through_posesのコメントアウトを解除
+    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "navigate_through_poses");
+    // action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "tms_rp_navigate_through_poses");
 }
 
 rclcpp_action::GoalResponse SubtaskExcavatorNavigateThroughPoses::handle_goal(
