@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<?xml-model
+    href="http://download.ros.org/schema/package_format3.xsd"
+    schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>tms_ts_flexbe_states</name>
+  <version>0.0.1</version>
+  <description>
+     tms_ts_flexbe_states provides a collection of custom states.
+     Feel free to add new states.
+  </description>
+  <author email="todo@todo.com">TODO</author>
+  <maintainer email="todo@todo.com">TODO</maintainer>
+  <license>BSD</license>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>flexbe_core</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <!-- Turtlesim is required for ExampleActionState test and demo >
+  <     And is therefore required for buildfarm tests >
+  <     Feel free to remove if you remove that test >
+  <     Turtlesim is NOT otherwise required by FlexBE -->
+  <depend>turtlesim</depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <export>
+      <flexbe_states />
+      <build_type>ament_python</build_type>
+  </export>
+
+</package>
