@@ -3,8 +3,9 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="sample1" subtask_name="st_ic120_follow_waypoints"/>
-            <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="sample2" subtask_name="st_ic120_follow_waypoints"/>
+            <Action ID="LoggerNode" text="{model_name}"/>
+            <Action ID="LoggerNode" text="{record_name}"/>
+            <Action  model_name="{model_name}" ID="LeafNodeCrawlerDump" record_name="{record_name}" subtask_name="subtask_crawlerdump_follow_waypoints"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
@@ -37,6 +38,9 @@
             <input_port default="zx200" name=" model_name"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
+        </Action>
+        <Action ID="LoggerNode">
+            <input_port name="text">Output description</input_port>
         </Action>
         <Action ID="MongoValueWriter">
             <input_port name="input_value"/>

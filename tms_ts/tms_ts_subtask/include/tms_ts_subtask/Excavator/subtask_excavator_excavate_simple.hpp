@@ -65,6 +65,7 @@ private:
                          const std::shared_ptr<const ExcavatorExcavateSimple::Feedback> feedback);
   void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                        const GoalHandleExcavatorExcavateSimple::WrappedResult& result);
+    std::string db_parameter;
 };
 
 #endif

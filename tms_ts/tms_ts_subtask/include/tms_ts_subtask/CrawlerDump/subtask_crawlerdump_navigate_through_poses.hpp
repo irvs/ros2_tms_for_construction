@@ -64,6 +64,7 @@ private:
                             const std::shared_ptr<const NavigateThroughPoses::Feedback> feedback);
     void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                         const GoalHandleCrawlerDumpNavigateThroughPoses::WrappedResult& result);
+    std::string db_parameter;
 };
 
 #endif

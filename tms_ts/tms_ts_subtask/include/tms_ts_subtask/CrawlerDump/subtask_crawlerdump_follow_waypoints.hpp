@@ -58,6 +58,7 @@ private:
                            const std::shared_ptr<const FollowWaypoints::Feedback> feedback);
     void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                          const GoalHandleFollowWaypoints::WrappedResult& result);
+    std::string db_parameter;
 };
 
 #endif  // TMS_TS_SUBTASK_CRAWLERDUMP_FOLLOW_WAYPOINTS_HPP

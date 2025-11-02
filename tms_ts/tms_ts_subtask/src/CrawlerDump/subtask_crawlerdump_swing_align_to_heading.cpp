@@ -21,6 +21,8 @@ using std::placeholders::_2;
 
 SubtaskCrawlerDumpSwingAlignToHeading::SubtaskCrawlerDumpSwingAlignToHeading() : SubtaskNodeBase("st_crawlerdump_swing_align_to_heading_node")
 {
+    this->declare_parameter<std::string>("db_parameter", "parameter");
+    db_parameter = this->get_parameter("db_parameter").as_string();    
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
         this, "subtask_crawlerdump_swing_align_to_heading",
         std::bind(&SubtaskCrawlerDumpSwingAlignToHeading::handle_goal, this, std::placeholders::_1, std::placeholders::_2),

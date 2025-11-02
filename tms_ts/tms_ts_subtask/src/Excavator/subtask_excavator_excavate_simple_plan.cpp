@@ -19,6 +19,8 @@ using namespace std::chrono_literals;
 
 SubtaskExcavatorExcavateSimple::SubtaskExcavatorExcavateSimple() : SubtaskNodeBase("subtask_excavator_excavate_simple_plan_node")
 {
+    this->declare_parameter<std::string>("db_parameter", "parameter");
+    db_parameter = this->get_parameter("db_parameter").as_string();
     auto options_server = rcl_action_server_get_default_options();
     options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
     options_server.result_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
@@ -64,7 +66,7 @@ rclcpp_action::GoalResponse SubtaskExcavatorExcavateSimple::handle_goal(
   {
     RCLCPP_ERROR(this->get_logger(), "Failed to set LOCK_FLG to true");
   }
-  param_from_db_ = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
+  param_from_db_ = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name, db_parameter);
   if (param_from_db_.empty())
   {
     RCLCPP_ERROR(this->get_logger(), "Failed to get parameters from DB");

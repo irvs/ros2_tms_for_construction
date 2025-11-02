@@ -29,10 +29,10 @@ public:
   // std::map<std::string, float> GetParamFromDB(std::string model_name, std::string record_name);
 
   template <typename K, typename T>
-  std::map<K, T> CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::string>, bool> = true);
+  std::map<K, T> CustomGetParamFromDB(std::string model_name, std::string record_name, std::string db_parameter, std::enable_if_t<std::is_same_v<K, std::string>, bool> = true);
 
   template <typename K, typename T>
-  std::map<K, T> CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool> = true);
+  std::map<K, T> CustomGetParamFromDB(std::string model_name, std::string record_name, std::string db_parameter, std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool> = true);
 
   template <typename T>
   bool CustomUpdateParamInDB(std::string model_name, std::string record_name, const std::string& target_key, const std::vector<T>& new_values);
@@ -54,10 +54,10 @@ static inline std::string bson_type_name(bsoncxx::type t) {
 
 // This function is to get array-type parameters from the database. (This function only supports 2D arrays.)
 template <typename K, typename T>
-std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool>) {
+std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::string db_parameter,std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool>) {
   mongocxx::client client{ mongocxx::uri{ "mongodb://localhost:27017" } };
   mongocxx::database db = client["rostmsdb"];
-  mongocxx::collection collection = db["parameter"];
+  mongocxx::collection collection = db[db_parameter];
   bsoncxx::builder::stream::document filter_builder;
   filter_builder << "model_name" << model_name << "record_name" << record_name;
   auto filter = filter_builder.view();
@@ -158,16 +158,16 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
   }
   else
   {
-    std::cout << "Dynamic parameter not found in your parameter collection" << std::endl;
+    std::cout << "Dynamic parameter (model_name: " << model_name <<",record_name: "<< record_name <<") not found in "<< db_parameter << " collection" << std::endl;
     return std::map<K, T>();
   }
 }
 // This function is to get non-array-type parameters from the database.
 template <typename K, typename T>
-std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::string>, bool>) {
+std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::string db_parameter,std::enable_if_t<std::is_same_v<K, std::string>, bool>) {
   mongocxx::client client{ mongocxx::uri{ "mongodb://localhost:27017" } };
   mongocxx::database db = client["rostmsdb"];
-  mongocxx::collection collection = db["parameter"];
+  mongocxx::collection collection = db[db_parameter];
 
   // Query to MongoDB
   bsoncxx::builder::stream::document filter_builder;
@@ -222,7 +222,7 @@ std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std
   }
   else
   {
-    std::cout << "Dynamic parameter not found in your parameter collection" << std::endl;
+    std::cout << "Dynamic parameter (model_name: " << model_name <<",record_name: "<< record_name <<") not found in "<< db_parameter << " collection" << std::endl;
     return std::map<K, T>();
   }
 }

@@ -24,6 +24,7 @@
 #include "tms_ts_subtask/common/SetLocalBlackboardWithCounter.hpp"
 #include "tms_ts_subtask/common/Counter.hpp"
 #include "tms_ts_subtask/common/wait_for_click.hpp"
+#include "tms_ts_subtask/common/logger_node.hpp"
 
 using TmsdbGetTask = tms_msg_db::srv::TmsdbGetTask;
 using SimpleConnectorHFSMBTH = tms_msg_ts::action::SimpleConnectorHFSMBTH;
@@ -53,6 +54,7 @@ public:
     factory_.registerNodeType<SetLocalBlackboardWithCounter>("SetLocalBlackboardWithCounter");
     factory_.registerNodeType<Counter>("Counter");
     factory_.registerNodeType<WaitForClick>("WaitForClick");
+    factory_.registerNodeType<LoggerNode>("LoggerNode");
 
     bb_ = BT::Blackboard::create();
 
@@ -62,7 +64,7 @@ public:
     using std::placeholders::_2;
 
     action_server_ = rclcpp_action::create_server<SimpleConnectorHFSMBTH>(
-      this, "SimpleConnectorHFSMBTH",
+      this, "SimpleConnectionHFSMBTH",
       std::bind(&ExecTaskActionServer::on_goal, this, _1, _2),
       std::bind(&ExecTaskActionServer::on_cancel, this, _1),
       std::bind(&ExecTaskActionServer::on_accepted, this, _1)
@@ -76,6 +78,11 @@ private:
                                       std::shared_ptr<const SimpleConnectorHFSMBTH::Goal> goal)
   {
     RCLCPP_INFO(get_logger(), "Goal received: task_id=%d", goal->task_id);
+    RCLCPP_INFO(get_logger(), "Goal received: model_name=%s, record_name=%s", goal->model_name.c_str(), goal->record_name.c_str());
+    // Local Blackboard経由でSMからBTへパラメータを伝達
+    bb_->set<std::string>("model_name", goal->model_name);
+    bb_->set<std::string>("record_name", goal->record_name);
+    // std::cout << "model_name: " << goal->model_name << ", record_name" << goal->record_name << std::endl;
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   }
 
@@ -100,11 +107,6 @@ private:
   {
     auto goal = gh->get_goal();
     cancel_.store(false);
-
-    // Blackboard に Goal 情報を流しておく（BT 内から参照できるように）
-    // bb_->set<int>("task_id", goal->task_id);
-    // bb_->set<std::string>("model_name", goal->model_name);
-    // bb_->set<std::string>("parameter_name", goal->parameter_name);
 
     // 1) DB (Service) から BT XML 取得
     std::string bt_xml;
@@ -134,10 +136,8 @@ private:
     BT::PublisherZMQ pub(tree, 100, zmq_server_port_, zmq_publisher_port_);
 
     // 3) 実行ループ（feedback 送信 & cancel 対応）
-    auto fb = std::make_shared<SimpleConnectorHFSMBTH::Feedback>();
     BT::NodeStatus status = BT::NodeStatus::RUNNING;
     rclcpp::Rate rate(tick_hz_);
-    int ticks = 0;
 
     while (rclcpp::ok() && status == BT::NodeStatus::RUNNING)
     {
@@ -150,15 +150,7 @@ private:
         gh->canceled(r);
         return;
       }
-
       status = tree.tickRoot();
-      ++ticks;
-
-      RCLCPP_INFO(get_logger(), "Node execution status is: %s",
-                (status == BT::NodeStatus::RUNNING) ? "RUNNING" :
-                (status == BT::NodeStatus::SUCCESS) ? "SUCCESS" : "FAILURE");
-      gh->publish_feedback(fb);
-
       rate.sleep();
     }
 

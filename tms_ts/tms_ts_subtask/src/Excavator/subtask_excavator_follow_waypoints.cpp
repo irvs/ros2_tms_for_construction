@@ -20,6 +20,8 @@ using std::placeholders::_2;
 
 SubtaskExcavatorFollowWaypointys::SubtaskExcavatorFollowWaypointys() : SubtaskNodeBase("st_excavator_follow_waypoints_node")
 {
+    this->declare_parameter<std::string>("db_parameter", "parameter");
+    db_parameter = this->get_parameter("db_parameter").as_string();    
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
         this, "st_excavator_follow_waypoints",
         std::bind(&SubtaskExcavatorFollowWaypointys::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
@@ -34,7 +36,7 @@ SubtaskExcavatorFollowWaypointys::SubtaskExcavatorFollowWaypointys() : SubtaskNo
 rclcpp_action::GoalResponse SubtaskExcavatorFollowWaypointys::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
-    parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
+    parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name, db_parameter);
     if (parameters.empty())
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to get parameters from DB");

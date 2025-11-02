@@ -31,17 +31,19 @@ class TmsDbReaderTask(Node):
         # Declare parameters
         self.declare_parameter('db_host', 'localhost')
         self.declare_parameter('db_port', 27017)
+        self.declare_parameter('db_collection', 'task')
 
         # Get parameters
         self.db_host: str = self.get_parameter('db_host').get_parameter_value().string_value
         self.db_port: int = self.get_parameter('db_port').get_parameter_value().integer_value
+        self.db_collection: str = self.get_parameter('db_collection').get_parameter_value().string_value
 
         self.db: pymongo.database.Database  = db_util.connect_db('rostmsdb', self.db_host, self.db_port)
         self.srv = self.create_service(TmsdbGetTask, 'tms_db_reader_task', self.db_reader_srv_callback)
 
 
     def db_reader_srv_callback(self, request, response):
-        collection: pymongo.collection.Collection = self.db["task"]
+        collection: pymongo.collection.Collection = self.db[self.db_collection]
         task: str = self.get_task_data(request.task_id, collection)
         response.task = task
         return response
@@ -51,7 +53,7 @@ class TmsDbReaderTask(Node):
         doc = collection.find_one({"task_id": task_id})
 
         if doc == None:
-            self.get_logger().info(f"The task ID({task_id}) does not exist under the task collection in the rostmsdb database")
+            self.get_logger().info(f"The task ID({task_id}) does not exist under the {self.db_collection} collection in the rostmsdb database")
             return ''
         
         self.get_logger().info(f"Successfully retrieved the task (ID: {task_id})")

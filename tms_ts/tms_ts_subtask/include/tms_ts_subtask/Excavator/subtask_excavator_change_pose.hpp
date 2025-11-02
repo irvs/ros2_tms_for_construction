@@ -65,6 +65,7 @@ private:
                          const std::shared_ptr<const ExcavatorChangePose::Feedback> feedback);
   void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                        const GoalHandleExcavatorChangePose::WrappedResult& result);
+    std::string db_parameter;
 };
 
 #endif

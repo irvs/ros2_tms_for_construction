@@ -57,7 +57,11 @@
         <Action ID="WaitForClick">
             <input_port name="window_title"/>
             <input_port name="button_info"/>
-        </Action>      
+        </Action>  
+
+        <Action ID="LoggerNode">
+            <input_port name="text">Output description</input_port>
+        </Action>    
 
     </TreeNodesModel>
 </root>

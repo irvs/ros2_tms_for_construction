@@ -1,5 +1,7 @@
 # Goal
 int32 task_id
+string model_name
+string record_name
 ---
 # Result
 uint8 result_code

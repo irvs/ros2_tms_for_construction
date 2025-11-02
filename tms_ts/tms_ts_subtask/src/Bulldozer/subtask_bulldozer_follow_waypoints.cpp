@@ -20,6 +20,9 @@ using std::placeholders::_2;
 
 SubtaskBulldozerFollowWaypointys::SubtaskBulldozerFollowWaypointys() : SubtaskNodeBase("st_bulldozer_follow_waypoints_node")
 {
+    this->declare_parameter<std::string>("db_parameter", "parameter");
+    db_parameter = this->get_parameter("db_parameter").as_string();
+
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
         this, "st_bulldozer_follow_waypoints",
         std::bind(&SubtaskBulldozerFollowWaypointys::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
@@ -34,7 +37,7 @@ SubtaskBulldozerFollowWaypointys::SubtaskBulldozerFollowWaypointys() : SubtaskNo
 rclcpp_action::GoalResponse SubtaskBulldozerFollowWaypointys::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
-    parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
+    parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name, db_parameter);
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 

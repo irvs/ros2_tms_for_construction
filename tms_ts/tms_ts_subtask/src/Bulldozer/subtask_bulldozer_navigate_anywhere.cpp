@@ -20,6 +20,9 @@ using std::placeholders::_2;
 
 SubtaskBulldozerNavigateAnywhere::SubtaskBulldozerNavigateAnywhere() : SubtaskNodeBase("st_bulldozer_navigate_anywhere_node")
 {
+    this->declare_parameter<std::string>("db_parameter", "parameter");
+    db_parameter = this->get_parameter("db_parameter").as_string();
+
     auto options_server = rcl_action_server_get_default_options();
     options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
     options_server.result_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
@@ -50,7 +53,7 @@ SubtaskBulldozerNavigateAnywhere::SubtaskBulldozerNavigateAnywhere() : SubtaskNo
 rclcpp_action::GoalResponse SubtaskBulldozerNavigateAnywhere::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
-    parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
+    parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name, db_parameter);
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 

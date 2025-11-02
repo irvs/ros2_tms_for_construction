@@ -56,6 +56,7 @@ private:
                             const std::shared_ptr<const TmsRpCrawlerDumpSwingAngle::Feedback> feedback);
     void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                         const GoalHandleCrawlerDumpSwingAlignToHeading::WrappedResult& result);
+    std::string db_parameter;
 };
 
 #endif

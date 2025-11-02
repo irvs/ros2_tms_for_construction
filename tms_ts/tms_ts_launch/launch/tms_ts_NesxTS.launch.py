@@ -33,37 +33,44 @@ def generate_launch_description():
                   package='tms_ts_subtask', 
                   executable='subtask_excavator_change_pose',
                   output='screen',
-                  namespace = 'zx200'),
+                  namespace = 'zx200',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask', 
                   executable='subtask_excavator_excavate_simple',
                   output='screen',
-                  namespace = 'zx200'),
+                  namespace = 'zx200',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask', 
                   executable='subtask_excavator_excavate_simple_plan',
                   output='screen',
-                  namespace = 'zx200'),
+                  namespace = 'zx200',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask', 
                   executable='subtask_excavator_release_simple',
                   output='screen',
-                  namespace = 'zx200'),
+                  namespace = 'zx200',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask',
                   executable='subtask_excavator_follow_waypoints',
                   output='screen',
-                  namespace = 'zx200'),
+                  namespace = 'zx200',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask',
                   executable='subtask_excavator_navigate_anywhere',
                   output='screen',
-                  namespace = 'zx200'),
+                  namespace = 'zx200',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask',
                   executable='subtask_excavator_navigate_through_poses',
                   output='screen',
-                  namespace = 'zx200'),
+                  namespace = 'zx200',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             
             # sample ###
             #ic120用
@@ -71,22 +78,26 @@ def generate_launch_description():
                   package='tms_ts_subtask',
                   executable='subtask_crawlerdump_follow_waypoints',
                   output='screen',
-                  namespace='ic120'),
+                  namespace='ic120',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask',
                   executable='subtask_crawlerdump_navigate_anywhere',
                   output='screen',
-                  namespace='ic120'),
+                  namespace='ic120',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask',
                   executable='subtask_crawlerdump_navigate_through_poses',
                   output='screen',
-                  namespace='ic120'),
+                  namespace='ic120',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask',
                   executable='subtask_crawlerdump_release_soil',
                   output='screen',
-                  namespace='ic120'),
+                  namespace='ic120',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
 
             # tms_ifを仲介する場合はコメントアウトを解除
             # Subtask Nodeのaction client名を変更すること
@@ -118,27 +129,32 @@ def generate_launch_description():
                   package='tms_ts_subtask', 
                   executable='subtask_crawlerdump_follow_waypoints',
                   output='screen',
-                  namespace='mst2200'),
+                  namespace='mst2200',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask', 
                   executable='subtask_crawlerdump_navigate_anywhere',
                   output='screen',
-                  namespace='mst2200'),
+                  namespace='mst2200',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask', 
                   executable='subtask_crawlerdump_navigate_through_poses',
                   output='screen',
-                  namespace='mst2200'),
+                  namespace='mst2200',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask', 
                   executable='subtask_crawlerdump_release_soil',
                   output='screen',
-                  namespace='mst2200'),
+                  namespace='mst2200',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package = 'tms_ts_subtask',
                   executable='subtask_crawlerdump_swing_align_to_heading',
                   output='screen',
-                  namespace='mst2200'), 
+                  namespace='mst2200',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ), 
 
             # tms_ifを仲介する場合はコメントアウトを解除
             # Subtask Nodeのaction client名を変更すること
@@ -157,7 +173,7 @@ def generate_launch_description():
             #       package='tms_if_for_opera',
             #       executable='navigation2_navigate_anywhere',
             #       output='screen',
-            #       namespace='mst2200'),
+                  # namespace='mst2200'),
 
 
             #MST110CR
@@ -165,32 +181,38 @@ def generate_launch_description():
                   package='tms_ts_subtask', 
                   executable='subtask_crawlerdump_follow_waypoints',
                   output='screen',
-                  namespace='mst110cr_2'),
+                  namespace='mst110cr_2',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask', 
                   executable='subtask_crawlerdump_navigate_anywhere',
                   output='screen',
-                  namespace='mst110cr_2'),
+                  namespace='mst110cr_2',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask', 
                   executable='subtask_crawlerdump_navigate_through_poses',
                   output='screen',
-                  namespace='mst110cr_2'),
+                  namespace='mst110cr_2',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask', 
                   executable='subtask_crawlerdump_release_soil',
                   output='screen',
-                  namespace='mst110cr_2'),      
+                  namespace='mst110cr_2',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),      
             Node(
                   package = 'tms_ts_subtask',
                   executable='subtask_crawlerdump_swing',
                   output='screen',
-                  namespace='mst110cr_2'), 
+                  namespace='mst110cr_2',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ), 
             Node(
                   package = 'tms_ts_subtask',
                   executable='subtask_crawlerdump_swing_align_to_heading',
                   output='screen',
-                  namespace='mst110cr_2'), 
+                  namespace='mst110cr_2',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ), 
             
             # tms_ifを仲介する場合はコメントアウトを解除
             # Subtask Nodeのaction client名を変更すること
@@ -217,17 +239,20 @@ def generate_launch_description():
                   package='tms_ts_subtask', 
                   executable='subtask_bulldozer_follow_waypoints',
                   output='screen',
-                  namespace='d37pxi_24'),
+                  namespace='d37pxi_24',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask', 
                   executable='subtask_bulldozer_navigate_anywhere',
                   output='screen',
-                  namespace='d37pxi_24'),
+                  namespace='d37pxi_24',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ),
             Node(
                   package='tms_ts_subtask', 
                   executable='subtask_bulldozer_navigate_through_poses',
                   output='screen',
-                  namespace='d37pxi_24'), 
+                  namespace='d37pxi_24',
+                  parameters=[{"db_parameter": "official_subtask_parameters"}] ), 
             
             # tms_ifを仲介する場合はコメントアウトを解除
             # Subtask Nodeのaction client名を変更すること
@@ -246,7 +271,7 @@ def generate_launch_description():
             #       package='tms_if_for_opera',
             #       executable='navigation2_navigate_anywhere',
             #       output='screen',
-            #       namespace='d37pxi_24'),  
+            #       namespace='d37pxi_24'),
 
             
 
@@ -306,7 +331,8 @@ def generate_launch_description():
             Node(
                   package="tms_db_manager", 
                   executable="tms_db_reader_task",
-                  output='screen'
+                  output='screen',
+                  parameters=[{"db_collection": "official_subtasks"}]
                   ),
             Node(
                   package="tms_db_manager", 
