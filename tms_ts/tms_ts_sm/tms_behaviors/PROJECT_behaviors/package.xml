@@ -1,0 +1,24 @@
+<package>
+  <name>tms_behaviors</name>
+  <version>0.0.1</version>
+  <description>
+    Meta-package for FlexBE enabled tms
+  </description>
+  <author email="todo@todo.com">TODO</author>
+  <maintainer email="todo@todo.com">TODO</maintainer>
+  <license>BSD</license>
+  <url type="bugtracker">TODO/issues</url>
+  <url type="repository">TODO</url>
+  <url type="website">TODO</url>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <run_depend>flexbe_core</run_depend>
+  <run_depend>tms_flexbe_behaviors</run_depend>
+  <run_depend>tms_flexbe_states</run_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>

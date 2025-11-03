@@ -1,0 +1,10 @@
+path: tms_flexbe_states.example_state
+class: ExampleState
+
+import_only: true
+
+params:
+    target_time:    2.0
+
+outcome:
+    done
