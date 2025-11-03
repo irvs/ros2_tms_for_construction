@@ -82,7 +82,7 @@ class sample_zx200_navigate_through_posesSM(Behavior):
         with _state_machine:
             # x:201 y:83
             OperatableStateMachine.add('ExcavatorNavigateThroughPoses',
-                                       ExcavatorNavigateThroughPoses(model_name="ic120", record_name="SampleNavigateThroughPoses"),
+                                       ExcavatorNavigateThroughPoses(model_name="zx200", record_name="SampleNavigateThroughPoses"),
                                        transitions={'received': 'finished', 'aborted': 'failed', 'no_connection': 'failed', 'data_error': 'failed'},
                                        autonomy={'received': Autonomy.Off, 'aborted': Autonomy.Off, 'no_connection': Autonomy.Off, 'data_error': Autonomy.Off},
                                        remapping={'data': 'data'})

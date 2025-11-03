@@ -82,7 +82,7 @@ class sample_zx200_navigate_anywhereSM(Behavior):
         with _state_machine:
             # x:269 y:67
             OperatableStateMachine.add('ExcavatorNavigateAnywhere',
-                                       ExcavatorNavigateAnywhere(model_name="ic120", record_name="SampleNavigateToPose"),
+                                       ExcavatorNavigateAnywhere(model_name="zx200", record_name="SampleNavigateToPose"),
                                        transitions={'received': 'finished', 'aborted': 'failed', 'no_connection': 'failed', 'data_error': 'failed'},
                                        autonomy={'received': Autonomy.Off, 'aborted': Autonomy.Off, 'no_connection': Autonomy.Off, 'data_error': Autonomy.Off},
                                        remapping={'data': 'data'})

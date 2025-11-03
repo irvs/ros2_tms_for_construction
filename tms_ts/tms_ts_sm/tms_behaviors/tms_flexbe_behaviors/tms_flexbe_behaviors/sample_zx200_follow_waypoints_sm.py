@@ -82,7 +82,7 @@ class sample_zx200_follow_waypointsSM(Behavior):
         with _state_machine:
             # x:269 y:109
             OperatableStateMachine.add('ExcavatorFollowWaypoints',
-                                       ExcavatorFollowWaypoints(model_name="ic120", record_name="SampleFollowWaypoints"),
+                                       ExcavatorFollowWaypoints(model_name="zx200", record_name="SampleFollowWaypoints"),
                                        transitions={'received': 'finished', 'aborted': 'failed', 'no_connection': 'failed', 'data_error': 'failed'},
                                        autonomy={'received': Autonomy.Off, 'aborted': Autonomy.Off, 'no_connection': Autonomy.Off, 'data_error': Autonomy.Off},
                                        remapping={'data': 'data'})
