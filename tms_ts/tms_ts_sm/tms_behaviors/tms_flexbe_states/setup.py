@@ -27,8 +27,6 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'example_action_state = tms_flexbe_states.example_action_state',
-            'example_state = tms_flexbe_states.example_state',
         ],
     },
 )
