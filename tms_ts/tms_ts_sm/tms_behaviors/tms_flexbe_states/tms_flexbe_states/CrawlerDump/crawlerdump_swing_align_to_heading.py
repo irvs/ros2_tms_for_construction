@@ -6,12 +6,11 @@ from flexbe_core import EventState, Logger
 from tms_msg_ts.action import SimpleConnectorHFSMBTH
 
 
-class ExcavatorNavigateThroughPoses(EventState):
+class CrawlerdumpSwingAlignToHeading(EventState):
     '''
-    Navigate the crawler dummp along the waypoints.The orientation adjustment is performed at the final waypoint, while only positional alignment is executed at the other waypoints.
+    Swing swing_joint to align upper and crawler link.
 
-    -- model_name: model_name: Model name to control from this such as "zx200".
-    -- record_name : ID of the parameter using this node.
+    -- model_name: Model name to control from this such as "ic120".
 
     <= received: Action succeeded
     <= aborted: Action aborted by server
@@ -19,14 +18,14 @@ class ExcavatorNavigateThroughPoses(EventState):
     <= data_error: Communication or result error
     '''
 
-    def __init__(self, model_name, record_name):
+    def __init__(self, model_name):
         super().__init__(outcomes=['received', 'aborted', 'no_connection', 'data_error'],
                          output_keys=['data'])
-        self._task_id = 9 # Sample。DBに正規・非正規Subtask Nodes用のコレクションの2種を用意し、正規のコレクションにprimitivesを格納。タスクIDをそれに合わせて修正
+        self._task_id = 5 # Sample。DBに正規・非正規Subtask Nodes用のコレクションの2種を用意し、正規のコレクションにprimitivesを格納。タスクIDをそれに合わせて修正
         self._model_name = model_name
-        self._record_name = record_name 
+        self._record_name = "dummy"
         self._action_topic = model_name + '/SimpleConnectionHFSMBTH'
-        self._node = rclpy.create_node('excavator_navigate_through_poses_client')
+        self._node = rclpy.create_node('crawlerdump_swing_align_to_heading_client')
         self._client = ActionClient(self._node, SimpleConnectorHFSMBTH, self._action_topic)
         self._goal_handle = None
         self._connected = True

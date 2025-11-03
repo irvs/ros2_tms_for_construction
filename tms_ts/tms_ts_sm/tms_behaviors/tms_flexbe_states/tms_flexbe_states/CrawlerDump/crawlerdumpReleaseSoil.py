@@ -6,11 +6,11 @@ from flexbe_core import EventState, Logger
 from tms_msg_ts.action import SimpleConnectorHFSMBTH
 
 
-class ExcavatorNavigateThroughPoses(EventState):
+class CrawlerdumpReleaseSoil(EventState):
     '''
-    Navigate the crawler dummp along the waypoints.The orientation adjustment is performed at the final waypoint, while only positional alignment is executed at the other waypoints.
+    Up & down vessel joint to release soil.
 
-    -- model_name: model_name: Model name to control from this such as "zx200".
+    -- model_name: Model name to control from this such as "ic120".
     -- record_name : ID of the parameter using this node.
 
     <= received: Action succeeded
@@ -22,11 +22,11 @@ class ExcavatorNavigateThroughPoses(EventState):
     def __init__(self, model_name, record_name):
         super().__init__(outcomes=['received', 'aborted', 'no_connection', 'data_error'],
                          output_keys=['data'])
-        self._task_id = 9 # Sample。DBに正規・非正規Subtask Nodes用のコレクションの2種を用意し、正規のコレクションにprimitivesを格納。タスクIDをそれに合わせて修正
+        self._task_id = 6 # Sample。DBに正規・非正規Subtask Nodes用のコレクションの2種を用意し、正規のコレクションにprimitivesを格納。タスクIDをそれに合わせて修正
         self._model_name = model_name
         self._record_name = record_name 
         self._action_topic = model_name + '/SimpleConnectionHFSMBTH'
-        self._node = rclpy.create_node('excavator_navigate_through_poses_client')
+        self._node = rclpy.create_node('crawlerdump_release_soil_client')
         self._client = ActionClient(self._node, SimpleConnectorHFSMBTH, self._action_topic)
         self._goal_handle = None
         self._connected = True

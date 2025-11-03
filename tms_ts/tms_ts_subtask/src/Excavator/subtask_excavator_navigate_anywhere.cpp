@@ -38,7 +38,7 @@ SubtaskExcavatorNavigateAnywhere::SubtaskExcavatorNavigateAnywhere() : SubtaskNo
 
     
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_excavator_navigate_anywhere",
+        this, "subtask_excavator_navigate_anywhere",
         std::bind(&SubtaskExcavatorNavigateAnywhere::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&SubtaskExcavatorNavigateAnywhere::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskExcavatorNavigateAnywhere::handle_accepted, this, std::placeholders::_1),

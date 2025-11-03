@@ -11,7 +11,7 @@ class ExcavatorFollowWaypoints(EventState):
     Navigate the crawler dummp along the waypoints.
 
     -- model_name: Model name to control from this such as "zx200".
-    -- task_id (int): ID of the task to send
+    -- record_name : ID of the parameter using this node.
 
     <= received: Action succeeded
     <= aborted: Action aborted by server
@@ -22,7 +22,7 @@ class ExcavatorFollowWaypoints(EventState):
     def __init__(self, model_name, record_name):
         super().__init__(outcomes=['received', 'aborted', 'no_connection', 'data_error'],
                          output_keys=['data'])
-        self._task_id = 1 # Sample。DBに正規・非正規Subtask Nodes用のコレクションの2種を用意し、正規のコレクションにprimitivesを格納。タスクIDをそれに合わせて修正
+        self._task_id = 7 # Sample。DBに正規・非正規Subtask Nodes用のコレクションの2種を用意し、正規のコレクションにprimitivesを格納。タスクIDをそれに合わせて修正
         self._model_name = model_name
         self._record_name = record_name 
         self._action_topic = model_name + '/SimpleConnectionHFSMBTH'

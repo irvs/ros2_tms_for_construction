@@ -11,7 +11,7 @@ class BulldozerFollowWaypoints(EventState):
     Navigate the crawler dummp along the waypoints.
 
     -- model_name: Model name to control from this such as "ic120".
-    -- task_id (int): ID of the task to send
+    -- record_name : ID of the parameter using this node.
 
     <= received: Action succeeded
     <= aborted: Action aborted by server

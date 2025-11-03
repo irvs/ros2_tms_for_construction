@@ -26,6 +26,12 @@ def generate_launch_description():
                   executable='task_schedular_manager_NextTS',
                   output='screen',
                   namespace='ic120'),
+
+            Node(
+                  package='tms_ts_manager',
+                  executable='task_schedular_manager_NextTS',
+                  output='screen',
+                  namespace='zx200'),
             
             
             # subtasks
