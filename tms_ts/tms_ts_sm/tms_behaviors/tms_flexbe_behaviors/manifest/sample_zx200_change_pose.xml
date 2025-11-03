@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="sample_zx200_change_pose">
+
+    <executable package_path="tms_flexbe_behaviors.sample_zx200_change_pose_sm" class="sample_zx200_change_poseSM" />
+    <tagstring></tagstring>
+    <author>Yuichiro Kasahara</author>
+    <date>Mon Nov 03 2025</date>
+    <description>
+        This task is sample implemented on FlexBE. This task contains only one node crresponing to "ExcavatorChangePose".
+
+    </description>
+
+
+    <!-- Contained Behaviors -->
+
+    <!-- Available Parameters -->
+
+</behavior>

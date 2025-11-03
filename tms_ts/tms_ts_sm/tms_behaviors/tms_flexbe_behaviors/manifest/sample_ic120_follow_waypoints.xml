@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="sample_ic120_follow_waypoints">
+
+    <executable package_path="tms_flexbe_behaviors.sample_ic120_follow_waypoints_sm" class="sample_ic120_follow_waypointsSM" />
+    <tagstring></tagstring>
+    <author>Yuichiro Kasahara</author>
+    <date>Mon Nov 03 2025</date>
+    <description>
+        This task is sample implemented on FlexBE. This task contains only one node crresponing to "CrawlerdumpFollowWaypoints".
+    </description>
+
+
+    <!-- Contained Behaviors -->
+
+    <!-- Available Parameters -->
+
+</behavior>
