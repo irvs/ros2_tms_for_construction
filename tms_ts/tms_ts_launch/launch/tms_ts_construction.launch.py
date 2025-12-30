@@ -12,26 +12,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
 
+      tms_if_for_opera_dir = get_package_share_directory("tms_if_for_opera")
+
+      tms_if_for_opera_excavator_path = os.path.join(
+        tms_if_for_opera_dir, "launch", "tms_if_for_opera_excavator.launch.py"
+      )
+
+      tms_if_for_opera_crawlerdump_path = os.path.join(
+        tms_if_for_opera_dir, "launch", "tms_if_for_opera_crawlerdump.launch.py"
+      )
+
+      declare_use_sim_time_arg = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='false',
+        description='Use simulation (Gazebo) clock if true')
+      
+      declare_task_id_arg = DeclareLaunchArgument(
+        'task_id',
+        default_value='44')
+
       return LaunchDescription([
 
-            DeclareLaunchArgument('task_id', default_value="44"),
+            declare_use_sim_time_arg,
+            declare_task_id_arg,
 
             Node(
                   package='tms_ts_manager',
                   executable='task_schedular_manager',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   output='screen'),
             Node(
                   package='tms_ur_button_input', 
                   executable='tms_ur_button',
                   output='screen', 
-                  parameters=[{"task_id": LaunchConfiguration('task_id')}]), # You must define task_id that you want to execute. Default task_id is 2.
+                  parameters=[{"use_sim_time": LaunchConfiguration('use_sim_time'), 
+                               "task_id": LaunchConfiguration('task_id')}]), # You must define task_id that you want to execute. Default task_id is 2.
             
             
             # primitives
@@ -39,263 +64,236 @@ def generate_launch_description():
                   package='tms_ts_primitive', 
                   executable='primitive_excavator_change_pose',
                   output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   namespace = 'zx200'),
             Node(
                   package='tms_ts_primitive', 
                   executable='primitive_excavator_excavate_simple',
                   output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   namespace = 'zx200'),
             Node(
                   package='tms_ts_primitive', 
                   executable='primitive_excavator_excavate_simple_plan',
                   output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   namespace = 'zx200'),
             Node(
                   package='tms_ts_primitive', 
                   executable='primitive_excavator_release_simple',
                   output='screen',
-                  namespace = 'zx200'),
-            Node(
-                  package='tms_ts_primitive',
-                  executable='primitive_excavator_follow_waypoints_deg',
-                  output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   namespace = 'zx200'),
             Node(
                   package='tms_ts_primitive',
                   executable='primitive_excavator_follow_waypoints',
                   output='screen',
-                  namespace = 'zx200'),
-            Node(
-                  package='tms_ts_primitive',
-                  executable='primitive_excavator_navigate_anywhere_deg',
-                  output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   namespace = 'zx200'),
             Node(
                   package='tms_ts_primitive',
                   executable='primitive_excavator_navigate_anywhere',
                   output='screen',
-                  namespace = 'zx200'),
-            Node(
-                  package='tms_ts_primitive',
-                  executable='primitive_excavator_navigate_through_poses_deg',
-                  output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   namespace = 'zx200'),
             Node(
                   package='tms_ts_primitive',
                   executable='primitive_excavator_navigate_through_poses',
                   output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   namespace = 'zx200'),
+
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(tms_if_for_opera_excavator_path),
+                launch_arguments={
+                    'robot_name': 'zx200',
+                    'use_sim_time': LaunchConfiguration('use_sim_time')
+                }.items(),
+            ),
             
             # sample ###
             #ic120用
-            Node(
-                  package='tms_ts_primitive',
-                  executable='primitive_crawlerdump_follow_waypoints_deg',
-                  output='screen'),
-            Node(
-                  package='tms_ts_primitive',
-                  executable='primitive_crawlerdump_follow_waypoints',
-                  output='screen',
-                  namespace='ic120'),
-            Node(
-                  package='tms_ts_primitive',
-                  executable='primitive_crawlerdump_navigate_anywhere_deg',
-                  output='screen',
-                  namespace='ic120'),
-            Node(
-                  package='tms_ts_primitive',
-                  executable='primitive_crawlerdump_navigate_anywhere',
-                  output='screen',
-                  namespace='ic120'),
-            Node(
-                  package='tms_ts_primitive',
-                  executable='primitive_crawlerdump_navigate_through_poses_deg',
-                  output='screen',
-                  namespace='ic120'),
-            Node(
-                  package='tms_ts_primitive',
-                  executable='primitive_crawlerdump_navigate_through_poses',
-                  output='screen',
-                  namespace='ic120'),
-            Node(
-                  package='tms_ts_primitive',
-                  executable='primitive_crawlerdump_release_soil',
-                  output='screen',
-                  namespace='ic120'),
+            # Node(
+            #       package='tms_ts_primitive',
+            #       executable='primitive_crawlerdump_follow_waypoints',
+            #       output='screen',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            #       namespace='ic120'),
+            # Node(
+            #       package='tms_ts_primitive',
+            #       executable='primitive_crawlerdump_navigate_anywhere',
+            #       output='screen',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            #       namespace='ic120'),
+            # Node(
+            #       package='tms_ts_primitive',
+            #       executable='primitive_crawlerdump_navigate_through_poses',
+            #       output='screen',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            #       namespace='ic120'),
+            # Node(
+            #       package='tms_ts_primitive',
+            #       executable='primitive_crawlerdump_release_soil',
+            #       output='screen',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            #       namespace='ic120'),
             
 
             # mst2200用
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_crawlerdump_follow_waypoints_deg',
-                  output='screen',
-                  namespace='mst2200'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_crawlerdump_follow_waypoints',
-                  output='screen',
-                  namespace='mst2200'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_crawlerdump_navigate_anywhere_deg',
-                  output='screen',
-                  namespace='mst2200'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_crawlerdump_navigate_anywhere',
-                  output='screen',
-                  namespace='mst2200'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_crawlerdump_navigate_through_poses_deg',
-                  output='screen',
-                  namespace='mst2200'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_crawlerdump_navigate_through_poses',
-                  output='screen',
-                  namespace='mst2200'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_crawlerdump_release_soil',
-                  output='screen',
-                  namespace='mst2200'),
-            Node(
-                  package = 'tms_ts_primitive',
-                  executable='primitive_crawlerdump_swing_align_to_heading',
-                  output='screen',
-                  namespace='mst2200'), 
+            # Node(
+            #       package='tms_ts_primitive', 
+            #       executable='primitive_crawlerdump_follow_waypoints',
+            #       output='screen',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            #       namespace='mst2200'),
+            # Node(
+            #       package='tms_ts_primitive', 
+            #       executable='primitive_crawlerdump_navigate_anywhere',
+            #       output='screen',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            #       namespace='mst2200'),
+            # Node(
+            #       package='tms_ts_primitive', 
+            #       executable='primitive_crawlerdump_navigate_through_poses',
+            #       output='screen',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            #       namespace='mst2200'),
+            # Node(
+            #       package='tms_ts_primitive', 
+            #       executable='primitive_crawlerdump_release_soil',
+            #       output='screen',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            #       namespace='mst2200'),
+            # Node(
+            #       package = 'tms_ts_primitive',
+            #       executable='primitive_crawlerdump_swing_align_to_heading',
+            #       output='screen',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            #       namespace='mst2200'), 
 
             #MST110CR
             Node(
                   package='tms_ts_primitive', 
-                  executable='primitive_crawlerdump_follow_waypoints_deg',
+                  executable='primitive_crawlerdump_follow_path',
                   output='screen',
-                  namespace='mst110cr_2'),
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='mst110cr'),
             Node(
                   package='tms_ts_primitive', 
                   executable='primitive_crawlerdump_follow_waypoints',
                   output='screen',
-                  namespace='mst110cr_2'),
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='mst110cr'),
             Node(
                   package='tms_ts_primitive', 
-                  executable='primitive_crawlerdump_navigate_anywhere_deg',
+                  executable='primitive_crawlerdump_follow_waypoints',
                   output='screen',
-                  namespace='mst110cr_2'),
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='mst110cr'),            
             Node(
                   package='tms_ts_primitive', 
                   executable='primitive_crawlerdump_navigate_anywhere',
                   output='screen',
-                  namespace='mst110cr_2'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_crawlerdump_navigate_through_poses_deg',
-                  output='screen',
-                  namespace='mst110cr_2'),
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='mst110cr'),
             Node(
                   package='tms_ts_primitive', 
                   executable='primitive_crawlerdump_navigate_through_poses',
                   output='screen',
-                  namespace='mst110cr_2'),
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='mst110cr'),
             Node(
                   package='tms_ts_primitive', 
                   executable='primitive_crawlerdump_release_soil',
                   output='screen',
-                  namespace='mst110cr_2'),      
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='mst110cr'),      
             Node(
                   package = 'tms_ts_primitive',
                   executable='primitive_crawlerdump_swing',
                   output='screen',
-                  namespace='mst110cr_2'), 
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='mst110cr'), 
             Node(
                   package = 'tms_ts_primitive',
                   executable='primitive_crawlerdump_swing_align_to_heading',
                   output='screen',
-                  namespace='mst110cr_2'), 
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='mst110cr'), 
+            Node(
+                  package = 'tms_ts_primitive',
+                  executable='primitive_crawlerdump_compute_path_to_pose',
+                  output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time'),
+                                 'output_model_name': 'mst110cr',
+                                 'output_record_name': 'computed_path_autogenerated'}],
+                  namespace='mst110cr'), 
+            
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(tms_if_for_opera_crawlerdump_path),
+                launch_arguments={
+                    'robot_name': 'mst110cr',
+                    'use_sim_time': LaunchConfiguration('use_sim_time')
+                }.items(),
+            ),
 
             
             #D37PXI
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_bulldozer_follow_waypoints_deg',
-                  output='screen',
-                  namespace='d37pxi_24'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_bulldozer_follow_waypoints',
-                  output='screen',
-                  namespace='d37pxi_24'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_bulldozer_navigate_anywhere_deg',
-                  output='screen',
-                  namespace='d37pxi_24'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_bulldozer_navigate_anywhere',
-                  output='screen',
-                  namespace='d37pxi_24'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_bulldozer_navigate_through_poses_deg',
-                  output='screen',
-                  namespace='d37pxi_24'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_bulldozer_navigate_through_poses',
-                  output='screen',
-                  namespace='d37pxi_24'),     
+            # Node(
+            #       package='tms_ts_primitive', 
+            #       executable='primitive_bulldozer_follow_waypoints',
+            #       output='screen',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            #       namespace='d37pxi_24'),
+            # Node(
+            #       package='tms_ts_primitive', 
+            #       executable='primitive_bulldozer_navigate_anywhere',
+            #       output='screen',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            #       namespace='d37pxi_24'),
+            # Node(
+            #       package='tms_ts_primitive', 
+            #       executable='primitive_bulldozer_navigate_through_poses',
+            #       output='screen',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            #       namespace='d37pxi_24'),     
 
             
 
             # Node(
             #       package='tms_sp_sensing', 
             #       executable='tms_sp_navigate_anywhere',
-            #       output='screen',
-            # ),
-            # Node(
-            #       package='tms_sp_sensing', 
-            #       executable='tms_sp_navigate_anywhere_deg',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
             #       output='screen',
             # ),
             # Node(
             #       package='tms_sp_sensing', 
             #       executable='tms_sp_follow_waypoints',
-            #       output='screen',
-            # ),
-            # Node(
-            #       package='tms_sp_sensing', 
-            #       executable='tms_sp_follow_waypoints_deg',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
             #       output='screen',
             # ),
             # Node(
             #       package='tms_sp_sensing', 
             #       executable='tms_sp_navigate_through_poses',
-            #       output='screen',
-            # ),
-            # Node(
-            #       package='tms_sp_sensing', 
-            #       executable='tms_sp_navigate_through_poses_deg',
-            #       output='screen',
-            # ),
-            # Node(
-            #       package='tms_sp_sensing', 
-            #       executable='tms_sp_navigate_through_poses_deg',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
             #       output='screen',
             # ),
             # Node(
             #       package='tms_sp_sensing', 
             #       executable='tms_sp_change_pose',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
             #       output='screen',
             # ),
             # Node(
             #       package='tms_sp_sensing', 
             #       executable='tms_sp_excavate_simple',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
             #       output='screen',
             # ),
             # Node(
             #       package='tms_sp_sensing', 
             #       executable='tms_sp_release_simple',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
             #       output='screen',
             # ),
 
@@ -304,6 +302,7 @@ def generate_launch_description():
             Node(
                   package="tms_db_manager", 
                   executable="tms_db_reader_task",
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   output='screen'
                   ),
             Node(
@@ -314,6 +313,7 @@ def generate_launch_description():
             Node(
                   package="tms_db_manager", 
                   executable="tms_db_reader_param",
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   output='screen'
                   ),
       ])
