@@ -22,6 +22,8 @@ find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(rosidl_default_runtime REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(bsoncxx REQUIRED)
@@ -58,6 +60,8 @@ add_executable(subtask_bulldozer_navigate_anywhere src/Bulldozer/subtask_bulldoz
 add_executable(subtask_bulldozer_navigate_through_poses src/Bulldozer/subtask_bulldozer_navigate_through_poses.cpp)
 
 # Subtask Nodes for CrawlerDump
+add_executable(subtask_crawlerdump_compute_path_to_pose src/CrawlerDump/subtask_crawlerdump_compute_path_to_pose.cpp)
+add_executable(subtask_crawlerdump_follow_path src/CrawlerDump/subtask_crawlerdump_follow_path.cpp)
 add_executable(subtask_crawlerdump_follow_waypoints src/CrawlerDump/subtask_crawlerdump_follow_waypoints.cpp)
 add_executable(subtask_crawlerdump_navigate_anywhere src/CrawlerDump/subtask_crawlerdump_navigate_anywhere.cpp)
 add_executable(subtask_crawlerdump_navigate_through_poses src/CrawlerDump/subtask_crawlerdump_navigate_through_poses.cpp)
@@ -81,6 +85,8 @@ set(TARGETS
   subtask_bulldozer_follow_waypoints
   subtask_bulldozer_navigate_anywhere
   subtask_bulldozer_navigate_through_poses
+  subtask_crawlerdump_compute_path_to_pose
+  subtask_crawlerdump_follow_path
   subtask_crawlerdump_follow_waypoints
   subtask_crawlerdump_navigate_anywhere
   subtask_crawlerdump_navigate_through_poses
@@ -129,7 +135,9 @@ set(dependencies_cpp
   tms_msg_db
   nav2_msgs
   com3_msgs
-  Qt5Widgets)
+  Qt5Widgets
+  tf2_ros
+  tf2_geometry_msgs)
 
 foreach(target IN LISTS TARGETS)
 target_include_directories(${target} PUBLIC ${COMMON_INCLUDE_DIRS})
