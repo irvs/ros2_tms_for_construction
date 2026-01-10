@@ -29,7 +29,8 @@ def generate_launch_description():
     name='st_wait_ur_node',
     namespace='mst110cr',
     remappings=[
-        ('urpermission', '/urpermission')
+        ('urpermission', '/urpermission'),
+        ('permisionrequest', '/permisionrequest'),
     ],
     output='screen'
 )

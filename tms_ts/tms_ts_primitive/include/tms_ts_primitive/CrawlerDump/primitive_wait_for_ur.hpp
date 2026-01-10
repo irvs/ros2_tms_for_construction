@@ -6,8 +6,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SAMPLE_SUBTASK_CRAWLERDUMP_SWING_HPP
-#define SAMPLE_SUBTASK_CRAWLERDUMP_SWING_HPP
+#ifndef SAMPLE_WAIT_FOR_UR_HPP
+#define SAMPLE_WAIT_FOR_UR_HPP
 
 #include <memory>
 #include <map>

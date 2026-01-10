@@ -13,7 +13,8 @@ class TmsUrConstructionNextStepPermission(Node):
         super().__init__('st_wait_ur_node')
         ###
         self.permission = False
-        self.taskname = "machine"
+        self.requestmachinename = "machine"
+        self.requesttaskname = "task"
         self.tr_or_fa = "TorF"
         ###
         # Node=self を最初に指定
@@ -34,22 +35,33 @@ class TmsUrConstructionNextStepPermission(Node):
         self.subscription
         ###
 
+        self.publisher_ = self.create_publisher(KeyValue, 'permisionrequest', 10)
+        
+
     def listener_callback(self, msg):
-        self.get_logger().info('I heard: "%s"' % msg.key)
+        self.get_logger().info('Subscribe: "%s"' % msg.key)
         self.machine_name = msg.key
         self.tr_or_fa = msg.value
-        if self.machine_name == self.taskname:
+        if self.machine_name == self.requestmachinename:
             self.permission = True
             self.get_logger().info(f'Subscribe permission : {self.machine_name}')
     ###
     def execute_callback(self, goal_handle):
-        self.taskname = goal_handle.request.taskname
-        self.get_logger().info(f'Executing goal: {self.taskname}')
+        self.requestmachinename = goal_handle.request.machinename
+        self.requesttaskname = goal_handle.request.taskname
+        self.get_logger().info(f'Executing goal: {self.requestmachinename}')
 
         feedback = NextStepPermission.Feedback()
         result = NextStepPermission.Result()
 
         self.permission = False  # goal ごとにリセット
+
+        ###
+        msg = KeyValue()
+        msg.key = self.requestmachinename
+        msg.value = self.requesttaskname
+        self.publisher_.publish(msg)
+        ###
 
         while rclpy.ok():
             # cancel 対応（重要）
