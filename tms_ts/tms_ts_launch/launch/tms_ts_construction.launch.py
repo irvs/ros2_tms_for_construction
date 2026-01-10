@@ -66,6 +66,13 @@ def generate_launch_description():
             # primitives
             Node(
                   package='tms_ts_primitive', 
+                  executable='primitive_wait_for_ur',
+                  output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='mst110cr'),
+
+            Node(
+                  package='tms_ts_primitive', 
                   executable='primitive_excavator_change_pose',
                   output='screen',
                   parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],

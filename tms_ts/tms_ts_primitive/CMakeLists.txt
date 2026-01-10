@@ -31,6 +31,7 @@ find_package(mongocxx REQUIRED)
 find_package(tms_msg_ts REQUIRED)
 find_package(tms_msg_rp REQUIRED)
 find_package(tms_msg_db REQUIRED)
+find_package(tms_msg_ur REQUIRED)
 find_package(glog REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(com3_msgs)
@@ -82,6 +83,8 @@ add_executable(primitive_excavator_follow_waypoints src/Excavator/primitive_exca
 add_executable(primitive_excavator_navigate_anywhere src/Excavator/primitive_excavator_navigate_anywhere.cpp)
 add_executable(primitive_excavator_navigate_through_poses src/Excavator/primitive_excavator_navigate_through_poses.cpp)
 
+add_executable(primitive_wait_for_ur src/CrawlerDump/primitive_wait_for_ur.cpp)
+
 
 set(TARGETS
   primitive_bulldozer_blade_control
@@ -106,6 +109,7 @@ set(TARGETS
   primitive_excavator_follow_waypoints
   primitive_excavator_navigate_anywhere
   primitive_excavator_navigate_through_poses
+  primitive_wait_for_ur
 )
 
 set(COMMON_INCLUDE_DIRS
@@ -136,6 +140,7 @@ set(dependencies_cpp
   tms_msg_ts
   tms_msg_rp
   tms_msg_db
+  tms_msg_ur
   nav2_msgs
   com3_msgs
   Qt5Widgets

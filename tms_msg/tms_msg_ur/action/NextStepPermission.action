@@ -1,0 +1,8 @@
+# Goal
+string taskname
+---
+# Result
+bool success
+---
+# Feedback
+float64 current_error

@@ -26,10 +26,15 @@ set(srv_files
   "srv/TmsdbTerrainDBPoseWriteSrv.srv"
 )
 
+set(action_files
+  "action/NextStepPermission.action"
+)
+
 # インターフェースの生成
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_files}
   ${srv_files}
+  ${action_files}
   DEPENDENCIES builtin_interfaces geometry_msgs sensor_msgs
 )
 
