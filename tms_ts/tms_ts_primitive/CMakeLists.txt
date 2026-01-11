@@ -83,7 +83,7 @@ add_executable(primitive_excavator_follow_waypoints src/Excavator/primitive_exca
 add_executable(primitive_excavator_navigate_anywhere src/Excavator/primitive_excavator_navigate_anywhere.cpp)
 add_executable(primitive_excavator_navigate_through_poses src/Excavator/primitive_excavator_navigate_through_poses.cpp)
 
-add_executable(primitive_wait_for_ur src/CrawlerDump/primitive_wait_for_ur.cpp)
+add_executable(primitive_wait_for_ur src/common/primitive_wait_for_ur.cpp)
 
 
 set(TARGETS

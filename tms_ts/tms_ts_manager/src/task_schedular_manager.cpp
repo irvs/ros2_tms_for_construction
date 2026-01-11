@@ -36,6 +36,9 @@
 #include "tms_ts_primitive/common/SetLocalBlackboardWithCounter.hpp"
 #include "tms_ts_primitive/common/Counter.hpp"
 #include "tms_ts_primitive/common/wait_for_click.hpp"
+//#include "tms_ts_primitive/common/wait_for_topic.hpp"
+#include "tms_ts_primitive/common/leaf_node.hpp"
+#include "tms_ts_primitive/common/primitive_wait_for_ur.hpp"
 
 
 using namespace BT;
@@ -165,6 +168,8 @@ public:
     factory.registerNodeType<SetLocalBlackboardWithCounter>("SetLocalBlackboardWithCounter");
     factory.registerNodeType<Counter>("Counter");
     factory.registerNodeType<WaitForClick>("WaitForClick");
+    //factory.registerNodeType<WaitForTopic>("WaitForTopic");
+    factory.registerNodeType<LeafNodeCommon>("LeafNodeCommon");
 
     // loadBlackboardFromMongoDB("global_blackboard");
   }

@@ -14,7 +14,7 @@
 
 #include <vector>
 ////#include "tms_ts_primitive/CrawlerDump/primitive_crawlerdump_swing.hpp"
-#include "tms_ts_primitive/CrawlerDump/primitive_wait_for_ur.hpp"
+#include "tms_ts_primitive/common/primitive_wait_for_ur.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
@@ -88,8 +88,7 @@ void PrimitiveWaitForUr::execute(const std::shared_ptr<GoalHandle> goal_handle)
     auto goal_msg = NextStepPermission::Goal();
     //goal_msg.taskname = parameters["window_title"];
     auto goal = goal_handle->get_goal();
-    goal_msg.machinename = goal->model_name;
-    goal_msg.taskname = goal->record_name;
+    goal_msg.taskname = goal->model_name;
 
     //RCLCPP_INFO(this->get_logger(), "target_angle: %d", parameters["target_angle"]);
 
