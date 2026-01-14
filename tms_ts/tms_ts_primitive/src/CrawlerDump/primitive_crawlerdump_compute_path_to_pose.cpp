@@ -19,7 +19,9 @@
 #include "tms_ts_primitive/CrawlerDump/primitive_crawlerdump_compute_path_to_pose.hpp"
 
 #include <mongocxx/instance.hpp>
-
+//
+#include "diagnostic_msgs/msg/key_value.hpp"
+//
 using std::placeholders::_1;
 using std::placeholders::_2;
 
@@ -46,7 +48,9 @@ PrimitiveCrawlerDumpComputePathToPose::PrimitiveCrawlerDumpComputePathToPose() :
   );
 
   action_client_ = rclcpp_action::create_client<ComputePathToPose>(this, "compute_path_to_pose");
-
+  //
+  publisher_ = this->create_publisher<diagnostic_msgs::msg::KeyValue>("planwritten", 10);
+  //
   RCLCPP_INFO(get_logger(), "Mongo ready: db=rostmsdb collection=parameter");
 }
 
@@ -150,6 +154,12 @@ void PrimitiveCrawlerDumpComputePathToPose::goal_response_callback(const GoalHan
     RCLCPP_ERROR(get_logger(), "Goal rejected by server");
   } else {
     RCLCPP_INFO(get_logger(), "Goal accepted by server");
+    ///////
+    auto message = diagnostic_msgs::msg::KeyValue();
+    message.key = output_model_name_;
+    message.value = output_record_name_;
+    publisher_->publish(message);
+    ///////
   }
 }
 

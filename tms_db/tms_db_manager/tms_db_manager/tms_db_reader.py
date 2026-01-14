@@ -21,6 +21,9 @@ from rclpy.node import Node
 import tms_db_manager.tms_db_util as db_util
 from tms_msg_db.msg import Tmsdb
 from tms_msg_db.srv import TmsdbGetData
+from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
+
 
 
 class TmsDbReader(Node):
@@ -66,12 +69,30 @@ class TmsDbReader(Node):
         """
         collection: pymongo.collection.Collection = self.db[request.type]
 
-        if request.latest_only:
+        if request.latest_only and request.param_type != "plan":
             latest_data: dict = self.get_latest_data(request, collection)
             if latest_data == None:
                 return response
             response.tmsdbs.append(self.allocate_tmsdb(latest_data))
             return response
+        # elif request.latest_only and request.param_type == "plan":
+        #     plan_data: dict = self.get_plan_data(request, collection)
+        #     if plan_data == None:
+        #         return response
+        #     response.tmsdbs.append(self.plan_tmsdb(plan_data))
+        #     return response
+        
+        elif request.latest_only and request.param_type == "plan":
+            plan_data: dict = self.get_plan_data(request, collection)
+            if plan_data is None:
+                self.get_logger().info("get no plan")
+                return response
+
+            path = self.plan_to_path(plan_data)
+            response.tmsdbs.append(self.plan_tmsdb(path))
+            self.get_logger().info("retuen plan")
+            return response
+
         else:
             all_data: pymongo.cursor.Cursor = self.get_all_data(request, collection)
             for data in all_data:
@@ -134,6 +155,33 @@ class TmsDbReader(Node):
                 [("time", pymongo.ASCENDING)]
             )
         return all_data
+    
+    # def get_plan_data(self, request, collection) -> dict:
+    #     if request.name != "":
+    #         plan_data = collection.find_one(
+    #             {"record_name": request.recordnames[0], "name": request.name},
+    #             sort=[("time", pymongo.DESCENDING)],
+    #         )
+    #     else:
+    #         plan_data = collection.find_one(
+    #             {"id": request.id},
+    #             sort=[("time", pymongo.DESCENDING)],
+    #         )
+    #     return plan_data
+    
+    def get_plan_data(self, request, collection) -> dict:
+        # name が空でない場合
+        if request.name != "":
+            plan_data = collection.find_one(
+                {"record_name": request.recordnames[0], "model_name": request.name}
+            )
+        # name が空の場合
+        else:
+            plan_data = collection.find_one(
+                {"id": request.id}
+            )
+        return plan_data
+
 
     def allocate_tmsdb(self, data: dict) -> Tmsdb:
         """
@@ -156,6 +204,58 @@ class TmsDbReader(Node):
         tmsdb.name = data["name"]
         tmsdb.msg = json.dumps(data["msg"])
         return tmsdb
+    
+    def plan_tmsdb(self, data: dict) -> Tmsdb:
+        """
+        Allocate dictionary data to Tmsdb msg.
+
+        Parameters
+        ----------
+        dict : data
+            Dictionary data.
+
+        Returns
+        -------
+        Tmsdb
+            Tmsdb msg data.
+        """
+        tmsdb = Tmsdb()
+        tmsdb.plan = data
+        return tmsdb
+    
+
+    def plan_to_path(self, data: dict, frame_id: str = "map") -> Path:
+        path = Path()
+        path.header.stamp = self.get_clock().now().to_msg()
+        path.header.frame_id = frame_id
+
+        xs = data["x"]
+        ys = data["y"]
+        zs = data["z"]
+        qxs = data["qx"]
+        qys = data["qy"]
+        qzs = data["qz"]
+        qws = data["qw"]
+            
+
+        for i in range(len(xs)):
+            pose_stamped = PoseStamped()
+            pose_stamped.header.stamp = path.header.stamp
+            pose_stamped.header.frame_id = frame_id
+
+            pose_stamped.pose.position.x = xs[i]
+            pose_stamped.pose.position.y = ys[i]
+            pose_stamped.pose.position.z = zs[i]
+
+            pose_stamped.pose.orientation.x = qxs[i]
+            pose_stamped.pose.orientation.y = qys[i]
+            pose_stamped.pose.orientation.z = qzs[i]
+            pose_stamped.pose.orientation.w = qws[i]
+
+            path.poses.append(pose_stamped)
+        
+        return path
+
 
 
 def main(args=None):

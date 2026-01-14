@@ -36,6 +36,7 @@ find_package(glog REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(com3_msgs)
 find_package(Qt5Widgets REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
   src/leaf_node_base.cpp
@@ -145,6 +146,7 @@ set(dependencies_cpp
   com3_msgs
   Qt5Widgets
   tf2_ros
+  diagnostic_msgs
   tf2_geometry_msgs)
 
 foreach(target IN LISTS TARGETS)

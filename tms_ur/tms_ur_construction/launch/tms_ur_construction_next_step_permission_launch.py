@@ -33,23 +33,21 @@ def generate_launch_description():
         ('permisionrequest', '/permisionrequest'),
     ],
     output='screen'
-)
+    )
 
     
-    tms_ur_cv_odom_node2 = Node(
-        name="tms_ur_cv_odom2",
+    tms_ur_plan_reader = Node(
+        name="plan_reader",
         package="tms_ur_construction",
-        executable="tms_ur_cv_posest",
+        executable="tms_ur_plan_reader",
         output="screen",
         remappings=[
-            ("~/output/odom", "/output/zx200/odom"),
+            ("planwritten", "/planwritten"),
+            ("~/output/plan", "/output/mst110cr_plan"),
         ],
         parameters=[
             {
                 "latest": LaunchConfiguration("latest"),
-            },
-            {
-                "machine_name": "zx200_1",
             },
         ],
     )
@@ -146,7 +144,8 @@ def generate_launch_description():
     return LaunchDescription(
         [
             latest,
-            tms_ur_next_step_permission1
+            tms_ur_next_step_permission1,
+            tms_ur_plan_reader
         #    tms_ur_paramwriter_odom_node1
         #    tms_ur_cv_odom_node1,
          #   tms_ur_cv_odom_node2,

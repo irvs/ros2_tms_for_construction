@@ -21,6 +21,7 @@
   <depend>nav2_msgs</depend>
   <depend>com3_msgs</depend>
   <depend>tms_msg_ur</depend>
+  <depend>diagnostic_msgs</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

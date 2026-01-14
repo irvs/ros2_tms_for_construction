@@ -1,6 +1,7 @@
 string type
 int32  id
 bool   latest_only
+string param_type
 string flgorparam
 string name
 string[] recordnames

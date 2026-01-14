@@ -34,6 +34,7 @@
 #include "tms_msg_ts/action/leaf_node_base.hpp"
 #include "nav2_msgs/action/compute_path_to_pose.hpp"
 #include "tms_ts_primitive/primitive_node_base.hpp"
+#include "diagnostic_msgs/msg/key_value.hpp"
 
 #include <mongocxx/client.hpp>
 #include <mongocxx/uri.hpp>
@@ -56,6 +57,9 @@ public:
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
   rclcpp_action::Client<ComputePathToPose>::SharedPtr action_client_;
+  //
+  rclcpp::Publisher<diagnostic_msgs::msg::KeyValue>::SharedPtr publisher_;
+  //
   std::shared_future<GoalHandleCompute::SharedPtr> client_future_goal_handle_;
 
   std::map<std::string, double> parameters_;
