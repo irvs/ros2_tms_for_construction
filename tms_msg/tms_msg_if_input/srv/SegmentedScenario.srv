@@ -1,0 +1,7 @@
+---
+bool success
+string tasksets
+string graph
+string leveling_area
+string operational_area
+string machinery
