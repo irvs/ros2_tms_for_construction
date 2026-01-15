@@ -32,6 +32,10 @@ def generate_launch_description():
         tms_if_for_opera_dir, "launch", "tms_if_for_opera_crawlerdump.launch.py"
       )
 
+      tms_if_for_opera_bulldozer_path = os.path.join(
+        tms_if_for_opera_dir, "launch", "tms_if_for_opera_bulldozer.launch.py"
+      )
+
       declare_use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
         default_value='false',
@@ -239,26 +243,32 @@ def generate_launch_description():
 
             
             #D37PXI
-            # Node(
-            #       package='tms_ts_subtask', 
-            #       executable='subtask_bulldozer_follow_waypoints',
-            #       output='screen',
-            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-            #       namespace='d37pxi_24'),
-            # Node(
-            #       package='tms_ts_subtask', 
-            #       executable='subtask_bulldozer_navigate_anywhere',
-            #       output='screen',
-            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-            #       namespace='d37pxi_24'),
-            # Node(
-            #       package='tms_ts_subtask', 
-            #       executable='subtask_bulldozer_navigate_through_poses',
-            #       output='screen',
-            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-            #       namespace='d37pxi_24'),     
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='subtask_bulldozer_follow_waypoints',
+                  output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='d37pxi_24'),
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='subtask_bulldozer_navigate_anywhere',
+                  output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='d37pxi_24'),
+            Node(
+                  package='tms_ts_subtask', 
+                  executable='subtask_bulldozer_navigate_through_poses',
+                  output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='d37pxi_24'),     
 
-            
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(tms_if_for_opera_bulldozer_path),
+                launch_arguments={
+                    'robot_name': 'd37pxi_24',
+                    'use_sim_time': LaunchConfiguration('use_sim_time')
+                }.items(),
+            ),            
 
             # Node(
             #       package='tms_sp_sensing', 

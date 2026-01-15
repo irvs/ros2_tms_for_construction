@@ -1,57 +1,251 @@
-<?xml version="1.0"?>
-<root main_tree_to_execute="BehaviorTree">
-    <!-- ////////// -->
-    <BehaviorTree ID="BehaviorTree">
-        <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="sample_waypoints" subtask_name="st_crawlerdump_navigate_through_poses"/>
-    </BehaviorTree>
-    <!-- ////////// -->
-    <TreeNodesModel>
-        <Action ID="BlackboardValueReaderMongo">
-            <input_port name="mongo_param_name"/>
-            <input_port name="mongo_record_name"/>
-            <input_port name="output_port"/>
-        </Action>
-        <Action ID="ConditionalExpression">
-            <input_port name="conditional_expression"/>
-        </Action>
-        <Action ID="Counter">
-            <input_port name="key"/>
-        </Action>
-        <Decorator ID="KeepRunningUntilFlgup">
-            <input_port name="key"/>
-        </Decorator>
-        <Action ID="LeafNodeBulldozer">
-            <input_port default="d37pxi" name=" model_name"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeCrawlerDump">
-            <input_port name=" model_name"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeExcavator">
-            <input_port default="zx200" name=" model_name"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="MongoValueWriter">
-            <input_port name="input_value"/>
-            <input_port name="mongo_param_name"/>
-            <input_port name="mongo_record_name"/>
-        </Action>
-        <Action ID="SetLocalBlackboard">
-            <inout_port name="output_key"/>
-            <input_port name="value"/>
-        </Action>
-        <Action ID="SetLocalBlackboardWithCounter">
-            <inout_port name="counter_key"/>
-            <input_port name="key"/>
-        </Action>
-        <Action ID="WaitForClick">
-            <input_port name="button_info"/>
-            <input_port name="window_title"/>
-        </Action>
-    </TreeNodesModel>
-    <!-- ////////// -->
-</root>
+[planner_server-11] [INFO] [1768443816.310985804] [d37pxi_24.global_costmap.global_costmap]: 
+[planner_server-11] 	global_costmap lifecycle node launched. 
+[planner_server-11] 	Waiting on external lifecycle transitions to activate
+[planner_server-11] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-11] [INFO] [1768443816.311979624] [d37pxi_24.global_costmap.global_costmap]: Creating Costmap
+[controller_server-9] [INFO] [1768443816.315695415] [d37pxi_24.local_costmap.local_costmap]: 
+[controller_server-9] 	local_costmap lifecycle node launched. 
+[controller_server-9] 	Waiting on external lifecycle transitions to activate
+[controller_server-9] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-9] [INFO] [1768443816.316210152] [d37pxi_24.local_costmap.local_costmap]: Creating Costmap
+[robot_state_publisher-18] [INFO] [1768443816.324858103] [d37pxi_24.robot_state_publisher]: got segment d37pxi_24/base_link
+[robot_state_publisher-18] [INFO] [1768443816.324916728] [d37pxi_24.robot_state_publisher]: got segment d37pxi_24/blade_angle_link
+[robot_state_publisher-18] [INFO] [1768443816.324920649] [d37pxi_24.robot_state_publisher]: got segment d37pxi_24/blade_angle_piston_left_link
+[robot_state_publisher-18] [INFO] [1768443816.324923010] [d37pxi_24.robot_state_publisher]: got segment d37pxi_24/blade_angle_piston_right_link
+[robot_state_publisher-18] [INFO] [1768443816.324925046] [d37pxi_24.robot_state_publisher]: got segment d37pxi_24/blade_arm_cylinder_link
+[robot_state_publisher-18] [INFO] [1768443816.324926886] [d37pxi_24.robot_state_publisher]: got segment d37pxi_24/blade_arm_link
+[robot_state_publisher-18] [INFO] [1768443816.324928696] [d37pxi_24.robot_state_publisher]: got segment d37pxi_24/blade_arm_piston_link
+[robot_state_publisher-18] [INFO] [1768443816.324930480] [d37pxi_24.robot_state_publisher]: got segment d37pxi_24/blade_link
+[robot_state_publisher-18] [INFO] [1768443816.324932352] [d37pxi_24.robot_state_publisher]: got segment d37pxi_24/body_link
+[robot_state_publisher-18] [INFO] [1768443816.324934239] [d37pxi_24.robot_state_publisher]: got segment d37pxi_24/gnss_temp_link
+[lifecycle_manager-16] [INFO] [1768443816.424499131] [d37pxi_24.lifecycle_manager_navigation]: Starting managed nodes bringup...
+[lifecycle_manager-16] [INFO] [1768443816.424540553] [d37pxi_24.lifecycle_manager_navigation]: Configuring controller_server
+[controller_server-9] [INFO] [1768443816.424738933] [d37pxi_24.controller_server]: Configuring controller interface
+[controller_server-9] [INFO] [1768443816.424923243] [d37pxi_24.controller_server]: getting goal checker plugins..
+[controller_server-9] [INFO] [1768443816.425004954] [d37pxi_24.controller_server]: Controller frequency set to 10.0000Hz
+[controller_server-9] [INFO] [1768443816.425034381] [d37pxi_24.local_costmap.local_costmap]: Configuring
+[controller_server-9] [INFO] [1768443816.431265633] [d37pxi_24.local_costmap.local_costmap]: Using plugin "static_layer"
+[controller_server-9] [INFO] [1768443816.434015897] [d37pxi_24.local_costmap.local_costmap]: Subscribing to the map topic (/d37pxi_24/map) with transient local durability
+[controller_server-9] [INFO] [1768443816.434894303] [d37pxi_24.local_costmap.local_costmap]: Initialized plugin "static_layer"
+[controller_server-9] [INFO] [1768443816.434909329] [d37pxi_24.local_costmap.local_costmap]: Using plugin "inflation_layer"
+[controller_server-9] [INFO] [1768443816.435176125] [d37pxi_24.local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[controller_server-9] [INFO] [1768443816.441303545] [d37pxi_24.controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-9] [INFO] [1768443816.442251400] [d37pxi_24.controller_server]: Created goal checker : general_goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-9] [INFO] [1768443816.442377478] [d37pxi_24.controller_server]: Controller Server has general_goal_checker  goal checkers available.
+[controller_server-9] [INFO] [1768443816.444252598] [d37pxi_24.controller_server]: Created controller : FollowPath of type dwb_core::DWBLocalPlanner
+[controller_server-9] [INFO] [1768443816.446586369] [d37pxi_24.controller_server]: Setting transform_tolerance to 0.200000
+[lifecycle_manager-8] [INFO] [1768443816.463122132] [d37pxi_24.lifecycle_manager_localization]: Starting managed nodes bringup...
+[lifecycle_manager-8] [INFO] [1768443816.463317346] [d37pxi_24.lifecycle_manager_localization]: Configuring map_server
+[map_server-7] [INFO] [1768443816.463778141] [d37pxi_24.map_server]: Configuring
+[map_server-7] [INFO] [map_io]: Loading yaml file: /home/common/SIP_PROJECTS/M2/SHIMIZU_PROJECT/ros2_ws/install/d37pxi_navigation/share/d37pxi_navigation/map/map.yaml
+[map_server-7] [DEBUG] [map_io]: resolution: 0.05
+[map_server-7] [DEBUG] [map_io]: origin[0]: -125
+[map_server-7] [DEBUG] [map_io]: origin[1]: -125
+[map_server-7] [DEBUG] [map_io]: origin[2]: 0
+[map_server-7] [DEBUG] [map_io]: free_thresh: 0.2
+[map_server-7] [DEBUG] [map_io]: occupied_thresh: 0.65
+[map_server-7] [DEBUG] [map_io]: mode: trinary
+[map_server-7] [DEBUG] [map_io]: negate: 0
+[map_server-7] [INFO] [map_io]: Loading image_file: /home/common/SIP_PROJECTS/M2/SHIMIZU_PROJECT/ros2_ws/install/d37pxi_navigation/share/d37pxi_navigation/map/map.pgm
+[controller_server-9] [INFO] [1768443816.473318054] [d37pxi_24.controller_server]: Using critic "RotateToGoal" (dwb_critics::RotateToGoalCritic)
+[controller_server-9] [INFO] [1768443816.477249331] [d37pxi_24.controller_server]: Critic plugin initialized
+[controller_server-9] [INFO] [1768443816.477805989] [d37pxi_24.controller_server]: Using critic "Oscillation" (dwb_critics::OscillationCritic)
+[controller_server-9] [INFO] [1768443816.480576827] [d37pxi_24.controller_server]: Critic plugin initialized
+[controller_server-9] [INFO] [1768443816.481447038] [d37pxi_24.controller_server]: Using critic "BaseObstacle" (dwb_critics::BaseObstacleCritic)
+[controller_server-9] [INFO] [1768443816.483211944] [d37pxi_24.controller_server]: Critic plugin initialized
+[controller_server-9] [INFO] [1768443816.483935244] [d37pxi_24.controller_server]: Using critic "GoalAlign" (dwb_critics::GoalAlignCritic)
+[controller_server-9] [INFO] [1768443816.486465143] [d37pxi_24.controller_server]: Critic plugin initialized
+[controller_server-9] [INFO] [1768443816.486685944] [d37pxi_24.controller_server]: Using critic "PathAlign" (dwb_critics::PathAlignCritic)
+[controller_server-9] [INFO] [1768443816.492444419] [d37pxi_24.controller_server]: Critic plugin initialized
+[controller_server-9] [INFO] [1768443816.492740955] [d37pxi_24.controller_server]: Using critic "PathDist" (dwb_critics::PathDistCritic)
+[controller_server-9] [INFO] [1768443816.493278768] [d37pxi_24.controller_server]: Critic plugin initialized
+[controller_server-9] [INFO] [1768443816.494859785] [d37pxi_24.controller_server]: Using critic "GoalDist" (dwb_critics::GoalDistCritic)
+[controller_server-9] [INFO] [1768443816.496843193] [d37pxi_24.controller_server]: Critic plugin initialized
+[controller_server-9] [INFO] [1768443816.496861089] [d37pxi_24.controller_server]: Controller Server has FollowPath  controllers available.
+[lifecycle_manager-16] [INFO] [1768443816.515236174] [d37pxi_24.lifecycle_manager_navigation]: Configuring smoother_server
+[smoother_server-10] [INFO] [1768443816.516470043] [d37pxi_24.smoother_server]: Configuring smoother server
+[smoother_server-10] [INFO] [1768443816.527006569] [d37pxi_24.smoother_server]: Created smoother : simple_smoother of type nav2_smoother::SimpleSmoother
+[smoother_server-10] [INFO] [1768443816.527145069] [d37pxi_24.smoother_server]: Smoother Server has simple_smoother  smoothers available.
+[lifecycle_manager-16] [INFO] [1768443816.529529266] [d37pxi_24.lifecycle_manager_navigation]: Configuring planner_server
+[planner_server-11] [INFO] [1768443816.529664885] [d37pxi_24.planner_server]: Configuring
+[planner_server-11] [INFO] [1768443816.529684781] [d37pxi_24.global_costmap.global_costmap]: Configuring
+[planner_server-11] [INFO] [1768443816.533246312] [d37pxi_24.global_costmap.global_costmap]: Using plugin "static_layer"
+[planner_server-11] [INFO] [1768443816.535800038] [d37pxi_24.global_costmap.global_costmap]: Subscribing to the map topic (/d37pxi_24/map) with transient local durability
+[planner_server-11] [INFO] [1768443816.536718017] [d37pxi_24.global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-11] [INFO] [1768443816.536734314] [d37pxi_24.global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-11] [INFO] [1768443816.537024546] [d37pxi_24.global_costmap.global_costmap]: Subscribed to Topics: scan
+[planner_server-11] [INFO] [1768443816.539298792] [d37pxi_24.global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-11] [INFO] [1768443816.539319321] [d37pxi_24.global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-11] [INFO] [1768443816.539693643] [d37pxi_24.global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[planner_server-11] [INFO] [1768443816.545406935] [d37pxi_24.planner_server]: Created global planner plugin GridBased of type nav2_navfn_planner/NavfnPlanner
+[planner_server-11] [INFO] [1768443816.545442321] [d37pxi_24.planner_server]: Configuring plugin GridBased of type NavfnPlanner
+[planner_server-11] [INFO] [1768443816.546418461] [d37pxi_24.planner_server]: Planner Server has GridBased  planners available.
+[lifecycle_manager-16] [INFO] [1768443816.557587690] [d37pxi_24.lifecycle_manager_navigation]: Configuring behavior_server
+[behavior_server-12] [INFO] [1768443816.557797505] [d37pxi_24.behavior_server]: Configuring
+[behavior_server-12] [INFO] [1768443816.562581300] [d37pxi_24.behavior_server]: Creating behavior plugin spin of type nav2_behaviors/Spin
+[behavior_server-12] [INFO] [1768443816.563144262] [d37pxi_24.behavior_server]: Configuring spin
+[message_converter_gnss-5] [INFO] [1768443816.563248490] [d37pxi_24.message_converter_gnss]: Subscribing to "global_pose", publishing mapped messages to "fixed_global_pose"
+[behavior_server-12] [INFO] [1768443816.566494735] [d37pxi_24.behavior_server]: Creating behavior plugin backup of type nav2_behaviors/BackUp
+[behavior_server-12] [INFO] [1768443816.567122554] [d37pxi_24.behavior_server]: Configuring backup
+[behavior_server-12] [INFO] [1768443816.569492581] [d37pxi_24.behavior_server]: Creating behavior plugin drive_on_heading of type nav2_behaviors/DriveOnHeading
+[behavior_server-12] [INFO] [1768443816.570261478] [d37pxi_24.behavior_server]: Configuring drive_on_heading
+[behavior_server-12] [INFO] [1768443816.572327764] [d37pxi_24.behavior_server]: Creating behavior plugin assisted_teleop of type nav2_behaviors/AssistedTeleop
+[behavior_server-12] [INFO] [1768443816.573151455] [d37pxi_24.behavior_server]: Configuring assisted_teleop
+[message_converter_odom-4] [INFO] [1768443816.574192619] [d37pxi_24.message_converter_odom]: Subscribing to "odom_pose", publishing mapped messages to "fixed_odom_pose"
+[behavior_server-12] [INFO] [1768443816.575616215] [d37pxi_24.behavior_server]: Creating behavior plugin wait of type nav2_behaviors/Wait
+[behavior_server-12] [INFO] [1768443816.576052290] [d37pxi_24.behavior_server]: Configuring wait
+[lifecycle_manager-16] [INFO] [1768443816.578180399] [d37pxi_24.lifecycle_manager_navigation]: Configuring bt_navigator
+[bt_navigator-13] [INFO] [1768443816.578305729] [d37pxi_24.bt_navigator]: Configuring
+[lifecycle_manager-16] [INFO] [1768443816.605939038] [d37pxi_24.lifecycle_manager_navigation]: Configuring waypoint_follower
+[waypoint_follower-14] [INFO] [1768443816.606089948] [d37pxi_24.waypoint_follower]: Configuring
+[waypoint_follower-14] [INFO] [1768443816.611228102] [d37pxi_24.waypoint_follower]: Created waypoint_task_executor : wait_at_waypoint of type nav2_waypoint_follower::WaitAtWaypoint
+[lifecycle_manager-16] [INFO] [1768443816.611586384] [d37pxi_24.lifecycle_manager_navigation]: Configuring velocity_smoother
+[velocity_smoother-15] [INFO] [1768443816.611737146] [d37pxi_24.velocity_smoother]: Configuring velocity smoother
+[lifecycle_manager-16] [INFO] [1768443816.613291437] [d37pxi_24.lifecycle_manager_navigation]: Activating controller_server
+[controller_server-9] [INFO] [1768443816.613387663] [d37pxi_24.controller_server]: Activating
+[controller_server-9] [INFO] [1768443816.613408548] [d37pxi_24.local_costmap.local_costmap]: Activating
+[controller_server-9] [INFO] [1768443816.613414240] [d37pxi_24.local_costmap.local_costmap]: Checking transform
+[controller_server-9] [INFO] [1768443816.613423949] [d37pxi_24.local_costmap.local_costmap]: Timed out waiting for transform from d37pxi_24/base_link to d37pxi_24/odom to become available, tf error: Invalid frame ID "d37pxi_24/odom" passed to canTransform argument target_frame - frame does not exist
+[rviz2-19] [INFO] [1768443816.863778472] [rviz2]: Stereo is NOT SUPPORTED
+[rviz2-19] [INFO] [1768443816.863829507] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
+[rviz2-19] [INFO] [1768443816.949432355] [rviz2]: Stereo is NOT SUPPORTED
+[controller_server-9] [INFO] [1768443817.113481766] [d37pxi_24.local_costmap.local_costmap]: Timed out waiting for transform from d37pxi_24/base_link to d37pxi_24/odom to become available, tf error: Invalid frame ID "d37pxi_24/odom" passed to canTransform argument target_frame - frame does not exist
+[map_server-7] [DEBUG] [map_io]: Read map /home/common/SIP_PROJECTS/M2/SHIMIZU_PROJECT/ros2_ws/install/d37pxi_navigation/share/d37pxi_navigation/map/map.pgm: 5000 X 5000 map @ 0.05 m/cell
+[lifecycle_manager-8] [INFO] [1768443817.562027027] [d37pxi_24.lifecycle_manager_localization]: Activating map_server
+[map_server-7] [INFO] [1768443817.562098647] [d37pxi_24.map_server]: Activating
+[map_server-7] [INFO] [1768443817.573059867] [d37pxi_24.map_server]: Creating bond (map_server) to lifecycle manager.
+[controller_server-9] [INFO] [1768443817.606534897] [d37pxi_24.local_costmap.local_costmap]: StaticLayer: Resizing static layer to 5000 X 5000 at 0.050000 m/pix
+[planner_server-11] [INFO] [1768443817.607645293] [d37pxi_24.global_costmap.global_costmap]: StaticLayer: Resizing costmap to 5000 X 5000 at 0.050000 m/pix
+[controller_server-9] [INFO] [1768443817.613560751] [d37pxi_24.local_costmap.local_costmap]: start
+[lifecycle_manager-8] [INFO] [1768443817.675405931] [d37pxi_24.lifecycle_manager_localization]: Server map_server connected with bond.
+[lifecycle_manager-8] [INFO] [1768443817.675433640] [d37pxi_24.lifecycle_manager_localization]: Managed nodes are active
+[lifecycle_manager-8] [INFO] [1768443817.675438192] [d37pxi_24.lifecycle_manager_localization]: Creating bond timer...
+[rviz2-19] [INFO] [1768443817.739146670] [rviz2]: Trying to create a map of size 400 x 400 using 1 swatches
+[controller_server-9] [INFO] [1768443817.763675730] [d37pxi_24.controller_server]: Creating bond (controller_server) to lifecycle manager.
+[lifecycle_manager-16] [INFO] [1768443817.866546082] [d37pxi_24.lifecycle_manager_navigation]: Server controller_server connected with bond.
+[lifecycle_manager-16] [INFO] [1768443817.866578084] [d37pxi_24.lifecycle_manager_navigation]: Activating smoother_server
+[smoother_server-10] [INFO] [1768443817.866822486] [d37pxi_24.smoother_server]: Activating
+[smoother_server-10] [INFO] [1768443817.866851746] [d37pxi_24.smoother_server]: Creating bond (smoother_server) to lifecycle manager.
+[lifecycle_manager-16] [INFO] [1768443817.969089396] [d37pxi_24.lifecycle_manager_navigation]: Server smoother_server connected with bond.
+[lifecycle_manager-16] [INFO] [1768443817.969123794] [d37pxi_24.lifecycle_manager_navigation]: Activating planner_server
+[planner_server-11] [INFO] [1768443817.969366704] [d37pxi_24.planner_server]: Activating
+[planner_server-11] [INFO] [1768443817.969390522] [d37pxi_24.global_costmap.global_costmap]: Activating
+[planner_server-11] [INFO] [1768443817.969397433] [d37pxi_24.global_costmap.global_costmap]: Checking transform
+[planner_server-11] [INFO] [1768443817.969455039] [d37pxi_24.global_costmap.global_costmap]: start
+[planner_server-11] [INFO] [1768443818.169974009] [d37pxi_24.planner_server]: Activating plugin GridBased of type NavfnPlanner
+[planner_server-11] [INFO] [1768443818.170936120] [d37pxi_24.planner_server]: Creating bond (planner_server) to lifecycle manager.
+[rviz2-19] [INFO] [1768443818.233810823] [rviz2]: Trying to create a map of size 5000 x 5000 using 1 swatches
+[lifecycle_manager-16] [INFO] [1768443818.273232945] [d37pxi_24.lifecycle_manager_navigation]: Server planner_server connected with bond.
+[lifecycle_manager-16] [INFO] [1768443818.273266506] [d37pxi_24.lifecycle_manager_navigation]: Activating behavior_server
+[behavior_server-12] [INFO] [1768443818.273487394] [d37pxi_24.behavior_server]: Activating
+[behavior_server-12] [INFO] [1768443818.273507378] [d37pxi_24.behavior_server]: Activating spin
+[behavior_server-12] [INFO] [1768443818.273514008] [d37pxi_24.behavior_server]: Activating backup
+[behavior_server-12] [INFO] [1768443818.273518862] [d37pxi_24.behavior_server]: Activating drive_on_heading
+[behavior_server-12] [INFO] [1768443818.273523558] [d37pxi_24.behavior_server]: Activating assisted_teleop
+[behavior_server-12] [INFO] [1768443818.273528208] [d37pxi_24.behavior_server]: Activating wait
+[behavior_server-12] [INFO] [1768443818.273535093] [d37pxi_24.behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-16] [INFO] [1768443818.376076115] [d37pxi_24.lifecycle_manager_navigation]: Server behavior_server connected with bond.
+[lifecycle_manager-16] [INFO] [1768443818.376103176] [d37pxi_24.lifecycle_manager_navigation]: Activating bt_navigator
+[bt_navigator-13] [INFO] [1768443818.376299782] [d37pxi_24.bt_navigator]: Activating
+[bt_navigator-13] [INFO] [1768443818.398475381] [d37pxi_24.bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[lifecycle_manager-16] [INFO] [1768443818.501499418] [d37pxi_24.lifecycle_manager_navigation]: Server bt_navigator connected with bond.
+[lifecycle_manager-16] [INFO] [1768443818.501524170] [d37pxi_24.lifecycle_manager_navigation]: Activating waypoint_follower
+[waypoint_follower-14] [INFO] [1768443818.501702976] [d37pxi_24.waypoint_follower]: Activating
+[waypoint_follower-14] [INFO] [1768443818.501724890] [d37pxi_24.waypoint_follower]: Creating bond (waypoint_follower) to lifecycle manager.
+[lifecycle_manager-16] [INFO] [1768443818.603825942] [d37pxi_24.lifecycle_manager_navigation]: Server waypoint_follower connected with bond.
+[lifecycle_manager-16] [INFO] [1768443818.603855335] [d37pxi_24.lifecycle_manager_navigation]: Activating velocity_smoother
+[velocity_smoother-15] [INFO] [1768443818.604045098] [d37pxi_24.velocity_smoother]: Activating
+[velocity_smoother-15] [INFO] [1768443818.604080344] [d37pxi_24.velocity_smoother]: Creating bond (velocity_smoother) to lifecycle manager.
+[lifecycle_manager-16] [INFO] [1768443818.706104607] [d37pxi_24.lifecycle_manager_navigation]: Server velocity_smoother connected with bond.
+[lifecycle_manager-16] [INFO] [1768443818.706130380] [d37pxi_24.lifecycle_manager_navigation]: Managed nodes are active
+[lifecycle_manager-16] [INFO] [1768443818.706135602] [d37pxi_24.lifecycle_manager_navigation]: Creating bond timer...
+[bt_navigator-13] [INFO] [1768443829.654150470] [d37pxi_24.bt_navigator]: Begin navigating from current location (0.00, 0.00) to (1.00, 0.00)
+[planner_server-11] [WARN] [1768443829.804101459] [d37pxi_24.planner_server]: Planner loop missed its desired rate of 10.0000 Hz. Current loop rate is 6.6525 Hz
+[controller_server-9] [INFO] [1768443829.814656000] [d37pxi_24.controller_server]: Received a goal, begin computing control effort.
+[controller_server-9] [WARN] [1768443829.814694288] [d37pxi_24.controller_server]: No goal checker was specified in parameter 'current_goal_checker'. Server will use only plugin loaded general_goal_checker . This warning will appear once.
+[controller_server-9] [INFO] [1768443829.839420028] [d37pxi_24.controller_server]: Reached the goal!
+[bt_navigator-13] [INFO] [1768443829.874270880] [d37pxi_24.bt_navigator]: Goal succeeded
+[waypoint_follower-14] [INFO] [1768443829.877369538] [d37pxi_24.waypoint_follower]: Received follow waypoint request with 3 waypoints.
+[bt_navigator-13] [INFO] [1768443829.877626987] [d37pxi_24.bt_navigator]: Begin navigating from current location (0.00, 0.00) to (5.00, 0.00)
+[planner_server-11] [WARN] [1768443829.989643769] [d37pxi_24.planner_server]: Planner loop missed its desired rate of 10.0000 Hz. Current loop rate is 8.8294 Hz
+[controller_server-9] [INFO] [1768443830.007984442] [d37pxi_24.controller_server]: Received a goal, begin computing control effort.
+[planner_server-11] [WARN] [1768443831.122451803] [d37pxi_24.planner_server]: Planner loop missed its desired rate of 10.0000 Hz. Current loop rate is 8.3025 Hz
+[controller_server-9] [INFO] [1768443831.208902678] [d37pxi_24.controller_server]: Passing new path to controller.
+[planner_server-11] [WARN] [1768443832.264681495] [d37pxi_24.planner_server]: Planner loop missed its desired rate of 10.0000 Hz. Current loop rate is 8.3632 Hz
+[controller_server-9] [INFO] [1768443832.308900173] [d37pxi_24.controller_server]: Passing new path to controller.
+[planner_server-11] [WARN] [1768443833.396207716] [d37pxi_24.planner_server]: Planner loop missed its desired rate of 10.0000 Hz. Current loop rate is 9.2761 Hz
+[controller_server-9] [INFO] [1768443833.408900618] [d37pxi_24.controller_server]: Passing new path to controller.
+[controller_server-9] [INFO] [1768443833.720290446] [d37pxi_24.controller_server]: Reached the goal!
+[bt_navigator-13] [INFO] [1768443833.757718996] [d37pxi_24.bt_navigator]: Goal succeeded
+[waypoint_follower-14] [INFO] [1768443835.277499394] [d37pxi_24.waypoint_follower]: Succeeded processing waypoint 0, processing waypoint task execution
+[waypoint_follower-14] [INFO] [1768443835.277538736] [d37pxi_24.waypoint_follower]: Arrived at 0'th waypoint, sleeping for 200 milliseconds
+[waypoint_follower-14] [INFO] [1768443835.480719844] [d37pxi_24.waypoint_follower]: Task execution at waypoint 0 succeeded
+[waypoint_follower-14] [INFO] [1768443835.480750015] [d37pxi_24.waypoint_follower]: Handled task execution on waypoint 0, moving to next.
+[bt_navigator-13] [INFO] [1768443835.481038527] [d37pxi_24.bt_navigator]: Begin navigating from current location (4.03, 0.01) to (10.00, 0.00)
+[controller_server-9] [INFO] [1768443835.611417552] [d37pxi_24.controller_server]: Received a goal, begin computing control effort.
+[planner_server-11] [WARN] [1768443836.733770278] [d37pxi_24.planner_server]: Planner loop missed its desired rate of 10.0000 Hz. Current loop rate is 8.9054 Hz
+[controller_server-9] [INFO] [1768443836.812407395] [d37pxi_24.controller_server]: Passing new path to controller.
+[planner_server-11] [WARN] [1768443837.885401319] [d37pxi_24.planner_server]: Planner loop missed its desired rate of 10.0000 Hz. Current loop rate is 9.0039 Hz
+[controller_server-9] [INFO] [1768443837.912377268] [d37pxi_24.controller_server]: Passing new path to controller.
+[planner_server-11] [WARN] [1768443839.028355538] [d37pxi_24.planner_server]: Planner loop missed its desired rate of 10.0000 Hz. Current loop rate is 7.2617 Hz
+[controller_server-9] [INFO] [1768443839.112370841] [d37pxi_24.controller_server]: Passing new path to controller.
+[planner_server-11] [WARN] [1768443840.160725615] [d37pxi_24.planner_server]: Planner loop missed its desired rate of 10.0000 Hz. Current loop rate is 8.9767 Hz
+[controller_server-9] [INFO] [1768443840.212401200] [d37pxi_24.controller_server]: Passing new path to controller.
+[controller_server-9] [INFO] [1768443840.224087486] [d37pxi_24.controller_server]: Reached the goal!
+[bt_navigator-13] [INFO] [1768443840.271141875] [d37pxi_24.bt_navigator]: Goal succeeded
+[waypoint_follower-14] [INFO] [1768443841.586851645] [d37pxi_24.waypoint_follower]: Succeeded processing waypoint 1, processing waypoint task execution
+[waypoint_follower-14] [INFO] [1768443841.586882189] [d37pxi_24.waypoint_follower]: Arrived at 1'th waypoint, sleeping for 200 milliseconds
+[waypoint_follower-14] [INFO] [1768443841.778721429] [d37pxi_24.waypoint_follower]: Task execution at waypoint 1 succeeded
+[waypoint_follower-14] [INFO] [1768443841.778745986] [d37pxi_24.waypoint_follower]: Handled task execution on waypoint 1, moving to next.
+[bt_navigator-13] [INFO] [1768443841.780962364] [d37pxi_24.bt_navigator]: Begin navigating from current location (9.01, -0.05) to (15.00, 0.00)
+[controller_server-9] [INFO] [1768443841.911360295] [d37pxi_24.controller_server]: Received a goal, begin computing control effort.
+[planner_server-11] [WARN] [1768443843.035606550] [d37pxi_24.planner_server]: Planner loop missed its desired rate of 10.0000 Hz. Current loop rate is 8.5980 Hz
+[controller_server-9] [INFO] [1768443843.112337593] [d37pxi_24.controller_server]: Passing new path to controller.
+[controller_server-9] [INFO] [1768443844.212338861] [d37pxi_24.controller_server]: Passing new path to controller.
+[planner_server-11] [WARN] [1768443845.309601913] [d37pxi_24.planner_server]: Planner loop missed its desired rate of 10.0000 Hz. Current loop rate is 9.0145 Hz
+[controller_server-9] [INFO] [1768443845.412341793] [d37pxi_24.controller_server]: Passing new path to controller.
+[planner_server-11] [WARN] [1768443846.463122158] [d37pxi_24.planner_server]: Planner loop missed its desired rate of 10.0000 Hz. Current loop rate is 7.7689 Hz
+[controller_server-9] [INFO] [1768443846.512340733] [d37pxi_24.controller_server]: Passing new path to controller.
+[waypoint_follower-14] [INFO] [1768443847.080860879] [d37pxi_24.waypoint_follower]: Processing waypoint 2...
+[waypoint_follower-14] [INFO] [1768443847.180839650] [d37pxi_24.waypoint_follower]: Processing waypoint 2...
+[waypoint_follower-14] [INFO] [1768443847.280837987] [d37pxi_24.waypoint_follower]: Processing waypoint 2...
+[waypoint_follower-14] [INFO] [1768443847.380842269] [d37pxi_24.waypoint_follower]: Processing waypoint 2...
+[waypoint_follower-14] [INFO] [1768443847.480839627] [d37pxi_24.waypoint_follower]: Processing waypoint 2...
+[waypoint_follower-14] [INFO] [1768443847.580858911] [d37pxi_24.waypoint_follower]: Processing waypoint 2...
+[planner_server-11] [WARN] [1768443847.610478640] [d37pxi_24.planner_server]: Planner loop missed its desired rate of 10.0000 Hz. Current loop rate is 8.3348 Hz
+[controller_server-9] [INFO] [1768443847.624161155] [d37pxi_24.controller_server]: Reached the goal!
+[controller_server-9] [INFO] [1768443847.624210619] [d37pxi_24.controller_server]: Received a goal, begin computing control effort.
+[controller_server-9] [INFO] [1768443847.637020235] [d37pxi_24.controller_server]: Reached the goal!
+[waypoint_follower-14] [INFO] [1768443847.680838678] [d37pxi_24.waypoint_follower]: Processing waypoint 2...
+[bt_navigator-13] [INFO] [1768443847.681069839] [d37pxi_24.bt_navigator]: Goal succeeded
+[waypoint_follower-14] [INFO] [1768443847.780840290] [d37pxi_24.waypoint_follower]: Processing waypoint 2...
+[waypoint_follower-14] [INFO] [1768443847.880843413] [d37pxi_24.waypoint_follower]: Processing waypoint 2...
+[waypoint_follower-14] [INFO] [1768443847.980840242] [d37pxi_24.waypoint_follower]: Processing waypoint 2...
+[waypoint_follower-14] [INFO] [1768443848.880840955] [d37pxi_24.waypoint_follower]: Succeeded processing waypoint 2, processing waypoint task execution
+[waypoint_follower-14] [INFO] [1768443848.880879604] [d37pxi_24.waypoint_follower]: Arrived at 2'th waypoint, sleeping for 200 milliseconds
+[waypoint_follower-14] [INFO] [1768443849.100887121] [d37pxi_24.waypoint_follower]: Task execution at waypoint 2 succeeded
+[waypoint_follower-14] [INFO] [1768443849.100931666] [d37pxi_24.waypoint_follower]: Handled task execution on waypoint 2, moving to next.
+[waypoint_follower-14] [INFO] [1768443849.100935172] [d37pxi_24.waypoint_follower]: Completed all 3 waypoints requested.
+[bt_navigator-13] [INFO] [1768443849.103869104] [d37pxi_24.bt_navigator]: Begin navigating from current location through 3 poses to (15.00, 0.00)
+[bt_navigator-13] [ERROR] [1768443849.224721860] [transformPoseInTargetFrame]: No Transform available Error looking up target frame: "base_link" passed to lookupTransform argument source_frame does not exist. 
+[bt_navigator-13] 
+[planner_server-11] [INFO] [1768443849.224835076] [d37pxi_24.global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[bt_navigator-13] [ERROR] [1768443849.321152982] [transformPoseInTargetFrame]: No Transform available Error looking up target frame: "base_link" passed to lookupTransform argument source_frame does not exist. 
+[bt_navigator-13] 
+[controller_server-9] [INFO] [1768443849.321283172] [d37pxi_24.local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[planner_server-11] [INFO] [1768443849.321498292] [d37pxi_24.global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[bt_navigator-13] [WARN] [1768443849.331657049] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[bt_navigator-13] [ERROR] [1768443849.448744368] [transformPoseInTargetFrame]: No Transform available Error looking up target frame: "base_link" passed to lookupTransform argument source_frame does not exist. 
+[bt_navigator-13] 
+[planner_server-11] [INFO] [1768443849.448864863] [d37pxi_24.global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[bt_navigator-13] [WARN] [1768443849.458964724] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[bt_navigator-13] [ERROR] [1768443849.585991241] [transformPoseInTargetFrame]: No Transform available Error looking up target frame: "base_link" passed to lookupTransform argument source_frame does not exist. 
+[bt_navigator-13] 
+[bt_navigator-13] [WARN] [1768443849.586301496] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[behavior_server-12] [INFO] [1768443849.586326356] [d37pxi_24.behavior_server]: Running spin
+[behavior_server-12] [INFO] [1768443849.586441499] [d37pxi_24.behavior_server]: Turning 1.57 for spin behavior.
+[behavior_server-12] [WARN] [1768443859.686541699] [d37pxi_24.behavior_server]: Exceeded time allowance before reaching the Spin goal - Exiting Spin
+[behavior_server-12] [WARN] [1768443859.686571949] [d37pxi_24.behavior_server]: spin failed
+[behavior_server-12] [WARN] [1768443859.686580357] [d37pxi_24.behavior_server]: [spin] [ActionServer] Aborting handle.
+[behavior_server-12] [INFO] [1768443859.706676838] [d37pxi_24.behavior_server]: Running wait
+
