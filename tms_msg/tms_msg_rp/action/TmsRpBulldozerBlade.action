@@ -1,0 +1,12 @@
+# Goal
+string[] joint_name
+uint8 control_type            # 0:position, 1:velocity, 2:effort
+float64[] goal_position       # ★到達判定の目標（control_typeに関わらず必須）
+float64[] velocity            # control_type==1 のとき使用（指令値）
+float64[] effort              # control_type==2 のとき使用（指令値）
+---
+# Result
+bool success
+---
+# Feedback
+float64[] current_error       # goal_position - current_position（joint_name順）

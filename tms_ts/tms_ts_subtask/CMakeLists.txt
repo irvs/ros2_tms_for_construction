@@ -55,6 +55,7 @@ mongocxx
 bsoncxx)
 
 # Subtask Nodes for Bulldozer 
+add_executable(subtask_bulldozer_blade_control src/Bulldozer/subtask_bulldozer_blade_control.cpp)
 add_executable(subtask_bulldozer_follow_waypoints src/Bulldozer/subtask_bulldozer_follow_waypoints.cpp)
 add_executable(subtask_bulldozer_navigate_anywhere src/Bulldozer/subtask_bulldozer_navigate_anywhere.cpp)
 add_executable(subtask_bulldozer_navigate_through_poses src/Bulldozer/subtask_bulldozer_navigate_through_poses.cpp)
@@ -82,6 +83,7 @@ add_executable(subtask_excavator_navigate_anywhere src/Excavator/subtask_excavat
 add_executable(subtask_excavator_navigate_through_poses src/Excavator/subtask_excavator_navigate_through_poses.cpp)
 
 set(TARGETS
+  subtask_bulldozer_blade_control
   subtask_bulldozer_follow_waypoints
   subtask_bulldozer_navigate_anywhere
   subtask_bulldozer_navigate_through_poses

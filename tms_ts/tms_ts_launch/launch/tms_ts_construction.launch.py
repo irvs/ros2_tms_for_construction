@@ -245,6 +245,12 @@ def generate_launch_description():
             #D37PXI
             Node(
                   package='tms_ts_subtask', 
+                  executable='subtask_bulldozer_blade_control',
+                  output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='d37pxi_24'),
+            Node(
+                  package='tms_ts_subtask', 
                   executable='subtask_bulldozer_follow_waypoints',
                   output='screen',
                   parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],

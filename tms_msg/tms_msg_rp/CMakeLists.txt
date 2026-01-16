@@ -34,6 +34,7 @@ set(msg_files
 )
 
 set(action_files
+  "action/TmsRpBulldozerBlade.action"
   "action/TmsRpExcavatorChangePose.action"
   "action/TmsRpExcavatorExcavateSimple.action"
   "action/TmsRpExcavatorReleaseSimple.action"

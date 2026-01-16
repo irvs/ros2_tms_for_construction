@@ -1,10 +1,11 @@
 # Goal
 float64 target_angle
-
+uint8 control_type     # 0:position, 1:velocity, 2:effort
+float64 velocity       # control_type==1 のとき使用
+float64 effort         # control_type==2 のとき使用
 ---
 # Result
 bool success
-
 ---
 # Feedback
 float64 current_error
