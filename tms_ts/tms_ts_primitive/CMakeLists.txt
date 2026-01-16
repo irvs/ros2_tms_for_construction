@@ -55,6 +55,7 @@ mongocxx
 bsoncxx)
 
 # Primitive Nodes for Bulldozer 
+add_executable(primitive_bulldozer_blade_control src/Bulldozer/primitive_bulldozer_blade_control.cpp)
 add_executable(primitive_bulldozer_follow_waypoints src/Bulldozer/primitive_bulldozer_follow_waypoints.cpp)
 add_executable(primitive_bulldozer_navigate_anywhere src/Bulldozer/primitive_bulldozer_navigate_anywhere.cpp)
 add_executable(primitive_bulldozer_navigate_through_poses src/Bulldozer/primitive_bulldozer_navigate_through_poses.cpp)
@@ -83,6 +84,7 @@ add_executable(primitive_excavator_navigate_through_poses src/Excavator/primitiv
 
 
 set(TARGETS
+  primitive_bulldozer_blade_control
   primitive_bulldozer_follow_waypoints
   primitive_bulldozer_navigate_anywhere
   primitive_bulldozer_navigate_through_poses
