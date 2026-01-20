@@ -1,5 +1,6 @@
 # Goal definition
-tms_msg_rp/TmsRpExcavatorPositionWithAngle position_with_angle
+# Target Pose
+moveit_msgs/RobotTrajectory[] plan
 
 ---
 

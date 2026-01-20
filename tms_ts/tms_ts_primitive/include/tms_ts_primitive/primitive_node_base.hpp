@@ -42,6 +42,9 @@ public:
   template <typename T>
   bool CustomUpdateParamInDB(std::string model_name, std::string record_name, const std::string& target_key, const std::vector<T>& new_values);
 
+  // JSON文字列またはBSONドキュメントを直接保存する関数
+  bool UpdateParamInDBFromJson(std::string model_name, std::string record_name, const std::string& target_key, const std::string& json_str);
+
 private:
 };
 
@@ -333,4 +336,40 @@ bool PrimitiveNodeBase::CustomUpdateParamInDB(std::string model_name, std::strin
     return false;
   }
 }
+
+// JSON文字列を直接MongoDBに保存する関数
+inline bool PrimitiveNodeBase::UpdateParamInDBFromJson(std::string model_name, std::string record_name, const std::string& target_key, const std::string& json_str)
+{
+  try {
+    mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
+    mongocxx::database db = client["rostmsdb"];
+    mongocxx::collection collection = db["parameter"];
+
+    bsoncxx::builder::stream::document filter_builder;
+    filter_builder << "model_name" << model_name << "record_name" << record_name;
+    auto filter = filter_builder.view();
+
+    // JSON文字列をBSONドキュメントに変換
+    auto bson_value = bsoncxx::from_json(json_str);
+    
+    bsoncxx::builder::stream::document update_builder;
+    update_builder << "$set" << bsoncxx::builder::stream::open_document
+                   << target_key << bson_value
+                   << bsoncxx::builder::stream::close_document;
+
+    auto result = collection.update_one(filter, update_builder.view());
+
+    if (result && result->modified_count() > 0) {
+      RCLCPP_INFO(this->get_logger(), "Successfully updated \"%s\" field from JSON.", target_key.c_str());
+      return true;
+    } else {
+      RCLCPP_WARN(this->get_logger(), "No document updated. (model_name: %s, record_name: %s)", model_name.c_str(), record_name.c_str());
+      return false;
+    }
+  } catch (const std::exception& e) {
+    RCLCPP_ERROR(this->get_logger(), "Exception during MongoDB update from JSON: %s", e.what());
+    return false;
+  }
+}
+
 #endif // PRIMITIVE_NODE_BASE_HPP

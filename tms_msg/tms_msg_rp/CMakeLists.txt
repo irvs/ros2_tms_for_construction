@@ -37,8 +37,8 @@ set(msg_files
 
 set(action_files
   "action/TmsRpExcavatorChangePose.action"
-  "action/TmsRpExcavatorExcavateSimple.action"
-  "action/TmsRpExcavatorReleaseSimple.action"
+  "action/TmsRpExcavatorChangePosePlan.action"
+  "action/TmsRpExcavatorChangePoseExecute.action"
   "action/TmsRpCrawlerdumpDumpAngle.action"
   "action/TmsRpCrawlerdumpSwingAngle.action"
 )
