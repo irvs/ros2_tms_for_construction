@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PRIMITIVE_EXCAVATOR_CHANGE_POSE_FROM_POSES_HPP
-#define PRIMITIVE_EXCAVATOR_CHANGE_POSE_FROM_POSES_HPP
+#ifndef PRIMITIVE_EXCAVATOR_CHANGE_POSE_PLAN_FROM_POSES_HPP
+#define PRIMITIVE_EXCAVATOR_CHANGE_POSE_PLAN_FROM_POSES_HPP
 
 #include <memory>
 #include <map>
@@ -30,7 +30,7 @@
 #include "tms_msg_ts/action/leaf_node_base.hpp"
 #include "tms_ts_primitive/primitive_node_base.hpp"
 
-#include "tms_msg_rp/action/tms_rp_excavator_change_pose.hpp"
+#include "tms_msg_rp/action/tms_rp_excavator_change_pose_plan.hpp"
 
 #include <rclcpp/qos.hpp>   
 #include <rmw/qos_profiles.h>  
@@ -50,7 +50,7 @@ class PrimitiveExcavatorChangePoseFromPose : public PrimitiveNodeBase
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
 
-  using ExcavatorChangePoseFromPose = tms_msg_rp::action::TmsRpExcavatorChangePose;
+  using ExcavatorChangePoseFromPose = tms_msg_rp::action::TmsRpExcavatorChangePosePlan;
   using GoalHandleExcavatorChangePoseFromPose = rclcpp_action::ClientGoalHandle<ExcavatorChangePoseFromPose>;
 
   PrimitiveExcavatorChangePoseFromPose();

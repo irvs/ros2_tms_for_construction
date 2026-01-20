@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_primitive/Excavator/primitive_excavator_change_pose_from_poses.hpp"
+#include "tms_ts_primitive/Excavator/primitive_excavator_change_pose_plan_from_poses.hpp"
 #include <glog/logging.h>
 
 using namespace std::chrono_literals;
@@ -69,7 +69,7 @@ PrimitiveExcavatorChangePoseFromPose::PrimitiveExcavatorChangePoseFromPose() : P
       std::bind(&PrimitiveExcavatorChangePoseFromPose::handle_accepted, this, std::placeholders::_1),
       options_server);
 
-  action_client_ = rclcpp_action::create_client<ExcavatorChangePoseFromPose>(this, "tms_rp_excavator_change_pose_from_poses",nullptr ,options_client);
+  action_client_ = rclcpp_action::create_client<ExcavatorChangePoseFromPose>(this, "tms_rp_excavator_change_pose_plan_from_poses",nullptr ,options_client);
   if (action_client_->wait_for_action_server())
   {
     RCLCPP_INFO(this->get_logger(), "Action server is ready");
@@ -726,6 +726,214 @@ void PrimitiveExcavatorChangePoseFromPose::result_callback(const std::shared_ptr
       goal_handle->abort(result_to_leaf);
       RCLCPP_INFO(this->get_logger(), "Unknown result code");
       break;
+  }
+  
+  // planをデータベースに保存
+  try {
+    // planが空でないことを確認
+    if (result.result->plan.empty()) {
+      RCLCPP_WARN(this->get_logger(), "Plan is empty, nothing to save");
+      return;
+    }
+    
+    // すべてのRobotTrajectoryをBSONドキュメント形式で保存 (キー: "1", "2", "3"...)
+    bsoncxx::builder::basic::document plan_doc;
+    
+    int index = 1;
+    for (const auto& robot_trajectory : result.result->plan) {
+      bsoncxx::builder::basic::document trajectory_doc;
+      
+      // joint_trajectoryの変換
+      if (!robot_trajectory.joint_trajectory.joint_names.empty()) {
+        bsoncxx::builder::basic::document joint_traj_doc;
+        
+        // joint_names
+        bsoncxx::builder::basic::array joint_names_array;
+        for (const auto& name : robot_trajectory.joint_trajectory.joint_names) {
+          joint_names_array.append(name);
+        }
+        joint_traj_doc.append(bsoncxx::builder::basic::kvp("joint_names", joint_names_array));
+        
+        // points
+        bsoncxx::builder::basic::array points_array;
+        for (const auto& point : robot_trajectory.joint_trajectory.points) {
+          bsoncxx::builder::basic::document point_doc;
+          
+          // positions
+          bsoncxx::builder::basic::array positions_array;
+          for (const auto& pos : point.positions) {
+            positions_array.append(pos);
+          }
+          point_doc.append(bsoncxx::builder::basic::kvp("positions", positions_array));
+          
+          // velocities
+          if (!point.velocities.empty()) {
+            bsoncxx::builder::basic::array velocities_array;
+            for (const auto& vel : point.velocities) {
+              velocities_array.append(vel);
+            }
+            point_doc.append(bsoncxx::builder::basic::kvp("velocities", velocities_array));
+          }
+          
+          // accelerations
+          if (!point.accelerations.empty()) {
+            bsoncxx::builder::basic::array accelerations_array;
+            for (const auto& acc : point.accelerations) {
+              accelerations_array.append(acc);
+            }
+            point_doc.append(bsoncxx::builder::basic::kvp("accelerations", accelerations_array));
+          }
+          
+          // time_from_start
+          point_doc.append(bsoncxx::builder::basic::kvp("time_from_start", 
+            bsoncxx::builder::basic::make_document(
+              bsoncxx::builder::basic::kvp("sec", static_cast<int32_t>(point.time_from_start.sec)),
+              bsoncxx::builder::basic::kvp("nanosec", static_cast<int32_t>(point.time_from_start.nanosec))
+            )
+          ));
+          
+          points_array.append(point_doc);
+        }
+        joint_traj_doc.append(bsoncxx::builder::basic::kvp("points", points_array));
+        
+        trajectory_doc.append(bsoncxx::builder::basic::kvp("joint_trajectory", joint_traj_doc));
+      }
+      
+      // multi_dof_joint_trajectoryの変換（もし存在すれば）
+      if (!robot_trajectory.multi_dof_joint_trajectory.joint_names.empty()) {
+        bsoncxx::builder::basic::document multi_dof_doc;
+        
+        bsoncxx::builder::basic::array joint_names_array;
+        for (const auto& name : robot_trajectory.multi_dof_joint_trajectory.joint_names) {
+          joint_names_array.append(name);
+        }
+        multi_dof_doc.append(bsoncxx::builder::basic::kvp("joint_names", joint_names_array));
+        
+        // points
+        bsoncxx::builder::basic::array points_array;
+        for (const auto& point : robot_trajectory.multi_dof_joint_trajectory.points) {
+          bsoncxx::builder::basic::document point_doc;
+          
+          // transforms
+          if (!point.transforms.empty()) {
+            bsoncxx::builder::basic::array transforms_array;
+            for (const auto& transform : point.transforms) {
+              bsoncxx::builder::basic::document transform_doc;
+              
+              // translation
+              transform_doc.append(bsoncxx::builder::basic::kvp("translation",
+                bsoncxx::builder::basic::make_document(
+                  bsoncxx::builder::basic::kvp("x", transform.translation.x),
+                  bsoncxx::builder::basic::kvp("y", transform.translation.y),
+                  bsoncxx::builder::basic::kvp("z", transform.translation.z)
+                )
+              ));
+              
+              // rotation
+              transform_doc.append(bsoncxx::builder::basic::kvp("rotation",
+                bsoncxx::builder::basic::make_document(
+                  bsoncxx::builder::basic::kvp("x", transform.rotation.x),
+                  bsoncxx::builder::basic::kvp("y", transform.rotation.y),
+                  bsoncxx::builder::basic::kvp("z", transform.rotation.z),
+                  bsoncxx::builder::basic::kvp("w", transform.rotation.w)
+                )
+              ));
+              
+              transforms_array.append(transform_doc);
+            }
+            point_doc.append(bsoncxx::builder::basic::kvp("transforms", transforms_array));
+          }
+          
+          // velocities
+          if (!point.velocities.empty()) {
+            bsoncxx::builder::basic::array velocities_array;
+            for (const auto& vel : point.velocities) {
+              bsoncxx::builder::basic::document vel_doc;
+              
+              // linear
+              vel_doc.append(bsoncxx::builder::basic::kvp("linear",
+                bsoncxx::builder::basic::make_document(
+                  bsoncxx::builder::basic::kvp("x", vel.linear.x),
+                  bsoncxx::builder::basic::kvp("y", vel.linear.y),
+                  bsoncxx::builder::basic::kvp("z", vel.linear.z)
+                )
+              ));
+              
+              // angular
+              vel_doc.append(bsoncxx::builder::basic::kvp("angular",
+                bsoncxx::builder::basic::make_document(
+                  bsoncxx::builder::basic::kvp("x", vel.angular.x),
+                  bsoncxx::builder::basic::kvp("y", vel.angular.y),
+                  bsoncxx::builder::basic::kvp("z", vel.angular.z)
+                )
+              ));
+              
+              velocities_array.append(vel_doc);
+            }
+            point_doc.append(bsoncxx::builder::basic::kvp("velocities", velocities_array));
+          }
+          
+          // accelerations
+          if (!point.accelerations.empty()) {
+            bsoncxx::builder::basic::array accelerations_array;
+            for (const auto& acc : point.accelerations) {
+              bsoncxx::builder::basic::document acc_doc;
+              
+              // linear
+              acc_doc.append(bsoncxx::builder::basic::kvp("linear",
+                bsoncxx::builder::basic::make_document(
+                  bsoncxx::builder::basic::kvp("x", acc.linear.x),
+                  bsoncxx::builder::basic::kvp("y", acc.linear.y),
+                  bsoncxx::builder::basic::kvp("z", acc.linear.z)
+                )
+              ));
+              
+              // angular
+              acc_doc.append(bsoncxx::builder::basic::kvp("angular",
+                bsoncxx::builder::basic::make_document(
+                  bsoncxx::builder::basic::kvp("x", acc.angular.x),
+                  bsoncxx::builder::basic::kvp("y", acc.angular.y),
+                  bsoncxx::builder::basic::kvp("z", acc.angular.z)
+                )
+              ));
+              
+              accelerations_array.append(acc_doc);
+            }
+            point_doc.append(bsoncxx::builder::basic::kvp("accelerations", accelerations_array));
+          }
+          
+          // time_from_start
+          point_doc.append(bsoncxx::builder::basic::kvp("time_from_start", 
+            bsoncxx::builder::basic::make_document(
+              bsoncxx::builder::basic::kvp("sec", static_cast<int32_t>(point.time_from_start.sec)),
+              bsoncxx::builder::basic::kvp("nanosec", static_cast<int32_t>(point.time_from_start.nanosec))
+            )
+          ));
+          
+          points_array.append(point_doc);
+        }
+        multi_dof_doc.append(bsoncxx::builder::basic::kvp("points", points_array));
+        
+        trajectory_doc.append(bsoncxx::builder::basic::kvp("multi_dof_joint_trajectory", multi_dof_doc));
+      }
+      
+      // インデックスをキーとして追加 ("1", "2", "3"...)
+      plan_doc.append(bsoncxx::builder::basic::kvp(std::to_string(index), trajectory_doc));
+      index++;
+    }
+    
+    std::string plan_json = bsoncxx::to_json(plan_doc.view());
+    
+    if(UpdateParamInDBFromJson(used_model_name_, used_record_name_, "plan", plan_json))
+    {
+      RCLCPP_INFO(this->get_logger(), "Successfully saved %zu plan(s) to database", result.result->plan.size());
+    }
+    else
+    {
+      RCLCPP_ERROR(this->get_logger(), "Failed to save plan to database");
+    }
+  } catch (const std::exception& e) {
+    RCLCPP_ERROR(this->get_logger(), "Exception while saving plan: %s", e.what());
   }
   if(CustomUpdateParamInDB(used_model_name_, used_record_name_, "LOCK_FLG", std::vector<bool>{false}))
   {
