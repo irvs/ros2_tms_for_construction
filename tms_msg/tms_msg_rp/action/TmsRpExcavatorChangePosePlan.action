@@ -1,4 +1,7 @@
 # Goal definition
+# Previous Pose
+moveit_msgs/RobotTrajectory[] previous_pose
+
 # Target Pose
 tms_msg_rp/TmsRpExcavatorPositionWithAngle[] position_with_angle_sequence
 

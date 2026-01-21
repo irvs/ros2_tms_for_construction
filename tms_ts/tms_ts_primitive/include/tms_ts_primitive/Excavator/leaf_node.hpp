@@ -38,10 +38,19 @@ class LeafNodeExcavator : public LeafNodeBase
 public:
   inline LeafNodeExcavator(const std::string& name, const NodeConfiguration& config)
     : LeafNodeBase("leaf_node_Excavator", config){};
+  
   inline static PortsList providedPorts()
   {
-    return { InputPort<std::string>("model_name"), InputPort<std::string>("record_name"), InputPort<std::string>("primitive_name") };
-  };
+    return { 
+      InputPort<std::string>("model_name"),
+      InputPort<std::string>("previous_target_record_name"),  // 1個前のPlanが保存されているrecord_name
+      InputPort<std::string>("primitive_name"),
+      InputPort<std::string>("target_record_name")            // 今回のゴール・Plan保存先record_name
+    };
+  }
+  
+  // tick()関数をオーバーライド
+  NodeStatus tick() override;
 };
 
 #endif

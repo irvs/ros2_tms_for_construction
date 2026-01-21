@@ -60,7 +60,9 @@ private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
   std::string used_model_name_;
   std::string used_record_name_;
+  std::string previous_target_record_name_;
   std::map<std::string, std::string> param_from_db_;
+  std::map<std::string, std::string> previous_param_from_db_;
 
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
                                           std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal);

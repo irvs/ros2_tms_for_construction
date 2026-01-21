@@ -85,12 +85,30 @@ rclcpp_action::GoalResponse PrimitiveExcavatorChangePosePlanFromJointValues::han
 {
   used_model_name_ = goal->model_name;
   used_record_name_ = goal->record_name;
-  param_from_db_ = GetParamFromDBAsJson(goal->model_name, goal->record_name);
+  previous_target_record_name_ = goal->previous_target_record_name;  // 前回のPlanのrecord_nameを保存
+  
+  param_from_db_ = GetParamFromDBAsJson(used_model_name_, used_record_name_);
   if (param_from_db_.empty())
   {
     RCLCPP_ERROR(this->get_logger(), "Failed to get parameters from DB");
     return rclcpp_action::GoalResponse::REJECT;
   }
+  
+  if (!previous_target_record_name_.empty())
+  {
+    RCLCPP_INFO(this->get_logger(), "Previous plan record: %s", previous_target_record_name_.c_str());
+    previous_param_from_db_ = GetParamFromDBAsJson(used_model_name_, previous_target_record_name_);
+    if (previous_param_from_db_.empty())
+    {
+      RCLCPP_ERROR(this->get_logger(), "Failed to get parameters from DB");
+      return rclcpp_action::GoalResponse::REJECT;
+    }
+  }
+  else
+  {
+    RCLCPP_INFO(this->get_logger(), "No previous plan specified, will plan from current pose");
+  }
+  
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
@@ -137,6 +155,220 @@ void PrimitiveExcavatorChangePosePlanFromJointValues::execute(const std::shared_
 
   auto goal_msg = ExcavatorChangePosePlanFromJointValues::Goal();
   goal_msg.position_with_angle_sequence.clear();
+  goal_msg.previous_pose.clear();
+  
+  // previous_target_record_nameが空でない場合、データベースからplanを取得してRobotTrajectory配列に変換
+  if (!previous_target_record_name_.empty() && !previous_param_from_db_.empty())
+  {
+    RCLCPP_INFO(this->get_logger(), "Loading previous plan from record: %s", previous_target_record_name_.c_str());
+    
+    try {
+      if (previous_param_from_db_.count("plan")) {
+        auto plan_doc = bsoncxx::from_json(previous_param_from_db_["plan"]);
+        auto plan_view = plan_doc.view();
+        
+        // planの各trajectory("1", "2", "3"...)を処理
+        for (auto&& element : plan_view) {
+          std::string key = element.key().to_string();
+          
+          // 数字のキーのみ処理
+          try {
+            int index = std::stoi(key);
+            
+            auto trajectory_doc = element.get_document().value;
+            moveit_msgs::msg::RobotTrajectory robot_trajectory;
+            
+            // joint_trajectoryの変換
+            if (trajectory_doc["joint_trajectory"]) {
+              auto joint_traj_doc = trajectory_doc["joint_trajectory"].get_document().value;
+              
+              // joint_names
+              if (joint_traj_doc["joint_names"]) {
+                auto joint_names_array = joint_traj_doc["joint_names"].get_array().value;
+                for (auto&& name : joint_names_array) {
+                  robot_trajectory.joint_trajectory.joint_names.push_back(name.get_string().value.to_string());
+                }
+              }
+              
+              // points
+              if (joint_traj_doc["points"]) {
+                auto points_array = joint_traj_doc["points"].get_array().value;
+                for (auto&& point_element : points_array) {
+                  auto point_doc = point_element.get_document().value;
+                  trajectory_msgs::msg::JointTrajectoryPoint point;
+                  
+                  // positions
+                  if (point_doc["positions"]) {
+                    auto positions_array = point_doc["positions"].get_array().value;
+                    for (auto&& pos : positions_array) {
+                      point.positions.push_back(get_numeric_value(pos));
+                    }
+                  }
+                  
+                  // velocities
+                  if (point_doc["velocities"]) {
+                    auto velocities_array = point_doc["velocities"].get_array().value;
+                    for (auto&& vel : velocities_array) {
+                      point.velocities.push_back(get_numeric_value(vel));
+                    }
+                  }
+                  
+                  // accelerations
+                  if (point_doc["accelerations"]) {
+                    auto accelerations_array = point_doc["accelerations"].get_array().value;
+                    for (auto&& acc : accelerations_array) {
+                      point.accelerations.push_back(get_numeric_value(acc));
+                    }
+                  }
+                  
+                  // time_from_start
+                  if (point_doc["time_from_start"]) {
+                    auto time_doc = point_doc["time_from_start"].get_document().value;
+                    if (time_doc["sec"]) {
+                      point.time_from_start.sec = time_doc["sec"].get_int32().value;
+                    }
+                    if (time_doc["nanosec"]) {
+                      point.time_from_start.nanosec = time_doc["nanosec"].get_int32().value;
+                    }
+                  }
+                  
+                  robot_trajectory.joint_trajectory.points.push_back(point);
+                }
+              }
+            }
+            
+            // multi_dof_joint_trajectoryの変換（もし存在すれば）
+            if (trajectory_doc["multi_dof_joint_trajectory"]) {
+              auto multi_dof_doc = trajectory_doc["multi_dof_joint_trajectory"].get_document().value;
+              
+              // joint_names
+              if (multi_dof_doc["joint_names"]) {
+                auto joint_names_array = multi_dof_doc["joint_names"].get_array().value;
+                for (auto&& name : joint_names_array) {
+                  robot_trajectory.multi_dof_joint_trajectory.joint_names.push_back(name.get_string().value.to_string());
+                }
+              }
+              
+              // points
+              if (multi_dof_doc["points"]) {
+                auto points_array = multi_dof_doc["points"].get_array().value;
+                for (auto&& point_element : points_array) {
+                  auto point_doc = point_element.get_document().value;
+                  trajectory_msgs::msg::MultiDOFJointTrajectoryPoint point;
+                  
+                  // transforms
+                  if (point_doc["transforms"]) {
+                    auto transforms_array = point_doc["transforms"].get_array().value;
+                    for (auto&& transform_element : transforms_array) {
+                      auto transform_doc = transform_element.get_document().value;
+                      geometry_msgs::msg::Transform transform;
+                      
+                      if (transform_doc["translation"]) {
+                        auto translation = transform_doc["translation"].get_document().value;
+                        if (translation["x"]) transform.translation.x = get_numeric_value(translation["x"]);
+                        if (translation["y"]) transform.translation.y = get_numeric_value(translation["y"]);
+                        if (translation["z"]) transform.translation.z = get_numeric_value(translation["z"]);
+                      }
+                      
+                      if (transform_doc["rotation"]) {
+                        auto rotation = transform_doc["rotation"].get_document().value;
+                        if (rotation["x"]) transform.rotation.x = get_numeric_value(rotation["x"]);
+                        if (rotation["y"]) transform.rotation.y = get_numeric_value(rotation["y"]);
+                        if (rotation["z"]) transform.rotation.z = get_numeric_value(rotation["z"]);
+                        if (rotation["w"]) transform.rotation.w = get_numeric_value(rotation["w"]);
+                      }
+                      
+                      point.transforms.push_back(transform);
+                    }
+                  }
+                  
+                  // velocities
+                  if (point_doc["velocities"]) {
+                    auto velocities_array = point_doc["velocities"].get_array().value;
+                    for (auto&& vel_element : velocities_array) {
+                      auto vel_doc = vel_element.get_document().value;
+                      geometry_msgs::msg::Twist twist;
+                      
+                      if (vel_doc["linear"]) {
+                        auto linear = vel_doc["linear"].get_document().value;
+                        if (linear["x"]) twist.linear.x = get_numeric_value(linear["x"]);
+                        if (linear["y"]) twist.linear.y = get_numeric_value(linear["y"]);
+                        if (linear["z"]) twist.linear.z = get_numeric_value(linear["z"]);
+                      }
+                      
+                      if (vel_doc["angular"]) {
+                        auto angular = vel_doc["angular"].get_document().value;
+                        if (angular["x"]) twist.angular.x = get_numeric_value(angular["x"]);
+                        if (angular["y"]) twist.angular.y = get_numeric_value(angular["y"]);
+                        if (angular["z"]) twist.angular.z = get_numeric_value(angular["z"]);
+                      }
+                      
+                      point.velocities.push_back(twist);
+                    }
+                  }
+                  
+                  // accelerations
+                  if (point_doc["accelerations"]) {
+                    auto accelerations_array = point_doc["accelerations"].get_array().value;
+                    for (auto&& acc_element : accelerations_array) {
+                      auto acc_doc = acc_element.get_document().value;
+                      geometry_msgs::msg::Twist twist;
+                      
+                      if (acc_doc["linear"]) {
+                        auto linear = acc_doc["linear"].get_document().value;
+                        if (linear["x"]) twist.linear.x = get_numeric_value(linear["x"]);
+                        if (linear["y"]) twist.linear.y = get_numeric_value(linear["y"]);
+                        if (linear["z"]) twist.linear.z = get_numeric_value(linear["z"]);
+                      }
+                      
+                      if (acc_doc["angular"]) {
+                        auto angular = acc_doc["angular"].get_document().value;
+                        if (angular["x"]) twist.angular.x = get_numeric_value(angular["x"]);
+                        if (angular["y"]) twist.angular.y = get_numeric_value(angular["y"]);
+                        if (angular["z"]) twist.angular.z = get_numeric_value(angular["z"]);
+                      }
+                      
+                      point.accelerations.push_back(twist);
+                    }
+                  }
+                  
+                  // time_from_start
+                  if (point_doc["time_from_start"]) {
+                    auto time_doc = point_doc["time_from_start"].get_document().value;
+                    if (time_doc["sec"]) {
+                      point.time_from_start.sec = time_doc["sec"].get_int32().value;
+                    }
+                    if (time_doc["nanosec"]) {
+                      point.time_from_start.nanosec = time_doc["nanosec"].get_int32().value;
+                    }
+                  }
+                  
+                  robot_trajectory.multi_dof_joint_trajectory.points.push_back(point);
+                }
+              }
+            }
+            
+            goal_msg.previous_pose.push_back(robot_trajectory);
+            RCLCPP_INFO(this->get_logger(), "Loaded trajectory %d from previous plan", index);
+          } catch (...) {
+            // 数字でないキーはスキップ
+            continue;
+          }
+        }
+        
+        RCLCPP_INFO(this->get_logger(), "Successfully loaded %zu trajectories from previous plan", goal_msg.previous_pose.size());
+      } else {
+        RCLCPP_INFO(this->get_logger(), "Previous record has no plan, will plan from current pose");
+      }
+    } catch (const std::exception& e) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to parse previous plan: %s. Will plan from current pose", e.what());
+    }
+  }
+  else
+  {
+    RCLCPP_INFO(this->get_logger(), "No previous plan specified, will plan from current pose");
+  }
+  
   RCLCPP_INFO(this->get_logger(), "Get joint values from DB.");
 
   RCLCPP_INFO(this->get_logger(), "param_from_db_ contents:");

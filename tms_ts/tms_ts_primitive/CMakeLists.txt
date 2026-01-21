@@ -36,6 +36,7 @@ find_package(Qt5Widgets REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
   src/leaf_node_base.cpp
+  src/Excavator/leaf_node.cpp
   src/primitive_node_base.cpp)
 
 
