@@ -77,7 +77,16 @@ private:
         std::string out;
         size_t pos = 0;
         while (pos < expr.size()) {
-            if (expr[pos] == '"' || (!std::isalpha(static_cast<unsigned char>(expr[pos])) && expr[pos] != '_')) {
+            if (expr[pos] == '"') {
+                size_t end = pos + 1;
+                while (end < expr.size() && expr[end] != '"') {
+                    end++;
+                }
+                if (end < expr.size()) end++; // closing "
+                out.append(expr.substr(pos, end - pos));
+                pos = end;
+                continue;
+            } else if (!std::isalpha(static_cast<unsigned char>(expr[pos])) && expr[pos] != '_') {
                 out += expr[pos++];
             } else {
                 std::smatch wm;

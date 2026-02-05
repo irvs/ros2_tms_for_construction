@@ -161,6 +161,7 @@ public:
     factory.registerNodeType<LeafNodeCrawlerDump>("LeafNodeCrawlerDump");
     factory.registerNodeType<LeafNodeBulldozer>("LeafNodeBulldozer");
     factory.registerNodeType<BlackboardValueReaderMongo>("BlackboardValueReaderMongo");
+    factory.registerNodeType<BlackboardValueSearcherMongo>("BlackboardValueSearcherMongo");
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
