@@ -64,6 +64,8 @@ void PrimitiveExcavatorFollowWaypointys::execute(const std::shared_ptr<GoalHandl
 {
     RCLCPP_INFO(this->get_logger(), "primitive(primitive_excavator_follow_waypoints_node) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
+    auto goal = goal_handle->get_goal();
+    std::string read_direction = goal->read_direction;
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
         {
@@ -86,17 +88,35 @@ void PrimitiveExcavatorFollowWaypointys::execute(const std::shared_ptr<GoalHandl
     pose.header.stamp = this->now();
     pose.header.frame_id = "map";
 
-    for (int i=0; i < point_num; i++){
-      pose.pose.position.x = parameters[std::make_pair("x",std::to_string(i))];
-      pose.pose.position.y = parameters[std::make_pair("y",std::to_string(i))];
-      pose.pose.position.z = parameters[std::make_pair("z",std::to_string(i))];
-      pose.pose.orientation.x = parameters[std::make_pair("qx",std::to_string(i))];
-      pose.pose.orientation.y = parameters[std::make_pair("qy",std::to_string(i))];
-      pose.pose.orientation.z = parameters[std::make_pair("qz",std::to_string(i))];
-      pose.pose.orientation.w = parameters[std::make_pair("qw",std::to_string(i))];
-      poses.push_back(pose);
-      std::cout << "Point " << i << ": " << pose.pose.position.x << ", " << pose.pose.position.y << ", " << pose.pose.position.z << std::endl;
-      std::cout << "Pose " << i << ": " << pose.pose.orientation.x << ", " << pose.pose.orientation.y << ", " << pose.pose.orientation.z << ", " << pose.pose.orientation.w << std::endl;
+    if (read_direction == "down"){
+      for (int i=point_num-1; i >= 0; i--){
+        pose.pose.position.x = parameters[std::make_pair("x",std::to_string(i))];
+        pose.pose.position.y = parameters[std::make_pair("y",std::to_string(i))];
+        pose.pose.position.z = parameters[std::make_pair("z",std::to_string(i))];
+        pose.pose.orientation.x = parameters[std::make_pair("qx",std::to_string(i))];
+        pose.pose.orientation.y = parameters[std::make_pair("qy",std::to_string(i))];
+        pose.pose.orientation.z = parameters[std::make_pair("qz",std::to_string(i))];
+        pose.pose.orientation.w = parameters[std::make_pair("qw",std::to_string(i))];
+        poses.push_back(pose);
+        std::cout << "Point " << i << ": " << pose.pose.position.x << ", " << pose.pose.position.y << ", " << pose.pose.position.z << std::endl;
+        std::cout << "Pose " << i << ": " << pose.pose.orientation.x << ", " << pose.pose.orientation.y << ", " << pose.pose.orientation.z << ", " << pose.pose.orientation.w << std::endl;
+      }
+
+    }
+
+    else{
+      for (int i=0; i < point_num; i++){
+        pose.pose.position.x = parameters[std::make_pair("x",std::to_string(i))];
+        pose.pose.position.y = parameters[std::make_pair("y",std::to_string(i))];
+        pose.pose.position.z = parameters[std::make_pair("z",std::to_string(i))];
+        pose.pose.orientation.x = parameters[std::make_pair("qx",std::to_string(i))];
+        pose.pose.orientation.y = parameters[std::make_pair("qy",std::to_string(i))];
+        pose.pose.orientation.z = parameters[std::make_pair("qz",std::to_string(i))];
+        pose.pose.orientation.w = parameters[std::make_pair("qw",std::to_string(i))];
+        poses.push_back(pose);
+        std::cout << "Point " << i << ": " << pose.pose.position.x << ", " << pose.pose.position.y << ", " << pose.pose.position.z << std::endl;
+        std::cout << "Pose " << i << ": " << pose.pose.orientation.x << ", " << pose.pose.orientation.y << ", " << pose.pose.orientation.z << ", " << pose.pose.orientation.w << std::endl;
+      }
     }
 
     // goal_msg.number_of_loops = 1;

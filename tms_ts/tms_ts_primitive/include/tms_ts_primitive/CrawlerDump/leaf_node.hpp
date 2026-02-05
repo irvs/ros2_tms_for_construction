@@ -40,7 +40,7 @@ public:
     : LeafNodeBase("leaf_node_CrawlerDump", config){};
   inline static PortsList providedPorts()
   {
-    return { InputPort<std::string>("model_name"), InputPort<std::string>("record_name"), InputPort<std::string>("primitive_name") };
+    return { InputPort<std::string>("model_name"), InputPort<std::string>("record_name"), InputPort<std::string>("primitive_name"), InputPort<std::string>("read_direction") };
   };
 };
 

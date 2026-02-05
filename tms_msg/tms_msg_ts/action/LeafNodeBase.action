@@ -1,6 +1,7 @@
 # Goal
 string model_name
 string record_name
+string read_direction
 ---
 # Result
 bool result

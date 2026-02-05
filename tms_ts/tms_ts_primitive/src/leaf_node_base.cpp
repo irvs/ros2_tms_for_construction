@@ -26,7 +26,11 @@ LeafNodeBase::LeafNodeBase(const std::string& name, const NodeConfiguration& con
   Optional<std::string> model_name = getInput<std::string>("model_name");
   // Optional<std::string> record_name = getInput<std::string>("record_name");
   Optional<std::string> primitive_name = getInput<std::string>("primitive_name");
+  Optional<std::string> read_direction = getInput<std::string>("read_direction");
   goal_.model_name = model_name.value();
+  if (read_direction) {
+    goal_.read_direction = read_direction.value();
+  }
 
     // if (!model_name || !record_name || !primitive_name) {
     //   RCLCPP_ERROR(node_->get_logger(),
