@@ -194,13 +194,7 @@ def generate_launch_description():
                   executable='primitive_crawlerdump_follow_waypoints',
                   output='screen',
                   parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-                  namespace='mst110cr'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_crawlerdump_follow_waypoints',
-                  output='screen',
-                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-                  namespace='mst110cr'),            
+                  namespace='mst110cr'),       
             Node(
                   package='tms_ts_primitive', 
                   executable='primitive_crawlerdump_navigate_anywhere',

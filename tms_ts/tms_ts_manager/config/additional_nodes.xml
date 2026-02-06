@@ -12,6 +12,7 @@
             <input_port name=" model_name"/>
             <inout_port name="record_name"/>
             <inout_port name="primitive_name"/> 
+            <inout_port name="read_direction"/> 
         </Action>
 
         <Action ID="LeafNodeExcavator">
@@ -23,6 +24,12 @@
         <Action ID="BlackboardValueReaderMongo">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+        </Action>
+
+        <Action ID="BlackboardValueSearcherMongo">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_value"/>
             <input_port name="output_port"/>
         </Action>
     
