@@ -39,6 +39,7 @@ set(action_files
   "action/TmsRpExcavatorChangePose.action"
   "action/TmsRpExcavatorChangePosePlan.action"
   "action/TmsRpExcavatorChangePoseExecute.action"
+  "action/TmsRpExcavatorAssist.action"
   "action/TmsRpCrawlerdumpDumpAngle.action"
   "action/TmsRpCrawlerdumpSwingAngle.action"
 )

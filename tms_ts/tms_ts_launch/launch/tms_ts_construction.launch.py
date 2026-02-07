@@ -80,6 +80,11 @@ def generate_launch_description():
                   executable='primitive_excavator_navigate_through_poses',
                   output='screen',
                   namespace = 'zx200'),
+            Node(
+                  package='tms_ts_primitive',
+                  executable='assist_excavation_pose_to_joint_angles',
+                  output='screen',
+                  namespace = 'zx200'),
             
             # sample ###
             #ic120用

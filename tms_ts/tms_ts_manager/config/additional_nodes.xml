@@ -21,6 +21,12 @@
             <inout_port name="primitive_name"/> 
         </Action>
 
+        <Action ID="LeafNodeExcavatorAssist">
+            <input_port name=" model_name" default="zx200"/>
+            <inout_port name="record_name"/>
+            <inout_port name="primitive_name"/> 
+        </Action>
+
         <Action ID="BlackboardValueReaderMongo">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>

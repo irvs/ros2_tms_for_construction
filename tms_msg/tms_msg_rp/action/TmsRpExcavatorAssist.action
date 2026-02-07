@@ -1,0 +1,13 @@
+# Goal definition
+tms_msg_rp/TmsRpExcavatorPositionWithAngle position_with_angle
+
+---
+
+# Result definition
+TmsRpErrorCodes error_code
+tms_msg_rp/TmsRpExcavatorJointValues[] joint_values
+
+---
+
+# Feedback definition
+string state

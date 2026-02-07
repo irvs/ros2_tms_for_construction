@@ -37,6 +37,7 @@ find_package(Qt5Widgets REQUIRED)
 add_library(${PROJECT_NAME} SHARED
   src/leaf_node_base.cpp
   src/Excavator/leaf_node.cpp
+  src/assist_node_base.cpp
   src/primitive_node_base.cpp)
 
 
@@ -73,6 +74,7 @@ add_executable(primitive_crawlerdump_swing src/Crawlerdump/primitive_crawlerdump
 add_executable(primitive_crawlerdump_swing_align_to_heading src/Crawlerdump/primitive_crawlerdump_swing_align_to_heading.cpp)
 
 # Primitive Nodes for Excavator
+add_executable(assist_excavation_pose_to_joint_angles src/Excavator/assist_excavation_pose_to_joint_angles.cpp)
 add_executable(primitive_excavator_change_pose_plan_from_poses src/Excavator/primitive_excavator_change_pose_plan_from_poses.cpp)
 add_executable(primitive_excavator_change_pose_plan_from_joint_values src/Excavator/primitive_excavator_change_pose_plan_from_joint_values.cpp)
 add_executable(primitive_excavator_change_pose_execute_from_plan src/Excavator/primitive_excavator_change_pose_execute_from_plan.cpp)
@@ -100,6 +102,7 @@ set(TARGETS
   primitive_crawlerdump_release_soil
   primitive_crawlerdump_swing
   primitive_crawlerdump_swing_align_to_heading
+  assist_excavation_pose_to_joint_angles
   primitive_excavator_change_pose_plan_from_poses
   primitive_excavator_change_pose_plan_from_joint_values
   primitive_excavator_change_pose_execute_from_plan
