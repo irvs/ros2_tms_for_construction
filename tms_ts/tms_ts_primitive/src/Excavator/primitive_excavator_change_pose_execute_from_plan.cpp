@@ -69,7 +69,7 @@ PrimitiveExcavatorChangePoseExecuteFromJointValues::PrimitiveExcavatorChangePose
       std::bind(&PrimitiveExcavatorChangePoseExecuteFromJointValues::handle_accepted, this, std::placeholders::_1),
       options_server);
 
-  action_client_ = rclcpp_action::create_client<ExcavatorChangePoseExecuteFromJointValues>(this, "tms_rp_excavator_change_pose_execute_from_plan",nullptr ,options_client);
+  action_client_ = rclcpp_action::create_client<TmsRpExcavator>(this, "tms_rp_excavator", nullptr, options_client);
   if (action_client_->wait_for_action_server())
   {
     RCLCPP_INFO(this->get_logger(), "Action server is ready");
@@ -122,38 +122,76 @@ void PrimitiveExcavatorChangePoseExecuteFromJointValues::execute(const std::shar
     {
       result->result = false;
       goal_handle->abort(result);
-      RCLCPP_INFO(this->get_logger(), message.c_str());
+      RCLCPP_ERROR(this->get_logger(), "%s", message.c_str());
     }
     else
     {
       RCLCPP_INFO(this->get_logger(), "Goal is not active");
     }
   };
+  
   if (!action_client_->action_server_is_ready())
   {
     handle_error("Action server not available");
     return;
   }
 
-  auto goal_msg = ExcavatorChangePoseExecuteFromJointValues::Goal();
-  RCLCPP_INFO(this->get_logger(), "Get plan from DB.");
-
+  RCLCPP_INFO(this->get_logger(), "Getting plan from DB");
   RCLCPP_INFO(this->get_logger(), "param_from_db_ contents:");
   for (const auto& [key, value] : param_from_db_)
   {
     RCLCPP_INFO(this->get_logger(), "  %s: %s", key.c_str(), value.c_str());
   }
 
-  // JSON文字列からBSONドキュメントに変換してRobotTrajectory型に設定
+  // TmsRpExcavatorのゴールメッセージを作成
+  auto goal_msg = TmsRpExcavator::Goal();
+  goal_msg.command = TmsRpExcavator::Goal::CMD_EXECUTE_PLAN;
+  
+  // planning_groupを取得
+  if (param_from_db_.count("planning_group")) {
+    try {
+      auto doc = bsoncxx::from_json(param_from_db_["planning_group"]);
+      auto view = doc.view();
+      if (view["planning_group"] && view["planning_group"].type() == bsoncxx::type::k_string) {
+        goal_msg.planning_group = view["planning_group"].get_string().value.to_string();
+        RCLCPP_INFO(this->get_logger(), "Planning group: %s", goal_msg.planning_group.c_str());
+      }
+    } catch (const std::exception& e) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to parse planning_group: %s", e.what());
+    }
+  }
+  
+  if (goal_msg.planning_group.empty()) {
+    handle_error("planning_group is required but not found in DB");
+    return;
+  }
+
+  // async_executeオプションがあれば取得
+  if (param_from_db_.count("async_execute")) {
+    try {
+      auto doc = bsoncxx::from_json(param_from_db_["async_execute"]);
+      auto view = doc.view();
+      if (view["async_execute"]) {
+        if (view["async_execute"].type() == bsoncxx::type::k_bool) {
+          goal_msg.async_execute = view["async_execute"].get_bool().value;
+        } else if (view["async_execute"].type() == bsoncxx::type::k_int32) {
+          goal_msg.async_execute = view["async_execute"].get_int32().value != 0;
+        }
+        RCLCPP_INFO(this->get_logger(), "Async execute: %s", goal_msg.async_execute ? "true" : "false");
+      }
+    } catch (const std::exception& e) {
+      RCLCPP_WARN(this->get_logger(), "Failed to parse async_execute: %s", e.what());
+    }
+  }
+
+  // データベースからplanを取得してRobotTrajectory配列に変換
   try {
-    // planパラメータのチェック
     if (!param_from_db_.count("plan")) {
       RCLCPP_ERROR(this->get_logger(), "Missing required parameter: plan");
       handle_error("Missing required parameter: plan");
       return;
     }
 
-    // plan配列のパース
     auto doc = bsoncxx::from_json(param_from_db_["plan"]);
     auto view = doc.view();
     
@@ -386,20 +424,20 @@ void PrimitiveExcavatorChangePoseExecuteFromJointValues::execute(const std::shar
     return;
   }
 
-  // Send goal to TMS_RP
-  auto send_goal_options = rclcpp_action::Client<ExcavatorChangePoseExecuteFromJointValues>::SendGoalOptions();
+  RCLCPP_INFO(this->get_logger(), "Sending EXECUTE_PLAN command to tms_rp_excavator");
+
+  // Send goal to TMS_IF
+  auto send_goal_options = rclcpp_action::Client<TmsRpExcavator>::SendGoalOptions();
   send_goal_options.goal_response_callback = [this](const auto& goal_handle) { goal_response_callback(goal_handle); };
   send_goal_options.feedback_callback = [this](const auto tmp, const auto feedback) {
     feedback_callback(tmp, feedback);
   };
   send_goal_options.result_callback = [this, goal_handle](const auto& result) { result_callback(goal_handle, result); };
 
-  RCLCPP_INFO(this->get_logger(), "Sending goal");
-
   client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void PrimitiveExcavatorChangePoseExecuteFromJointValues::goal_response_callback(const GoalHandleExcavatorChangePoseExecuteFromJointValues::SharedPtr& goal_handle)
+void PrimitiveExcavatorChangePoseExecuteFromJointValues::goal_response_callback(const GoalHandleTmsRpExcavator::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -412,44 +450,54 @@ void PrimitiveExcavatorChangePoseExecuteFromJointValues::goal_response_callback(
 }
 
 void PrimitiveExcavatorChangePoseExecuteFromJointValues::feedback_callback(
-    const GoalHandleExcavatorChangePoseExecuteFromJointValues::SharedPtr,
-    const std::shared_ptr<const GoalHandleExcavatorChangePoseExecuteFromJointValues::Feedback> feedback)
+    const GoalHandleTmsRpExcavator::SharedPtr,
+    const std::shared_ptr<const TmsRpExcavator::Feedback> feedback)
 {
-  // TODO: Fix to feedback to leaf node
-  RCLCPP_INFO(this->get_logger(), "Feedback received: %s", feedback->state.c_str());
+  RCLCPP_INFO(this->get_logger(), "Feedback: %s (progress: %.2f)", feedback->state.c_str(), feedback->progress);
 }
 
 void PrimitiveExcavatorChangePoseExecuteFromJointValues::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandleExcavatorChangePoseExecuteFromJointValues::WrappedResult& result)
+                                             const GoalHandleTmsRpExcavator::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {
-    RCLCPP_WARN(this->get_logger(), "Attempted to succeed an already succeeded goal");
+    RCLCPP_WARN(this->get_logger(), "Attempted to complete an already completed goal");
     return;
   }
 
   auto result_to_leaf = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
+  
   switch (result.code)
   {
     case rclcpp_action::ResultCode::SUCCEEDED:
-      result_to_leaf->result = true;
-      goal_handle->succeed(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Primitive execution is succeeded");
+      if (result.result->success) {
+        result_to_leaf->result = true;
+        goal_handle->succeed(result_to_leaf);
+        RCLCPP_INFO(this->get_logger(), "Plan execution succeeded: %s", result.result->message.c_str());
+      } else {
+        result_to_leaf->result = false;
+        goal_handle->abort(result_to_leaf);
+        RCLCPP_ERROR(this->get_logger(), "Plan execution failed: %s (error code: %d)", 
+                     result.result->message.c_str(), result.result->moveit_error_code);
+      }
       break;
+      
     case rclcpp_action::ResultCode::ABORTED:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Primitive execution is aborted");
+      RCLCPP_ERROR(this->get_logger(), "Plan execution was aborted");
       break;
+      
     case rclcpp_action::ResultCode::CANCELED:
       result_to_leaf->result = false;
       goal_handle->canceled(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Primitive execution is canceled");
+      RCLCPP_INFO(this->get_logger(), "Plan execution was canceled");
       break;
+      
     default:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
-      RCLCPP_INFO(this->get_logger(), "Unknown result code");
+      RCLCPP_ERROR(this->get_logger(), "Unknown result code");
       break;
   }
 }

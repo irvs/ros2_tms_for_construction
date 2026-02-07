@@ -8,11 +8,12 @@
 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
 #include "tms_ts_primitive/Excavator/primitive_excavator_change_pose_plan_from_poses.hpp"
+#include "tms_ts_primitive/Excavator/lib/excavator_pose_converter.hpp"
 #include <glog/logging.h>
 
 using namespace std::chrono_literals;
@@ -46,7 +47,7 @@ namespace {
   }
 }
 
-PrimitiveExcavatorChangePoseFromPose::PrimitiveExcavatorChangePoseFromPose() : PrimitiveNodeBase("primitive_excavator_change_pose_from_pose_node")
+PrimitiveExcavatorChangePoseFromPose::PrimitiveExcavatorChangePoseFromPose() : PrimitiveNodeBase("primitive_excavator_change_pose_plan_from_poses_node")
 {
     auto options_server = rcl_action_server_get_default_options();
     options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
@@ -69,7 +70,7 @@ PrimitiveExcavatorChangePoseFromPose::PrimitiveExcavatorChangePoseFromPose() : P
       std::bind(&PrimitiveExcavatorChangePoseFromPose::handle_accepted, this, std::placeholders::_1),
       options_server);
 
-  action_client_ = rclcpp_action::create_client<ExcavatorChangePoseFromPose>(this, "tms_rp_excavator_change_pose_plan_from_poses",nullptr ,options_client);
+  action_client_ = rclcpp_action::create_client<TmsRpExcavator>(this, "tms_rp_excavator", nullptr, options_client);
   if (action_client_->wait_for_action_server())
   {
     RCLCPP_INFO(this->get_logger(), "Action server is ready");
@@ -153,8 +154,9 @@ void PrimitiveExcavatorChangePoseFromPose::execute(const std::shared_ptr<GoalHan
     return;
   }
 
-  auto goal_msg = ExcavatorChangePoseFromPose::Goal();
-  goal_msg.joint_values_sequence.clear();
+  auto goal_msg = TmsRpExcavator::Goal();
+  goal_msg.command = TmsRpExcavator::Goal::CMD_PLAN_TO_POSE;
+  goal_msg.pose_sequence.clear();
   goal_msg.previous_pose.clear();
 
   RCLCPP_INFO(this->get_logger(), "Get pose from DB.");
@@ -383,7 +385,7 @@ void PrimitiveExcavatorChangePoseFromPose::execute(const std::shared_ptr<GoalHan
 
   // JSON文字列からBSONドキュメントに変換してメッセージ型に設定
   try {
-    // position_with_angleパラメータのチェック
+    // poseパラメータのチェック
     if (!param_from_db_.count("position_with_angle")) {
       RCLCPP_ERROR(this->get_logger(), "Missing required parameter: position_with_angle");
       handle_error("Missing required parameter: position_with_angle");
@@ -410,6 +412,9 @@ void PrimitiveExcavatorChangePoseFromPose::execute(const std::shared_ptr<GoalHan
     
     auto position_array = position_with_angle_element.get_array().value;
     
+    // ExcavatorPoseConverterのインスタンス作成
+    ExcavatorPoseConverter pose_converter;
+    
     // 各位置データを処理
     for (auto&& pos_element : position_array) {
       if (pos_element.type() != bsoncxx::type::k_document) {
@@ -418,7 +423,6 @@ void PrimitiveExcavatorChangePoseFromPose::execute(const std::shared_ptr<GoalHan
       }
       
       auto pos_doc = pos_element.get_document().value;
-      tms_msg_rp::msg::TmsRpExcavatorPositionWithAngle target_pose;
       
       // x, y, z, theta_wの抽出
       if (!pos_doc["x"] || !pos_doc["y"] || !pos_doc["z"] || !pos_doc["theta_w"]) {
@@ -426,19 +430,34 @@ void PrimitiveExcavatorChangePoseFromPose::execute(const std::shared_ptr<GoalHan
         continue;
       }
       
-      target_pose.position.x = get_numeric_value(pos_doc["x"]);
-      target_pose.position.y = get_numeric_value(pos_doc["y"]);
-      target_pose.position.z = get_numeric_value(pos_doc["z"]);
-      target_pose.theta_w = get_numeric_value(pos_doc["theta_w"]);
+      double x = get_numeric_value(pos_doc["x"]);
+      double y = get_numeric_value(pos_doc["y"]);
+      double z = get_numeric_value(pos_doc["z"]);
+      double theta_w = get_numeric_value(pos_doc["theta_w"]);
       
-      goal_msg.position_with_angle_sequence.push_back(target_pose);
-      RCLCPP_INFO(this->get_logger(), "Added target pose: x=%f, y=%f, z=%f, theta_w=%f", 
-                  target_pose.position.x, target_pose.position.y, target_pose.position.z, target_pose.theta_w);
+      // ExcavatorPoseConverterを使用して変換
+      Pose converted_pose;
+      pose_converter.convertToXYZQuaternion(x, y, z, theta_w, converted_pose);
+      
+      // 変換結果をgeometry_msgs::msg::Poseに代入
+      geometry_msgs::msg::Pose target_pose;
+      target_pose.position.x = converted_pose.x;
+      target_pose.position.y = converted_pose.y;
+      target_pose.position.z = converted_pose.z;
+      target_pose.orientation.x = converted_pose.qx;
+      target_pose.orientation.y = converted_pose.qy;
+      target_pose.orientation.z = converted_pose.qz;
+      target_pose.orientation.w = converted_pose.qw;
+      
+      goal_msg.pose_sequence.push_back(target_pose);
+      RCLCPP_INFO(this->get_logger(), "Added target pose: x=%f, y=%f, z=%f, theta_w=%f (converted to quaternion: qx=%f, qy=%f, qz=%f, qw=%f)", 
+                  target_pose.position.x, target_pose.position.y, target_pose.position.z, theta_w,
+                  target_pose.orientation.x, target_pose.orientation.y, target_pose.orientation.z, target_pose.orientation.w);
     }
     
-    if (goal_msg.position_with_angle_sequence.empty()) {
+    if (goal_msg.pose_sequence.empty()) {
       RCLCPP_ERROR(this->get_logger(), "No valid positions were added to the sequence");
-      handle_error("No valid positions in position_with_angle array");
+      handle_error("No valid positions in pose array");
       return;
     }
 
@@ -896,8 +915,8 @@ void PrimitiveExcavatorChangePoseFromPose::execute(const std::shared_ptr<GoalHan
     return;
   }
 
-  // Send goal to TMS_RP
-  auto send_goal_options = rclcpp_action::Client<ExcavatorChangePoseFromPose>::SendGoalOptions();
+  // Send goal to tms_if_moveit
+  auto send_goal_options = rclcpp_action::Client<TmsRpExcavator>::SendGoalOptions();
   send_goal_options.goal_response_callback = [this](const auto& goal_handle) { goal_response_callback(goal_handle); };
   send_goal_options.feedback_callback = [this](const auto tmp, const auto feedback) {
     feedback_callback(tmp, feedback);
@@ -909,7 +928,7 @@ void PrimitiveExcavatorChangePoseFromPose::execute(const std::shared_ptr<GoalHan
   client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void PrimitiveExcavatorChangePoseFromPose::goal_response_callback(const GoalHandleExcavatorChangePoseFromPose::SharedPtr& goal_handle)
+void PrimitiveExcavatorChangePoseFromPose::goal_response_callback(const GoalHandleTmsRpExcavator::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -922,15 +941,14 @@ void PrimitiveExcavatorChangePoseFromPose::goal_response_callback(const GoalHand
 }
 
 void PrimitiveExcavatorChangePoseFromPose::feedback_callback(
-    const GoalHandleExcavatorChangePoseFromPose::SharedPtr,
-    const std::shared_ptr<const GoalHandleExcavatorChangePoseFromPose::Feedback> feedback)
+    const GoalHandleTmsRpExcavator::SharedPtr,
+    const std::shared_ptr<const TmsRpExcavator::Feedback> feedback)
 {
-  // TODO: Fix to feedback to leaf node
-  RCLCPP_INFO(this->get_logger(), "Feedback received: %s", feedback->state.c_str());
+  RCLCPP_INFO(this->get_logger(), "Feedback: %s (progress: %.2f)", feedback->state.c_str(), feedback->progress);
 }
 
 void PrimitiveExcavatorChangePoseFromPose::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandleExcavatorChangePoseFromPose::WrappedResult& result)
+                                             const GoalHandleTmsRpExcavator::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {

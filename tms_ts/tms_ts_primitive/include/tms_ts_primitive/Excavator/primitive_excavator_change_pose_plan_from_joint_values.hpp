@@ -30,7 +30,7 @@
 #include "tms_msg_ts/action/leaf_node_base.hpp"
 #include "tms_ts_primitive/primitive_node_base.hpp"
 
-#include "tms_msg_rp/action/tms_rp_excavator_change_pose_plan.hpp"
+#include "tms_msg_rp/action/tms_rp_excavator.hpp"
 #include "tms_msg_rp/msg/tms_rp_excavator_joint_values.hpp"
 
 #include <rclcpp/qos.hpp>   
@@ -51,8 +51,8 @@ class PrimitiveExcavatorChangePosePlanFromJointValues : public PrimitiveNodeBase
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
 
-  using ExcavatorChangePosePlanFromJointValues = tms_msg_rp::action::TmsRpExcavatorChangePosePlan;
-  using GoalHandleExcavatorChangePosePlanFromJointValues = rclcpp_action::ClientGoalHandle<ExcavatorChangePosePlanFromJointValues>;
+  using TmsRpExcavator = tms_msg_rp::action::TmsRpExcavator;
+  using GoalHandleTmsRpExcavator = rclcpp_action::ClientGoalHandle<TmsRpExcavator>;
 
   PrimitiveExcavatorChangePosePlanFromJointValues();
 
@@ -71,13 +71,13 @@ private:
   void execute(const std::shared_ptr<GoalHandle> goal_handle);
 
   // Member as an action client
-  rclcpp_action::Client<ExcavatorChangePosePlanFromJointValues>::SharedPtr action_client_;
-  std::shared_future<GoalHandleExcavatorChangePosePlanFromJointValues::SharedPtr> client_future_goal_handle_;
-  void goal_response_callback(const GoalHandleExcavatorChangePosePlanFromJointValues::SharedPtr& goal_handle);
-  void feedback_callback(GoalHandleExcavatorChangePosePlanFromJointValues::SharedPtr,
-                         const std::shared_ptr<const ExcavatorChangePosePlanFromJointValues::Feedback> feedback);
+  rclcpp_action::Client<TmsRpExcavator>::SharedPtr action_client_;
+  std::shared_future<GoalHandleTmsRpExcavator::SharedPtr> client_future_goal_handle_;
+  void goal_response_callback(const GoalHandleTmsRpExcavator::SharedPtr& goal_handle);
+  void feedback_callback(GoalHandleTmsRpExcavator::SharedPtr,
+                         const std::shared_ptr<const TmsRpExcavator::Feedback> feedback);
   void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                       const GoalHandleExcavatorChangePosePlanFromJointValues::WrappedResult& result);
+                       const GoalHandleTmsRpExcavator::WrappedResult& result);
 };
 
 #endif

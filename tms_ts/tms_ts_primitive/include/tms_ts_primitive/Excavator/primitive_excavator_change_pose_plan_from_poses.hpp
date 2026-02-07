@@ -30,7 +30,7 @@
 #include "tms_msg_ts/action/leaf_node_base.hpp"
 #include "tms_ts_primitive/primitive_node_base.hpp"
 
-#include "tms_msg_rp/action/tms_rp_excavator_change_pose_plan.hpp"
+#include "tms_msg_rp/action/tms_rp_excavator.hpp"
 
 #include <rclcpp/qos.hpp>   
 #include <rmw/qos_profiles.h>  
@@ -50,8 +50,8 @@ class PrimitiveExcavatorChangePoseFromPose : public PrimitiveNodeBase
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
 
-  using ExcavatorChangePoseFromPose = tms_msg_rp::action::TmsRpExcavatorChangePosePlan;
-  using GoalHandleExcavatorChangePoseFromPose = rclcpp_action::ClientGoalHandle<ExcavatorChangePoseFromPose>;
+  using TmsRpExcavator = tms_msg_rp::action::TmsRpExcavator;
+  using GoalHandleTmsRpExcavator = rclcpp_action::ClientGoalHandle<TmsRpExcavator>;
 
   PrimitiveExcavatorChangePoseFromPose();
 
@@ -70,13 +70,13 @@ private:
   void execute(const std::shared_ptr<GoalHandle> goal_handle);
 
   // Member as an action client
-  rclcpp_action::Client<ExcavatorChangePoseFromPose>::SharedPtr action_client_;
-  std::shared_future<GoalHandleExcavatorChangePoseFromPose::SharedPtr> client_future_goal_handle_;
-  void goal_response_callback(const GoalHandleExcavatorChangePoseFromPose::SharedPtr& goal_handle);
-  void feedback_callback(GoalHandleExcavatorChangePoseFromPose::SharedPtr,
-                         const std::shared_ptr<const ExcavatorChangePoseFromPose::Feedback> feedback);
+  rclcpp_action::Client<TmsRpExcavator>::SharedPtr action_client_;
+  std::shared_future<GoalHandleTmsRpExcavator::SharedPtr> client_future_goal_handle_;
+  void goal_response_callback(const GoalHandleTmsRpExcavator::SharedPtr& goal_handle);
+  void feedback_callback(GoalHandleTmsRpExcavator::SharedPtr,
+                         const std::shared_ptr<const TmsRpExcavator::Feedback> feedback);
   void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                       const GoalHandleExcavatorChangePoseFromPose::WrappedResult& result);
+                       const GoalHandleTmsRpExcavator::WrappedResult& result);
 };
 
 #endif

@@ -74,7 +74,7 @@ add_executable(primitive_crawlerdump_swing src/Crawlerdump/primitive_crawlerdump
 add_executable(primitive_crawlerdump_swing_align_to_heading src/Crawlerdump/primitive_crawlerdump_swing_align_to_heading.cpp)
 
 # Primitive Nodes for Excavator
-add_executable(assist_excavation_pose_to_joint_angles src/Excavator/assist_excavation_pose_to_joint_angles.cpp)
+# add_executable(assist_excavation_pose_to_joint_angles src/Excavator/assist_excavation_pose_to_joint_angles.cpp)
 add_executable(primitive_excavator_change_pose_plan_from_poses src/Excavator/primitive_excavator_change_pose_plan_from_poses.cpp)
 add_executable(primitive_excavator_change_pose_plan_from_joint_values src/Excavator/primitive_excavator_change_pose_plan_from_joint_values.cpp)
 add_executable(primitive_excavator_change_pose_execute_from_plan src/Excavator/primitive_excavator_change_pose_execute_from_plan.cpp)
@@ -85,6 +85,8 @@ add_executable(primitive_excavator_navigate_anywhere_deg src/Excavator/primitive
 add_executable(primitive_excavator_navigate_through_poses src/Excavator/primitive_excavator_navigate_through_poses.cpp)
 add_executable(primitive_excavator_navigate_through_poses_deg src/Excavator/primitive_excavator_navigate_through_poses_deg.cpp)
 
+add_library(excavator_pose_converter SHARED src/Excavator/lib/excavator_pose_converter.cpp)
+target_include_directories(excavator_pose_converter PUBLIC include)
 
 set(TARGETS
   primitive_bulldozer_follow_waypoints_deg
@@ -102,7 +104,7 @@ set(TARGETS
   primitive_crawlerdump_release_soil
   primitive_crawlerdump_swing
   primitive_crawlerdump_swing_align_to_heading
-  assist_excavation_pose_to_joint_angles
+  # assist_excavation_pose_to_joint_angles
   primitive_excavator_change_pose_plan_from_poses
   primitive_excavator_change_pose_plan_from_joint_values
   primitive_excavator_change_pose_execute_from_plan
@@ -152,6 +154,9 @@ target_include_directories(${target} PUBLIC ${COMMON_INCLUDE_DIRS})
   target_link_libraries(${target} ${COMMON_LIBS})
 endforeach()
 
+# Link excavator_pose_converter to specific excavator targets
+target_link_libraries(primitive_excavator_change_pose_plan_from_poses excavator_pose_converter)
+
 ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
 
 install(TARGETS ${TARGETS}
@@ -163,7 +168,14 @@ install(DIRECTORY include/
 )
 
 install(
-  TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
+  TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
+
+install(
+  TARGETS excavator_pose_converter
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)

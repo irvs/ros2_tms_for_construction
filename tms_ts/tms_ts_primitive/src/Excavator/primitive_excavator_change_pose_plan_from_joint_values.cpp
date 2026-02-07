@@ -69,7 +69,7 @@ PrimitiveExcavatorChangePosePlanFromJointValues::PrimitiveExcavatorChangePosePla
       std::bind(&PrimitiveExcavatorChangePosePlanFromJointValues::handle_accepted, this, std::placeholders::_1),
       options_server);
 
-  action_client_ = rclcpp_action::create_client<ExcavatorChangePosePlanFromJointValues>(this, "tms_rp_excavator_change_pose_plan_from_joint_values",nullptr ,options_client);
+  action_client_ = rclcpp_action::create_client<TmsRpExcavator>(this, "tms_rp_excavator", nullptr, options_client);
   if (action_client_->wait_for_action_server())
   {
     RCLCPP_INFO(this->get_logger(), "Action server is ready");
@@ -153,8 +153,9 @@ void PrimitiveExcavatorChangePosePlanFromJointValues::execute(const std::shared_
     return;
   }
 
-  auto goal_msg = ExcavatorChangePosePlanFromJointValues::Goal();
-  goal_msg.position_with_angle_sequence.clear();
+  auto goal_msg = TmsRpExcavator::Goal();
+  goal_msg.command = TmsRpExcavator::Goal::CMD_PLAN_TO_JOINTS;
+  goal_msg.joint_values_sequence.clear();
   goal_msg.previous_pose.clear();
   
   // previous_target_record_nameが空でない場合、データベースからplanを取得してRobotTrajectory配列に変換
@@ -892,8 +893,8 @@ void PrimitiveExcavatorChangePosePlanFromJointValues::execute(const std::shared_
     return;
   }
 
-  // Send goal to TMS_RP
-  auto send_goal_options = rclcpp_action::Client<ExcavatorChangePosePlanFromJointValues>::SendGoalOptions();
+  // Send goal to tms_if_moveit
+  auto send_goal_options = rclcpp_action::Client<TmsRpExcavator>::SendGoalOptions();
   send_goal_options.goal_response_callback = [this](const auto& goal_handle) { goal_response_callback(goal_handle); };
   send_goal_options.feedback_callback = [this](const auto tmp, const auto feedback) {
     feedback_callback(tmp, feedback);
@@ -905,7 +906,7 @@ void PrimitiveExcavatorChangePosePlanFromJointValues::execute(const std::shared_
   client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void PrimitiveExcavatorChangePosePlanFromJointValues::goal_response_callback(const GoalHandleExcavatorChangePosePlanFromJointValues::SharedPtr& goal_handle)
+void PrimitiveExcavatorChangePosePlanFromJointValues::goal_response_callback(const GoalHandleTmsRpExcavator::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -918,15 +919,14 @@ void PrimitiveExcavatorChangePosePlanFromJointValues::goal_response_callback(con
 }
 
 void PrimitiveExcavatorChangePosePlanFromJointValues::feedback_callback(
-    const GoalHandleExcavatorChangePosePlanFromJointValues::SharedPtr,
-    const std::shared_ptr<const GoalHandleExcavatorChangePosePlanFromJointValues::Feedback> feedback)
+    const GoalHandleTmsRpExcavator::SharedPtr,
+    const std::shared_ptr<const TmsRpExcavator::Feedback> feedback)
 {
-  // TODO: Fix to feedback to leaf node
-  RCLCPP_INFO(this->get_logger(), "Feedback received: %s", feedback->state.c_str());
+  RCLCPP_INFO(this->get_logger(), "Feedback: %s (progress: %.2f)", feedback->state.c_str(), feedback->progress);
 }
 
 void PrimitiveExcavatorChangePosePlanFromJointValues::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandleExcavatorChangePosePlanFromJointValues::WrappedResult& result)
+                                             const GoalHandleTmsRpExcavator::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {

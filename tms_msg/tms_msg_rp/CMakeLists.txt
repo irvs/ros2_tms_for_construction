@@ -31,15 +31,11 @@ find_package(moveit_msgs REQUIRED)
 
 set(msg_files
   "msg/TmsRpErrorCodes.msg"
-  "msg/TmsRpExcavatorPositionWithAngle.msg"
   "msg/TmsRpExcavatorJointValues.msg"
 )
 
 set(action_files
-  "action/TmsRpExcavatorChangePose.action"
-  "action/TmsRpExcavatorChangePosePlan.action"
-  "action/TmsRpExcavatorChangePoseExecute.action"
-  "action/TmsRpExcavatorAssist.action"
+  "action/TmsRpExcavator.action"
   "action/TmsRpCrawlerdumpDumpAngle.action"
   "action/TmsRpCrawlerdumpSwingAngle.action"
 )

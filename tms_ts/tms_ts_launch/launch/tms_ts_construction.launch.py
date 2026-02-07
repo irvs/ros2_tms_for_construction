@@ -81,8 +81,8 @@ def generate_launch_description():
                   output='screen',
                   namespace = 'zx200'),
             Node(
-                  package='tms_ts_primitive',
-                  executable='assist_excavation_pose_to_joint_angles',
+                  package='tms_ts_subtask',
+                  executable='subtask_excavation_retract_arm',
                   output='screen',
                   namespace = 'zx200'),
             
