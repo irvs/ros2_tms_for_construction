@@ -531,8 +531,8 @@ void SubtaskExcavationRetractArm::execute(const std::shared_ptr<GoalHandle> goal
     }
   }
 
-  // Step 4: 現在位置から 元の位置→引いた位置の順に実行（滑らかな軌道で）
-  RCLCPP_INFO(this->get_logger(), "Step 4: Executing smooth motion sequence with blending...");
+  // Step 4: 現在位置から 元の位置→引いた位置→バケット水平 の順に実行（滑らかな軌道で）
+  RCLCPP_INFO(this->get_logger(), "Step 4: Executing smooth motion sequence with bucket adjustment...");
   
   // Step 4-0: 現在の関節状態を取得してstart_stateに設定
   RCLCPP_INFO(this->get_logger(), "  Getting current joint state for start_state...");
@@ -568,16 +568,46 @@ void SubtaskExcavationRetractArm::execute(const std::shared_ptr<GoalHandle> goal
                 current_joint_values.joint_values[i] * 180.0 / M_PI);
   }
   
-  // MotionSequenceItemを作成（2点のみ：目標姿勢と引いた位置）
+  // Step 4-1: バケット水平位置を計算
+  int boom_idx = -1, arm_idx = -1, bucket_idx = -1;
+  for (size_t i = 0; i < best_joint_values.joint_names.size(); ++i) {
+    if (best_joint_values.joint_names[i] == "boom_joint") boom_idx = i;
+    else if (best_joint_values.joint_names[i] == "arm_joint") arm_idx = i;
+    else if (best_joint_values.joint_names[i] == "bucket_joint") bucket_idx = i;
+  }
+  
+  if (boom_idx == -1 || arm_idx == -1 || bucket_idx == -1) {
+    handle_error("Could not find boom/arm/bucket joints");
+    return;
+  }
+  
+  // 引いた位置でのバケット水平角度を計算
+  double retracted_boom_angle = best_joint_values.joint_values[boom_idx];
+  double retracted_arm_angle = best_joint_values.joint_values[arm_idx];
+  double target_bucket_angle = -(retracted_boom_angle + retracted_arm_angle) + M_PI;
+  
+  RCLCPP_INFO(this->get_logger(), "  Calculating bucket horizontal angle:");
+  RCLCPP_INFO(this->get_logger(), "    Retracted boom:   %.3f rad (%.1f deg)", 
+              retracted_boom_angle, retracted_boom_angle * 180.0 / M_PI);
+  RCLCPP_INFO(this->get_logger(), "    Retracted arm:    %.3f rad (%.1f deg)", 
+              retracted_arm_angle, retracted_arm_angle * 180.0 / M_PI);
+  RCLCPP_INFO(this->get_logger(), "    Target bucket:    %.3f rad (%.1f deg)",
+              target_bucket_angle, target_bucket_angle * 180.0 / M_PI);
+  
+  // バケット水平位置の関節値を作成
+  tms_msg_rp::msg::TmsRpExcavatorJointValues horizontal_joint_values = best_joint_values;
+  horizontal_joint_values.joint_values[bucket_idx] = target_bucket_angle;
+  
+  // MotionSequenceItemを作成（3点：目標姿勢→引いた位置→バケット水平）
   std::vector<moveit_msgs::msg::MotionSequenceItem> motion_sequence_items;
   
-  // 4-1. 目標姿勢へのMotionSequenceItem
+  // 4-2. 目標姿勢へのMotionSequenceItem
   moveit_msgs::msg::MotionSequenceItem item1;
   item1.req.group_name = planning_group_;
-  item1.req.max_velocity_scaling_factor =  1.0;
+  item1.req.max_velocity_scaling_factor = 1.0;
   item1.req.max_acceleration_scaling_factor = 1.0;
-  item1.req.allowed_planning_time = 5.0;  // 5秒のプランニング時間
-  item1.req.planner_id = "PTP";  // 空にしてデフォルトを使用
+  item1.req.allowed_planning_time = 5.0;
+  item1.req.planner_id = "PTP";
   item1.req.pipeline_id = "pilz_industrial_motion_planner";
   
   // start_stateを設定（現在の関節状態）
@@ -600,7 +630,7 @@ void SubtaskExcavationRetractArm::execute(const std::shared_ptr<GoalHandle> goal
   }
   item1.req.goal_constraints.push_back(constraints1);
   
-  // blend_radiusを設定（単位: ラジアン、約5.7度でブレンド）
+  // ブレンド（滑らかに次へ）
   item1.blend_radius = 0.001;
   
   RCLCPP_INFO(this->get_logger(), "  Item 1: Target position with blend_radius=%.3f rad (%.1f deg)",
@@ -608,13 +638,13 @@ void SubtaskExcavationRetractArm::execute(const std::shared_ptr<GoalHandle> goal
   
   motion_sequence_items.push_back(item1);
   
-  // 4-2. 引いた位置へのMotionSequenceItem
+  // 4-3. 引いた位置へのMotionSequenceItem
   moveit_msgs::msg::MotionSequenceItem item2;
   item2.req.group_name = planning_group_;
   item2.req.max_velocity_scaling_factor = 1.0;
   item2.req.max_acceleration_scaling_factor = 1.0;
-  item2.req.allowed_planning_time = 5.0;  // 5秒のプランニング時間
-  item2.req.planner_id = "PTP";  // 空にしてデフォルトを使用
+  item2.req.allowed_planning_time = 5.0;
+  item2.req.planner_id = "PTP";
   item2.req.pipeline_id = "pilz_industrial_motion_planner";
   
   // Joint constraintとして目標を設定
@@ -630,13 +660,46 @@ void SubtaskExcavationRetractArm::execute(const std::shared_ptr<GoalHandle> goal
   }
   item2.req.goal_constraints.push_back(constraints2);
   
-  // 最後のウェイポイントはblend_radius=0（完全に停止）
-  item2.blend_radius = 0.0;
+  // ブレンド（滑らかに次へ）
+  item2.blend_radius = 0.001;
   
-  RCLCPP_INFO(this->get_logger(), "  Item 2: Retracted position with blend_radius=%.3f (stop)",
-              item2.blend_radius);
+  RCLCPP_INFO(this->get_logger(), "  Item 2: Retracted position with blend_radius=%.3f rad (%.1f deg)",
+              item2.blend_radius, item2.blend_radius * 180.0 / M_PI);
   
   motion_sequence_items.push_back(item2);
+  
+  // 4-4. バケット水平位置へのMotionSequenceItem
+  moveit_msgs::msg::MotionSequenceItem item3;
+  item3.req.group_name = planning_group_;
+  item3.req.max_velocity_scaling_factor = 1.0;
+  item3.req.max_acceleration_scaling_factor = 1.0;
+  item3.req.allowed_planning_time = 5.0;
+  item3.req.planner_id = "PTP";
+  item3.req.pipeline_id = "pilz_industrial_motion_planner";
+  
+  // Joint constraintとして目標を設定
+  moveit_msgs::msg::Constraints constraints3;
+  for (size_t i = 0; i < horizontal_joint_values.joint_names.size(); ++i) {
+    moveit_msgs::msg::JointConstraint joint_constraint;
+    joint_constraint.joint_name = horizontal_joint_values.joint_names[i];
+    joint_constraint.position = horizontal_joint_values.joint_values[i];
+    joint_constraint.tolerance_above = 0.01;
+    joint_constraint.tolerance_below = 0.01;
+    joint_constraint.weight = 1.0;
+    constraints3.joint_constraints.push_back(joint_constraint);
+  }
+  item3.req.goal_constraints.push_back(constraints3);
+  
+  // 最後のウェイポイントはblend_radius=0（完全に停止）
+  item3.blend_radius = 0.0;
+  
+  RCLCPP_INFO(this->get_logger(), "  Item 3: Bucket horizontal position with blend_radius=%.3f (stop)",
+              item3.blend_radius);
+  RCLCPP_INFO(this->get_logger(), "    Bucket angle change: %.3f rad (%.1f deg)",
+              target_bucket_angle - best_joint_values.joint_values[bucket_idx],
+              (target_bucket_angle - best_joint_values.joint_values[bucket_idx]) * 180.0 / M_PI);
+  
+  motion_sequence_items.push_back(item3);
   
   // CMD_PLAN_AND_EXECUTE_MOTION_SEQUENCEで実行
   auto goal_sequence = ExcavatorAction::Goal();
@@ -657,6 +720,7 @@ void SubtaskExcavationRetractArm::execute(const std::shared_ptr<GoalHandle> goal
   RCLCPP_INFO(this->get_logger(), "  Total arm retraction: %.3f rad (%.1f deg)",
               best_arm_angle - original_arm_angle,
               (best_arm_angle - original_arm_angle) * 180.0 / M_PI);
+  RCLCPP_INFO(this->get_logger(), "  Bucket adjusted to horizontal position");
 
   // 成功
   result->result = true;
