@@ -25,6 +25,7 @@ float64 max_acceleration_scaling_factor
 float64 planning_time
 int32 num_planning_attempts
 string planner_id
+string planning_pipeline_id
 
 # === Common ===
 bool success

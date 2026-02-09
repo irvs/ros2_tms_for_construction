@@ -371,11 +371,11 @@ void SubtaskExcavationRetractArm::execute(const std::shared_ptr<GoalHandle> goal
               target_pose.x, target_pose.y, target_pose.z, 
               target_pose.qx, target_pose.qy, target_pose.qz, target_pose.qw);
 
-  // Step 2: 目標姿勢からIK解を取得
-  RCLCPP_INFO(this->get_logger(), "Step 2: Planning to target pose...");
+  // Step 2: 目標姿勢のIK解を計算（実行はしない）
+  RCLCPP_INFO(this->get_logger(), "Step 2: Planning to target pose to get IK solution...");
   
   auto excavator_goal = ExcavatorAction::Goal();
-  excavator_goal.command = ExcavatorAction::Goal::CMD_PLAN_TO_POSE;
+  excavator_goal.command = ExcavatorAction::Goal::CMD_PLAN_TO_POSE;  // プランのみ
   excavator_goal.planning_group = planning_group_;
 
   geometry_msgs::msg::Pose target_pose_msg;
@@ -414,6 +414,14 @@ void SubtaskExcavationRetractArm::execute(const std::shared_ptr<GoalHandle> goal
   original_joint_values.joint_names = trajectory.joint_names;
   original_joint_values.joint_values.assign(last_point.positions.begin(), last_point.positions.end());
 
+  RCLCPP_INFO(this->get_logger(), "Target pose joint values obtained:");
+  for (size_t i = 0; i < original_joint_values.joint_names.size(); ++i) {
+    RCLCPP_INFO(this->get_logger(), "  %s: %.3f rad (%.1f deg)",
+                original_joint_values.joint_names[i].c_str(),
+                original_joint_values.joint_values[i],
+                original_joint_values.joint_values[i] * 180.0 / M_PI);
+  }
+
   // arm_jointの元の角度を取得
   int arm_joint_idx = -1;
   for (size_t i = 0; i < original_joint_values.joint_names.size(); ++i) {
@@ -429,11 +437,63 @@ void SubtaskExcavationRetractArm::execute(const std::shared_ptr<GoalHandle> goal
   }
 
   double original_arm_angle = original_joint_values.joint_values[arm_joint_idx];
-  RCLCPP_INFO(this->get_logger(), "Original arm_joint angle: %.3f rad (%.1f deg)", 
+  RCLCPP_INFO(this->get_logger(), "Target arm_joint angle: %.3f rad (%.1f deg)", 
               original_arm_angle, original_arm_angle * 180.0 / M_PI);
 
   // Step 3: 2分探索でarm_jointをできるだけ引く
   RCLCPP_INFO(this->get_logger(), "Step 3: Binary search for maximum arm retraction...");
+  
+  // Step 3-0: 現在のプランナーを取得してPTPに切り替え
+  RCLCPP_INFO(this->get_logger(), "  Switching to Pilz PTP planner for binary search...");
+  
+  auto param_get_planner = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamGet::Request>();
+  param_get_planner->get_joint_limits = false;
+  param_get_planner->get_current_state = false;
+  param_get_planner->get_configuration = true;
+  
+  auto param_get_planner_future = param_get_client_->async_send_request(param_get_planner);
+  auto get_planner_status = param_get_planner_future.wait_for(std::chrono::seconds(5));
+  
+  std::string original_planner_id = "";
+  std::string original_pipeline_id = "";
+  if (get_planner_status == std::future_status::ready) {
+    auto param_get_planner_response = param_get_planner_future.get();
+    if (param_get_planner_response->success) {
+      original_planner_id = param_get_planner_response->planner_id;
+      original_pipeline_id = param_get_planner_response->planning_pipeline_id;
+      RCLCPP_INFO(this->get_logger(), "  Current planner: %s, pipeline: %s", 
+                  original_planner_id.empty() ? "(default)" : original_planner_id.c_str(),
+                  original_pipeline_id.empty() ? "(default)" : original_pipeline_id.c_str());
+    }
+  }
+  
+  // Pilz パイプラインとPTPプランナーに切り替え
+  auto param_set_ptp = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamSet::Request>();
+  param_set_ptp->goal_position_tolerance = -1.0;  // 変更しない
+  param_set_ptp->goal_orientation_tolerance = -1.0;
+  param_set_ptp->goal_joint_tolerance = -1.0;
+  param_set_ptp->max_velocity_scaling_factor = -1.0;
+  param_set_ptp->max_acceleration_scaling_factor = -1.0;
+  param_set_ptp->planning_time = -1.0;
+  param_set_ptp->num_planning_attempts = -1;
+  param_set_ptp->allow_replanning = false;
+  param_set_ptp->planner_id = "PTP";
+  param_set_ptp->planning_pipeline_id = "pilz_industrial_motion_planner";
+  
+  auto param_set_ptp_future = param_set_client_->async_send_request(param_set_ptp);
+  auto set_ptp_status = param_set_ptp_future.wait_for(std::chrono::seconds(5));
+  
+  if (set_ptp_status != std::future_status::ready) {
+    RCLCPP_WARN(this->get_logger(), "  Failed to switch to Pilz PTP planner, continuing with current planner");
+  } else {
+    auto param_set_ptp_response = param_set_ptp_future.get();
+    if (param_set_ptp_response->success) {
+      RCLCPP_INFO(this->get_logger(), "  Switched to Pilz PTP planner");
+    } else {
+      RCLCPP_WARN(this->get_logger(), "  Failed to switch to Pilz PTP planner: %s", 
+                  param_set_ptp_response->message.c_str());
+    }
+  }
   
   double best_arm_angle;
   tms_msg_rp::msg::TmsRpExcavatorJointValues best_joint_values;
@@ -443,37 +503,160 @@ void SubtaskExcavationRetractArm::execute(const std::shared_ptr<GoalHandle> goal
     handle_error("Binary search failed");
     return;
   }
-
-  // Step 4: 元の位置→引いた位置の順に実行
-  RCLCPP_INFO(this->get_logger(), "Step 4: Executing motion sequence...");
   
-  // 4-1. 元の位置に移動
-  RCLCPP_INFO(this->get_logger(), "  4-1. Moving to original position...");
-  auto goal_original = ExcavatorAction::Goal();
-  goal_original.command = ExcavatorAction::Goal::CMD_PLAN_AND_EXECUTE_JOINTS;
-  goal_original.planning_group = planning_group_;
-  goal_original.joint_values_sequence.push_back(original_joint_values);
+  // Step 3-1: 元のプランナーとパイプラインに戻す
+  RCLCPP_INFO(this->get_logger(), "  Restoring original planner and pipeline...");
+  
+  auto param_restore = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamSet::Request>();
+  param_restore->goal_position_tolerance = -1.0;
+  param_restore->goal_orientation_tolerance = -1.0;
+  param_restore->goal_joint_tolerance = -1.0;
+  param_restore->max_velocity_scaling_factor = -1.0;
+  param_restore->max_acceleration_scaling_factor = -1.0;
+  param_restore->planning_time = -1.0;
+  param_restore->num_planning_attempts = -1;
+  param_restore->allow_replanning = false;
+  param_restore->planner_id = original_planner_id.empty() ? "" : original_planner_id;
+  param_restore->planning_pipeline_id = original_pipeline_id.empty() ? "" : original_pipeline_id;
+  
+  auto param_restore_future = param_set_client_->async_send_request(param_restore);
+  auto restore_status = param_restore_future.wait_for(std::chrono::seconds(5));
+  
+  if (restore_status == std::future_status::ready) {
+    auto param_restore_response = param_restore_future.get();
+    if (param_restore_response->success) {
+      RCLCPP_INFO(this->get_logger(), "  Restored to original planner: %s, pipeline: %s",
+                  param_restore_response->planner_id.c_str(),
+                  param_restore_response->planning_pipeline_id.c_str());
+    }
+  }
 
-  ExcavatorAction::Result::SharedPtr result_original;
-  if (!call_excavator_action_sync(goal_original, result_original)) {
-    handle_error("Failed to execute motion to original position");
+  // Step 4: 現在位置から 元の位置→引いた位置の順に実行（滑らかな軌道で）
+  RCLCPP_INFO(this->get_logger(), "Step 4: Executing smooth motion sequence with blending...");
+  
+  // Step 4-0: 現在の関節状態を取得してstart_stateに設定
+  RCLCPP_INFO(this->get_logger(), "  Getting current joint state for start_state...");
+  
+  auto param_request_state = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamGet::Request>();
+  param_request_state->get_joint_limits = false;
+  param_request_state->get_current_state = true;
+  param_request_state->get_configuration = false;
+  
+  auto param_future_state = param_get_client_->async_send_request(param_request_state);
+  auto status_state = param_future_state.wait_for(std::chrono::seconds(10));
+  
+  if (status_state != std::future_status::ready) {
+    handle_error("Failed to get current joint state (timeout)");
     return;
   }
-  RCLCPP_INFO(this->get_logger(), "  Successfully moved to original position");
-
-  // 4-2. 引いた位置に移動
-  RCLCPP_INFO(this->get_logger(), "  4-2. Moving to retracted position...");
-  auto goal_retracted = ExcavatorAction::Goal();
-  goal_retracted.command = ExcavatorAction::Goal::CMD_PLAN_AND_EXECUTE_JOINTS;
-  goal_retracted.planning_group = planning_group_;
-  goal_retracted.joint_values_sequence.push_back(best_joint_values);
-
-  ExcavatorAction::Result::SharedPtr result_retracted;
-  if (!call_excavator_action_sync(goal_retracted, result_retracted)) {
-    handle_error("Failed to execute motion to retracted position");
+  
+  auto param_response_state = param_future_state.get();
+  if (!param_response_state->success) {
+    handle_error("Failed to get current joint state: " + param_response_state->message);
     return;
   }
-  RCLCPP_INFO(this->get_logger(), "  Successfully moved to retracted position");
+  
+  tms_msg_rp::msg::TmsRpExcavatorJointValues current_joint_values;
+  current_joint_values.joint_names = param_response_state->joint_names;
+  current_joint_values.joint_values = param_response_state->joint_positions;
+
+  RCLCPP_INFO(this->get_logger(), "  Current joint state:");
+  for (size_t i = 0; i < current_joint_values.joint_names.size(); ++i) {
+    RCLCPP_INFO(this->get_logger(), "    %s: %.3f rad (%.1f deg)",
+                current_joint_values.joint_names[i].c_str(),
+                current_joint_values.joint_values[i],
+                current_joint_values.joint_values[i] * 180.0 / M_PI);
+  }
+  
+  // MotionSequenceItemを作成（2点のみ：目標姿勢と引いた位置）
+  std::vector<moveit_msgs::msg::MotionSequenceItem> motion_sequence_items;
+  
+  // 4-1. 目標姿勢へのMotionSequenceItem
+  moveit_msgs::msg::MotionSequenceItem item1;
+  item1.req.group_name = planning_group_;
+  item1.req.max_velocity_scaling_factor =  1.0;
+  item1.req.max_acceleration_scaling_factor = 1.0;
+  item1.req.allowed_planning_time = 5.0;  // 5秒のプランニング時間
+  item1.req.planner_id = "PTP";  // 空にしてデフォルトを使用
+  item1.req.pipeline_id = "pilz_industrial_motion_planner";
+  
+  // start_stateを設定（現在の関節状態）
+  sensor_msgs::msg::JointState start_state;
+  start_state.name = current_joint_values.joint_names;
+  start_state.position = current_joint_values.joint_values;
+  item1.req.start_state.joint_state = start_state;
+  item1.req.start_state.is_diff = false;
+  
+  // Joint constraintとして目標を設定
+  moveit_msgs::msg::Constraints constraints1;
+  for (size_t i = 0; i < original_joint_values.joint_names.size(); ++i) {
+    moveit_msgs::msg::JointConstraint joint_constraint;
+    joint_constraint.joint_name = original_joint_values.joint_names[i];
+    joint_constraint.position = original_joint_values.joint_values[i];
+    joint_constraint.tolerance_above = 0.01;
+    joint_constraint.tolerance_below = 0.01;
+    joint_constraint.weight = 1.0;
+    constraints1.joint_constraints.push_back(joint_constraint);
+  }
+  item1.req.goal_constraints.push_back(constraints1);
+  
+  // blend_radiusを設定（単位: ラジアン、約5.7度でブレンド）
+  item1.blend_radius = 0.001;
+  
+  RCLCPP_INFO(this->get_logger(), "  Item 1: Target position with blend_radius=%.3f rad (%.1f deg)",
+              item1.blend_radius, item1.blend_radius * 180.0 / M_PI);
+  
+  motion_sequence_items.push_back(item1);
+  
+  // 4-2. 引いた位置へのMotionSequenceItem
+  moveit_msgs::msg::MotionSequenceItem item2;
+  item2.req.group_name = planning_group_;
+  item2.req.max_velocity_scaling_factor = 1.0;
+  item2.req.max_acceleration_scaling_factor = 1.0;
+  item2.req.allowed_planning_time = 5.0;  // 5秒のプランニング時間
+  item2.req.planner_id = "PTP";  // 空にしてデフォルトを使用
+  item2.req.pipeline_id = "pilz_industrial_motion_planner";
+  
+  // Joint constraintとして目標を設定
+  moveit_msgs::msg::Constraints constraints2;
+  for (size_t i = 0; i < best_joint_values.joint_names.size(); ++i) {
+    moveit_msgs::msg::JointConstraint joint_constraint;
+    joint_constraint.joint_name = best_joint_values.joint_names[i];
+    joint_constraint.position = best_joint_values.joint_values[i];
+    joint_constraint.tolerance_above = 0.01;
+    joint_constraint.tolerance_below = 0.01;
+    joint_constraint.weight = 1.0;
+    constraints2.joint_constraints.push_back(joint_constraint);
+  }
+  item2.req.goal_constraints.push_back(constraints2);
+  
+  // 最後のウェイポイントはblend_radius=0（完全に停止）
+  item2.blend_radius = 0.0;
+  
+  RCLCPP_INFO(this->get_logger(), "  Item 2: Retracted position with blend_radius=%.3f (stop)",
+              item2.blend_radius);
+  
+  motion_sequence_items.push_back(item2);
+  
+  // CMD_PLAN_AND_EXECUTE_MOTION_SEQUENCEで実行
+  auto goal_sequence = ExcavatorAction::Goal();
+  goal_sequence.command = ExcavatorAction::Goal::CMD_PLAN_AND_EXECUTE_MOTION_SEQUENCE;
+  goal_sequence.planning_group = planning_group_;
+  goal_sequence.motion_sequence_items = motion_sequence_items;
+  
+  RCLCPP_INFO(this->get_logger(), "  Sending motion sequence with %zu items (start from current state)...", 
+              motion_sequence_items.size());
+  
+  ExcavatorAction::Result::SharedPtr result_sequence;
+  if (!call_excavator_action_sync(goal_sequence, result_sequence)) {
+    handle_error("Failed to execute smooth motion sequence");
+    return;
+  }
+  
+  RCLCPP_INFO(this->get_logger(), "  Successfully executed smooth motion sequence!");
+  RCLCPP_INFO(this->get_logger(), "  Total arm retraction: %.3f rad (%.1f deg)",
+              best_arm_angle - original_arm_angle,
+              (best_arm_angle - original_arm_angle) * 180.0 / M_PI);
 
   // 成功
   result->result = true;
