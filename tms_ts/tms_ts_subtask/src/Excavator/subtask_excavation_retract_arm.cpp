@@ -29,16 +29,12 @@ SubtaskExcavationRetractArm::SubtaskExcavationRetractArm()
     pose_converter_()
 {
   this->declare_parameter<std::string>("planning_group", "manipulator");
-  this->declare_parameter<double>("arm_joint_max_limit", 1.57);  // 90度
   this->declare_parameter<double>("search_precision", 0.02);     // 約1.1度
   
   this->get_parameter("planning_group", planning_group_);
-  this->get_parameter("arm_joint_max_limit", arm_joint_max_limit_);
   this->get_parameter("search_precision", search_precision_);
   
   RCLCPP_INFO(this->get_logger(), "Planning group: %s", planning_group_.c_str());
-  RCLCPP_INFO(this->get_logger(), "arm_joint_max_limit: %.3f rad (%.1f deg)", 
-              arm_joint_max_limit_, arm_joint_max_limit_ * 180.0 / M_PI);
   RCLCPP_INFO(this->get_logger(), "search_precision: %.3f rad (%.1f deg)", 
               search_precision_, search_precision_ * 180.0 / M_PI);
 
@@ -305,8 +301,33 @@ void SubtaskExcavationRetractArm::execute(const std::shared_ptr<GoalHandle> goal
                   param_response->goal_joint_tolerance,
                   param_response->goal_joint_tolerance * 180.0 / M_PI);
       
-      // 必要に応じて許容誤差を設定（オプション）
-      // ここでは取得した値をログに出力するのみ
+      // Tolerance設定（必要であれば変更）
+      // 例: より厳しい許容誤差に設定する場合
+      auto param_set_request = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamSet::Request>();
+      param_set_request->goal_position_tolerance = 0.1; 
+      param_set_request->goal_orientation_tolerance = 0.1; 
+      // param_set_request->goal_joint_tolerance = 0.1; 
+      
+      auto param_set_future = param_set_client_->async_send_request(param_set_request);
+      auto set_status = param_set_future.wait_for(std::chrono::seconds(5));
+      
+      if (set_status == std::future_status::ready) {
+        auto param_set_response = param_set_future.get();
+        if (param_set_response->success) {
+          RCLCPP_INFO(this->get_logger(), "Updated goal tolerances:");
+          RCLCPP_INFO(this->get_logger(), "  Position: %.4f m", param_set_response->goal_position_tolerance);
+          RCLCPP_INFO(this->get_logger(), "  Orientation: %.4f rad (%.2f deg)", 
+                      param_set_response->goal_orientation_tolerance,
+                      param_set_response->goal_orientation_tolerance * 180.0 / M_PI);
+          RCLCPP_INFO(this->get_logger(), "  Joint: %.4f rad (%.2f deg)", 
+                      param_set_response->goal_joint_tolerance,
+                      param_set_response->goal_joint_tolerance * 180.0 / M_PI);
+        } else {
+          RCLCPP_WARN(this->get_logger(), "Failed to set tolerances: %s", param_set_response->message.c_str());
+        }
+      } else {
+        RCLCPP_WARN(this->get_logger(), "Timeout setting tolerances");
+      }
     } else {
       RCLCPP_WARN(this->get_logger(), "Parameter service returned failure: %s", 
                   param_response->message.c_str());

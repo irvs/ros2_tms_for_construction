@@ -166,24 +166,6 @@ void PrimitiveExcavatorChangePoseExecuteFromJointValues::execute(const std::shar
     return;
   }
 
-  // async_executeオプションがあれば取得
-  if (param_from_db_.count("async_execute")) {
-    try {
-      auto doc = bsoncxx::from_json(param_from_db_["async_execute"]);
-      auto view = doc.view();
-      if (view["async_execute"]) {
-        if (view["async_execute"].type() == bsoncxx::type::k_bool) {
-          goal_msg.async_execute = view["async_execute"].get_bool().value;
-        } else if (view["async_execute"].type() == bsoncxx::type::k_int32) {
-          goal_msg.async_execute = view["async_execute"].get_int32().value != 0;
-        }
-        RCLCPP_INFO(this->get_logger(), "Async execute: %s", goal_msg.async_execute ? "true" : "false");
-      }
-    } catch (const std::exception& e) {
-      RCLCPP_WARN(this->get_logger(), "Failed to parse async_execute: %s", e.what());
-    }
-  }
-
   // データベースからplanを取得してRobotTrajectory配列に変換
   try {
     if (!param_from_db_.count("plan")) {
