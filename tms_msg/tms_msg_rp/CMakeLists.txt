@@ -40,9 +40,15 @@ set(action_files
   "action/TmsRpCrawlerdumpSwingAngle.action"
 )
 
+set(srv_files
+  "srv/TmsRpExcavatorParamSet.srv"
+  "srv/TmsRpExcavatorParamGet.srv"
+)
+
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_files}
   ${action_files}
+  ${srv_files}
   DEPENDENCIES builtin_interfaces std_msgs trajectory_msgs geometry_msgs moveit_msgs
 )
 

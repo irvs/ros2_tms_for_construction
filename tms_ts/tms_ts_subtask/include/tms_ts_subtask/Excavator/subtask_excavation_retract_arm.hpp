@@ -16,6 +16,8 @@
 #include "tms_msg_ts/action/leaf_node_base.hpp"
 #include "tms_msg_rp/action/tms_rp_excavator.hpp"
 #include "tms_msg_rp/msg/tms_rp_excavator_joint_values.hpp"
+#include "tms_msg_rp/srv/tms_rp_excavator_param_get.hpp"
+#include "tms_msg_rp/srv/tms_rp_excavator_param_set.hpp"
 #include "tms_ts_subtask/subtask_node_base.hpp"
 #include "tms_ts_subtask/Excavator/lib/excavator_pose_converter.hpp"
 #include <geometry_msgs/msg/pose.hpp>
@@ -32,6 +34,8 @@ public:
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
   rclcpp_action::Client<ExcavatorAction>::SharedPtr action_client_;
+  rclcpp::Client<tms_msg_rp::srv::TmsRpExcavatorParamGet>::SharedPtr param_get_client_;
+  rclcpp::Client<tms_msg_rp::srv::TmsRpExcavatorParamSet>::SharedPtr param_set_client_;
   
   std::string planning_group_;
   double arm_joint_max_limit_;

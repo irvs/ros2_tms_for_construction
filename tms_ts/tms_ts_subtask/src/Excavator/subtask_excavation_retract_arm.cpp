@@ -72,6 +72,16 @@ SubtaskExcavationRetractArm::SubtaskExcavationRetractArm()
   } else {
     RCLCPP_ERROR(this->get_logger(), "tms_rp_excavator action server not available");
   }
+
+  // Create service clients for parameter get/set
+  param_get_client_ = this->create_client<tms_msg_rp::srv::TmsRpExcavatorParamGet>("tms_rp_excavator_param_get");
+  param_set_client_ = this->create_client<tms_msg_rp::srv::TmsRpExcavatorParamSet>("tms_rp_excavator_param_set");
+  
+  if (param_get_client_->wait_for_service(std::chrono::seconds(5))) {
+    RCLCPP_INFO(this->get_logger(), "Connected to tms_rp_excavator_param_get service");
+  } else {
+    RCLCPP_WARN(this->get_logger(), "tms_rp_excavator_param_get service not available yet");
+  }
 }
 
 rclcpp_action::GoalResponse SubtaskExcavationRetractArm::handle_goal(
@@ -247,6 +257,60 @@ void SubtaskExcavationRetractArm::execute(const std::shared_ptr<GoalHandle> goal
   if (!action_client_->action_server_is_ready()) {
     handle_error("Action server not available");
     return;
+  }
+
+  // Step 0: サービスを使って関節制限と許容誤差を取得
+  RCLCPP_INFO(this->get_logger(), "Step 0: Getting joint limits and goal tolerances from parameter service...");
+  
+  auto param_request = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamGet::Request>();
+  param_request->get_joint_limits = true;
+  param_request->get_current_state = false;
+  param_request->get_configuration = true;
+  
+  auto param_future = param_get_client_->async_send_request(param_request);
+  
+  // サービスコールの完了を待つ
+  auto status = param_future.wait_for(std::chrono::seconds(10));
+  if (status != std::future_status::ready) {
+    RCLCPP_WARN(this->get_logger(), "Failed to get parameters from service (timeout), using default values");
+  } else {
+    auto param_response = param_future.get();
+    
+    if (param_response->success) {
+      // arm_jointのインデックスを見つけて最大値を取得
+      int arm_joint_idx = -1;
+      for (size_t i = 0; i < param_response->joint_names.size(); ++i) {
+        if (param_response->joint_names[i] == "arm_joint") {
+          arm_joint_idx = i;
+          break;
+        }
+      }
+      
+      if (arm_joint_idx != -1 && arm_joint_idx < static_cast<int>(param_response->max_positions.size())) {
+        arm_joint_max_limit_ = param_response->max_positions[arm_joint_idx];
+        RCLCPP_INFO(this->get_logger(), "Got arm_joint max limit from service: %.3f rad (%.1f deg)",
+                    arm_joint_max_limit_, arm_joint_max_limit_ * 180.0 / M_PI);
+      } else {
+        RCLCPP_WARN(this->get_logger(), "arm_joint not found in joint limits, using default: %.3f rad",
+                    arm_joint_max_limit_);
+      }
+      
+      // 許容誤差も取得
+      RCLCPP_INFO(this->get_logger(), "Current goal tolerances:");
+      RCLCPP_INFO(this->get_logger(), "  Position: %.4f m", param_response->goal_position_tolerance);
+      RCLCPP_INFO(this->get_logger(), "  Orientation: %.4f rad (%.2f deg)", 
+                  param_response->goal_orientation_tolerance,
+                  param_response->goal_orientation_tolerance * 180.0 / M_PI);
+      RCLCPP_INFO(this->get_logger(), "  Joint: %.4f rad (%.2f deg)", 
+                  param_response->goal_joint_tolerance,
+                  param_response->goal_joint_tolerance * 180.0 / M_PI);
+      
+      // 必要に応じて許容誤差を設定（オプション）
+      // ここでは取得した値をログに出力するのみ
+    } else {
+      RCLCPP_WARN(this->get_logger(), "Parameter service returned failure: %s", 
+                  param_response->message.c_str());
+    }
   }
 
   RCLCPP_INFO(this->get_logger(), "Getting parameters from DB");
