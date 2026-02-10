@@ -88,6 +88,8 @@ void PrimitiveExcavatorFollowWaypointys::execute(const std::shared_ptr<GoalHandl
     pose.header.stamp = this->now();
     pose.header.frame_id = "map";
 
+    std::cout << "Read direction : " << read_direction << std::endl;
+
     if (read_direction == "down"){
       for (int i=point_num-1; i >= 0; i--){
         pose.pose.position.x = parameters[std::make_pair("x",std::to_string(i))];
