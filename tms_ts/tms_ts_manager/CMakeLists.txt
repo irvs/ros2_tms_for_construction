@@ -6,6 +6,13 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 set (CMAKE_CXX_STANDARD 17)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
 # -- for C++
 find_package(ament_cmake REQUIRED)
@@ -43,21 +50,24 @@ set(dependencies_cpp
 link_directories(
   /usr/local/lib)
 
-link_libraries(
-  mongocxx
-  bsoncxx
-  Qt5::Widgets
-  Qt5::Core)
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/deps)
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}/deps
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
 add_executable(task_schedular_manager src/task_schedular_manager.cpp)
 ament_target_dependencies(task_schedular_manager ${dependencies_cpp})
 
+target_link_libraries(task_schedular_manager
+  Qt5::Widgets
+  Qt5::Core
+  mongocxx
+  bsoncxx
+)
+
 # -- end C++
 
 # -- for Python
-
 set(dependencies_py
   rclpy
   ament_cmake_python
@@ -89,5 +99,6 @@ install(DIRECTORY deps
   DESTINATION share/${PROJECT_NAME}
 )
 
+target_link_libraries(task_schedular_manager Qt5::Widgets)
 
 ament_package()
