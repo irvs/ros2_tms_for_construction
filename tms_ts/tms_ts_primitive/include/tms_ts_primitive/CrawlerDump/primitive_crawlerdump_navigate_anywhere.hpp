@@ -1,3 +1,9 @@
+// Copyright 2023, IRVS Laboratory, Kyushu University, Japan.
+ 
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+ 
 //      http://www.apache.org/licenses/LICENSE-2.0
  
 // Unless required by applicable law or agreed to in writing, software
@@ -6,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SAMPLE_PRIMITIVE_CRAWLERDUMP_SWING_ALIGN_TO_HEADING_HPP
-#define SAMPLE_PRIMITIVE_CRAWLERDUMP_SWING_ALIGN_TO_HEADING_HPP
+#ifndef SAMPLE_PRIMITIVE_CRAWLERDUMP_NAVIGATE_ANYWHERE_HPP
+#define SAMPLE_PRIMITIVE__NAVIGATE_ANYWHERE_HPP
 
 #include <memory>
 #include <map>
@@ -27,35 +33,36 @@
 #include "tms_msg_ts/action/leaf_node_base.hpp"
 #include "tms_ts_primitive/primitive_node_base.hpp"
 
-#include "geometry_msgs/msg/pose_stamped.hpp"
-#include "sensor_msgs/msg/joint_state.hpp"
-#include "tms_msg_rp/action/tms_rp_crawlerdump_swing_angle.hpp"
+#include "nav2_msgs/action/navigate_to_pose.hpp"
 
+#include <rclcpp/qos.hpp>   
+#include <rmw/qos_profiles.h>  
 
-class PrimitiveCrawlerdumpSwingAlignToHeading : public PrimitiveNodeBase
+class PrimitiveCrawlerDumpNavigateAnywhere : public PrimitiveNodeBase
 {
 public:
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
-    using TmsRpCrawlerdumpSwingAngle = tms_msg_rp::action::TmsRpCrawlerdumpSwingAngle;
-    using GoalHandleCrawlerdumpSwingAlignToHeading = rclcpp_action::ClientGoalHandle<TmsRpCrawlerdumpSwingAngle>;
-    PrimitiveCrawlerdumpSwingAlignToHeading();
+    using NavigateToPose = nav2_msgs::action::NavigateToPose;
+    using GoalHandleCrawlerDumpNavigateAnywhere = rclcpp_action::ClientGoalHandle<NavigateToPose>;
+    PrimitiveCrawlerDumpNavigateAnywhere();
 
 private:
     rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
-    std::map<std::pair<std::string, std::string>, double> param_from_db_;
     rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
                                             std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal);
     rclcpp_action::CancelResponse handle_cancel(const std::shared_ptr<GoalHandle> goal_handle);
     void handle_accepted(const std::shared_ptr<GoalHandle> goal_handle);
     void execute(const std::shared_ptr<GoalHandle> goal_handle);
-    rclcpp_action::Client<TmsRpCrawlerdumpSwingAngle>::SharedPtr action_client_;
-    std::shared_future<GoalHandleCrawlerdumpSwingAlignToHeading::SharedPtr> client_future_goal_handle_;
+
+    // Member as an action client
+    rclcpp_action::Client<NavigateToPose>::SharedPtr action_client_;
+    std::shared_future<GoalHandleCrawlerDumpNavigateAnywhere::SharedPtr> client_future_goal_handle_;
     std::map<std::string, double> parameters;
-    void goal_response_callback(const GoalHandleCrawlerdumpSwingAlignToHeading::SharedPtr& goal_handle);
-    void feedback_callback(GoalHandleCrawlerdumpSwingAlignToHeading::SharedPtr,
-                            const std::shared_ptr<const TmsRpCrawlerdumpSwingAngle::Feedback> feedback);
+    void goal_response_callback(const GoalHandleCrawlerDumpNavigateAnywhere::SharedPtr& goal_handle);
+    void feedback_callback(GoalHandleCrawlerDumpNavigateAnywhere::SharedPtr,
+                            const std::shared_ptr<const NavigateToPose::Feedback> feedback);
     void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                        const GoalHandleCrawlerdumpSwingAlignToHeading::WrappedResult& result);
+                        const GoalHandleCrawlerDumpNavigateAnywhere::WrappedResult& result);
 };
 
 #endif

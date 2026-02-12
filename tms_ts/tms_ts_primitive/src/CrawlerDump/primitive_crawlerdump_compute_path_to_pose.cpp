@@ -16,15 +16,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_primitive/Crawlerdump/primitive_crawlerdump_compute_path_to_pose.hpp"
+#include "tms_ts_primitive/CrawlerDump/primitive_crawlerdump_compute_path_to_pose.hpp"
 
 #include <mongocxx/instance.hpp>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-PrimitiveCrawlerDumpComputePathToPose::PrimitiveCrawlerDumpComputePathToPose()
-: PrimitiveNodeBase("st_crawlerdump_compute_path_to_pose_node")
+PrimitiveCrawlerDumpComputePathToPose::PrimitiveCrawlerDumpComputePathToPose() : PrimitiveNodeBase("primitive_crawlerdump_compute_path_to_pose_node")
 , mongo_client_(mongocxx::uri{"mongodb://localhost:27017"})
 , mongo_db_(mongo_client_["rostmsdb"])
 , mongo_collection_(mongo_db_["parameter"]) 
@@ -40,7 +39,7 @@ PrimitiveCrawlerDumpComputePathToPose::PrimitiveCrawlerDumpComputePathToPose()
   
     action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
     this,
-    "st_crawlerdump_compute_path_to_pose",
+    "primitive_crawlerdump_compute_path_to_pose",
     std::bind(&PrimitiveCrawlerDumpComputePathToPose::handle_goal, this, _1, _2),
     std::bind(&PrimitiveCrawlerDumpComputePathToPose::handle_cancel, this, _1),
     std::bind(&PrimitiveCrawlerDumpComputePathToPose::handle_accepted, this, _1)

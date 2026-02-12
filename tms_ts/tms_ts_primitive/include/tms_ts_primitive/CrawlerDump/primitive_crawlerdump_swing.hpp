@@ -28,16 +28,16 @@
 #include "tms_ts_primitive/primitive_node_base.hpp"
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
-#include "tms_msg_rp/action/tms_rp_crawlerdump_swing_angle.hpp"
+#include "tms_msg_rp/action/tms_rp_crawler_dump_swing_angle.hpp"
 
 
-class PrimitiveCrawlerdumpSwing : public PrimitiveNodeBase
+class PrimitiveCrawlerDumpSwing : public PrimitiveNodeBase
 {
 public:
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
-    using TmsRpCrawlerdumpSwingAngle = tms_msg_rp::action::TmsRpCrawlerdumpSwingAngle;
-    using GoalHandleCrawlerdumpSwing = rclcpp_action::ClientGoalHandle<TmsRpCrawlerdumpSwingAngle>;
-    PrimitiveCrawlerdumpSwing();
+    using TmsRpCrawlerDumpSwingAngle = tms_msg_rp::action::TmsRpCrawlerDumpSwingAngle;
+    using GoalHandleCrawlerDumpSwing = rclcpp_action::ClientGoalHandle<TmsRpCrawlerDumpSwingAngle>;
+    PrimitiveCrawlerDumpSwing();
 
 
 private:
@@ -50,14 +50,14 @@ private:
     void execute(const std::shared_ptr<GoalHandle> goal_handle);
 
     // Member as an action client
-    rclcpp_action::Client<TmsRpCrawlerdumpSwingAngle>::SharedPtr action_client_;
-    std::shared_future<GoalHandleCrawlerdumpSwing::SharedPtr> client_future_goal_handle_;
+    rclcpp_action::Client<TmsRpCrawlerDumpSwingAngle>::SharedPtr action_client_;
+    std::shared_future<GoalHandleCrawlerDumpSwing::SharedPtr> client_future_goal_handle_;
     std::map<std::string, double> parameters;
-    void goal_response_callback(const GoalHandleCrawlerdumpSwing::SharedPtr& goal_handle);
-    void feedback_callback(GoalHandleCrawlerdumpSwing::SharedPtr,
-                            const std::shared_ptr<const TmsRpCrawlerdumpSwingAngle::Feedback> feedback);
+    void goal_response_callback(const GoalHandleCrawlerDumpSwing::SharedPtr& goal_handle);
+    void feedback_callback(GoalHandleCrawlerDumpSwing::SharedPtr,
+                            const std::shared_ptr<const TmsRpCrawlerDumpSwingAngle::Feedback> feedback);
     void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                        const GoalHandleCrawlerdumpSwing::WrappedResult& result);
+                        const GoalHandleCrawlerDumpSwing::WrappedResult& result);
 };
 
 #endif

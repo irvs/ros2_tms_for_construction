@@ -26,7 +26,7 @@
 
 // leaf nodesのインクルード
 #include "tms_ts_primitive/Excavator/leaf_node.hpp"
-#include "tms_ts_primitive/Crawlerdump/leaf_node.hpp"
+#include "tms_ts_primitive/CrawlerDump/leaf_node.hpp"
 #include "tms_ts_primitive/Bulldozer/leaf_node.hpp"
 #include "tms_ts_primitive/common/blackboard_value_reader_mongo.hpp"
 #include "tms_ts_primitive/common/mongo_value_writer.hpp"
@@ -155,7 +155,7 @@ public:
         "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
     
     factory.registerNodeType<LeafNodeExcavator>("LeafNodeExcavator");
-    factory.registerNodeType<LeafNodeCrawlerdump>("LeafNodeCrawlerdump");
+    factory.registerNodeType<LeafNodeCrawlerDump>("LeafNodeCrawlerDump");
     factory.registerNodeType<LeafNodeBulldozer>("LeafNodeBulldozer");
     factory.registerNodeType<BlackboardValueReaderMongo>("BlackboardValueReaderMongo");
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");

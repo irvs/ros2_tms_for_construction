@@ -33,11 +33,11 @@
 using namespace BT;
 using namespace std::chrono_literals;
 
-class LeafNodeCrawlerdump : public LeafNodeBase
+class LeafNodeCrawlerDump : public LeafNodeBase
 {
 public:
-  inline LeafNodeCrawlerdump(const std::string& name, const NodeConfiguration& config)
-    : LeafNodeBase("leaf_node_Crawlerdump", config){};
+  inline LeafNodeCrawlerDump(const std::string& name, const NodeConfiguration& config)
+    : LeafNodeBase("leaf_node_CrawlerDump", config){};
   inline static PortsList providedPorts()
   {
     return { InputPort<std::string>("model_name"), InputPort<std::string>("record_name"), InputPort<std::string>("primitive_name") };

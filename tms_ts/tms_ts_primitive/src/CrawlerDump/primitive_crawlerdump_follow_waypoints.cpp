@@ -12,24 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_primitive/Crawlerdump/primitive_crawlerdump_follow_waypoints.hpp"
+#include "tms_ts_primitive/CrawlerDump/primitive_crawlerdump_follow_waypoints.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-PrimitiveCrawlerdumpFollowWaypointys::PrimitiveCrawlerdumpFollowWaypointys() : PrimitiveNodeBase("primitive_crawlerdump_follow_waypoints_node")
+PrimitiveCrawlerDumpFollowWaypointys::PrimitiveCrawlerDumpFollowWaypointys() : PrimitiveNodeBase("primitive_crawlerdump_follow_waypoints_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
         this, "primitive_crawlerdump_follow_waypoints",
-        std::bind(&PrimitiveCrawlerdumpFollowWaypointys::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&PrimitiveCrawlerdumpFollowWaypointys::handle_cancel, this, std::placeholders::_1),
-        std::bind(&PrimitiveCrawlerdumpFollowWaypointys::handle_accepted, this, std::placeholders::_1));
+        std::bind(&PrimitiveCrawlerDumpFollowWaypointys::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&PrimitiveCrawlerDumpFollowWaypointys::handle_cancel, this, std::placeholders::_1),
+        std::bind(&PrimitiveCrawlerDumpFollowWaypointys::handle_accepted, this, std::placeholders::_1));
 
     action_client_ = rclcpp_action::create_client<FollowWaypoints>(this, "tms_rp_navigate_follow_waypoints");
 }
 
-rclcpp_action::GoalResponse PrimitiveCrawlerdumpFollowWaypointys::handle_goal(
+rclcpp_action::GoalResponse PrimitiveCrawlerDumpFollowWaypointys::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
@@ -41,7 +41,7 @@ rclcpp_action::GoalResponse PrimitiveCrawlerdumpFollowWaypointys::handle_goal(
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse PrimitiveCrawlerdumpFollowWaypointys::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveCrawlerDumpFollowWaypointys::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
     if (client_future_goal_handle_.valid() &&
@@ -54,13 +54,13 @@ rclcpp_action::CancelResponse PrimitiveCrawlerdumpFollowWaypointys::handle_cance
 }
 
 
-void PrimitiveCrawlerdumpFollowWaypointys::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerDumpFollowWaypointys::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&PrimitiveCrawlerdumpFollowWaypointys::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&PrimitiveCrawlerDumpFollowWaypointys::execute, this, _1), goal_handle }.detach();
 }
 
-void PrimitiveCrawlerdumpFollowWaypointys::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerDumpFollowWaypointys::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "primitive(primitive_crawlerdump_follow_waypoints_node) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
@@ -114,7 +114,7 @@ void PrimitiveCrawlerdumpFollowWaypointys::execute(const std::shared_ptr<GoalHan
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void PrimitiveCrawlerdumpFollowWaypointys::goal_response_callback(const GoalHandleFollowWaypoints::SharedPtr& goal_handle)
+void PrimitiveCrawlerDumpFollowWaypointys::goal_response_callback(const GoalHandleFollowWaypoints::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -126,7 +126,7 @@ void PrimitiveCrawlerdumpFollowWaypointys::goal_response_callback(const GoalHand
   }
 }
 
-void PrimitiveCrawlerdumpFollowWaypointys::feedback_callback(
+void PrimitiveCrawlerDumpFollowWaypointys::feedback_callback(
     const GoalHandleFollowWaypoints::SharedPtr,
     const std::shared_ptr<const GoalHandleFollowWaypoints::Feedback> feedback)
 {
@@ -134,7 +134,7 @@ void PrimitiveCrawlerdumpFollowWaypointys::feedback_callback(
   // std::cout << "Feedback: " << feedback->current_waypoint << std::endl;
 }
 
-void PrimitiveCrawlerdumpFollowWaypointys::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void PrimitiveCrawlerDumpFollowWaypointys::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleFollowWaypoints::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -172,7 +172,7 @@ void PrimitiveCrawlerdumpFollowWaypointys::result_callback(const std::shared_ptr
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<PrimitiveCrawlerdumpFollowWaypointys>());
+    rclcpp::spin(std::make_shared<PrimitiveCrawlerDumpFollowWaypointys>());
     rclcpp::shutdown();
     return 0;
 }

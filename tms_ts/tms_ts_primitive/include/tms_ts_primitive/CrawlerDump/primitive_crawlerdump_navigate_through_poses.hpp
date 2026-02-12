@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SAMPLE_PRIMITIVE_CRAWLERDUMP_NAVIGATE_ANYWHERE_HPP
-#define SAMPLE_PRIMITIVE__NAVIGATE_ANYWHERE_HPP
+#ifndef SAMPLE_PRIMITIVE_CRAWLERDUMP_NAVIGATE_THROUGH_POSES_HPP
+#define SAMPLE_PRIMITIVE_CRAWLERDUMP_NAVIGATE_THROUGH_POSES_HPP
 
 #include <memory>
 #include <map>
@@ -33,21 +33,22 @@
 #include "tms_msg_ts/action/leaf_node_base.hpp"
 #include "tms_ts_primitive/primitive_node_base.hpp"
 
-#include "nav2_msgs/action/navigate_to_pose.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "nav2_msgs/action/navigate_through_poses.hpp"
 
-#include <rclcpp/qos.hpp>   
-#include <rmw/qos_profiles.h>  
 
-class PrimitiveCrawlerdumpNavigateAnywhere : public PrimitiveNodeBase
+class PrimitiveCrawlerDumpNavigateThroughPoses : public PrimitiveNodeBase
 {
 public:
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
-    using NavigateToPose = nav2_msgs::action::NavigateToPose;
-    using GoalHandleCrawlerdumpNavigateAnywhere = rclcpp_action::ClientGoalHandle<NavigateToPose>;
-    PrimitiveCrawlerdumpNavigateAnywhere();
+    using NavigateThroughPoses = nav2_msgs::action::NavigateThroughPoses;
+    using GoalHandleCrawlerDumpNavigateThroughPoses = rclcpp_action::ClientGoalHandle<NavigateThroughPoses>;
+    PrimitiveCrawlerDumpNavigateThroughPoses();
+
 
 private:
     rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
+    std::map<std::pair<std::string, std::string>, double> param_from_db_;
     rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
                                             std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal);
     rclcpp_action::CancelResponse handle_cancel(const std::shared_ptr<GoalHandle> goal_handle);
@@ -55,14 +56,14 @@ private:
     void execute(const std::shared_ptr<GoalHandle> goal_handle);
 
     // Member as an action client
-    rclcpp_action::Client<NavigateToPose>::SharedPtr action_client_;
-    std::shared_future<GoalHandleCrawlerdumpNavigateAnywhere::SharedPtr> client_future_goal_handle_;
-    std::map<std::string, double> parameters;
-    void goal_response_callback(const GoalHandleCrawlerdumpNavigateAnywhere::SharedPtr& goal_handle);
-    void feedback_callback(GoalHandleCrawlerdumpNavigateAnywhere::SharedPtr,
-                            const std::shared_ptr<const NavigateToPose::Feedback> feedback);
+    rclcpp_action::Client<NavigateThroughPoses>::SharedPtr action_client_;
+    std::shared_future<GoalHandleCrawlerDumpNavigateThroughPoses::SharedPtr> client_future_goal_handle_;
+    std::map<std::pair<std::string, std::string>, double> parameters;
+    void goal_response_callback(const GoalHandleCrawlerDumpNavigateThroughPoses::SharedPtr& goal_handle);
+    void feedback_callback(GoalHandleCrawlerDumpNavigateThroughPoses::SharedPtr,
+                            const std::shared_ptr<const NavigateThroughPoses::Feedback> feedback);
     void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                        const GoalHandleCrawlerdumpNavigateAnywhere::WrappedResult& result);
+                        const GoalHandleCrawlerDumpNavigateThroughPoses::WrappedResult& result);
 };
 
 #endif

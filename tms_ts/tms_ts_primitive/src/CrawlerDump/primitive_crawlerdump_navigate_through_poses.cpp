@@ -13,28 +13,28 @@
 // limitations under the License.
 
 #include <vector>
-#include "tms_ts_primitive/Crawlerdump/primitive_crawlerdump_swing.hpp"
+#include "tms_ts_primitive/CrawlerDump/primitive_crawlerdump_navigate_through_poses.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-PrimitiveCrawlerdumpSwing::PrimitiveCrawlerdumpSwing() : PrimitiveNodeBase("primitive_crawlerdump_swing_node")
+PrimitiveCrawlerDumpNavigateThroughPoses::PrimitiveCrawlerDumpNavigateThroughPoses() : PrimitiveNodeBase("primitive_crawlerdump_navigate_through_poses_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "primitive_crawlerdump_swing",
-        std::bind(&PrimitiveCrawlerdumpSwing::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&PrimitiveCrawlerdumpSwing::handle_cancel, this, std::placeholders::_1),
-        std::bind(&PrimitiveCrawlerdumpSwing::handle_accepted, this, std::placeholders::_1));
+        this, "primitive_crawlerdump_navigate_through_poses",
+        std::bind(&PrimitiveCrawlerDumpNavigateThroughPoses::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&PrimitiveCrawlerDumpNavigateThroughPoses::handle_cancel, this, std::placeholders::_1),
+        std::bind(&PrimitiveCrawlerDumpNavigateThroughPoses::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<TmsRpCrawlerdumpSwingAngle>(this, "tms_rp_set_swing_angle");
+    action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "tms_rp_navigate_through_poses");
 }
 
-rclcpp_action::GoalResponse PrimitiveCrawlerdumpSwing::handle_goal(
+rclcpp_action::GoalResponse PrimitiveCrawlerDumpNavigateThroughPoses::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
-    parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
+    parameters = CustomGetParamFromDB<std::pair<std::string, std::string>, double>(goal->model_name, goal->record_name);
     if (parameters.empty())
     {
         RCLCPP_ERROR(this->get_logger(), "Failed to get parameters from DB");
@@ -43,7 +43,7 @@ rclcpp_action::GoalResponse PrimitiveCrawlerdumpSwing::handle_goal(
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse PrimitiveCrawlerdumpSwing::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse PrimitiveCrawlerDumpNavigateThroughPoses::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
     if (client_future_goal_handle_.valid() &&
@@ -55,15 +55,15 @@ rclcpp_action::CancelResponse PrimitiveCrawlerdumpSwing::handle_cancel(const std
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void PrimitiveCrawlerdumpSwing::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerDumpNavigateThroughPoses::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&PrimitiveCrawlerdumpSwing::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&PrimitiveCrawlerDumpNavigateThroughPoses::execute, this, _1), goal_handle }.detach();
 }
 
-void PrimitiveCrawlerdumpSwing::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerDumpNavigateThroughPoses::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "primitive(primitive_crawlerdump_swing) is executing...");
+    RCLCPP_INFO(this->get_logger(), "primitive(primitive_crawlerdump_navigate_through_poses) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -80,14 +80,34 @@ void PrimitiveCrawlerdumpSwing::execute(const std::shared_ptr<GoalHandle> goal_h
 
     RCLCPP_INFO(this->get_logger(), "Get pose from DB.");
 
-    auto goal_msg = TmsRpCrawlerdumpSwingAngle::Goal();
-    goal_msg.target_angle = parameters["target_angle"];
+    std::vector<geometry_msgs::msg::PoseStamped> poses;
+    auto goal_msg = NavigateThroughPoses::Goal();
 
-    RCLCPP_INFO(this->get_logger(), "target_angle: %d", parameters["target_angle"]);
+
+    int point_num = parameters.size() / 7;
+    std::cout << "Total number of points: " << parameters.size() << std::endl;
+    std::cout << "point_num: " << point_num << std::endl;
+    auto pose = geometry_msgs::msg::PoseStamped();
+    pose.header.frame_id = "map";
+    pose.header.stamp = this->now();
+
+    for (int i=0; i < point_num; i++){
+      pose.pose.position.x = parameters[std::make_pair("x",std::to_string(i))];
+      pose.pose.position.y = parameters[std::make_pair("y",std::to_string(i))];
+      pose.pose.position.z = parameters[std::make_pair("z",std::to_string(i))];
+      pose.pose.orientation.x = parameters[std::make_pair("qx",std::to_string(i))];
+      pose.pose.orientation.y = parameters[std::make_pair("qy",std::to_string(i))];
+      pose.pose.orientation.z = parameters[std::make_pair("qz",std::to_string(i))];
+      pose.pose.orientation.w = parameters[std::make_pair("qw",std::to_string(i))];
+      poses.push_back(pose);
+      std::cout << "Point " << i << ": " << pose.pose.position.x << ", " << pose.pose.position.y << ", " << pose.pose.position.z << std::endl;
+      std::cout << "Pose " << i << ": " << pose.pose.orientation.x << ", " << pose.pose.orientation.y << ", " << pose.pose.orientation.z << ", " << pose.pose.orientation.w << std::endl;
+    }
+    goal_msg.poses = poses;
 
 
     //進捗状況を表示するFeedbackコールバックを設�?
-    auto send_goal_options = rclcpp_action::Client<TmsRpCrawlerdumpSwingAngle>::SendGoalOptions();
+    auto send_goal_options = rclcpp_action::Client<NavigateThroughPoses>::SendGoalOptions();
     send_goal_options.goal_response_callback = [this](const auto& goal_handle) { goal_response_callback(goal_handle); };
     send_goal_options.feedback_callback = [this](const auto tmp, const auto feedback) {
         feedback_callback(tmp, feedback);
@@ -99,7 +119,7 @@ void PrimitiveCrawlerdumpSwing::execute(const std::shared_ptr<GoalHandle> goal_h
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void PrimitiveCrawlerdumpSwing::goal_response_callback(const GoalHandleCrawlerdumpSwing::SharedPtr& goal_handle)
+void PrimitiveCrawlerDumpNavigateThroughPoses::goal_response_callback(const GoalHandleCrawlerDumpNavigateThroughPoses::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -112,9 +132,9 @@ void PrimitiveCrawlerdumpSwing::goal_response_callback(const GoalHandleCrawlerdu
 }
 
   
-void PrimitiveCrawlerdumpSwing::feedback_callback(
-    const GoalHandleCrawlerdumpSwing::SharedPtr,
-    const std::shared_ptr<const GoalHandleCrawlerdumpSwing::Feedback> feedback)
+void PrimitiveCrawlerDumpNavigateThroughPoses::feedback_callback(
+    const GoalHandleCrawlerDumpNavigateThroughPoses::SharedPtr,
+    const std::shared_ptr<const GoalHandleCrawlerDumpNavigateThroughPoses::Feedback> feedback)
 {
   // TODO: Fix to feedback to leaf node
   // RCLCPP_INFO(get_logger(), "Distance remaininf = %f", feedback->distance_remaining);
@@ -122,8 +142,8 @@ void PrimitiveCrawlerdumpSwing::feedback_callback(
 
 
 //result
-void PrimitiveCrawlerdumpSwing::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
-                                             const GoalHandleCrawlerdumpSwing::WrappedResult& result)
+void PrimitiveCrawlerDumpNavigateThroughPoses::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+                                             const GoalHandleCrawlerDumpNavigateThroughPoses::WrappedResult& result)
 {
   if (!goal_handle->is_active())
   {
@@ -164,7 +184,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<PrimitiveCrawlerdumpSwing>());
+    rclcpp::spin(std::make_shared<PrimitiveCrawlerDumpNavigateThroughPoses>());
     rclcpp::shutdown();
     return 0;
 }

@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_primitive/Crawlerdump/primitive_crawlerdump_follow_path.hpp"
+#include "tms_ts_primitive/CrawlerDump/primitive_crawlerdump_follow_path.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-PrimitiveCrawlerDumpFollowPath::PrimitiveCrawlerDumpFollowPath() : PrimitiveNodeBase("st_crawlerdump_follow_path_node")
+PrimitiveCrawlerDumpFollowPath::PrimitiveCrawlerDumpFollowPath() : PrimitiveNodeBase("primitive_crawlerdump_follow_path_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_crawlerdump_follow_path",
+        this, "primitive_crawlerdump_follow_path",
         std::bind(&PrimitiveCrawlerDumpFollowPath::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&PrimitiveCrawlerDumpFollowPath::handle_cancel, this, std::placeholders::_1),
         std::bind(&PrimitiveCrawlerDumpFollowPath::handle_accepted, this, std::placeholders::_1));
