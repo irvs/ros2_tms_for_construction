@@ -36,7 +36,7 @@ class UpdateDB_Parameter(Node):
         super().__init__("tms_sp_zx200_collison_objects")
         self.subscription = self.create_subscription(
             Zx200CollisionObjects,
-            '/zx200/collison_objects,
+            '/zx200/collison_objects',
             self.update_db_parameter,
             10) 
     
