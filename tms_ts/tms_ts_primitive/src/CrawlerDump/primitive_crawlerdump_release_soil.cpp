@@ -64,7 +64,7 @@ rclcpp_action::CancelResponse PrimitiveCrawlerDumpReleaseSoil::handle_cancel(
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void PrimitiveCrawlerDumpSwing::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void PrimitiveCrawlerDumpReleaseSoil::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
   std::thread{std::bind(&PrimitiveCrawlerDumpReleaseSoil::execute, this, _1), goal_handle}.detach();
 }
