@@ -248,7 +248,7 @@ try {
   document set_doc;
   set_doc.append(
     kvp("model_name",  model_arr.extract()),
-    kvp("type",        "static"),
+    kvp("type",        "plan"),
     kvp("record_name", record_name),
     kvp("frame_id",    path.header.frame_id),
     kvp("x",           x_arr.extract()),

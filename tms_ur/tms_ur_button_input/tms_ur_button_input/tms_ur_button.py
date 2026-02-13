@@ -1,11 +1,11 @@
 # Copyright 2023, IRVS Laboratory, Kyushu University, Japan.
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,8 +14,8 @@
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
-from std_msgs.msg import Bool
+from std_msgs.msg import String, Bool
+from diagnostic_msgs.msg import KeyValue
 import tkinter as tk
 from pymongo import MongoClient
 import re
@@ -35,67 +35,175 @@ class GUI_button(Node):
     def __init__(self):
         super().__init__('button_input_bt')
 
+        # ---------- parameters ----------
         self.declare_parameter('task_ids', [-1])
         self.declare_parameter('task_id', 3)
-        self.task_id = self.get_parameter("task_id").get_parameter_value().integer_value
+        self.task_id = self.get_parameter('task_id').get_parameter_value().integer_value
+
+        # ---------- publishers ----------
         self.emergency_signal_publisher = self.create_publisher(Bool, '/emergency_signal', 10)
         self.publisher_ = self.create_publisher(String, '/task_sequence', 10)
-        self.client = self.create_client(TmsdbGetTask, '/tms_db_reader_task')
+        self.publisher_for_vr_ = self.create_publisher(KeyValue, '/permissionrequest', 10)
+        timer_period = 1.0
+        self.timer = self.create_timer(timer_period, self.timer_callback)
 
+        # ---------- service client ----------
+        self.client = self.create_client(TmsdbGetTask, '/tms_db_reader_task')
         while not self.client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Service not available, waiting...')
 
+        # ---------- subscriber ----------
+        self.create_subscription(KeyValue, '/urpermission', self.VR_start_callback, 10)
+
+        # ---------- internal state ----------
+        self.task_list = []
+        self.expected_responses = 0
+
+        # ---------- GUI ----------
         task_ids = self.get_parameter("task_ids").get_parameter_value().integer_array_value
+
         if task_ids and len(task_ids) > 0 and task_ids[0] != -1:
             task_ids_str = ", ".join(map(str, task_ids))
-            button_text = f"task_ids: {task_ids_str}\n\nExecute multiple tasks"
+            button_text = (f"task_ids: {task_ids_str}\n\nExecute multiple tasks")
         else:
-            button_text = f"task_id: {self.task_id}\n\nExecute the task corresponding to the specified task ID"
+            button_text = (f"task_id: {self.task_id}\n\nExecute the task corresponding to the specified task ID")
 
-        root = tk.Tk()
-        root.title("CONTROL PANEL")
-        root.geometry("800x200")
-        self.emergency_button = tk.Button(root, text="EMERGENCY" + "\n" + "\n" + "Urgently stops a running task", command=self.emergency_button_click, width=50, height=8, bg="red")
+        self.root = tk.Tk()
+        self.root.title("CONTROL PANEL")
+        self.root.geometry("800x200")
+        self.emergency_button = tk.Button(self.root, text="EMERGENCY" + "\n" + "\n" + "Urgently stops a running task", command=self.emergency_button_click, width=50, height=8, bg="red")
         self.emergency_button.pack(side="right")
-        self.ts_button = tk.Button(root, text=button_text, command=self.button_click, width=50, height=8, bg="green")
+        self.ts_button = tk.Button(self.root, text=button_text, command=self.button_click, width=50, height=8, bg="green")
         self.ts_button.pack(side="right")
-        
-        root.mainloop()
+
+        # ---------- ROS spin thread ----------
+        def spin_ros():
+            while rclpy.ok():
+                rclpy.spin_once(self, timeout_sec=0.1)
+
+        threading.Thread(target=spin_ros,daemon=True).start()
+
+        self.root.mainloop()
+
+    def timer_callback(self):
+        task_ids = self.get_parameter("task_ids").get_parameter_value().integer_array_value
+        msg = KeyValue()
+        msg.key = "TASKGUI"
+        msg.value = ",".join(map(str, task_ids))
+        self.publisher_for_vr_.publish(msg)
+
+    # =========================================================
+    # GUI / topic callbacks
+    # =========================================================
+
+    def button_click(self):
+        self.task_start()
+
+    def VR_start_callback(self, msg):
+        if msg.key == "TASKGUI" and msg.value == "true":
+            self.task_start()
 
     def emergency_button_click(self):
         self.ts_button["state"] = "disabled"
         self.ts_button.configure(bg="black")
-        self.emergency_thread = threading.Thread(target=self.pub_emergency_signal)
-        self.emergency_thread.start()
+        self.timer.cancel()
+        threading.Thread(target=self.pub_emergency_signal, daemon=True).start()
+        threading.Thread(target=self.pub_gui_del_signal, daemon=True).start()
 
     def pub_emergency_signal(self):
-        while True:
-            msg = Bool()
-            msg.data = True
+        msg = Bool()
+        msg.data = True
+        while rclpy.ok():
             self.emergency_signal_publisher.publish(msg)
             time.sleep(0.01)
+    def pub_gui_del_signal(self):
+        msg = KeyValue()
+        msg.key = "TASKGUI"
+        msg.value = "emergency"
+        self.publisher_for_vr_.publish(msg)
 
+    # =========================================================
+    # Task handling (ASYNC service pattern)
+    # =========================================================
 
-    # GUIボタンが押されたときに実行される関数
-    def button_click(self):
-        self.arg_data = {}
-        self.search_task()
-        if self._is_valid_taskid == True:
-            msg = String()
-            
-            task_ids = self.get_parameter("task_ids").get_parameter_value().integer_array_value
-            
-            if task_ids and len(task_ids) > 0 and task_ids[0] != -1:
-                # 複数タスクの場合、JSONで送信
-                task_data = {
-                    "tasks": self.task_list
-                }
-                msg.data = json.dumps(task_data, ensure_ascii=False)
-                self.get_logger().info(f"Publishing multiple tasks as JSON: {len(self.task_list)} tasks")
+    def task_start(self):
+        self.timer.cancel()
+        # task_idsパラメータを取得
+        task_ids = self.get_parameter('task_ids').get_parameter_value().integer_array_value
+
+        if task_ids and len(task_ids) > 0 and task_ids[0] != -1:
+            self.task_sequence = ""
+            self._is_valid_taskid = True
+            self.task_list = []  # 複数タスクの情報を保存するリスト
+            self.pending_task_ids = list(task_ids)
+            self.expected_responses = len(self.pending_task_ids)
+
+            for task_id in task_ids:#for task_id in self.pending_task_ids:
+                request = TmsdbGetTask.Request()
+                request.task_id = task_id
+                self.get_logger().info(f"Sending request for task_id: {request.task_id}")
+                future = self.client.call_async(request)
+                future.task_id = task_id  # tag
+                future.add_done_callback(self.on_task_response)
+
+        else:
+            request = TmsdbGetTask.Request()
+            request.task_id = self.task_id
+            self.get_logger().info(f"Sending request for task_id: {request.task_id}")
+            future = self.client.call_async(request)
+            future.task_id = self.task_id  # tag
+            future.add_done_callback(self.on_task_response)
+            self.pending_task_ids = [self.task_id]
+            self.expected_responses = len(self.pending_task_ids)
+
+        self.get_logger().info(
+            f"Requested {self.expected_responses} task(s)")
+        
+
+    def on_task_response(self, future):
+        """Service response callback"""
+        try:
+            response = future.result()
+        except Exception as e:
+            self.get_logger().error(f"Service call failed: {e}")
+            return
+
+        task_id = future.task_id
+        task_ids = self.get_parameter('task_ids').get_parameter_value().integer_array_value
+
+        if task_ids and len(task_ids) > 0 and task_ids[0] != -1:
+            if response != None and response.task != "":
+                self.task_list.append({
+                    "task_id": task_id,
+                    "task_sequence": response.task
+                })
+                if len(self.task_list) == self.expected_responses:
+                    self._all_task_arrived = True
+                else:
+                    self._all_task_arrived = False
+                self.get_logger().info(f"Execute the task corresponding to the specified task ID({task_id})")
             else:
-                msg.data = self.task_sequence
-            
-            self.publisher_.publish(msg)
+                self.get_logger().info(f"The task corresponding to the specified task ID({task_id}) does not exist under the default collection in the rostmsdb database")
+                self._is_valid_taskid = False
+
+        else:
+            if response != None and response.task != "":
+                self.task_sequence = response.task
+                # self.set_parameters()
+                self.get_logger().info(f"Execute the task corresponding to the specified task ID({self.task_id})")
+                self._is_valid_taskid = True
+                self._all_task_arrived = True
+            else:
+                self.get_logger().info(f"The task corresponding to the specified task ID({self.task_id}) does not exist under the default collection in the rostmsdb database")
+                self._is_valid_taskid = False
+
+        # all responses arrived?
+        if self._is_valid_taskid == True and self._all_task_arrived == True:
+            self.publish_tasks()
+
+        elif self._is_valid_taskid == True and self._all_task_arrived == False:
+            self.get_logger().info("Waiting reading tasks")
+
         else:
             task_ids = self.get_parameter("task_ids").get_parameter_value().integer_array_value
             if task_ids and len(task_ids) > 0 and task_ids[0] != -1:
@@ -103,52 +211,26 @@ class GUI_button(Node):
                 self.get_logger().error(f"Stop the Task Scheduler because of the invalid task IDs({task_ids_str})")
             else:
                 self.get_logger().error(f"Stop the Task Scheduler because of the invalid task ID({self.task_id})")
-    
-    # タスクIDに対応するタスクをTMS_DBから検索する関数
-    def search_task(self):
-        # task_idsパラメータを取得
+
+    def publish_tasks(self):
+        msg = String()
+
         task_ids = self.get_parameter("task_ids").get_parameter_value().integer_array_value
-        
+
         if task_ids and len(task_ids) > 0 and task_ids[0] != -1:
-            self.task_sequence = ""
-            self._is_valid_taskid = True
-            self.task_list = []  # 複数タスクの情報を保存するリスト
-            
-            for task_id in task_ids:
-                request = TmsdbGetTask.Request()
-                request.task_id = task_id
-                request.task_or_subtask = "task"
-                self.get_logger().info(f"Sending request for task_id: {request.task_id}")
-                future = self.client.call_async(request)
-                rclpy.spin_until_future_complete(self, future)
-                response = future.result()
-
-                if response != None and response.task != "":
-                    self.task_list.append({
-                        "task_id": task_id,
-                        "task_sequence": response.task
-                    })
-                    self.get_logger().info(f"Execute the task corresponding to the specified task ID({task_id})")
-                else:
-                    self.get_logger().info(f"The task corresponding to the specified task ID({task_id}) does not exist under the default collection in the rostmsdb database")
-                    self._is_valid_taskid = False
-                    break  # 一つでも無効なタスクIDがあれば処理を停止
+            # 複数タスクの場合、JSONで送信
+            task_data = {
+                "tasks": self.task_list
+            }
+            msg.data = json.dumps(task_data, ensure_ascii=False)
+            self.get_logger().info(f"Publishing multiple tasks as JSON: {len(self.task_list)} tasks")
         else:
-            request = TmsdbGetTask.Request()
-            request.task_id = self.task_id 
-            self.get_logger().info(f"Sending request for task_id: {request.task_id}")
-            future = self.client.call_async(request)
-            rclpy.spin_until_future_complete(self, future)
-            response = future.result()
+            msg.data = self.task_sequence
+            self.get_logger().info("Publishing single task")
 
-            if response != None and response.task != "":
-                self.task_sequence = response.task
-                # self.set_parameters()
-                self.get_logger().info(f"Execute the task corresponding to the specified task ID({self.task_id})")
-                self._is_valid_taskid = True
-            else:
-                self.get_logger().info(f"The task corresponding to the specified task ID({self.task_id}) does not exist under the default collection in the rostmsdb database")
-                self._is_valid_taskid = False
+        self.publisher_.publish(msg)
+
+    # =========================================================
 
     # タスク列に動的にパラメータを埋め込むための関数
     # def set_parameters(self):
@@ -176,11 +258,10 @@ class GUI_button(Node):
     #             # self.get_logger().info("RESULT" + self.task_sequence)
 
 
+
 def main(args=None):
     rclpy.init(args=args)
-    button_input = GUI_button()
-    rclpy.spin(button_input)
-    button_input.destroy_node()
+    GUI_button()
     rclpy.shutdown()
 
 

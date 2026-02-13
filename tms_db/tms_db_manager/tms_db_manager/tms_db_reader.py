@@ -173,7 +173,8 @@ class TmsDbReader(Node):
         # name が空でない場合
         if request.name != "":
             plan_data = collection.find_one(
-                {"record_name": request.recordnames[0], "model_name": request.name}
+                #{"record_name": request.recordnames[0], "model_name": request.name}
+                {"type": "plan", "model_name": request.name}
             )
         # name が空の場合
         else:

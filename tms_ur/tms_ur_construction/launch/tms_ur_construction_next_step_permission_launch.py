@@ -30,7 +30,7 @@ def generate_launch_description():
     namespace='mst110cr',
     remappings=[
         ('urpermission', '/urpermission'),
-        ('permisionrequest', '/permisionrequest'),
+        ('permissionrequest', '/permissionrequest'),
     ],
     output='screen'
     )
