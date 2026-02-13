@@ -21,6 +21,7 @@
 #include "tms_msg_rp/action/tms_rp_excavator.hpp"
 #include "tms_msg_rp/msg/tms_rp_excavator_joint_values.hpp"
 #include "tms_msg_rp/srv/tms_rp_excavator_param_get.hpp"
+#include "tms_msg_rp/srv/tms_rp_excavator_param_set.hpp"
 
 #include <rclcpp/qos.hpp>   
 #include <rmw/qos_profiles.h>  
@@ -47,6 +48,8 @@ public:
 
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
+  rclcpp::Client<tms_msg_rp::srv::TmsRpExcavatorParamGet>::SharedPtr param_get_client_;
+  rclcpp::Client<tms_msg_rp::srv::TmsRpExcavatorParamSet>::SharedPtr param_set_client_;
   std::string used_model_name_;
   std::string used_record_name_;
   std::string previous_target_record_name_;

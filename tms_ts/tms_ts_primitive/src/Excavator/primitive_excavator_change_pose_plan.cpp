@@ -70,6 +70,16 @@ PrimitiveExcavatorChangePosePlan::PrimitiveExcavatorChangePosePlan()
   {
     RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
   }
+
+  param_get_client_ = this->create_client<tms_msg_rp::srv::TmsRpExcavatorParamGet>("tms_rp_excavator_param_get");
+  param_set_client_ = this->create_client<tms_msg_rp::srv::TmsRpExcavatorParamSet>("tms_rp_excavator_param_set");
+  
+  if (param_get_client_->wait_for_service(std::chrono::seconds(5))) {
+    RCLCPP_INFO(this->get_logger(), "Connected to tms_rp_excavator_param_get service");
+  } else {
+    RCLCPP_WARN(this->get_logger(), "tms_rp_excavator_param_get service not available yet");
+  }
+
 }
 
 rclcpp_action::GoalResponse PrimitiveExcavatorChangePosePlan::handle_goal(
@@ -224,6 +234,13 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         
         goal_msg.joint_values_sequence.push_back(target_joint_values);
         RCLCPP_INFO(this->get_logger(), "  Target: %zu joints specified", target_joint_values.joint_names.size());
+        RCLCPP_INFO(this->get_logger(), "  Joint values:");
+        for (size_t i = 0; i < target_joint_values.joint_names.size(); ++i) {
+          RCLCPP_INFO(this->get_logger(), "    %s: %.3f rad (%.1f deg)",
+                      target_joint_values.joint_names[i].c_str(),
+                      target_joint_values.joint_values[i],
+                      target_joint_values.joint_values[i] * 180.0 / M_PI);
+        }
         
       } else if (type == "pose") {
         // Poseで1個
@@ -265,11 +282,68 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         
         goal_msg.pose_sequence.push_back(target_pose);
         RCLCPP_INFO(this->get_logger(), "  Target pose: (%.2f, %.2f, %.2f)", x, y, z);
+
+        auto param_request = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamGet::Request>();
+        param_request->get_joint_limits = false;
+        param_request->get_current_state = false;
+        param_request->get_configuration = true;
         
-      } else {
-        handle_error("Unknown waypoint type: " + type);
-        return;
-      }
+        auto param_future = param_get_client_->async_send_request(param_request);
+        
+        // サービスコールの完了を待つ
+        auto status = param_future.wait_for(std::chrono::seconds(10));
+        if (status != std::future_status::ready) {
+          RCLCPP_WARN(this->get_logger(), "Failed to get parameters from service (timeout), using default values");
+        } else {
+          auto param_response = param_future.get();
+          
+          if (param_response->success) {
+            
+            // 許容誤差も取得
+            RCLCPP_INFO(this->get_logger(), "Current goal tolerances:");
+            RCLCPP_INFO(this->get_logger(), "  Position: %.4f m", param_response->goal_position_tolerance);
+            RCLCPP_INFO(this->get_logger(), "  Orientation: %.4f rad (%.2f deg)", 
+                        param_response->goal_orientation_tolerance,
+                        param_response->goal_orientation_tolerance * 180.0 / M_PI);
+            RCLCPP_INFO(this->get_logger(), "  Joint: %.4f rad (%.2f deg)", 
+                        param_response->goal_joint_tolerance,
+                        param_response->goal_joint_tolerance * 180.0 / M_PI);
+
+            auto param_set_request = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamSet::Request>();
+            param_set_request->goal_position_tolerance = 0.1; 
+            param_set_request->goal_orientation_tolerance = 0.1; 
+            // param_set_request->goal_joint_tolerance = 0.1; 
+            
+            auto param_set_future = param_set_client_->async_send_request(param_set_request);
+            auto set_status = param_set_future.wait_for(std::chrono::seconds(5));
+            
+            if (set_status == std::future_status::ready) {
+              auto param_set_response = param_set_future.get();
+              if (param_set_response->success) {
+                RCLCPP_INFO(this->get_logger(), "Updated goal tolerances:");
+                RCLCPP_INFO(this->get_logger(), "  Position: %.4f m", param_set_response->goal_position_tolerance);
+                RCLCPP_INFO(this->get_logger(), "  Orientation: %.4f rad (%.2f deg)", 
+                            param_set_response->goal_orientation_tolerance,
+                            param_set_response->goal_orientation_tolerance * 180.0 / M_PI);
+                RCLCPP_INFO(this->get_logger(), "  Joint: %.4f rad (%.2f deg)", 
+                            param_set_response->goal_joint_tolerance,
+                            param_set_response->goal_joint_tolerance * 180.0 / M_PI);
+              } else {
+                RCLCPP_WARN(this->get_logger(), "Failed to set tolerances: %s", param_set_response->message.c_str());
+              }
+            } else {
+              RCLCPP_WARN(this->get_logger(), "Timeout setting tolerances");
+            }
+          } else {
+            RCLCPP_WARN(this->get_logger(), "Parameter service returned failure: %s", 
+                        param_response->message.c_str());
+          }
+        }
+            
+        } else {
+            handle_error("Unknown waypoint type: " + type);
+            return;
+        }
       
     } else {
       // ========== 2個以上の場合: CMD_PLAN_MOTION_SEQUENCE ==========
@@ -580,193 +654,236 @@ bool PrimitiveExcavatorChangePosePlan::parse_previous_plan(TmsRpExcavator::Goal&
       return true;
     }
 
-    auto plan_doc = bsoncxx::from_json(previous_param_from_db_["plan"]);
+    // DBから来る "plan" は {"plan": {...}} でラップされていることがある
+    auto plan_doc  = bsoncxx::from_json(previous_param_from_db_["plan"]);
     auto plan_view = plan_doc.view();
 
+    // --- ★重要：planキーで1段ラップされていたら剥がす ---
+    // 例: {"plan": {"1": {...}, "2": {...}}}
+    if (plan_view["plan"] && plan_view["plan"].type() == bsoncxx::type::k_document)
+    {
+      plan_view = plan_view["plan"].get_document().value;
+    }
+
+    // 念のため、トップレベルが数字キーを持つ doc になっていることを軽く検証
+    // （ここでは落とさず、単に0件になるだけにする）
     for (auto&& element : plan_view)
     {
       std::string key = element.key().to_string();
+
+      // 数字キー以外（例: "_id" 等）があってもスキップ
+      int traj_index = -1;
       try
       {
-        (void)std::stoi(key); // 数字キー以外スキップするための判定
-
-        auto trajectory_doc = element.get_document().value;
-        moveit_msgs::msg::RobotTrajectory robot_trajectory;
-
-        // joint_trajectory
-        if (trajectory_doc["joint_trajectory"])
-        {
-          auto joint_traj_doc = trajectory_doc["joint_trajectory"].get_document().value;
-
-          if (joint_traj_doc["joint_names"])
-          {
-            auto joint_names_array = joint_traj_doc["joint_names"].get_array().value;
-            for (auto&& name : joint_names_array)
-              robot_trajectory.joint_trajectory.joint_names.push_back(name.get_string().value.to_string());
-          }
-
-          if (joint_traj_doc["points"])
-          {
-            auto points_array = joint_traj_doc["points"].get_array().value;
-            for (auto&& point_element : points_array)
-            {
-              auto point_doc = point_element.get_document().value;
-              trajectory_msgs::msg::JointTrajectoryPoint point;
-
-              if (point_doc["positions"])
-              {
-                auto arr = point_doc["positions"].get_array().value;
-                for (auto&& v : arr) point.positions.push_back(get_numeric_value(v));
-              }
-
-              if (point_doc["velocities"])
-              {
-                auto arr = point_doc["velocities"].get_array().value;
-                for (auto&& v : arr) point.velocities.push_back(get_numeric_value(v));
-              }
-
-              if (point_doc["accelerations"])
-              {
-                auto arr = point_doc["accelerations"].get_array().value;
-                for (auto&& v : arr) point.accelerations.push_back(get_numeric_value(v));
-              }
-
-              if (point_doc["time_from_start"])
-              {
-                auto time_doc = point_doc["time_from_start"].get_document().value;
-                if (time_doc["sec"])     point.time_from_start.sec     = time_doc["sec"].get_int32().value;
-                if (time_doc["nanosec"]) point.time_from_start.nanosec = time_doc["nanosec"].get_int32().value;
-              }
-
-              robot_trajectory.joint_trajectory.points.push_back(point);
-            }
-          }
-        }
-
-        // multi_dof_joint_trajectory
-        if (trajectory_doc["multi_dof_joint_trajectory"])
-        {
-          auto multi_dof_doc = trajectory_doc["multi_dof_joint_trajectory"].get_document().value;
-
-          if (multi_dof_doc["joint_names"])
-          {
-            auto arr = multi_dof_doc["joint_names"].get_array().value;
-            for (auto&& name : arr)
-              robot_trajectory.multi_dof_joint_trajectory.joint_names.push_back(name.get_string().value.to_string());
-          }
-
-          if (multi_dof_doc["points"])
-          {
-            auto points_array = multi_dof_doc["points"].get_array().value;
-            for (auto&& point_element : points_array)
-            {
-              auto point_doc = point_element.get_document().value;
-              trajectory_msgs::msg::MultiDOFJointTrajectoryPoint point;
-
-              if (point_doc["transforms"])
-              {
-                auto arr = point_doc["transforms"].get_array().value;
-                for (auto&& t : arr)
-                {
-                  auto td = t.get_document().value;
-                  geometry_msgs::msg::Transform transform;
-
-                  if (td["translation"])
-                  {
-                    auto tr = td["translation"].get_document().value;
-                    if (tr["x"]) transform.translation.x = get_numeric_value(tr["x"]);
-                    if (tr["y"]) transform.translation.y = get_numeric_value(tr["y"]);
-                    if (tr["z"]) transform.translation.z = get_numeric_value(tr["z"]);
-                  }
-
-                  if (td["rotation"])
-                  {
-                    auto ro = td["rotation"].get_document().value;
-                    if (ro["x"]) transform.rotation.x = get_numeric_value(ro["x"]);
-                    if (ro["y"]) transform.rotation.y = get_numeric_value(ro["y"]);
-                    if (ro["z"]) transform.rotation.z = get_numeric_value(ro["z"]);
-                    if (ro["w"]) transform.rotation.w = get_numeric_value(ro["w"]);
-                  }
-
-                  point.transforms.push_back(transform);
-                }
-              }
-
-              if (point_doc["velocities"])
-              {
-                auto arr = point_doc["velocities"].get_array().value;
-                for (auto&& v : arr)
-                {
-                  auto vd = v.get_document().value;
-                  geometry_msgs::msg::Twist twist;
-
-                  if (vd["linear"])
-                  {
-                    auto li = vd["linear"].get_document().value;
-                    if (li["x"]) twist.linear.x = get_numeric_value(li["x"]);
-                    if (li["y"]) twist.linear.y = get_numeric_value(li["y"]);
-                    if (li["z"]) twist.linear.z = get_numeric_value(li["z"]);
-                  }
-                  if (vd["angular"])
-                  {
-                    auto an = vd["angular"].get_document().value;
-                    if (an["x"]) twist.angular.x = get_numeric_value(an["x"]);
-                    if (an["y"]) twist.angular.y = get_numeric_value(an["y"]);
-                    if (an["z"]) twist.angular.z = get_numeric_value(an["z"]);
-                  }
-
-                  point.velocities.push_back(twist);
-                }
-              }
-
-              if (point_doc["accelerations"])
-              {
-                auto arr = point_doc["accelerations"].get_array().value;
-                for (auto&& a : arr)
-                {
-                  auto ad = a.get_document().value;
-                  geometry_msgs::msg::Twist twist;
-
-                  if (ad["linear"])
-                  {
-                    auto li = ad["linear"].get_document().value;
-                    if (li["x"]) twist.linear.x = get_numeric_value(li["x"]);
-                    if (li["y"]) twist.linear.y = get_numeric_value(li["y"]);
-                    if (li["z"]) twist.linear.z = get_numeric_value(li["z"]);
-                  }
-                  if (ad["angular"])
-                  {
-                    auto an = ad["angular"].get_document().value;
-                    if (an["x"]) twist.angular.x = get_numeric_value(an["x"]);
-                    if (an["y"]) twist.angular.y = get_numeric_value(an["y"]);
-                    if (an["z"]) twist.angular.z = get_numeric_value(an["z"]);
-                  }
-
-                  point.accelerations.push_back(twist);
-                }
-              }
-
-              if (point_doc["time_from_start"])
-              {
-                auto time_doc = point_doc["time_from_start"].get_document().value;
-                if (time_doc["sec"])     point.time_from_start.sec     = time_doc["sec"].get_int32().value;
-                if (time_doc["nanosec"]) point.time_from_start.nanosec = time_doc["nanosec"].get_int32().value;
-              }
-
-              robot_trajectory.multi_dof_joint_trajectory.points.push_back(point);
-            }
-          }
-        }
-
-        goal_msg.previous_pose.push_back(robot_trajectory);
+        traj_index = std::stoi(key);
+        (void)traj_index;
       }
       catch (...)
       {
         continue;
       }
+
+      if (element.type() != bsoncxx::type::k_document)
+      {
+        continue;
+      }
+
+      auto trajectory_doc = element.get_document().value;
+      moveit_msgs::msg::RobotTrajectory robot_trajectory;
+
+      // ---------------- joint_trajectory ----------------
+      if (trajectory_doc["joint_trajectory"] && trajectory_doc["joint_trajectory"].type() == bsoncxx::type::k_document)
+      {
+        auto joint_traj_doc = trajectory_doc["joint_trajectory"].get_document().value;
+
+        if (joint_traj_doc["joint_names"] && joint_traj_doc["joint_names"].type() == bsoncxx::type::k_array)
+        {
+          auto joint_names_array = joint_traj_doc["joint_names"].get_array().value;
+          for (auto&& name : joint_names_array)
+          {
+            if (name.type() == bsoncxx::type::k_utf8)
+              robot_trajectory.joint_trajectory.joint_names.push_back(name.get_string().value.to_string());
+          }
+        }
+
+        if (joint_traj_doc["points"] && joint_traj_doc["points"].type() == bsoncxx::type::k_array)
+        {
+          auto points_array = joint_traj_doc["points"].get_array().value;
+          for (auto&& point_element : points_array)
+          {
+            if (point_element.type() != bsoncxx::type::k_document) continue;
+            auto point_doc = point_element.get_document().value;
+
+            trajectory_msgs::msg::JointTrajectoryPoint point;
+
+            if (point_doc["positions"] && point_doc["positions"].type() == bsoncxx::type::k_array)
+            {
+              auto arr = point_doc["positions"].get_array().value;
+              for (auto&& v : arr) point.positions.push_back(get_numeric_value(v));
+            }
+
+            if (point_doc["velocities"] && point_doc["velocities"].type() == bsoncxx::type::k_array)
+            {
+              auto arr = point_doc["velocities"].get_array().value;
+              for (auto&& v : arr) point.velocities.push_back(get_numeric_value(v));
+            }
+
+            if (point_doc["accelerations"] && point_doc["accelerations"].type() == bsoncxx::type::k_array)
+            {
+              auto arr = point_doc["accelerations"].get_array().value;
+              for (auto&& v : arr) point.accelerations.push_back(get_numeric_value(v));
+            }
+
+            if (point_doc["time_from_start"] && point_doc["time_from_start"].type() == bsoncxx::type::k_document)
+            {
+              auto time_doc = point_doc["time_from_start"].get_document().value;
+              if (time_doc["sec"]     && time_doc["sec"].type() == bsoncxx::type::k_int32)
+                point.time_from_start.sec     = time_doc["sec"].get_int32().value;
+              if (time_doc["nanosec"] && time_doc["nanosec"].type() == bsoncxx::type::k_int32)
+                point.time_from_start.nanosec = time_doc["nanosec"].get_int32().value;
+            }
+
+            robot_trajectory.joint_trajectory.points.push_back(point);
+          }
+        }
+      }
+
+      // ---------------- multi_dof_joint_trajectory ----------------
+      if (trajectory_doc["multi_dof_joint_trajectory"] &&
+          trajectory_doc["multi_dof_joint_trajectory"].type() == bsoncxx::type::k_document)
+      {
+        auto multi_dof_doc = trajectory_doc["multi_dof_joint_trajectory"].get_document().value;
+
+        if (multi_dof_doc["joint_names"] && multi_dof_doc["joint_names"].type() == bsoncxx::type::k_array)
+        {
+          auto arr = multi_dof_doc["joint_names"].get_array().value;
+          for (auto&& name : arr)
+          {
+            if (name.type() == bsoncxx::type::k_utf8)
+              robot_trajectory.multi_dof_joint_trajectory.joint_names.push_back(name.get_string().value.to_string());
+          }
+        }
+
+        if (multi_dof_doc["points"] && multi_dof_doc["points"].type() == bsoncxx::type::k_array)
+        {
+          auto points_array = multi_dof_doc["points"].get_array().value;
+          for (auto&& point_element : points_array)
+          {
+            if (point_element.type() != bsoncxx::type::k_document) continue;
+            auto point_doc = point_element.get_document().value;
+
+            trajectory_msgs::msg::MultiDOFJointTrajectoryPoint point;
+
+            if (point_doc["transforms"] && point_doc["transforms"].type() == bsoncxx::type::k_array)
+            {
+              auto arr = point_doc["transforms"].get_array().value;
+              for (auto&& t : arr)
+              {
+                if (t.type() != bsoncxx::type::k_document) continue;
+                auto td = t.get_document().value;
+
+                geometry_msgs::msg::Transform transform;
+
+                if (td["translation"] && td["translation"].type() == bsoncxx::type::k_document)
+                {
+                  auto tr = td["translation"].get_document().value;
+                  if (tr["x"]) transform.translation.x = get_numeric_value(tr["x"]);
+                  if (tr["y"]) transform.translation.y = get_numeric_value(tr["y"]);
+                  if (tr["z"]) transform.translation.z = get_numeric_value(tr["z"]);
+                }
+
+                if (td["rotation"] && td["rotation"].type() == bsoncxx::type::k_document)
+                {
+                  auto ro = td["rotation"].get_document().value;
+                  if (ro["x"]) transform.rotation.x = get_numeric_value(ro["x"]);
+                  if (ro["y"]) transform.rotation.y = get_numeric_value(ro["y"]);
+                  if (ro["z"]) transform.rotation.z = get_numeric_value(ro["z"]);
+                  if (ro["w"]) transform.rotation.w = get_numeric_value(ro["w"]);
+                }
+
+                point.transforms.push_back(transform);
+              }
+            }
+
+            if (point_doc["velocities"] && point_doc["velocities"].type() == bsoncxx::type::k_array)
+            {
+              auto arr = point_doc["velocities"].get_array().value;
+              for (auto&& v : arr)
+              {
+                if (v.type() != bsoncxx::type::k_document) continue;
+                auto vd = v.get_document().value;
+
+                geometry_msgs::msg::Twist twist;
+
+                if (vd["linear"] && vd["linear"].type() == bsoncxx::type::k_document)
+                {
+                  auto li = vd["linear"].get_document().value;
+                  if (li["x"]) twist.linear.x = get_numeric_value(li["x"]);
+                  if (li["y"]) twist.linear.y = get_numeric_value(li["y"]);
+                  if (li["z"]) twist.linear.z = get_numeric_value(li["z"]);
+                }
+                if (vd["angular"] && vd["angular"].type() == bsoncxx::type::k_document)
+                {
+                  auto an = vd["angular"].get_document().value;
+                  if (an["x"]) twist.angular.x = get_numeric_value(an["x"]);
+                  if (an["y"]) twist.angular.y = get_numeric_value(an["y"]);
+                  if (an["z"]) twist.angular.z = get_numeric_value(an["z"]);
+                }
+
+                point.velocities.push_back(twist);
+              }
+            }
+
+            if (point_doc["accelerations"] && point_doc["accelerations"].type() == bsoncxx::type::k_array)
+            {
+              auto arr = point_doc["accelerations"].get_array().value;
+              for (auto&& a : arr)
+              {
+                if (a.type() != bsoncxx::type::k_document) continue;
+                auto ad = a.get_document().value;
+
+                geometry_msgs::msg::Twist twist;
+
+                if (ad["linear"] && ad["linear"].type() == bsoncxx::type::k_document)
+                {
+                  auto li = ad["linear"].get_document().value;
+                  if (li["x"]) twist.linear.x = get_numeric_value(li["x"]);
+                  if (li["y"]) twist.linear.y = get_numeric_value(li["y"]);
+                  if (li["z"]) twist.linear.z = get_numeric_value(li["z"]);
+                }
+                if (ad["angular"] && ad["angular"].type() == bsoncxx::type::k_document)
+                {
+                  auto an = ad["angular"].get_document().value;
+                  if (an["x"]) twist.angular.x = get_numeric_value(an["x"]);
+                  if (an["y"]) twist.angular.y = get_numeric_value(an["y"]);
+                  if (an["z"]) twist.angular.z = get_numeric_value(an["z"]);
+                }
+
+                point.accelerations.push_back(twist);
+              }
+            }
+
+            if (point_doc["time_from_start"] && point_doc["time_from_start"].type() == bsoncxx::type::k_document)
+            {
+              auto time_doc = point_doc["time_from_start"].get_document().value;
+              if (time_doc["sec"]     && time_doc["sec"].type() == bsoncxx::type::k_int32)
+                point.time_from_start.sec     = time_doc["sec"].get_int32().value;
+              if (time_doc["nanosec"] && time_doc["nanosec"].type() == bsoncxx::type::k_int32)
+                point.time_from_start.nanosec = time_doc["nanosec"].get_int32().value;
+            }
+
+            robot_trajectory.multi_dof_joint_trajectory.points.push_back(point);
+          }
+        }
+      }
+
+      // ここまで来たら trajectory として追加
+      goal_msg.previous_pose.push_back(robot_trajectory);
     }
 
-    RCLCPP_INFO(this->get_logger(), "Successfully loaded %zu trajectories from previous plan", goal_msg.previous_pose.size());
+    RCLCPP_INFO(this->get_logger(),
+                "Successfully loaded %zu trajectories from previous plan",
+                goal_msg.previous_pose.size());
     return true;
   }
   catch (const std::exception& e)

@@ -46,7 +46,7 @@ namespace {
   }
 }
 
-PrimitiveExcavatorChangePoseExecuteFromJointValues::PrimitiveExcavatorChangePoseExecuteFromJointValues() : PrimitiveNodeBase("primitive_excavator_change_pose_execute_from_joint_values_node")
+PrimitiveExcavatorChangePoseExecuteFromJointValues::PrimitiveExcavatorChangePoseExecuteFromJointValues() : PrimitiveNodeBase("primitive_excavator_change_pose_execute_from_plan_node")
 {
     auto options_server = rcl_action_server_get_default_options();
     options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
