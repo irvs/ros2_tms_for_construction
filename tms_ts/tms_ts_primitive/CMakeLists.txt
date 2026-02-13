@@ -37,7 +37,6 @@ find_package(Qt5Widgets REQUIRED)
 add_library(${PROJECT_NAME} SHARED
   src/leaf_node_base.cpp
   src/Excavator/leaf_node.cpp
-  src/assist_node_base.cpp
   src/primitive_node_base.cpp)
 
 
@@ -75,8 +74,7 @@ add_executable(primitive_crawlerdump_swing_align_to_heading src/Crawlerdump/prim
 
 # Primitive Nodes for Excavator
 # add_executable(assist_excavation_pose_to_joint_angles src/Excavator/assist_excavation_pose_to_joint_angles.cpp)
-add_executable(primitive_excavator_change_pose_plan_from_poses src/Excavator/primitive_excavator_change_pose_plan_from_poses.cpp)
-add_executable(primitive_excavator_change_pose_plan_from_joint_values src/Excavator/primitive_excavator_change_pose_plan_from_joint_values.cpp)
+add_executable(primitive_excavator_change_pose_plan src/Excavator/primitive_excavator_change_pose_plan.cpp)
 add_executable(primitive_excavator_change_pose_execute_from_plan src/Excavator/primitive_excavator_change_pose_execute_from_plan.cpp)
 add_executable(primitive_excavator_follow_waypoints src/Excavator/primitive_excavator_follow_waypoints.cpp)
 add_executable(primitive_excavator_follow_waypoints_deg src/Excavator/primitive_excavator_follow_waypoints_deg.cpp)
@@ -105,8 +103,7 @@ set(TARGETS
   primitive_crawlerdump_swing
   primitive_crawlerdump_swing_align_to_heading
   # assist_excavation_pose_to_joint_angles
-  primitive_excavator_change_pose_plan_from_poses
-  primitive_excavator_change_pose_plan_from_joint_values
+  primitive_excavator_change_pose_plan
   primitive_excavator_change_pose_execute_from_plan
   primitive_excavator_follow_waypoints_deg
   primitive_excavator_follow_waypoints
@@ -155,7 +152,7 @@ target_include_directories(${target} PUBLIC ${COMMON_INCLUDE_DIRS})
 endforeach()
 
 # Link excavator_pose_converter to specific excavator targets
-target_link_libraries(primitive_excavator_change_pose_plan_from_poses excavator_pose_converter)
+target_link_libraries(primitive_excavator_change_pose_plan excavator_pose_converter)
 
 ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
 

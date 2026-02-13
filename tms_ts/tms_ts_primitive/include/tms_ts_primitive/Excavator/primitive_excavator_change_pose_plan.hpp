@@ -1,23 +1,11 @@
 // Copyright 2023, IRVS Laboratory, Kyushu University, Japan.
+// Licensed under the Apache License, Version 2.0
 
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-
-//      http://www.apache.org/licenses/LICENSE-2.0
-
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-#ifndef PRIMITIVE_EXCAVATOR_CHANGE_POSE_PLAN_FROM_JOINT_VALUES_HPP
-#define PRIMITIVE_EXCAVATOR_CHANGE_POSE_PLAN_FROM_JOINT_VALUES_HPP
+#ifndef PRIMITIVE_EXCAVATOR_CHANGE_POSE_PLAN_HPP
+#define PRIMITIVE_EXCAVATOR_CHANGE_POSE_PLAN_HPP
 
 #include <memory>
 #include <map>
-
 #include <chrono>
 #include <functional>
 #include <future>
@@ -32,6 +20,7 @@
 
 #include "tms_msg_rp/action/tms_rp_excavator.hpp"
 #include "tms_msg_rp/msg/tms_rp_excavator_joint_values.hpp"
+#include "tms_msg_rp/srv/tms_rp_excavator_param_get.hpp"
 
 #include <rclcpp/qos.hpp>   
 #include <rmw/qos_profiles.h>  
@@ -46,7 +35,7 @@
 #include <shape_msgs/msg/solid_primitive.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
-class PrimitiveExcavatorChangePosePlanFromJointValues : public PrimitiveNodeBase
+class PrimitiveExcavatorChangePosePlan : public PrimitiveNodeBase
 {
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
@@ -54,7 +43,7 @@ public:
   using TmsRpExcavator = tms_msg_rp::action::TmsRpExcavator;
   using GoalHandleTmsRpExcavator = rclcpp_action::ClientGoalHandle<TmsRpExcavator>;
 
-  PrimitiveExcavatorChangePosePlanFromJointValues();
+  PrimitiveExcavatorChangePosePlan();
 
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
@@ -63,6 +52,7 @@ private:
   std::string previous_target_record_name_;
   std::map<std::string, std::string> param_from_db_;
   std::map<std::string, std::string> previous_param_from_db_;
+  std::string planning_group_;
 
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
                                           std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal);
@@ -78,6 +68,12 @@ private:
                          const std::shared_ptr<const TmsRpExcavator::Feedback> feedback);
   void result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                        const GoalHandleTmsRpExcavator::WrappedResult& result);
+  
+  // Helper methods
+  bool parse_previous_plan(TmsRpExcavator::Goal& goal_msg);
+  bool parse_constraints(TmsRpExcavator::Goal& goal_msg);
+  bool parse_collision_avoidance(TmsRpExcavator::Goal& goal_msg);
+  void save_plan_to_db(const TmsRpExcavator::Result::SharedPtr& result);
 };
 
 #endif

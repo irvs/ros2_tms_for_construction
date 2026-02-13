@@ -323,6 +323,13 @@ bool PrimitiveNodeBase::CustomUpdateParamInDB(std::string model_name, std::strin
     update_builder << bsoncxx::builder::stream::close_document;
 
     auto result = collection.update_one(filter, update_builder.view());
+    if (result) {
+      RCLCPP_INFO(this->get_logger(),
+        "update_one: matched=%lld modified=%lld upserted=%s",
+        (long long)result->matched_count(),
+        (long long)result->modified_count(),
+        result->upserted_id() ? "yes" : "no");
+    }
 
     if (result && result->modified_count() > 0) {
       RCLCPP_INFO(this->get_logger(), "Successfully updated \"%s\" field.", target_key.c_str());
@@ -357,7 +364,10 @@ inline bool PrimitiveNodeBase::UpdateParamInDBFromJson(std::string model_name, s
                    << target_key << bson_value
                    << bsoncxx::builder::stream::close_document;
 
-    auto result = collection.update_one(filter, update_builder.view());
+    mongocxx::options::update update_options;
+    update_options.upsert(true);
+
+    auto result = collection.update_one(filter, update_builder.view(), update_options);
 
     if (result && result->modified_count() > 0) {
       RCLCPP_INFO(this->get_logger(), "Successfully updated \"%s\" field from JSON.", target_key.c_str());
