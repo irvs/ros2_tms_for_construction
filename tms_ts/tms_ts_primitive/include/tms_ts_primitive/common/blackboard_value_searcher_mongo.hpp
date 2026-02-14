@@ -138,8 +138,16 @@ public:
             return NodeStatus::FAILURE;
         }
 
+        std::string mongo_value = key3.value();
+
+        if (!mongo_value.empty() && mongo_value.front() == '=')
+        {
+            mongo_value.erase(0, 1);
+        }
+
         auto param_names  = split(key2.value(), ',');  
-        auto param_values_raw = split(key3.value(), ','); 
+        //auto param_values_raw = split(mongo_value.value(), ','); 
+        auto param_values_raw = split(mongo_value, ',');
 
         if (param_names.size() != param_values_raw.size()) {
             std::cout << "[BlackboardValueSearcherMongo] size mismatch" << std::endl;
@@ -175,14 +183,15 @@ public:
         if (!doc)
         {
             setOutput("output_port", false);
-            std::cout << "[BlackboardValueSearcherMongo]  Stored blackboard parameter [" << key2.value() << " == " << key3.value() << "] : " << "false" << std::endl;          
+            std::cout << "[BlackboardValueSearcherMongo]  Stored blackboard parameter [" << key2.value() << " == " << mongo_value << "] : " << "false" << std::endl;  
+            //std::cout << "[BlackboardValueSearcherMongo]  Stored blackboard parameter [" << key2.value() << " == " << key3.value() << "] : " << "false" << std::endl;          
             return NodeStatus::SUCCESS;
         }
         
         try
         {
             setOutput("output_port", true);
-            std::cout << "[BlackboardValueSearcherMongo]  Stored blackboard parameter [" << key2.value() << " == " << key3.value() << "] : true" << std::endl;
+            std::cout << "[BlackboardValueSearcherMongo]  Stored blackboard parameter [" << key2.value() << " == " << mongo_value << "] : true" << std::endl;
             return NodeStatus::SUCCESS;
         }
 

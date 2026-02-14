@@ -2,21 +2,21 @@
     <TreeNodesModel>
 
         <Action ID="LeafNodeBulldozer">
-            <input_port name=" model_name" default="d37pxi_24"/>
+            <input_port name="model_name" default="d37pxi_24"/>
             <inout_port name="record_name"/>
             <inout_port name="primitive_name"/> 
         </Action>
         
         
         <Action ID="LeafNodeCrawlerDump">
-            <input_port name=" model_name"/>
+            <input_port name="model_name"/>
             <inout_port name="record_name"/>
             <inout_port name="primitive_name"/> 
             <inout_port name="read_direction"/> 
         </Action>
 
         <Action ID="LeafNodeExcavator">
-            <input_port name=" model_name" default="zx200"/>
+            <input_port name="model_name" default="zx200"/>
             <inout_port name="record_name"/>
             <inout_port name="primitive_name"/> 
         </Action>
@@ -71,7 +71,7 @@
         </Action>   
 
         <Action ID="LeafNodeCommon">
-            <input_port name=" model_name"/>
+            <input_port name="model_name"/>
             <inout_port name="record_name"/>
             <inout_port name="motion_name"/> 
         </Action>   
