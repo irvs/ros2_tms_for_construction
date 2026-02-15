@@ -21,7 +21,7 @@ class GoalState:
 class TmsUrConstructionNextStepPermission(Node):
 
     def __init__(self):
-        super().__init__('st_wait_ur_node')
+        super().__init__('wait_ur_node')
 
         # goal_id → GoalState
         self.goal_states = {}
@@ -31,7 +31,7 @@ class TmsUrConstructionNextStepPermission(Node):
         self._action_server = ActionServer(
             self,
             NextStepPermission,
-            'st_wait_ur_node',
+            'request_wait_ur',
             self.execute_callback
         )
 

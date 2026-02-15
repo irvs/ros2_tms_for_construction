@@ -26,7 +26,7 @@ def generate_launch_description():
     tms_ur_next_step_permission1 = Node(
     package='tms_ur_construction',
     executable='tms_ur_construction_next_step_permission',
-    name='st_wait_ur_node',
+    name='wait_ur_node',
     namespace='mst110cr',
     remappings=[
         ('urpermission', '/urpermission'),

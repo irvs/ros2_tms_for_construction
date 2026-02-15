@@ -14,25 +14,25 @@
 
 #include <vector>
 ////#include "tms_ts_primitive/CrawlerDump/primitive_crawlerdump_swing.hpp"
-#include "tms_ts_primitive/common/primitive_wait_for_ur.hpp"
+#include "tms_ts_primitive/common/wait_for_ur.hpp"
 // #include <glog/logging.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-PrimitiveWaitForUr::PrimitiveWaitForUr() : PrimitiveNodeBase("primitive_wait_for_ur")
+WaitForUr::WaitForUr() : PrimitiveNodeBase("wait_for_ur_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_wait_for_ur",
-        std::bind(&PrimitiveWaitForUr::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
-        std::bind(&PrimitiveWaitForUr::handle_cancel, this, std::placeholders::_1),
-        std::bind(&PrimitiveWaitForUr::handle_accepted, this, std::placeholders::_1));
+        this, "wait_for_ur",
+        std::bind(&WaitForUr::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&WaitForUr::handle_cancel, this, std::placeholders::_1),
+        std::bind(&WaitForUr::handle_accepted, this, std::placeholders::_1));
 
     
-    action_client_ = rclcpp_action::create_client<NextStepPermission>(this, "primitive_wait_ur_node");
+    action_client_ = rclcpp_action::create_client<NextStepPermission>(this, "request_wait_ur");
 }
 
-rclcpp_action::GoalResponse PrimitiveWaitForUr::handle_goal(
+rclcpp_action::GoalResponse WaitForUr::handle_goal(
     const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal)
 {
     // parameters = CustomGetParamFromDB<std::string, double>(goal->model_name, goal->record_name);
@@ -45,9 +45,9 @@ rclcpp_action::GoalResponse PrimitiveWaitForUr::handle_goal(
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-rclcpp_action::CancelResponse PrimitiveWaitForUr::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
+rclcpp_action::CancelResponse WaitForUr::handle_cancel(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "Received request to cancel primitive node");
+    RCLCPP_INFO(this->get_logger(), "Received request to cancel node");
     if (client_future_goal_handle_.valid() &&
         client_future_goal_handle_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
@@ -57,15 +57,15 @@ rclcpp_action::CancelResponse PrimitiveWaitForUr::handle_cancel(const std::share
     return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void PrimitiveWaitForUr::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
+void WaitForUr::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
 {
     using namespace std::placeholders;
-    std::thread{ std::bind(&PrimitiveWaitForUr::execute, this, _1), goal_handle }.detach();
+    std::thread{ std::bind(&WaitForUr::execute, this, _1), goal_handle }.detach();
 }
 
-void PrimitiveWaitForUr::execute(const std::shared_ptr<GoalHandle> goal_handle)
+void WaitForUr::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "primitive(st_wait_for_ur) is executing...");
+    RCLCPP_INFO(this->get_logger(), "(wait_for_ur) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
@@ -88,7 +88,7 @@ void PrimitiveWaitForUr::execute(const std::shared_ptr<GoalHandle> goal_handle)
     auto goal_msg = NextStepPermission::Goal();
     //goal_msg.taskname = parameters["window_title"];
     auto goal = goal_handle->get_goal();
-    goal_msg.taskname = goal->model_name;
+    goal_msg.machinename = goal->model_name;
 
     //RCLCPP_INFO(this->get_logger(), "target_angle: %d", parameters["target_angle"]);
 
@@ -107,7 +107,7 @@ void PrimitiveWaitForUr::execute(const std::shared_ptr<GoalHandle> goal_handle)
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 
-void PrimitiveWaitForUr::goal_response_callback(const GoalHandleWaitForUr::SharedPtr& goal_handle)
+void WaitForUr::goal_response_callback(const GoalHandleWaitForUr::SharedPtr& goal_handle)
 {
   if (!goal_handle)
   {
@@ -120,7 +120,7 @@ void PrimitiveWaitForUr::goal_response_callback(const GoalHandleWaitForUr::Share
 }
 
   
-void PrimitiveWaitForUr::feedback_callback(
+void WaitForUr::feedback_callback(
     const GoalHandleWaitForUr::SharedPtr,
     const std::shared_ptr<const GoalHandleWaitForUr::Feedback> feedback)
 {
@@ -130,7 +130,7 @@ void PrimitiveWaitForUr::feedback_callback(
 
 
 //result
-void PrimitiveWaitForUr::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
+void WaitForUr::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleWaitForUr::WrappedResult& result)
 {
   if (!goal_handle->is_active())
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
     //   google::InstallFailureSignalHandler();
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<PrimitiveWaitForUr>());
+    rclcpp::spin(std::make_shared<WaitForUr>());
     rclcpp::shutdown();
     return 0;
 }

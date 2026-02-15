@@ -73,7 +73,7 @@
         <Action ID="LeafNodeCommon">
             <input_port name="model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="motion_name"/> 
+            <inout_port name="primitive_name"/> 
         </Action>   
 
 

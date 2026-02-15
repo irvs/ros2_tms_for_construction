@@ -31,13 +31,13 @@
 #include "tms_msg_ur/action/next_step_permission.hpp"
 
 
-class PrimitiveWaitForUr : public PrimitiveNodeBase
+class WaitForUr : public PrimitiveNodeBase
 {
 public:
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
     using NextStepPermission = tms_msg_ur::action::NextStepPermission;
     using GoalHandleWaitForUr = rclcpp_action::ClientGoalHandle<NextStepPermission>;
-    PrimitiveWaitForUr();
+    WaitForUr();
 
 
 private:
