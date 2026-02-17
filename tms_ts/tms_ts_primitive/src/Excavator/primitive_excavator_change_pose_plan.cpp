@@ -40,6 +40,7 @@ namespace {
 PrimitiveExcavatorChangePosePlan::PrimitiveExcavatorChangePosePlan() 
   : PrimitiveNodeBase("primitive_excavator_change_pose_plan_node")
 {
+
   auto options_server = rcl_action_server_get_default_options();
   options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
   options_server.result_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
@@ -205,9 +206,17 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         return;
       }
       
+      auto waypoints_array = view["waypoints"].get_array().value;
+      size_t num_waypoints = std::distance(waypoints_array.begin(), waypoints_array.end());
+      
+      if (num_waypoints == 0) {
+        handle_error("waypoints array is empty");
+        return;
+      }
+
       std::string type = waypoint_doc["type"].get_string().value.to_string();
       
-      if (type == "joint_values") {
+      if (type == "joint_values_absolute") {
         // Joint valuesで1個
         goal_msg.command = TmsRpExcavator::Goal::CMD_PLAN_TO_JOINTS;
         RCLCPP_INFO(this->get_logger(), "===================================================");
@@ -234,6 +243,80 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         
         goal_msg.joint_values_sequence.push_back(target_joint_values);
         RCLCPP_INFO(this->get_logger(), "  Target: %zu joints specified", target_joint_values.joint_names.size());
+        RCLCPP_INFO(this->get_logger(), "  Joint values:");
+        for (size_t i = 0; i < target_joint_values.joint_names.size(); ++i) {
+          RCLCPP_INFO(this->get_logger(), "    %s: %.3f rad (%.1f deg)",
+                      target_joint_values.joint_names[i].c_str(),
+                      target_joint_values.joint_values[i],
+                      target_joint_values.joint_values[i] * 180.0 / M_PI);
+        }
+
+      } else if (type == "joint_values_relative") {
+        // Joint valuesで1個（相対）
+        goal_msg.command = TmsRpExcavator::Goal::CMD_PLAN_TO_JOINTS;
+        RCLCPP_INFO(this->get_logger(), "===================================================");
+        RCLCPP_INFO(this->get_logger(), "  Waypoints: 1 (Single waypoint)");
+        RCLCPP_INFO(this->get_logger(), "  Type: joint_values (relative)");
+        RCLCPP_INFO(this->get_logger(), "  Command: CMD_PLAN_TO_JOINTS");
+        RCLCPP_INFO(this->get_logger(), "===================================================");
+        
+        if (!waypoint_doc["data"]) {
+          handle_error("Waypoint missing 'data' field");
+          return;
+        }
+
+        auto param_request = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamGet::Request>();
+        param_request->get_joint_limits = false;
+        param_request->get_current_state = true;  // 現在の関節値を取得して相対指定に変換するためにtrueにする
+        param_request->get_configuration = false;
+        
+        auto param_future = param_get_client_->async_send_request(param_request);
+        
+        // サービスコールの完了を待つ
+        auto status = param_future.wait_for(std::chrono::seconds(10));
+        if (status != std::future_status::ready) {
+          RCLCPP_WARN(this->get_logger(), "Failed to get parameters from service (timeout), using default values");
+        } else {
+          auto param_response = param_future.get();
+          if (param_response->success) {
+            current_joint_values.joint_names = param_response->joint_names;
+            current_joint_values.joint_values = param_response->joint_positions;
+            
+            RCLCPP_INFO(this->get_logger(), "  Current joint state:");
+            for (size_t i = 0; i < current_joint_values.joint_names.size(); ++i) {
+              RCLCPP_INFO(this->get_logger(), "    %s: %.3f rad (%.1f deg)",
+                          current_joint_values.joint_names[i].c_str(),
+                          current_joint_values.joint_values[i],
+                          current_joint_values.joint_values[i] * 180.0 / M_PI);
+            }
+          } else {
+            RCLCPP_WARN(this->get_logger(), "Failed to get current joint state: %s", param_response->message.c_str());
+          }
+        }
+        
+        auto data_doc = waypoint_doc["data"].get_document().value;
+        tms_msg_rp::msg::TmsRpExcavatorJointValues target_joint_values;
+        
+        for (auto&& field : data_doc) {
+          std::string joint_name = field.key().to_string();
+          double joint_value = get_numeric_value(field);
+
+          auto it = std::find(current_joint_values.joint_names.begin(),
+                              current_joint_values.joint_names.end(),
+                              joint_name);
+
+          if (it != current_joint_values.joint_names.end()) {
+            size_t index = std::distance(current_joint_values.joint_names.begin(), it);
+            target_joint_values.joint_names.push_back(joint_name);
+            target_joint_values.joint_values.push_back(current_joint_values.joint_values[index] + joint_value);
+          } else {
+            RCLCPP_WARN(this->get_logger(), "Joint name '%s' in waypoint data not found in current joint state, skipping", joint_name.c_str());
+            return;
+          }
+        }
+        
+        goal_msg.joint_values_sequence.push_back(target_joint_values);
+        RCLCPP_INFO(this->get_logger(), "  Target: %zu joints specified (relative)", target_joint_values.joint_names.size());
         RCLCPP_INFO(this->get_logger(), "  Joint values:");
         for (size_t i = 0; i < target_joint_values.joint_names.size(); ++i) {
           RCLCPP_INFO(this->get_logger(), "    %s: %.3f rad (%.1f deg)",
@@ -372,7 +455,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         item.req.planner_id = "PTP";
         item.req.pipeline_id = "pilz_industrial_motion_planner";
         
-        if (type == "joint_values") {
+        if (type == "joint_values_absolute") {
           if (!waypoint_doc["data"]) continue;
           auto data_doc = waypoint_doc["data"].get_document().value;
           
@@ -393,6 +476,68 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
           
           item.req.goal_constraints.push_back(constraints);
           RCLCPP_INFO(this->get_logger(), "  [%zu] joint_values (%zu joints)", 
+                      waypoint_index + 1, constraints.joint_constraints.size());
+
+        } else if (type == "joint_values_relative") {
+          if (!waypoint_doc["data"]) continue;
+          auto data_doc = waypoint_doc["data"].get_document().value;
+          
+          moveit_msgs::msg::Constraints constraints;
+
+          auto param_request = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamGet::Request>();
+          param_request->get_joint_limits = false;
+          param_request->get_current_state = true;  // 現在の関節値を取得して相対指定に変換するためにtrueにする
+          param_request->get_configuration = false;
+          
+          auto param_future = param_get_client_->async_send_request(param_request);
+          
+          // サービスコールの完了を待つ
+          auto status = param_future.wait_for(std::chrono::seconds(10));
+          if (status != std::future_status::ready) {
+            RCLCPP_WARN(this->get_logger(), "Failed to get parameters from service (timeout), using default values");
+          } else {
+            auto param_response = param_future.get();
+            if (param_response->success) {
+              current_joint_values.joint_names = param_response->joint_names;
+              current_joint_values.joint_values = param_response->joint_positions;
+              
+              RCLCPP_INFO(this->get_logger(), "  Current joint state:");
+              for (size_t i = 0; i < current_joint_values.joint_names.size(); ++i) {
+                RCLCPP_INFO(this->get_logger(), "    %s: %.3f rad (%.1f deg)",
+                            current_joint_values.joint_names[i].c_str(),
+                            current_joint_values.joint_values[i],
+                            current_joint_values.joint_values[i] * 180.0 / M_PI);
+              }
+            } else {
+              RCLCPP_WARN(this->get_logger(), "Failed to get current joint state: %s", param_response->message.c_str());
+            }
+          }
+          
+          for (auto&& field : data_doc) {
+            std::string joint_name = field.key().to_string();
+            double joint_value = get_numeric_value(field);
+
+            auto it = std::find(current_joint_values.joint_names.begin(),
+                                current_joint_values.joint_names.end(),
+                                joint_name);
+
+            if (it != current_joint_values.joint_names.end()) {
+              size_t index = std::distance(current_joint_values.joint_names.begin(), it);
+              moveit_msgs::msg::JointConstraint joint_constraint;
+              joint_constraint.joint_name = joint_name;
+              joint_constraint.position = current_joint_values.joint_values[index] + joint_value;
+              joint_constraint.tolerance_above = 0.01;
+              joint_constraint.tolerance_below = 0.01;
+              joint_constraint.weight = 1.0;
+              constraints.joint_constraints.push_back(joint_constraint);
+            } else {
+              RCLCPP_WARN(this->get_logger(), "Joint name '%s' in waypoint data not found in current joint state, skipping", joint_name.c_str());
+              return;
+            }
+          }
+          
+          item.req.goal_constraints.push_back(constraints);
+          RCLCPP_INFO(this->get_logger(), "  [%zu] joint_values (relative, %zu joints)", 
                       waypoint_index + 1, constraints.joint_constraints.size());
           
         } else if (type == "pose") {
@@ -477,7 +622,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
   }
 
   // Parse collision avoidance
-  if (!parse_collision_avoidance(goal_msg))
+  if (!parse_planning_scene(goal_msg))
   {
     handle_error("Failed to parse collision avoidance");
     return;
@@ -926,7 +1071,6 @@ bool PrimitiveExcavatorChangePosePlan::parse_constraints(TmsRpExcavator::Goal& g
           joint_constraint.tolerance_above = get_numeric_value(jc_doc["tolerance_above"]);
         if (jc_doc["tolerance_below"])
           joint_constraint.tolerance_below = get_numeric_value(jc_doc["tolerance_below"]);
-        // ★元コードのバグ修正: weight を tolerance_below に入れていたので weight に入れる
         if (jc_doc["weight"])
           joint_constraint.weight = get_numeric_value(jc_doc["weight"]);
 
@@ -1239,193 +1383,58 @@ bool PrimitiveExcavatorChangePosePlan::parse_constraints(TmsRpExcavator::Goal& g
   }
 }
 
-bool PrimitiveExcavatorChangePosePlan::parse_collision_avoidance(TmsRpExcavator::Goal& goal_msg)
+bool PrimitiveExcavatorChangePosePlan::parse_planning_scene(TmsRpExcavator::Goal& goal_msg)
 {
   try
   {
-    if (!param_from_db_.count("collision_avoidance")) return true;
+    // planning_scene が無ければ何もしない（成功扱い）
+    if (!param_from_db_.count("planning_scene")) return true;
 
-    auto doc = bsoncxx::from_json(param_from_db_["collision_avoidance"]);
+    auto doc  = bsoncxx::from_json(param_from_db_["planning_scene"]);
     auto view = doc.view();
-    if (!view["collision_avoidance"]) return true;
 
-    RCLCPP_INFO(this->get_logger(), "Parsing collision_avoidance from JSON");
-    auto collision_avoidance_doc = view["collision_avoidance"].get_document().value;
+    if (!view["planning_scene"] || view["planning_scene"].type() != bsoncxx::type::k_document)
+      return true;
 
-    std::string base_frame_id = "base_link";
+    auto ps_doc = view["planning_scene"].get_document().value;
 
-    if (collision_avoidance_doc["constant"])
+    // link_padding が無ければ何もしない（成功扱い）
+    if (!ps_doc["link_padding"] || ps_doc["link_padding"].type() != bsoncxx::type::k_document)
+      return true;
+
+    auto lp_doc = ps_doc["link_padding"].get_document().value;
+
+    // 既存の設定があっても上書きしたいなら clear する
+    goal_msg.planning_scene.link_padding.clear();
+
+    for (auto&& element : lp_doc)
     {
-      auto constant_doc = collision_avoidance_doc["constant"].get_document().value;
-      moveit_msgs::msg::PlanningScene planning_scene;
+      std::string link_name = element.key().to_string();
 
-      // primitives
-      if (constant_doc["primitives"])
-      {
-        auto primitives_array = constant_doc["primitives"].get_array().value;
-        for (auto&& prim : primitives_array)
-        {
-          auto prim_doc = prim.get_document().value;
-          moveit_msgs::msg::CollisionObject collision_object;
+      // 数値以外なら例外になるので、そのままthrowして catch で false にする
+      double padding_value = get_numeric_value(element);
 
-          if (prim_doc["id"])
-            collision_object.id = prim_doc["id"].get_string().value.to_string();
+      moveit_msgs::msg::LinkPadding lp;
+      lp.link_name = link_name;
+      lp.padding   = padding_value;
 
-          collision_object.header.frame_id = base_frame_id;
-
-          if (prim_doc["primitive"])
-          {
-            auto primitive_doc = prim_doc["primitive"].get_document().value;
-            shape_msgs::msg::SolidPrimitive solid_primitive;
-
-            if (primitive_doc["type"])
-            {
-              std::string type_str = primitive_doc["type"].get_string().value.to_string();
-              if (type_str == "box") solid_primitive.type = shape_msgs::msg::SolidPrimitive::BOX;
-              else if (type_str == "sphere") solid_primitive.type = shape_msgs::msg::SolidPrimitive::SPHERE;
-              else if (type_str == "cylinder") solid_primitive.type = shape_msgs::msg::SolidPrimitive::CYLINDER;
-              else if (type_str == "cone") solid_primitive.type = shape_msgs::msg::SolidPrimitive::CONE;
-            }
-
-            if (primitive_doc["dimensions"])
-            {
-              auto dimensions_array = primitive_doc["dimensions"].get_array().value;
-              for (auto&& dim : dimensions_array)
-                solid_primitive.dimensions.push_back(get_numeric_value(dim));
-            }
-
-            collision_object.primitives.push_back(solid_primitive);
-          }
-
-          if (prim_doc["pose"])
-          {
-            auto pose_doc = prim_doc["pose"].get_document().value;
-            geometry_msgs::msg::Pose pose;
-
-            if (pose_doc["position"])
-            {
-              auto pos = pose_doc["position"].get_document().value;
-              if (pos["x"]) pose.position.x = get_numeric_value(pos["x"]);
-              if (pos["y"]) pose.position.y = get_numeric_value(pos["y"]);
-              if (pos["z"]) pose.position.z = get_numeric_value(pos["z"]);
-            }
-
-            if (pose_doc["orientation"])
-            {
-              auto ori = pose_doc["orientation"].get_document().value;
-              if (ori["x"]) pose.orientation.x = get_numeric_value(ori["x"]);
-              if (ori["y"]) pose.orientation.y = get_numeric_value(ori["y"]);
-              if (ori["z"]) pose.orientation.z = get_numeric_value(ori["z"]);
-              if (ori["w"]) pose.orientation.w = get_numeric_value(ori["w"]);
-            }
-
-            collision_object.primitive_poses.push_back(pose);
-          }
-
-          collision_object.operation = moveit_msgs::msg::CollisionObject::ADD;
-          planning_scene.world.collision_objects.push_back(collision_object);
-        }
-      }
-
-      // planes
-      if (constant_doc["planes"])
-      {
-        auto planes_array = constant_doc["planes"].get_array().value;
-        for (auto&& plane : planes_array)
-        {
-          auto plane_doc = plane.get_document().value;
-          moveit_msgs::msg::CollisionObject collision_object;
-
-          if (plane_doc["id"])
-            collision_object.id = plane_doc["id"].get_string().value.to_string();
-
-          collision_object.header.frame_id = base_frame_id;
-
-          if (plane_doc["plane"])
-          {
-            auto plane_info = plane_doc["plane"].get_document().value;
-            shape_msgs::msg::Plane plane_shape;
-
-            if (plane_info["coef"])
-            {
-              auto coef_array = plane_info["coef"].get_array().value;
-              auto it = coef_array.begin();
-              if (it != coef_array.end()) plane_shape.coef[0] = get_numeric_value(*it++);
-              if (it != coef_array.end()) plane_shape.coef[1] = get_numeric_value(*it++);
-              if (it != coef_array.end()) plane_shape.coef[2] = get_numeric_value(*it++);
-              if (it != coef_array.end()) plane_shape.coef[3] = get_numeric_value(*it++);
-            }
-
-            collision_object.planes.push_back(plane_shape);
-          }
-
-          if (plane_doc["pose"])
-          {
-            auto pose_doc = plane_doc["pose"].get_document().value;
-            geometry_msgs::msg::Pose pose;
-
-            if (pose_doc["position"])
-            {
-              auto pos = pose_doc["position"].get_document().value;
-              if (pos["x"]) pose.position.x = get_numeric_value(pos["x"]);
-              if (pos["y"]) pose.position.y = get_numeric_value(pos["y"]);
-              if (pos["z"]) pose.position.z = get_numeric_value(pos["z"]);
-            }
-
-            if (pose_doc["orientation"])
-            {
-              auto ori = pose_doc["orientation"].get_document().value;
-              if (ori["x"]) pose.orientation.x = get_numeric_value(ori["x"]);
-              if (ori["y"]) pose.orientation.y = get_numeric_value(ori["y"]);
-              if (ori["z"]) pose.orientation.z = get_numeric_value(ori["z"]);
-              if (ori["w"]) pose.orientation.w = get_numeric_value(ori["w"]);
-            }
-
-            collision_object.plane_poses.push_back(pose);
-          }
-
-          collision_object.operation = moveit_msgs::msg::CollisionObject::ADD;
-          planning_scene.world.collision_objects.push_back(collision_object);
-        }
-      }
-
-      goal_msg.planning_scene = planning_scene;
-      RCLCPP_INFO(this->get_logger(), "Added %zu collision objects to planning scene",
-                  planning_scene.world.collision_objects.size());
+      goal_msg.planning_scene.link_padding.push_back(lp);
     }
 
-    // link_padding
-    if (collision_avoidance_doc["link_padding"])
-    {
-      RCLCPP_INFO(this->get_logger(), "Parsing link_padding from JSON");
-      auto link_padding_doc = collision_avoidance_doc["link_padding"].get_document().value;
-
-      for (auto&& element : link_padding_doc)
-      {
-        std::string link_name = element.key().to_string();
-        double padding_value = get_numeric_value(element);
-
-        moveit_msgs::msg::LinkPadding link_padding;
-        link_padding.link_name = link_name;
-        link_padding.padding = padding_value;
-
-        goal_msg.planning_scene.link_padding.push_back(link_padding);
-      }
-
-      RCLCPP_INFO(this->get_logger(), "Added %zu link padding entries",
-                  goal_msg.planning_scene.link_padding.size());
-    }
-
+    // ★重要：diffとして送る
     goal_msg.planning_scene.is_diff = true;
+
+    RCLCPP_INFO(this->get_logger(), "Applied link_padding entries: %zu",
+                goal_msg.planning_scene.link_padding.size());
+
     return true;
   }
   catch (const std::exception& e)
   {
-    RCLCPP_ERROR(this->get_logger(), "Failed to parse collision_avoidance: %s", e.what());
+    RCLCPP_ERROR(this->get_logger(), "Failed to parse planning_scene.link_padding: %s", e.what());
     return false;
   }
 }
-
 
 int main(int argc, char* argv[])
 {

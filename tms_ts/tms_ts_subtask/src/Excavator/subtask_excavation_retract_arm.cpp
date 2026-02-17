@@ -28,13 +28,8 @@ SubtaskExcavationRetractArm::SubtaskExcavationRetractArm()
   : SubtaskNodeBase("subtask_excavation_retract_arm"),
     pose_converter_()
 {
-  this->declare_parameter<std::string>("planning_group", "manipulator");
-  this->declare_parameter<double>("search_precision", 0.02);     // 約1.1度
-  
-  this->get_parameter("planning_group", planning_group_);
+  this->declare_parameter<double>("search_precision", 0.02);
   this->get_parameter("search_precision", search_precision_);
-  
-  RCLCPP_INFO(this->get_logger(), "Planning group: %s", planning_group_.c_str());
   RCLCPP_INFO(this->get_logger(), "search_precision: %.3f rad (%.1f deg)", 
               search_precision_, search_precision_ * 180.0 / M_PI);
 
@@ -255,6 +250,14 @@ void SubtaskExcavationRetractArm::execute(const std::shared_ptr<GoalHandle> goal
     return;
   }
 
+  auto doc = bsoncxx::from_json(param_from_db_["planning_group"]);
+  auto view = doc.view();
+  if (!view["planning_group"] || view["planning_group"].type() != bsoncxx::type::k_string) {
+    handle_error("planning_group must be an string type");
+    return;
+  }
+  planning_group_ = view["planning_group"].get_string().value.to_string();
+
   // Step 0: サービスを使って関節制限と許容誤差を取得
   RCLCPP_INFO(this->get_logger(), "Step 0: Getting joint limits and goal tolerances from parameter service...");
   
@@ -340,18 +343,49 @@ void SubtaskExcavationRetractArm::execute(const std::shared_ptr<GoalHandle> goal
     RCLCPP_INFO(this->get_logger(), "  %s: %s", key.c_str(), value.c_str());
   }
 
+  // waypoints形式のみサポート
+  if (!param_from_db_.count("waypoints")) {
+    handle_error("waypoints field not found in DB. Please use waypoints format.");
+    return;
+  }
+
   // Parse parameters: x, y, z, theta_w from database
   double x, y, z, theta_w;
   try {
-    auto doc_x = bsoncxx::from_json(param_from_db_["x"]);
-    auto doc_y = bsoncxx::from_json(param_from_db_["y"]);
-    auto doc_z = bsoncxx::from_json(param_from_db_["z"]);
-    auto doc_theta_w = bsoncxx::from_json(param_from_db_["theta_w"]);
+    auto doc = bsoncxx::from_json(param_from_db_["waypoints"]);
+    auto view = doc.view();
+    auto waypoints_array = view["waypoints"].get_array().value;
+    auto waypoint_element = *waypoints_array.begin();
+    auto waypoint_doc = waypoint_element.get_document().value;
+    
+    if (!view["waypoints"] || view["waypoints"].type() != bsoncxx::type::k_array) {
+      handle_error("waypoints must be an array");
+      return;
+    }
+    
+    size_t num_waypoints = std::distance(waypoints_array.begin(), waypoints_array.end());
+    
+    if (num_waypoints != 1) {
+      handle_error("waypoints array is expected to contain exactly one waypoint for this subtask");
+      return;
+    }
 
-    x = get_numeric_value(doc_x.view()["x"]);
-    y = get_numeric_value(doc_y.view()["y"]);
-    z = get_numeric_value(doc_z.view()["z"]);
-    theta_w = get_numeric_value(doc_theta_w.view()["theta_w"]);
+    if (!waypoint_doc["data"]) {
+      handle_error("Waypoint missing 'data' field");
+      return;
+    }
+    
+    auto data_doc = waypoint_doc["data"].get_document().value;
+    
+    if (!data_doc["x"] || !data_doc["y"] || !data_doc["z"] || !data_doc["theta_w"]) {
+      handle_error("Pose waypoint missing required fields (x, y, z, theta_w)");
+      return;
+    }
+    
+    x = get_numeric_value(data_doc["x"]);
+    y = get_numeric_value(data_doc["y"]);
+    z = get_numeric_value(data_doc["z"]);
+    theta_w = get_numeric_value(data_doc["theta_w"]);
     
     RCLCPP_INFO(this->get_logger(), "Target: x=%.3f, y=%.3f, z=%.3f, theta_w=%.3f",
                 x, y, z, theta_w);

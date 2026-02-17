@@ -56,6 +56,7 @@ private:
   std::map<std::string, std::string> param_from_db_;
   std::map<std::string, std::string> previous_param_from_db_;
   std::string planning_group_;
+  tms_msg_rp::msg::TmsRpExcavatorJointValues current_joint_values;
 
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
                                           std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal);
@@ -76,6 +77,7 @@ private:
   bool parse_previous_plan(TmsRpExcavator::Goal& goal_msg);
   bool parse_constraints(TmsRpExcavator::Goal& goal_msg);
   bool parse_collision_avoidance(TmsRpExcavator::Goal& goal_msg);
+  bool parse_planning_scene(TmsRpExcavator::Goal& goal_msg);
   void save_plan_to_db(const TmsRpExcavator::Result::SharedPtr& result);
 };
 

@@ -33,6 +33,7 @@ find_package(glog REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(com3_msgs)
 find_package(Qt5Widgets REQUIRED)
+# find_package(geometric_shapes REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
   src/leaf_node_base.cpp
