@@ -66,15 +66,22 @@
             <input_port name="button_info"/>
         </Action>  
 
-        <Action ID="WaitForTopic">
+        <!-- <Action ID="WaitForTopic">
             <input_port name="topic_name"/>
-        </Action>   
+        </Action>    -->
 
         <Action ID="LeafNodeCommon">
             <input_port name="model_name"/>
             <inout_port name="record_name"/>
             <inout_port name="primitive_name"/> 
         </Action>   
+
+        <Action ID="ExecuteSubtask">
+            <input_port name="machine_name"/>
+            <input_port name="subtask_name"/>
+            <input_port name="machine_record_name"/>
+            <input_port name="terminate_condition"/>
+        </Action>
 
 
     </TreeNodesModel>

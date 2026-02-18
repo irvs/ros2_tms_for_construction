@@ -299,29 +299,82 @@ public:
     subscription_.reset();
   }
 
-  std::string process_whole_tag(const std::string& full_tag) {
-    std::regex param_regex(R"(task_name="([^"]*))");
-    std::smatch param_match;
-    std::string new_tag = full_tag;
+  // std::string process_whole_tag(const std::string& full_tag) {
+  //   std::regex param_regex(R"(task_name="([^"]*))");
+  //   std::smatch param_match;
+  //   std::string new_tag = full_tag;
 
-    if (std::regex_search(full_tag, param_match, param_regex)) {
-        std::string task_name = param_match[1];
-        RCLCPP_INFO(this->get_logger(), "Looking up task_name: %s", task_name.c_str());
+  //   if (std::regex_search(full_tag, param_match, param_regex)) {
+  //       std::string task_name = param_match[1];
+  //       RCLCPP_INFO(this->get_logger(), "Looking up task_name: %s", task_name.c_str());
 
-        if (task_searcher_) {
-          task_searcher_->search_task(task_name);
-          if (task_searcher_->is_valid_taskid()) {
-          std::string task_sequence = task_searcher_->get_task_sequence();
-          new_tag = task_sequence;
-        } else {
-          RCLCPP_WARN(this->get_logger(), "No task found for name: %s", task_name.c_str());
-          new_tag = "<!-- Task not found -->";
-        }
-      }
+  //       if (task_searcher_) {
+  //         task_searcher_->search_task(task_name);
+  //         if (task_searcher_->is_valid_taskid()) {
+  //         std::string task_sequence = task_searcher_->get_task_sequence();
+  //         new_tag = task_sequence;
+  //       } else {
+  //         RCLCPP_WARN(this->get_logger(), "No task found for name: %s", task_name.c_str());
+  //         new_tag = "<!-- Task not found -->";
+  //       }
+  //     }
+  //   }
+
+  //   return new_tag;
+  // }
+
+  std::string process_whole_tag(const std::string& full_tag)
+  {
+    std::regex attr_regex(R"((\w+)="([^"]*))");
+    std::map<std::string, std::string> params;
+
+    auto begin = std::sregex_iterator(full_tag.begin(), full_tag.end(), attr_regex);
+    auto end = std::sregex_iterator();
+
+    for (auto it = begin; it != end; ++it) {
+        std::string key = (*it)[1];
+        std::string value = (*it)[2];
+        params[key] = value;
     }
 
-    return new_tag;
+    if (params.find("subtask_name") == params.end())
+        return full_tag;
+
+    std::string subtask_name = params["subtask_name"];
+
+    task_searcher_->search_task(subtask_name);
+
+    if (!task_searcher_->is_valid_taskid()) {
+        return "<!-- Task not found -->";
+    }
+
+    std::string task_sequence = task_searcher_->get_task_sequence();
+
+    for (const auto& [key, value] : params) {
+
+        if (key == "ID" || key == "subtask_name")
+            continue;
+
+        std::string placeholder = "$" + key + "$";
+        replace_all(task_sequence, placeholder, value);
+    }
+
+    return task_sequence;
   }
+
+
+  void replace_all(std::string& str, const std::string& from, const std::string& to)
+  {
+    if (from.empty()) return;
+
+    size_t start_pos = 0;
+    while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+  }
+
+
 
 
   std::string replace_whole_execute_subtask_tags(const std::string& xml) {
