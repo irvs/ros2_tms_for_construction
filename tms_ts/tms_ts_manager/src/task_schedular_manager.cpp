@@ -183,85 +183,49 @@ public:
     std::string task_name = this->get_parameter("task_name").as_string();
     int zmq_server_port = this->get_parameter("zmq_server_port").as_int();
     int zmq_publisher_port = this->get_parameter("zmq_publisher_port").as_int();
-    
-    if (!task_name.empty() && task_searcher_) {
-        task_searcher_->search_task(task_name);
-        if (task_searcher_->is_valid_taskid()) {
-            task_sequence_ = task_searcher_->get_task_sequence();
 
-            RCLCPP_INFO(this->get_logger(), "Found task for name: %s", task_name.c_str());
-            std::string updated_sequence = replace_whole_execute_subtask_tags(task_sequence_);
-            RCLCPP_INFO(this->get_logger(), "Replaced task: %s", updated_sequence.c_str());
-            tree_ = factory.createTreeFromText(updated_sequence, bb_);
-        } else {
-            RCLCPP_ERROR(this->get_logger(), "No task found for task_name: %s", task_name.c_str());
-            return;
-        }
-    } else {
-        // fallback: 直接渡された task_sequence を使用
-        task_sequence_ = std::string(msg->data);
+    int task_id = this->get_parameter("task_id").as_int();
+    std::string incoming = std::string(msg->data);
 
-        RCLCPP_INFO(this->get_logger(), "Updated task_sequence_:\n%s", task_sequence_.c_str());
+    // --------------------
+    // ① JSONが来た場合
+    // --------------------
+    if (is_json_format(incoming))
+    {
+      auto result = extract_task_from_json(incoming, task_id);
 
-        std::string updated_sequence = replace_whole_execute_subtask_tags(task_sequence_);
-        RCLCPP_INFO(this->get_logger(), "Replaced task: %s", updated_sequence.c_str());
-        tree_ = factory.createTreeFromText(updated_sequence, bb_);
+      if (!result.has_value())
+      {
+          RCLCPP_ERROR(this->get_logger(),"Task_id %d not found in JSON", task_id);
+          return;
+      }
+      task_sequence_ = result.value();
+    }
+    // --------------------
+    // ② task_name検索モード
+    // --------------------
+    else if (!task_name.empty() && task_searcher_)
+    {
+      task_searcher_->search_task(task_name);
+      if (!task_searcher_->is_valid_taskid())
+      {
+        RCLCPP_ERROR(this->get_logger(),"No task found for task_name: %s",task_name.c_str());
+        return;
+      }
+      task_sequence_ = task_searcher_->get_task_sequence();
+    }
+    // --------------------
+    // ③ 直接XML
+    // --------------------
+    else
+    {
+      task_sequence_ = incoming;
     }
 
+    // 共通処理
+    std::string updated_sequence =replace_whole_execute_subtask_tags(task_sequence_);
+    tree_ = factory.createTreeFromText(updated_sequence, bb_);
 
-//    if (task_id == -1) {
-      // 既存の処理：そのままBehavior Treeとして実行
-//      task_sequence_ = std::string(msg->data);
-
-//      RCLCPP_INFO(this->get_logger(), "Updated task_sequence_:\n%s", task_sequence_.c_str());
-      
-//      std::string updated_sequence = replace_whole_execute_subtask_tags(task_sequence_);
-//      RCLCPP_INFO(this->get_logger(), "Updated task_sequence_:\n%s", updated_sequence.c_str());
-
-
-
-//      tree_ = factory.createTreeFromText(task_sequence_, bb_);
-//    } else {
-      // 新しい処理：JSONデータから特定のtask_idのタスクを抽出
-//      std::string json_data = std::string(msg->data);
-      
-//      rapidjson::Document document;
-//      document.Parse(json_data.c_str());
-      
-//      if (document.HasParseError()) {
-//        RCLCPP_ERROR(this->get_logger(), "JSON parse error");
-//        return;
-//      }
-      
-//      if (!document.HasMember("tasks") || !document["tasks"].IsArray()) {
-//        RCLCPP_ERROR(this->get_logger(), "Invalid JSON format: missing 'tasks' array");
-//        return;
-//      }
-      
-//      const rapidjson::Value& tasks = document["tasks"];
-//      bool task_found = false;
-      
-//      for (rapidjson::SizeType i = 0; i < tasks.Size(); i++) {
-//        const rapidjson::Value& task = tasks[i];
-        
-//        if (task.HasMember("task_id") && task["task_id"].IsInt() &&
-//            task.HasMember("task_sequence") && task["task_sequence"].IsString()) {
-          
-//          if (task["task_id"].GetInt() == task_id) {
-//            task_sequence_ = task["task_sequence"].GetString();
-//            tree_ = factory.createTreeFromText(task_sequence_, bb_);
-//            task_found = true;
-//            RCLCPP_INFO(this->get_logger(), "Found and executing task_id: %d", task_id);
-//            break;
-//          }
-//        }
-//      }
-      
-//      if (!task_found) {
-//        RCLCPP_ERROR(this->get_logger(), "Task with task_id %d not found in JSON data", task_id);
-//        return;
-//      }
-//    }
 
     BT::PublisherZMQ publisher_zmq(tree_, 100, zmq_server_port, zmq_publisher_port);
     try
@@ -299,29 +263,43 @@ public:
     subscription_.reset();
   }
 
-  // std::string process_whole_tag(const std::string& full_tag) {
-  //   std::regex param_regex(R"(task_name="([^"]*))");
-  //   std::smatch param_match;
-  //   std::string new_tag = full_tag;
 
-  //   if (std::regex_search(full_tag, param_match, param_regex)) {
-  //       std::string task_name = param_match[1];
-  //       RCLCPP_INFO(this->get_logger(), "Looking up task_name: %s", task_name.c_str());
+  bool is_json_format(const std::string& str)
+  {
+    return !str.empty() && str.front() == '{';
+  }
 
-  //       if (task_searcher_) {
-  //         task_searcher_->search_task(task_name);
-  //         if (task_searcher_->is_valid_taskid()) {
-  //         std::string task_sequence = task_searcher_->get_task_sequence();
-  //         new_tag = task_sequence;
-  //       } else {
-  //         RCLCPP_WARN(this->get_logger(), "No task found for name: %s", task_name.c_str());
-  //         new_tag = "<!-- Task not found -->";
-  //       }
-  //     }
-  //   }
+  std::optional<std::string> extract_task_from_json(const std::string& json_str,int target_task_id)
+  {
+    rapidjson::Document document;
+    document.Parse(json_str.c_str());
 
-  //   return new_tag;
-  // }
+    if (document.HasParseError())
+        return std::nullopt;
+
+    if (!document.HasMember("tasks") || !document["tasks"].IsArray())
+        return std::nullopt;
+
+    const rapidjson::Value& tasks = document["tasks"];
+
+    for (rapidjson::SizeType i = 0; i < tasks.Size(); i++)
+    {
+        const rapidjson::Value& task = tasks[i];
+
+        if (task.HasMember("task_id") &&
+            task["task_id"].IsInt() &&
+            task["task_id"].GetInt() == target_task_id)
+        {
+            if (task.HasMember("task_sequence") &&
+                task["task_sequence"].IsString())
+            {
+                return std::string(task["task_sequence"].GetString());
+            }
+        }
+    }
+    return std::nullopt;
+  }
+
 
   std::string process_whole_tag(const std::string& full_tag)
   {
