@@ -26,6 +26,11 @@
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
+  <depend>srdfdom</depend>
+  <depend>moveit_core</depend>
+  <depend>moveit_ros_planning</depend>
+  <depend>moveit_robot_model_loader</depend>
+
 
   <export>
     <build_type>ament_cmake</build_type>

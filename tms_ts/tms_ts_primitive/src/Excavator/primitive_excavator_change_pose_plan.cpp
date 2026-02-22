@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0
 
 #include "tms_ts_primitive/Excavator/primitive_excavator_change_pose_plan.hpp"
-#include "tms_ts_primitive/Excavator/lib/excavator_pose_converter.hpp"
-#include <glog/logging.h>
-#include <bsoncxx/json.hpp>
 
 using namespace std::chrono_literals;
 
@@ -133,7 +130,9 @@ void PrimitiveExcavatorChangePosePlan::handle_accepted(const std::shared_ptr<Goa
 void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
   auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
+  auto goal_msg = TmsRpExcavator::Goal();
 
+  // エラー処理用のラムダ関数
   auto handle_error = [&](const std::string& message) {
     if (goal_handle->is_active())
     {
@@ -143,28 +142,45 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
     }
   };
   
-  if (!action_client_->action_server_is_ready())
+  // 準備
+  if (!action_client_->action_server_is_ready()) // Action serverの準備ができているか確認
   {
     handle_error("Action server not available");
     return;
   }
-
-  auto goal_msg = TmsRpExcavator::Goal();
-  goal_msg.previous_pose.clear();
-  
-  // Parse previous plan if specified
-  if (!parse_previous_plan(goal_msg))
+  if (!parse_previous_plan(goal_msg)) // Parse previous plan if specified
   {
     handle_error("Failed to parse previous plan");
     return;
   }
-  
-  // waypoints形式のみサポート
-  if (!param_from_db_.count("waypoints")) {
+  if (!param_from_db_.count("waypoints")) { // waypoints形式のみサポート
     handle_error("waypoints field not found in DB. Please use waypoints format.");
     return;
   }
 
+  tms_msg_rp::srv::TmsRpExcavatorParamGet::Response::SharedPtr param_response;
+
+  // サービスからcurrent_statesのみ取得して保持
+  auto param_request = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamGet::Request>();
+  param_request->get_joint_limits = true;
+  param_request->get_current_state = true;
+  param_request->get_configuration = false;
+  auto param_future = param_get_client_->async_send_request(param_request);  
+  auto status = param_future.wait_for(std::chrono::seconds(10));
+  if (status != std::future_status::ready) {
+    RCLCPP_WARN(this->get_logger(), "Failed to get parameters from service (timeout), using default values");
+  } else {
+    param_response = param_future.get();
+    if (param_response->success) {
+      current_joint_states_ = param_response->joint_states;
+      // joint_limitsについては、param_response->joint_limits を参照
+      RCLCPP_INFO(this->get_logger(), "Retrieved current joint states for %zu joints", current_joint_states_.name.size());
+    } else {
+      RCLCPP_WARN(this->get_logger(), "Failed to get current joint states: %s", param_response->message.c_str());
+    }
+  }
+
+  // ゴールメッセージの構築
   auto doc = bsoncxx::from_json(param_from_db_["planning_group"]);
   auto view = doc.view();
   if (!view["planning_group"] || view["planning_group"].type() != bsoncxx::type::k_string) {
@@ -173,47 +189,33 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
   }
   planning_group_ = view["planning_group"].get_string().value.to_string();
   goal_msg.planning_group = planning_group_;
-  
   RCLCPP_INFO(this->get_logger(), "Parsing waypoints for planning");
-  
+
   try {
     auto doc = bsoncxx::from_json(param_from_db_["waypoints"]);
-    auto view = doc.view();
-    
+    auto view = doc.view();    
     if (!view["waypoints"] || view["waypoints"].type() != bsoncxx::type::k_array) {
       handle_error("waypoints must be an array");
       return;
     }
-    
     auto waypoints_array = view["waypoints"].get_array().value;
     size_t num_waypoints = std::distance(waypoints_array.begin(), waypoints_array.end());
-    
     if (num_waypoints == 0) {
       handle_error("waypoints array is empty");
       return;
     }
-
-    ExcavatorPoseConverter pose_converter;
     
     // waypointsの数で処理を分岐
     if (num_waypoints == 1) {
       // ========== 1個の場合: CMD_PLAN_TO_JOINTS または CMD_PLAN_TO_POSE ==========
       auto waypoint_element = *waypoints_array.begin();
       auto waypoint_doc = waypoint_element.get_document().value;
-      
       if (!waypoint_doc["type"]) {
         handle_error("Waypoint missing 'type' field");
         return;
       }
-      
       auto waypoints_array = view["waypoints"].get_array().value;
       size_t num_waypoints = std::distance(waypoints_array.begin(), waypoints_array.end());
-      
-      if (num_waypoints == 0) {
-        handle_error("waypoints array is empty");
-        return;
-      }
-
       std::string type = waypoint_doc["type"].get_string().value.to_string();
       
       if (type == "joint_values_absolute") {
@@ -223,24 +225,46 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         RCLCPP_INFO(this->get_logger(), "  Waypoints: 1 (Single waypoint)");
         RCLCPP_INFO(this->get_logger(), "  Type: joint_values");
         RCLCPP_INFO(this->get_logger(), "  Command: CMD_PLAN_TO_JOINTS");
-        RCLCPP_INFO(this->get_logger(), "===================================================");
-        
+        RCLCPP_INFO(this->get_logger(), "==================================================="); 
         if (!waypoint_doc["data"]) {
           handle_error("Waypoint missing 'data' field");
           return;
         }
-        
         auto data_doc = waypoint_doc["data"].get_document().value;
         tms_msg_rp::msg::TmsRpExcavatorJointValues target_joint_values;
-        
+        target_joint_values.joint_names  = current_joint_states_.name;
+        target_joint_values.joint_values = current_joint_states_.position;
         for (auto&& field : data_doc) {
           std::string joint_name = field.key().to_string();
           double joint_value = get_numeric_value(field);
-          
-          target_joint_values.joint_names.push_back(joint_name);
-          target_joint_values.joint_values.push_back(joint_value);
+          for (size_t i = 0; i < target_joint_values.joint_names.size(); ++i) {
+            if (target_joint_values.joint_names[i] == joint_name) {
+                target_joint_values.joint_values[i] = joint_value;
+                break;
+            }
+          }
         }
-        
+        tms_msg_rp::msg::TmsRpExcavatorJointValues prev_jv;
+        if (!goal_msg.previous_pose.empty()) {
+          const auto& traj = goal_msg.previous_pose.back().joint_trajectory;
+          if (traj.joint_names.empty() || traj.points.empty()) {
+            RCLCPP_ERROR(this->get_logger(), "previous_pose last trajectory has no joint_names or points");
+            return;
+          }
+          const auto& last_pt = traj.points.back();
+          if (last_pt.positions.size() != traj.joint_names.size()) {
+            RCLCPP_ERROR(this->get_logger(),
+              "Size mismatch: joint_names=%zu positions=%zu",
+              traj.joint_names.size(), last_pt.positions.size());
+            return;
+          }
+          prev_jv.joint_names  = traj.joint_names;
+          prev_jv.joint_values = last_pt.positions;
+        }
+        if (!binary_search_extreme_joint_value(prev_jv, target_joint_values, *param_response)) {
+          handle_error("Failed to find valid joint values within limits");
+          return;
+        }
         goal_msg.joint_values_sequence.push_back(target_joint_values);
         RCLCPP_INFO(this->get_logger(), "  Target: %zu joints specified", target_joint_values.joint_names.size());
         RCLCPP_INFO(this->get_logger(), "  Joint values:");
@@ -259,62 +283,24 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         RCLCPP_INFO(this->get_logger(), "  Type: joint_values (relative)");
         RCLCPP_INFO(this->get_logger(), "  Command: CMD_PLAN_TO_JOINTS");
         RCLCPP_INFO(this->get_logger(), "===================================================");
-        
         if (!waypoint_doc["data"]) {
           handle_error("Waypoint missing 'data' field");
           return;
         }
-
-        auto param_request = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamGet::Request>();
-        param_request->get_joint_limits = false;
-        param_request->get_current_state = true;  // 現在の関節値を取得して相対指定に変換するためにtrueにする
-        param_request->get_configuration = false;
-        
-        auto param_future = param_get_client_->async_send_request(param_request);
-        
-        // サービスコールの完了を待つ
-        auto status = param_future.wait_for(std::chrono::seconds(10));
-        if (status != std::future_status::ready) {
-          RCLCPP_WARN(this->get_logger(), "Failed to get parameters from service (timeout), using default values");
-        } else {
-          auto param_response = param_future.get();
-          if (param_response->success) {
-            current_joint_values.joint_names = param_response->joint_names;
-            current_joint_values.joint_values = param_response->joint_positions;
-            
-            RCLCPP_INFO(this->get_logger(), "  Current joint state:");
-            for (size_t i = 0; i < current_joint_values.joint_names.size(); ++i) {
-              RCLCPP_INFO(this->get_logger(), "    %s: %.3f rad (%.1f deg)",
-                          current_joint_values.joint_names[i].c_str(),
-                          current_joint_values.joint_values[i],
-                          current_joint_values.joint_values[i] * 180.0 / M_PI);
-            }
-          } else {
-            RCLCPP_WARN(this->get_logger(), "Failed to get current joint state: %s", param_response->message.c_str());
-          }
-        }
-        
         auto data_doc = waypoint_doc["data"].get_document().value;
         tms_msg_rp::msg::TmsRpExcavatorJointValues target_joint_values;
-        
+        target_joint_values.joint_names  = current_joint_states_.name;
+        target_joint_values.joint_values = current_joint_states_.position;
         for (auto&& field : data_doc) {
           std::string joint_name = field.key().to_string();
           double joint_value = get_numeric_value(field);
-
-          auto it = std::find(current_joint_values.joint_names.begin(),
-                              current_joint_values.joint_names.end(),
-                              joint_name);
-
-          if (it != current_joint_values.joint_names.end()) {
-            size_t index = std::distance(current_joint_values.joint_names.begin(), it);
-            target_joint_values.joint_names.push_back(joint_name);
-            target_joint_values.joint_values.push_back(current_joint_values.joint_values[index] + joint_value);
-          } else {
-            RCLCPP_WARN(this->get_logger(), "Joint name '%s' in waypoint data not found in current joint state, skipping", joint_name.c_str());
-            return;
+          for (size_t i = 0; i < target_joint_values.joint_names.size(); ++i) {
+            if (target_joint_values.joint_names[i] == joint_name) {
+                target_joint_values.joint_values[i] += joint_value;
+                break;
+            }
           }
         }
-        
         goal_msg.joint_values_sequence.push_back(target_joint_values);
         RCLCPP_INFO(this->get_logger(), "  Target: %zu joints specified (relative)", target_joint_values.joint_names.size());
         RCLCPP_INFO(this->get_logger(), "  Joint values:");
@@ -483,56 +469,24 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
           auto data_doc = waypoint_doc["data"].get_document().value;
           
           moveit_msgs::msg::Constraints constraints;
-
-          auto param_request = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamGet::Request>();
-          param_request->get_joint_limits = false;
-          param_request->get_current_state = true;  // 現在の関節値を取得して相対指定に変換するためにtrueにする
-          param_request->get_configuration = false;
-          
-          auto param_future = param_get_client_->async_send_request(param_request);
-          
-          // サービスコールの完了を待つ
-          auto status = param_future.wait_for(std::chrono::seconds(10));
-          if (status != std::future_status::ready) {
-            RCLCPP_WARN(this->get_logger(), "Failed to get parameters from service (timeout), using default values");
-          } else {
-            auto param_response = param_future.get();
-            if (param_response->success) {
-              current_joint_values.joint_names = param_response->joint_names;
-              current_joint_values.joint_values = param_response->joint_positions;
-              
-              RCLCPP_INFO(this->get_logger(), "  Current joint state:");
-              for (size_t i = 0; i < current_joint_values.joint_names.size(); ++i) {
-                RCLCPP_INFO(this->get_logger(), "    %s: %.3f rad (%.1f deg)",
-                            current_joint_values.joint_names[i].c_str(),
-                            current_joint_values.joint_values[i],
-                            current_joint_values.joint_values[i] * 180.0 / M_PI);
-              }
-            } else {
-              RCLCPP_WARN(this->get_logger(), "Failed to get current joint state: %s", param_response->message.c_str());
-            }
-          }
           
           for (auto&& field : data_doc) {
             std::string joint_name = field.key().to_string();
             double joint_value = get_numeric_value(field);
-
-            auto it = std::find(current_joint_values.joint_names.begin(),
-                                current_joint_values.joint_names.end(),
-                                joint_name);
-
-            if (it != current_joint_values.joint_names.end()) {
-              size_t index = std::distance(current_joint_values.joint_names.begin(), it);
-              moveit_msgs::msg::JointConstraint joint_constraint;
-              joint_constraint.joint_name = joint_name;
-              joint_constraint.position = current_joint_values.joint_values[index] + joint_value;
-              joint_constraint.tolerance_above = 0.01;
-              joint_constraint.tolerance_below = 0.01;
-              joint_constraint.weight = 1.0;
-              constraints.joint_constraints.push_back(joint_constraint);
-            } else {
-              RCLCPP_WARN(this->get_logger(), "Joint name '%s' in waypoint data not found in current joint state, skipping", joint_name.c_str());
-              return;
+            tms_msg_rp::msg::TmsRpExcavatorJointValues target_joint_values;
+            target_joint_values.joint_names  = current_joint_states_.name;
+            target_joint_values.joint_values = current_joint_states_.position;
+            for (size_t i = 0; i < target_joint_values.joint_names.size(); ++i) {
+              if (target_joint_values.joint_names[i] == joint_name) {
+                  moveit_msgs::msg::JointConstraint joint_constraint;
+                  joint_constraint.joint_name = joint_name;
+                  joint_constraint.position = target_joint_values.joint_values[i] + joint_value;
+                  joint_constraint.tolerance_above = 0.01;
+                  joint_constraint.tolerance_below = 0.01;
+                  joint_constraint.weight = 1.0;
+                  constraints.joint_constraints.push_back(joint_constraint);
+                  break;
+              }
             }
           }
           
@@ -618,13 +572,6 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
   if (!parse_constraints(goal_msg))
   {
     handle_error("Failed to parse constraints");
-    return;
-  }
-
-  // Parse collision avoidance
-  if (!parse_planning_scene(goal_msg))
-  {
-    handle_error("Failed to parse collision avoidance");
     return;
   }
 
@@ -1383,57 +1330,131 @@ bool PrimitiveExcavatorChangePosePlan::parse_constraints(TmsRpExcavator::Goal& g
   }
 }
 
-bool PrimitiveExcavatorChangePosePlan::parse_planning_scene(TmsRpExcavator::Goal& goal_msg)
+bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value(
+  const tms_msg_rp::msg::TmsRpExcavatorJointValues& previous_joint_values,
+  tms_msg_rp::msg::TmsRpExcavatorJointValues& target_joint_values,
+  const tms_msg_rp::srv::TmsRpExcavatorParamGet::Response& res)
 {
-  try
-  {
-    // planning_scene が無ければ何もしない（成功扱い）
-    if (!param_from_db_.count("planning_scene")) return true;
+  int numuntillimit = 0;
+  std::string serch_joint_name_ = "";
+  int direction = 0;  // +1: upper limit, -1: lower limit
+  double original = 0.0;
+  size_t joint_idx = 0;
+  tms_msg_rp::msg::TmsRpExcavatorJointValues best_joint_values;
+  bool found_any_success = false;
 
-    auto doc  = bsoncxx::from_json(param_from_db_["planning_scene"]);
-    auto view = doc.view();
-
-    if (!view["planning_scene"] || view["planning_scene"].type() != bsoncxx::type::k_document)
-      return true;
-
-    auto ps_doc = view["planning_scene"].get_document().value;
-
-    // link_padding が無ければ何もしない（成功扱い）
-    if (!ps_doc["link_padding"] || ps_doc["link_padding"].type() != bsoncxx::type::k_document)
-      return true;
-
-    auto lp_doc = ps_doc["link_padding"].get_document().value;
-
-    // 既存の設定があっても上書きしたいなら clear する
-    goal_msg.planning_scene.link_padding.clear();
-
-    for (auto&& element : lp_doc)
-    {
-      std::string link_name = element.key().to_string();
-
-      // 数値以外なら例外になるので、そのままthrowして catch で false にする
-      double padding_value = get_numeric_value(element);
-
-      moveit_msgs::msg::LinkPadding lp;
-      lp.link_name = link_name;
-      lp.padding   = padding_value;
-
-      goal_msg.planning_scene.link_padding.push_back(lp);
-    }
-
-    // ★重要：diffとして送る
-    goal_msg.planning_scene.is_diff = true;
-
-    RCLCPP_INFO(this->get_logger(), "Applied link_padding entries: %zu",
-                goal_msg.planning_scene.link_padding.size());
-
-    return true;
+  for (size_t i = 0; i < target_joint_values.joint_values.size(); ++i) {
+      if (target_joint_values.joint_values[i] >= 999 || target_joint_values.joint_values[i] <= -999) {
+          numuntillimit += 1;
+          serch_joint_name_ = target_joint_values.joint_names[i];
+          direction = (target_joint_values.joint_values[i] >= 999) ? 1 : -1;
+          joint_idx = i;
+      }
   }
-  catch (const std::exception& e)
-  {
-    RCLCPP_ERROR(this->get_logger(), "Failed to parse planning_scene.link_padding: %s", e.what());
+  if (numuntillimit == 0) {
+    RCLCPP_INFO(this->get_logger(), "No joint with 'until limit' (999) found, skipping binary search");
+    return true;
+  } else if (numuntillimit > 1) {
+    RCLCPP_WARN(this->get_logger(), "Multiple joints with 'until limit' (999) detected, but handling multiple is not supported yet. Found: %d", numuntillimit);
     return false;
   }
+
+  const auto& joint_names = res.joint_names;
+  double lowest, highest;
+  size_t limit_joint_idx = std::find(joint_names.begin(), joint_names.end(), serch_joint_name_) - joint_names.begin();
+  if (limit_joint_idx >= joint_names.size()) {
+    RCLCPP_ERROR(this->get_logger(), "Joint '%s' not found in response", serch_joint_name_.c_str());
+    return false;
+  }
+  if (previous_joint_values.joint_names.empty()) {
+    original = current_joint_states_.position[joint_idx];
+  } else {
+    original = previous_joint_values.joint_values[joint_idx];
+  }
+  if (direction > 0)  { lowest = original; highest = res.max_positions[limit_joint_idx]; }
+  else                { lowest = res.min_positions[limit_joint_idx]; highest = original; }
+
+  int iteration = 0;
+  while (std::abs(highest - lowest) > search_precision_) {
+    const double mid = (lowest + highest) / 2.0;
+    iteration++;
+
+    auto test_joint_values = target_joint_values;
+    test_joint_values.joint_values[joint_idx] = mid;
+
+    auto excavator_goal = TmsRpExcavator::Goal();
+    excavator_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_JOINTS;
+    excavator_goal.planning_group = planning_group_;
+    excavator_goal.joint_values_sequence.push_back(test_joint_values);
+
+    TmsRpExcavator::Result::SharedPtr result;
+    const bool success = call_excavator_action_sync(excavator_goal, result);
+
+    if (success) {
+      best_joint_values = test_joint_values;
+      found_any_success = true;
+      if (direction > 0) {
+        lowest = mid;
+      } else {
+        highest = mid;          // min側へ（より小さい値へ）
+      }
+    } else {
+      // failなら「戻す」方向に狭める
+      if (direction > 0) {
+        highest = mid;
+      } else {
+        lowest = mid;
+      }
+    }
+  }
+
+  if (!found_any_success) {
+    RCLCPP_WARN(this->get_logger(), "Binary search failed to find any valid joint value for joint '%s'", serch_joint_name_.c_str());
+    return false;
+  }
+  target_joint_values.joint_values[joint_idx] = best_joint_values.joint_values[joint_idx];
+  RCLCPP_INFO(this->get_logger(),
+              "Binary search for joint '%s' completed in %d iterations. Final value: %f (original: %f, direction: %s)",
+              serch_joint_name_.c_str(), iteration, target_joint_values.joint_values[joint_idx], original, (direction > 0) ? "upper" : "lower");  
+
+  return true;
+}
+
+
+bool PrimitiveExcavatorChangePosePlan::call_excavator_action_sync(
+  const TmsRpExcavator::Goal& goal,
+  TmsRpExcavator::Result::SharedPtr& result)
+{
+auto send_goal_future = action_client_->async_send_goal(goal);
+
+// Wait for the future to complete without spinning the node
+auto status = send_goal_future.wait_for(std::chrono::seconds(30));
+if (status != std::future_status::ready)
+{
+  RCLCPP_ERROR(this->get_logger(), "Failed to send goal (timeout)");
+  return false;
+}
+
+auto goal_handle = send_goal_future.get();
+if (!goal_handle) {
+  RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
+  return false;
+}
+
+auto result_future = action_client_->async_get_result(goal_handle);
+
+// Wait for the result future to complete without spinning the node
+status = result_future.wait_for(std::chrono::seconds(60));
+if (status != std::future_status::ready)
+{
+  RCLCPP_ERROR(this->get_logger(), "Failed to get result (timeout)");
+  return false;
+}
+
+auto wrapped_result = result_future.get();
+result = wrapped_result.result;
+
+return wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED && result->success;
 }
 
 int main(int argc, char* argv[])

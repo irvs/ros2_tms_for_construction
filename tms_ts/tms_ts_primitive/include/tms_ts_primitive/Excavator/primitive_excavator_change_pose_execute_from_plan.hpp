@@ -46,7 +46,7 @@
 #include <shape_msgs/msg/solid_primitive.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
-class PrimitiveExcavatorChangePoseExecuteFromJointValues : public PrimitiveNodeBase
+class PrimitiveExcavatorChangePoseExecuteFromPlan : public PrimitiveNodeBase
 {
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
@@ -54,7 +54,7 @@ public:
   using TmsRpExcavator = tms_msg_rp::action::TmsRpExcavator;
   using GoalHandleTmsRpExcavator = rclcpp_action::ClientGoalHandle<TmsRpExcavator>;
 
-  PrimitiveExcavatorChangePoseExecuteFromJointValues();
+  PrimitiveExcavatorChangePoseExecuteFromPlan();
 
 private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;

@@ -47,6 +47,11 @@ def generate_launch_description():
                   namespace = 'zx200'),
             Node(
                   package='tms_ts_primitive',
+                  executable='primitive_excavator_change_pose_execute_from_plan_retime',
+                  output='screen',
+                  namespace = 'zx200'),
+            Node(
+                  package='tms_ts_primitive',
                   executable='primitive_excavator_follow_waypoints_deg',
                   output='screen',
                   namespace = 'zx200'),
@@ -75,11 +80,11 @@ def generate_launch_description():
                   executable='primitive_excavator_navigate_through_poses',
                   output='screen',
                   namespace = 'zx200'),
-            Node(
-                  package='tms_ts_subtask',
-                  executable='subtask_excavation_retract_arm',
-                  output='screen',
-                  namespace = 'zx200'),
+            # Node(
+            #       package='tms_ts_subtask',
+            #       executable='subtask_excavation_retract_arm',
+            #       output='screen',
+            #       namespace = 'zx200'),
             
             # sample ###
             #ic120用

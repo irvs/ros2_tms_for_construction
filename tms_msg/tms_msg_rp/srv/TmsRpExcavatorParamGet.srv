@@ -13,8 +13,8 @@ float64[] max_velocities
 float64[] max_accelerations
 
 # === Current State (get_current_state=true の場合のみ有効) ===
-float64[] joint_positions
-geometry_msgs/Pose current_pose
+sensor_msgs/JointState joint_states
+geometry_msgs/Pose current_ee_pose
 
 # === Configuration (get_configuration=true の場合のみ有効) ===
 float64 goal_position_tolerance

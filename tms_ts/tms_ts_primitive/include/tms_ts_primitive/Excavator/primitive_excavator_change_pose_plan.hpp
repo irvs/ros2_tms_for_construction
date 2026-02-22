@@ -36,6 +36,10 @@
 #include <shape_msgs/msg/solid_primitive.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
+#include "tms_ts_primitive/Excavator/lib/excavator_pose_converter.hpp"
+#include <glog/logging.h>
+#include <bsoncxx/json.hpp>
+
 class PrimitiveExcavatorChangePosePlan : public PrimitiveNodeBase
 {
 public:
@@ -56,7 +60,9 @@ private:
   std::map<std::string, std::string> param_from_db_;
   std::map<std::string, std::string> previous_param_from_db_;
   std::string planning_group_;
-  tms_msg_rp::msg::TmsRpExcavatorJointValues current_joint_values;
+  double search_precision_= 0.01;
+  sensor_msgs::msg::JointState current_joint_states_;
+  ExcavatorPoseConverter pose_converter;
 
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
                                           std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal);
@@ -76,9 +82,10 @@ private:
   // Helper methods
   bool parse_previous_plan(TmsRpExcavator::Goal& goal_msg);
   bool parse_constraints(TmsRpExcavator::Goal& goal_msg);
-  bool parse_collision_avoidance(TmsRpExcavator::Goal& goal_msg);
-  bool parse_planning_scene(TmsRpExcavator::Goal& goal_msg);
   void save_plan_to_db(const TmsRpExcavator::Result::SharedPtr& result);
+  bool call_excavator_action_sync(const TmsRpExcavator::Goal& goal, TmsRpExcavator::Result::SharedPtr& result);
+  bool binary_search_extreme_joint_value(const tms_msg_rp::msg::TmsRpExcavatorJointValues& previous_joint_values, tms_msg_rp::msg::TmsRpExcavatorJointValues& target_joint_values, const tms_msg_rp::srv::TmsRpExcavatorParamGet::Response& res);
+
 };
 
 #endif
