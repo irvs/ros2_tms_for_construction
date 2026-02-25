@@ -50,6 +50,7 @@ setup(
             "tms_ur_construction_dynamic_terrain_heightmap = tms_ur_construction.tms_ur_construction_dynamic_terrain_heightmap:main",
             "tms_ur_construction_next_step_permission = tms_ur_construction.tms_ur_construction_next_step_permission:main",
             "tms_ur_plan_reader = tms_ur_construction.tms_ur_plan_reader:main",
+            "tms_ur_if_to_db_writer = tms_ur_construction.tms_ur_if_to_db_writer:main",
         ],
     },
 )
