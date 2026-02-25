@@ -9,6 +9,7 @@ using namespace std::chrono_literals;
 namespace {
   double get_numeric_value(const bsoncxx::document::element& element) {
     switch (element.type()) {
+      RCLCPP_INFO(rclcpp::get_logger("PrimitiveExcavatorChangePosePlan"), "Element type: %d", static_cast<int>(element.type()));
       case bsoncxx::type::k_double:
         return element.get_double().value;
       case bsoncxx::type::k_int32:
@@ -244,24 +245,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
             }
           }
         }
-        tms_msg_rp::msg::TmsRpExcavatorJointValues prev_jv;
-        if (!goal_msg.previous_pose.empty()) {
-          const auto& traj = goal_msg.previous_pose.back().joint_trajectory;
-          if (traj.joint_names.empty() || traj.points.empty()) {
-            RCLCPP_ERROR(this->get_logger(), "previous_pose last trajectory has no joint_names or points");
-            return;
-          }
-          const auto& last_pt = traj.points.back();
-          if (last_pt.positions.size() != traj.joint_names.size()) {
-            RCLCPP_ERROR(this->get_logger(),
-              "Size mismatch: joint_names=%zu positions=%zu",
-              traj.joint_names.size(), last_pt.positions.size());
-            return;
-          }
-          prev_jv.joint_names  = traj.joint_names;
-          prev_jv.joint_values = last_pt.positions;
-        }
-        if (!binary_search_extreme_joint_value(prev_jv, target_joint_values, *param_response)) {
+        if (!binary_search_extreme_joint_value(goal_msg, target_joint_values, *param_response)) {
           handle_error("Failed to find valid joint values within limits");
           return;
         }
@@ -557,6 +541,10 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         
         goal_msg.motion_sequence_items.push_back(item);
         waypoint_index++;
+      }
+      if(!binary_search_extreme_joint_value_for_motion_sequence(goal_msg, goal_msg.motion_sequence_items, *param_response)) {
+        handle_error("Failed to find valid joint values within limits for motion sequence");
+        return;
       }
       
       RCLCPP_INFO(this->get_logger(), "Created %zu motion sequence items", 
@@ -1331,7 +1319,7 @@ bool PrimitiveExcavatorChangePosePlan::parse_constraints(TmsRpExcavator::Goal& g
 }
 
 bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value(
-  const tms_msg_rp::msg::TmsRpExcavatorJointValues& previous_joint_values,
+  const TmsRpExcavator::Goal& goal_msg,
   tms_msg_rp::msg::TmsRpExcavatorJointValues& target_joint_values,
   const tms_msg_rp::srv::TmsRpExcavatorParamGet::Response& res)
 {
@@ -1357,6 +1345,24 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value(
   } else if (numuntillimit > 1) {
     RCLCPP_WARN(this->get_logger(), "Multiple joints with 'until limit' (999) detected, but handling multiple is not supported yet. Found: %d", numuntillimit);
     return false;
+  }
+
+  tms_msg_rp::msg::TmsRpExcavatorJointValues previous_joint_values;
+  if (!goal_msg.previous_pose.empty()) {
+    const auto& traj = goal_msg.previous_pose.back().joint_trajectory;
+    if (traj.joint_names.empty() || traj.points.empty()) {
+      RCLCPP_ERROR(this->get_logger(), "previous_pose last trajectory has no joint_names or points");
+      return false;
+    }
+    const auto& last_pt = traj.points.back();
+    if (last_pt.positions.size() != traj.joint_names.size()) {
+      RCLCPP_ERROR(this->get_logger(),
+        "Size mismatch: joint_names=%zu positions=%zu",
+        traj.joint_names.size(), last_pt.positions.size());
+      return false;
+    }
+    previous_joint_values.joint_names  = traj.joint_names;
+    previous_joint_values.joint_values = last_pt.positions;
   }
 
   const auto& joint_names = res.joint_names;
@@ -1386,6 +1392,8 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value(
     excavator_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_JOINTS;
     excavator_goal.planning_group = planning_group_;
     excavator_goal.joint_values_sequence.push_back(test_joint_values);
+    excavator_goal.constraints = goal_msg.constraints;
+    excavator_goal.previous_pose = goal_msg.previous_pose;
 
     TmsRpExcavator::Result::SharedPtr result;
     const bool success = call_excavator_action_sync(excavator_goal, result);
@@ -1418,6 +1426,188 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value(
               serch_joint_name_.c_str(), iteration, target_joint_values.joint_values[joint_idx], original, (direction > 0) ? "upper" : "lower");  
 
   return true;
+}
+
+bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value_for_motion_sequence(
+  const TmsRpExcavator::Goal& goal_msg,
+  std::vector<moveit_msgs::msg::MotionSequenceItem>& motion_sequence_items,
+  const tms_msg_rp::srv::TmsRpExcavatorParamGet::Response& res)
+{
+  int numuntillimit = 0;
+  std::string serch_joint_name_ = "";
+  int direction = 0;  // +1: upper limit, -1: lower limit
+  size_t sequence_index_ = -1;
+  size_t gc_sequence_index_ = 0; // 現状、常に0、TODO: 将来的に1itemに複数のgoal_constraintsに対応する場合は、これも特定する必要がある
+  size_t item_index_ = -1;
+  std::vector<moveit_msgs::msg::MotionSequenceItem> best_motion_sequence_items;
+  bool found_any_success = false;
+  double original = 0.0;
+  std::vector<moveit_msgs::msg::RobotTrajectory> test_previous_pose;
+
+  for (auto& item : motion_sequence_items) {
+    for (const auto& gc : item.req.goal_constraints){
+      if (gc.joint_constraints.empty()) continue;
+      for (const auto& jc : gc.joint_constraints) {
+        if (jc.position >= 999 || jc.position <= -999) {
+          numuntillimit += 1;
+          serch_joint_name_ = jc.joint_name;
+          direction = (jc.position >= 999) ? 1 : -1;
+          sequence_index_ = &jc - &gc.joint_constraints[0];
+          item_index_ = &item - &motion_sequence_items[0];
+        }
+      }
+    }
+  }
+  if (numuntillimit == 0) {
+    RCLCPP_INFO(this->get_logger(), "No joint with 'until limit' (999) found, skipping binary search");
+    return true;
+  } else if (numuntillimit > 1) { // 現状、1アイテムかつ、1jointのみのjoint_constraintsに対応していない
+    RCLCPP_WARN(this->get_logger(), "Multiple joints with 'until limit' (999) detected, but handling multiple is not supported yet. Found: %d", numuntillimit);
+    return false;
+  }
+
+  RCLCPP_INFO(this->get_logger(), "Found joint '%s' with 'until limit' (999) in motion sequence item %zu, goal constraint %zu, joint constraint %zu", serch_joint_name_.c_str(), item_index_, gc_sequence_index_, sequence_index_);
+
+  tms_msg_rp::msg::TmsRpExcavatorJointValues previous_joint_values;
+  if (!goal_msg.previous_pose.empty()) {
+    const auto& traj = goal_msg.previous_pose.back().joint_trajectory;
+    if (traj.joint_names.empty() || traj.points.empty()) {
+      RCLCPP_ERROR(this->get_logger(), "previous_pose last trajectory has no joint_names or points");
+      return false;
+    }
+    const auto& last_pt = traj.points.back();
+    if (last_pt.positions.size() != traj.joint_names.size()) {
+      RCLCPP_ERROR(this->get_logger(),
+        "Size mismatch: joint_names=%zu positions=%zu",
+        traj.joint_names.size(), last_pt.positions.size());
+      return false;
+    }
+    previous_joint_values.joint_names  = traj.joint_names;
+    previous_joint_values.joint_values = last_pt.positions;
+  }
+  const auto& joint_names = res.joint_names;
+  double lowest, highest;
+  size_t limit_joint_idx = std::find(joint_names.begin(), joint_names.end(), serch_joint_name_) - joint_names.begin();
+  if (limit_joint_idx >= joint_names.size()) {
+    RCLCPP_ERROR(this->get_logger(), "Joint '%s' not found in response", serch_joint_name_.c_str());
+    return false;
+  }
+  if (previous_joint_values.joint_names.empty() || item_index_ == 0) {
+    size_t joint_idx = std::find(current_joint_states_.name.begin(), current_joint_states_.name.end(), serch_joint_name_) - current_joint_states_.name.begin();
+    if (joint_idx >= current_joint_states_.name.size()) {
+      RCLCPP_ERROR(this->get_logger(), "Joint '%s' not found in current joint values", serch_joint_name_.c_str());
+      return false;
+    }
+    original = current_joint_states_.position[joint_idx];
+    test_previous_pose = goal_msg.previous_pose;
+  } else if (!previous_joint_values.joint_names.empty() || item_index_ == 0) {
+    size_t joint_idx = std::find(previous_joint_values.joint_names.begin(), previous_joint_values.joint_names.end(), serch_joint_name_) - previous_joint_values.joint_names.begin();
+    if (joint_idx >= previous_joint_values.joint_names.size()) {
+      RCLCPP_ERROR(this->get_logger(), "Joint '%s' not found in previous joint values", serch_joint_name_.c_str());
+      return false;
+    }
+    original = previous_joint_values.joint_values[joint_idx];
+    test_previous_pose = goal_msg.previous_pose;
+  } else {
+    original = motion_sequence_items[item_index_ - 1].req.goal_constraints[gc_sequence_index_].joint_constraints[sequence_index_].position;
+
+    moveit_msgs::msg::RobotTrajectory traj;
+    traj.joint_trajectory.joint_names = current_joint_states_.name;
+    trajectory_msgs::msg::JointTrajectoryPoint pt;
+    pt.positions = current_joint_states_.position;
+    std::unordered_map<std::string, size_t> name_to_idx;
+    name_to_idx.reserve(traj.joint_trajectory.joint_names.size());
+    for (size_t i = 0; i < traj.joint_trajectory.joint_names.size(); ++i) {
+      name_to_idx[traj.joint_trajectory.joint_names[i]] = i;
+    }
+    std::vector<bool> filled(traj.joint_trajectory.joint_names.size(), false);
+    size_t filled_count = 0;
+    for (int ii = static_cast<int>(item_index_) - 1; ii >= 0; --ii) {
+      const auto& item = motion_sequence_items[static_cast<size_t>(ii)];
+      for (const auto& gc : item.req.goal_constraints) {
+        for (const auto& jc : gc.joint_constraints) {
+          auto it = name_to_idx.find(jc.joint_name);
+          if (it == name_to_idx.end()) continue;
+          const size_t idx = it->second;
+          if (filled[idx]) continue;
+          pt.positions[idx] = jc.position;
+          filled[idx] = true;
+          ++filled_count;
+          if (filled_count == filled.size()) {
+            ii = -1;
+            break;
+          }
+        }
+        if (ii < 0) break;
+      }
+    }
+    traj.joint_trajectory.points.push_back(pt);
+    test_previous_pose.push_back(traj);
+  }
+  if (direction > 0)  { lowest = original; highest = res.max_positions[limit_joint_idx]; }
+  else                { lowest = res.min_positions[limit_joint_idx]; highest = original; }
+
+  int iteration = 0;
+  while (std::abs(highest - lowest) > search_precision_) {
+    const double mid = (lowest + highest) / 2.0;
+    iteration++;
+
+    auto test_motion_sequence_items = motion_sequence_items;
+    auto& test_item = test_motion_sequence_items[item_index_];
+    for (auto& jc : test_item.req.goal_constraints[gc_sequence_index_].joint_constraints) {
+      RCLCPP_INFO(this->get_logger(), "Checking joint constraint '%s' with position %f against search joint '%s'", jc.joint_name.c_str(), jc.position, serch_joint_name_.c_str());
+      if (jc.joint_name == serch_joint_name_) {
+        jc.position = mid;
+        break;
+      }
+    }
+
+    auto excavator_goal = TmsRpExcavator::Goal();
+    excavator_goal.command = TmsRpExcavator::Goal::CMD_PLAN_MOTION_SEQUENCE;
+    excavator_goal.planning_group = planning_group_;
+    excavator_goal.motion_sequence_items = test_motion_sequence_items;
+    excavator_goal.constraints = goal_msg.constraints;
+    excavator_goal.previous_pose = test_previous_pose;
+
+    TmsRpExcavator::Result::SharedPtr result;
+    const bool success = call_excavator_action_sync(excavator_goal, result);
+
+    if (success) {
+      best_motion_sequence_items = test_motion_sequence_items;
+      found_any_success = true;
+      if (direction > 0) {
+        lowest = mid;
+      } else {
+        highest = mid;          // min側へ（より小さい値へ）
+      }
+    } else {
+      // failなら「戻す」方向に狭める
+      if (direction > 0) {
+        highest = mid;
+      } else {
+        lowest = mid;
+      }
+    }
+  }
+
+  if (!found_any_success) {
+    RCLCPP_WARN(this->get_logger(), "Binary search failed to find any valid joint value for joint '%s'", serch_joint_name_.c_str());
+    return false;
+  }
+  // 最終的な成功した値を motion_sequence_items に反映
+  for (auto& jc : motion_sequence_items[item_index_].req.goal_constraints[gc_sequence_index_].joint_constraints) {
+    if (jc.joint_name == serch_joint_name_) {
+      jc.position = best_motion_sequence_items[item_index_].req.goal_constraints[gc_sequence_index_].joint_constraints[sequence_index_].position;
+      break;
+    }
+  }
+  RCLCPP_INFO(this->get_logger(),
+              "Binary search for joint '%s' in motion sequence completed in %d iterations. Final value: %f (original: %f, direction: %s)",
+              serch_joint_name_.c_str(), iteration, best_motion_sequence_items[item_index_].req.goal_constraints[gc_sequence_index_].joint_constraints[sequence_index_].position, original, (direction > 0) ? "upper" : "lower");
+
+  return true;
+
+
 }
 
 

@@ -84,7 +84,8 @@ private:
   bool parse_constraints(TmsRpExcavator::Goal& goal_msg);
   void save_plan_to_db(const TmsRpExcavator::Result::SharedPtr& result);
   bool call_excavator_action_sync(const TmsRpExcavator::Goal& goal, TmsRpExcavator::Result::SharedPtr& result);
-  bool binary_search_extreme_joint_value(const tms_msg_rp::msg::TmsRpExcavatorJointValues& previous_joint_values, tms_msg_rp::msg::TmsRpExcavatorJointValues& target_joint_values, const tms_msg_rp::srv::TmsRpExcavatorParamGet::Response& res);
+  bool binary_search_extreme_joint_value(const TmsRpExcavator::Goal& goal_msg, tms_msg_rp::msg::TmsRpExcavatorJointValues& target_joint_values, const tms_msg_rp::srv::TmsRpExcavatorParamGet::Response& res);
+  bool binary_search_extreme_joint_value_for_motion_sequence(const TmsRpExcavator::Goal& goal_msg, std::vector<moveit_msgs::msg::MotionSequenceItem>& motion_sequence_items, const tms_msg_rp::srv::TmsRpExcavatorParamGet::Response& res);
 
 };
 
