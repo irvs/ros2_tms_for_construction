@@ -159,6 +159,24 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
     return;
   }
 
+  // plannerを指定
+  tms_msg_rp::srv::TmsRpExcavatorParamSet::Response::SharedPtr set_param_response;
+  auto set_param_request = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamSet::Request>();
+  set_param_request->planning_pipeline_id = "pilz_industrial_motion_planner";
+  set_param_request->planner_id = "PTP";
+  auto set_param_future = param_set_client_->async_send_request(set_param_request);
+  auto set_status = set_param_future.wait_for(std::chrono::seconds(5));
+  if (set_status != std::future_status::ready) {
+    RCLCPP_WARN(this->get_logger(), "Failed to set planner parameters (timeout)");
+  } else {
+    set_param_response = set_param_future.get();
+    if (!set_param_response->success) {
+      RCLCPP_WARN(this->get_logger(), "Failed to set planner parameters: %s", set_param_response->message.c_str());
+    } else {
+      RCLCPP_INFO(this->get_logger(), "Planner parameters set successfully");
+    }
+  }
+
   tms_msg_rp::srv::TmsRpExcavatorParamGet::Response::SharedPtr param_response;
 
   // サービスからcurrent_statesのみ取得して保持
@@ -1492,7 +1510,7 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value_for_mot
     RCLCPP_ERROR(this->get_logger(), "Joint '%s' not found in response", serch_joint_name_.c_str());
     return false;
   }
-  if (previous_joint_values.joint_names.empty() || item_index_ == 0) {
+  if (previous_joint_values.joint_names.empty() && item_index_ == 0) {
     size_t joint_idx = std::find(current_joint_states_.name.begin(), current_joint_states_.name.end(), serch_joint_name_) - current_joint_states_.name.begin();
     if (joint_idx >= current_joint_states_.name.size()) {
       RCLCPP_ERROR(this->get_logger(), "Joint '%s' not found in current joint values", serch_joint_name_.c_str());
@@ -1500,7 +1518,7 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value_for_mot
     }
     original = current_joint_states_.position[joint_idx];
     test_previous_pose = goal_msg.previous_pose;
-  } else if (!previous_joint_values.joint_names.empty() || item_index_ == 0) {
+  } else if (!previous_joint_values.joint_names.empty() && item_index_ == 0) {
     size_t joint_idx = std::find(previous_joint_values.joint_names.begin(), previous_joint_values.joint_names.end(), serch_joint_name_) - previous_joint_values.joint_names.begin();
     if (joint_idx >= previous_joint_values.joint_names.size()) {
       RCLCPP_ERROR(this->get_logger(), "Joint '%s' not found in previous joint values", serch_joint_name_.c_str());
@@ -1509,43 +1527,43 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value_for_mot
     original = previous_joint_values.joint_values[joint_idx];
     test_previous_pose = goal_msg.previous_pose;
   } else {
-    original = motion_sequence_items[item_index_ - 1].req.goal_constraints[gc_sequence_index_].joint_constraints[sequence_index_].position;
-
+    std::unordered_map<int, trajectory_msgs::msg::JointTrajectoryPoint> cache;
+    cache.clear();
+    trajectory_msgs::msg::JointTrajectoryPoint start_pt;
+    if (!resolve_joint_state_before_recursive(
+            static_cast<int>(item_index_),
+            motion_sequence_items,
+            current_joint_states_,
+            cache,
+            start_pt)) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to resolve start_state recursively (pose planning failed)");
+      return false;
+    }
     moveit_msgs::msg::RobotTrajectory traj;
     traj.joint_trajectory.joint_names = current_joint_states_.name;
     trajectory_msgs::msg::JointTrajectoryPoint pt;
-    pt.positions = current_joint_states_.position;
-    std::unordered_map<std::string, size_t> name_to_idx;
-    name_to_idx.reserve(traj.joint_trajectory.joint_names.size());
-    for (size_t i = 0; i < traj.joint_trajectory.joint_names.size(); ++i) {
-      name_to_idx[traj.joint_trajectory.joint_names[i]] = i;
-    }
-    std::vector<bool> filled(traj.joint_trajectory.joint_names.size(), false);
-    size_t filled_count = 0;
-    for (int ii = static_cast<int>(item_index_) - 1; ii >= 0; --ii) {
-      const auto& item = motion_sequence_items[static_cast<size_t>(ii)];
-      for (const auto& gc : item.req.goal_constraints) {
-        for (const auto& jc : gc.joint_constraints) {
-          auto it = name_to_idx.find(jc.joint_name);
-          if (it == name_to_idx.end()) continue;
-          const size_t idx = it->second;
-          if (filled[idx]) continue;
-          pt.positions[idx] = jc.position;
-          filled[idx] = true;
-          ++filled_count;
-          if (filled_count == filled.size()) {
-            ii = -1;
-            break;
-          }
-        }
-        if (ii < 0) break;
+    pt.positions = start_pt.positions;
+    {
+      std::unordered_map<std::string, size_t> name_to_idx;
+      name_to_idx.reserve(traj.joint_trajectory.joint_names.size());
+      for (size_t i = 0; i < traj.joint_trajectory.joint_names.size(); ++i) {
+        name_to_idx[traj.joint_trajectory.joint_names[i]] = i;
       }
+    
+      auto it = name_to_idx.find(serch_joint_name_);
+      if (it == name_to_idx.end()) {
+        RCLCPP_ERROR(this->get_logger(), "serch_joint_name_ '%s' not found in joint_names",
+                     serch_joint_name_.c_str());
+        return false;
+      }
+      original = pt.positions[it->second];
     }
-    traj.joint_trajectory.points.push_back(pt);
-    test_previous_pose.push_back(traj);
   }
   if (direction > 0)  { lowest = original; highest = res.max_positions[limit_joint_idx]; }
   else                { lowest = res.min_positions[limit_joint_idx]; highest = original; }
+
+  RCLCPP_INFO(this->get_logger(), "Starting binary search for joint '%s' in motion sequence. Original: %f, direction: %s, lowest: %f, highest: %f",
+              serch_joint_name_.c_str(), original, (direction > 0) ? "upper" : "lower", lowest, highest);
 
   int iteration = 0;
   while (std::abs(highest - lowest) > search_precision_) {
@@ -1606,8 +1624,208 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value_for_mot
               serch_joint_name_.c_str(), iteration, best_motion_sequence_items[item_index_].req.goal_constraints[gc_sequence_index_].joint_constraints[sequence_index_].position, original, (direction > 0) ? "upper" : "lower");
 
   return true;
+}
 
+bool PrimitiveExcavatorChangePosePlan::resolve_joint_state_before_recursive(
+  int index,
+  const std::vector<moveit_msgs::msg::MotionSequenceItem>& motion_sequence_items,
+  const sensor_msgs::msg::JointState& current_joint_states,
+  std::unordered_map<int, trajectory_msgs::msg::JointTrajectoryPoint>& cache,
+  trajectory_msgs::msg::JointTrajectoryPoint& out_pt)
+{
+  // cache hit
+  auto cache_it = cache.find(index);
+  if (cache_it != cache.end()) {
+    out_pt = cache_it->second;
+    return true;
+  }
+  trajectory_msgs::msg::JointTrajectoryPoint base_pt;
+  base_pt.positions = current_joint_states.position;
 
+  // index<=0: current
+  if (index <= 0) {
+    cache[index] = base_pt;
+    out_pt = base_pt;
+    return true;
+  }
+
+  const int item_i = index - 1;
+  if (item_i < 0 || item_i >= static_cast<int>(motion_sequence_items.size())) {
+    cache[index] = base_pt;
+    out_pt = base_pt;
+    return true;
+  }
+
+  const auto& joint_names_master = current_joint_states.name;
+
+  // name_to_idx（直書き）
+  std::unordered_map<std::string, size_t> name_to_idx;
+  name_to_idx.reserve(joint_names_master.size());
+  for (size_t i = 0; i < joint_names_master.size(); ++i) {
+    name_to_idx[joint_names_master[i]] = i;
+  }
+
+  const auto& item = motion_sequence_items[static_cast<size_t>(item_i)];
+
+  // まず “それより前” を解く（再帰）
+  trajectory_msgs::msg::JointTrajectoryPoint prev_pt;
+  if (!resolve_joint_state_before_recursive(
+          item_i, motion_sequence_items, current_joint_states, cache, prev_pt)) {
+    return false;
+  }
+
+  // pose goal 判定（直書き）
+  bool has_pose = false;
+  for (const auto& gc : item.req.goal_constraints) {
+    if (!gc.position_constraints.empty() || !gc.orientation_constraints.empty()) {
+      has_pose = true;
+      break;
+    }
+  }
+
+  // joint override 適用ラムダ（直書き）
+  auto apply_joint_override = [&](trajectory_msgs::msg::JointTrajectoryPoint& io_pt) -> bool {
+    for (const auto& gc : item.req.goal_constraints) {
+      for (const auto& jc : gc.joint_constraints) {
+        auto it = name_to_idx.find(jc.joint_name);
+        if (it == name_to_idx.end()) {
+          // master にない joint 名が混ざるのは異常としてエラーにするかは方針次第
+          // 今回は “無視”ではなく “エラー”にしたいなら false に変える
+          continue;
+        }
+        const size_t idx = it->second;
+        if (idx >= io_pt.positions.size()) return false;
+        io_pt.positions[idx] = jc.position;
+      }
+    }
+    return true;
+  };
+
+  if (has_pose) {
+    // prev_pt を start_state にして pose plan → 完全jointへ正規化
+    sensor_msgs::msg::JointState start_state;
+    start_state.name = joint_names_master;
+    start_state.position = prev_pt.positions;
+
+    trajectory_msgs::msg::JointTrajectoryPoint planned_last_pt;
+    if (!plan_pose_goal_and_get_last_joint_point(item, start_state, joint_names_master, planned_last_pt)) {
+      RCLCPP_ERROR(this->get_logger(), "Pose planning failed while resolving at item %d", item_i);
+      return false; // ★即エラー
+    }
+
+    // pose plan の結果に joint_constraints 上書き
+    auto result_pt = planned_last_pt;
+    if (!apply_joint_override(result_pt)) return false;
+
+    cache[index] = result_pt;
+    out_pt = result_pt;
+    return true;
+  }
+
+  // joint item：prev に上書きして完成
+  auto result_pt = prev_pt;
+  if (!apply_joint_override(result_pt)) return false;
+
+  cache[index] = result_pt;
+  out_pt = result_pt;
+  return true;
+}
+
+bool PrimitiveExcavatorChangePosePlan::plan_pose_goal_and_get_last_joint_point(
+  const moveit_msgs::msg::MotionSequenceItem& item,
+  const sensor_msgs::msg::JointState& start_state,
+  const std::vector<std::string>& joint_names_master,
+  trajectory_msgs::msg::JointTrajectoryPoint& out_pt)
+{
+  if (item.req.goal_constraints.empty()) {
+    RCLCPP_WARN(this->get_logger(), "Pose item has no goal_constraints");
+    return false;
+  }
+
+  // goal_constraints から Pose 1点を抽出（小関数化しない）
+  geometry_msgs::msg::Pose target_pose;
+  {
+    const auto& gc = item.req.goal_constraints.front();
+    bool has_pos = false;
+    bool has_ori = false;
+
+    if (!gc.position_constraints.empty()) {
+      const auto& pc = gc.position_constraints.front();
+      if (!pc.constraint_region.primitive_poses.empty()) {
+        const auto& prim_pose = pc.constraint_region.primitive_poses.front();
+        target_pose.position = prim_pose.position;
+        target_pose.orientation = prim_pose.orientation; // orientation無い時の仮
+        has_pos = true;
+      }
+    }
+
+    if (!gc.orientation_constraints.empty()) {
+      const auto& oc = gc.orientation_constraints.front();
+      target_pose.orientation = oc.orientation;
+      has_ori = true;
+    }
+
+    if (!has_pos && !has_ori) return false;
+    if (!has_pos) {
+      RCLCPP_WARN(this->get_logger(), "Orientation-only constraint is not supported for pose extraction");
+      return false;
+    }
+    if (!has_ori) {
+      target_pose.orientation.x = 0.0;
+      target_pose.orientation.y = 0.0;
+      target_pose.orientation.z = 0.0;
+      target_pose.orientation.w = 1.0;
+    }
+  }
+
+  // start_state を previous_pose (RobotTrajectory[]) で渡す
+  moveit_msgs::msg::RobotTrajectory seed_traj;
+  seed_traj.joint_trajectory.joint_names = start_state.name;
+
+  trajectory_msgs::msg::JointTrajectoryPoint seed_pt;
+  seed_pt.positions = start_state.position;
+  seed_traj.joint_trajectory.points.clear();
+  seed_traj.joint_trajectory.points.push_back(seed_pt);
+
+  // Plan 요청
+  auto excavator_goal = TmsRpExcavator::Goal();
+  excavator_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_POSE;
+  excavator_goal.planning_group = planning_group_;
+  excavator_goal.pose_sequence.push_back(target_pose);
+
+  excavator_goal.previous_pose.clear();
+  excavator_goal.previous_pose.push_back(seed_traj);
+
+  TmsRpExcavator::Result::SharedPtr plan_result;
+  if (!call_excavator_action_sync(excavator_goal, plan_result)) return false;
+  if (plan_result->plan.empty()) return false;
+
+  const auto& traj = plan_result->plan[0].joint_trajectory;
+  if (traj.points.empty()) return false;
+
+  const auto& last = traj.points.back();
+
+  // joint_names が一致してればそのまま
+  if (traj.joint_names == joint_names_master) {
+    out_pt = last;
+    return true;
+  }
+
+  // 並びが違う場合は詰め替え
+  std::unordered_map<std::string, size_t> idx;
+  idx.reserve(traj.joint_names.size());
+  for (size_t i = 0; i < traj.joint_names.size(); ++i) idx[traj.joint_names[i]] = i;
+
+  out_pt.positions.assign(joint_names_master.size(), 0.0);
+  for (size_t i = 0; i < joint_names_master.size(); ++i) {
+    auto it = idx.find(joint_names_master[i]);
+    if (it == idx.end()) return false;
+    const size_t j = it->second;
+    if (j >= last.positions.size()) return false;
+    out_pt.positions[i] = last.positions[j];
+  }
+
+  return true;
 }
 
 

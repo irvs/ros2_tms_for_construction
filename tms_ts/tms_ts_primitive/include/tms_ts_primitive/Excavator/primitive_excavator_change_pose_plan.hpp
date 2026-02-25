@@ -86,6 +86,13 @@ private:
   bool call_excavator_action_sync(const TmsRpExcavator::Goal& goal, TmsRpExcavator::Result::SharedPtr& result);
   bool binary_search_extreme_joint_value(const TmsRpExcavator::Goal& goal_msg, tms_msg_rp::msg::TmsRpExcavatorJointValues& target_joint_values, const tms_msg_rp::srv::TmsRpExcavatorParamGet::Response& res);
   bool binary_search_extreme_joint_value_for_motion_sequence(const TmsRpExcavator::Goal& goal_msg, std::vector<moveit_msgs::msg::MotionSequenceItem>& motion_sequence_items, const tms_msg_rp::srv::TmsRpExcavatorParamGet::Response& res);
+  bool plan_pose_goal_and_get_last_joint_point(const moveit_msgs::msg::MotionSequenceItem& item, const sensor_msgs::msg::JointState& start_state, const std::vector<std::string>& joint_names_master, trajectory_msgs::msg::JointTrajectoryPoint& out_pt);
+  bool resolve_joint_state_before_recursive(
+    int index,
+    const std::vector<moveit_msgs::msg::MotionSequenceItem>& motion_sequence_items,
+    const sensor_msgs::msg::JointState& current_joint_states,
+    std::unordered_map<int, trajectory_msgs::msg::JointTrajectoryPoint>& cache,
+    trajectory_msgs::msg::JointTrajectoryPoint& out_pt);
 
 };
 
