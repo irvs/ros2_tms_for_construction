@@ -21,6 +21,7 @@ from rclpy.node import Node
 import tms_db_manager.tms_db_util as db_util
 from tms_msg_db.msg import Tmsdb
 from tms_msg_db.srv import TmsdbGetData
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 
@@ -69,7 +70,7 @@ class TmsDbReader(Node):
         """
         collection: pymongo.collection.Collection = self.db[request.type]
 
-        if request.latest_only and request.param_type != "plan":
+        if request.latest_only and not (request.param_type == "path_plan" or request.param_type == "joint_plan"):
             latest_data: dict = self.get_latest_data(request, collection)
             if latest_data == None:
                 return response
@@ -82,14 +83,28 @@ class TmsDbReader(Node):
         #     response.tmsdbs.append(self.plan_tmsdb(plan_data))
         #     return response
         
-        elif request.latest_only and request.param_type == "plan":
-            plan_data: dict = self.get_plan_data(request, collection)
+        elif request.latest_only and request.param_type == "path_plan":
+            plan_data: dict = self.get_path_plan_data(request, collection)
             if plan_data is None:
                 self.get_logger().info("get no plan")
                 return response
 
-            path = self.plan_to_path(plan_data)
-            response.tmsdbs.append(self.plan_tmsdb(path))
+            path_plan = self.plan_to_path(plan_data)
+            response.tmsdbs.append(self.path_plan_tmsdb(path_plan))
+            self.get_logger().info("retuen plan")
+            return response
+        
+        elif request.latest_only and request.param_type == "joint_plan":
+            #self.get_logger().info("obtain joint plan request")
+            plan_data: dict = self.get_joint_plan_data(request, collection)
+            if plan_data is None:
+                self.get_logger().info("get no plan")
+                return response
+
+            self.get_logger().info("plan_data")
+            joint_path = self.plan_to_joint(plan_data)
+            self.get_logger().info("joint_path")
+            response.tmsdbs.append(self.joint_plan_tmsdb(joint_path))
             self.get_logger().info("retuen plan")
             return response
 
@@ -169,12 +184,26 @@ class TmsDbReader(Node):
     #         )
     #     return plan_data
     
-    def get_plan_data(self, request, collection) -> dict:
+    def get_path_plan_data(self, request, collection) -> dict:
         # name が空でない場合
         if request.name != "":
             plan_data = collection.find_one(
                 #{"record_name": request.recordnames[0], "model_name": request.name}
-                {"type": "plan", "model_name": request.name}
+                {"type": "path_plan", "model_name": request.name}
+            )
+        # name が空の場合
+        else:
+            plan_data = collection.find_one(
+                {"id": request.id}
+            )
+        return plan_data
+    
+    def get_joint_plan_data(self, request, collection) -> dict:
+        # name が空でない場合
+        if request.name != "":
+            plan_data = collection.find_one(
+                #{"record_name": request.recordnames[0], "model_name": request.name}
+                {"type": "joint_plan", "model_name": request.name}
             )
         # name が空の場合
         else:
@@ -206,7 +235,7 @@ class TmsDbReader(Node):
         tmsdb.msg = json.dumps(data["msg"])
         return tmsdb
     
-    def plan_tmsdb(self, data: dict) -> Tmsdb:
+    def path_plan_tmsdb(self, data: dict) -> Tmsdb:
         """
         Allocate dictionary data to Tmsdb msg.
 
@@ -221,7 +250,25 @@ class TmsDbReader(Node):
             Tmsdb msg data.
         """
         tmsdb = Tmsdb()
-        tmsdb.plan = data
+        tmsdb.pathplan = data
+        return tmsdb
+    
+    def joint_plan_tmsdb(self, data: dict) -> Tmsdb:
+        """
+        Allocate dictionary data to Tmsdb msg.
+
+        Parameters
+        ----------
+        dict : data
+            Dictionary data.
+
+        Returns
+        -------
+        Tmsdb
+            Tmsdb msg data.
+        """
+        tmsdb = Tmsdb()
+        tmsdb.jointplan = data
         return tmsdb
     
 
@@ -257,6 +304,29 @@ class TmsDbReader(Node):
         
         return path
 
+    def plan_to_joint(self, data: dict, frame_id: str = "map") -> JointTrajectory:
+        jointplan = JointTrajectory()
+        traj = JointTrajectory()
+        traj.joint_names = traj.joint_names = data["plan"]["1"]["joint_trajectory"]["joint_names"]
+    
+    #     traj.joint_names = [
+    #     "swing_joint",
+    #     "boom_joint",
+    #     "arm_joint",
+    #     "bucket_joint",
+    #     "bucket_end_joint"
+    # ]
+
+        for p in data["plan"]["1"]["joint_trajectory"]["points"]:
+            point = JointTrajectoryPoint()
+            point.positions = [float(v) for v in p["positions"]]
+            point.velocities = [float(v) for v in p["velocities"]]
+            point.accelerations = [float(v) for v in p["accelerations"]]
+            point.time_from_start.sec = p["time_from_start"]["sec"]
+            point.time_from_start.nanosec = p["time_from_start"]["nanosec"]
+            traj.points.append(point)
+
+        return traj
 
 
 def main(args=None):

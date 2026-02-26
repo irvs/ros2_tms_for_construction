@@ -17,6 +17,7 @@ from time import sleep
 import rclpy
 from rclpy.node import Node
 
+from trajectory_msgs.msg import JointTrajectory
 from nav_msgs.msg import Path
 from diagnostic_msgs.msg import KeyValue
 from tms_msg_db.srv import TmsdbGetData
@@ -51,7 +52,9 @@ class TmsUrPlanReader(Node):
             10)
         self.subscription
 
-        self.publisher_ = self.create_publisher(Path, "~/output/plan", 10)
+        self.pathpublisher_ = self.create_publisher(Path, "~/output/plan", 10)
+
+        self.jointpublisher_ = self.create_publisher(JointTrajectory, "~/output/joint_plan", 10)
 
         self.cli = self.create_client(TmsdbGetData, "tms_db_reader")
         while not self.cli.wait_for_service(timeout_sec=1.0):
@@ -60,7 +63,7 @@ class TmsUrPlanReader(Node):
     
     def writer_callback(self, msg):
         self.machine_name = msg.key
-        self.record_name = msg.value
+        self.record_name = msg.value#path_plan or joint_plan
         self.send_request()
 
     def send_request(self):
@@ -71,7 +74,8 @@ class TmsUrPlanReader(Node):
         self.req.type = DATA_TYPE
         self.req.id = DATA_ID
         self.req.latest_only = self.latest
-        self.req.param_type = "plan"
+        #self.req.param_type = "plan"
+        self.req.param_type = self.record_name
         self.req.name = self.machine_name
         self.req.recordnames = [self.record_name]
 
@@ -91,9 +95,14 @@ class TmsUrPlanReader(Node):
             return
         
     def publish_plan(self) -> None:
-        msg: Path = self.tmsdbs[0].plan
-        self.publisher_.publish(msg)
-        self.get_logger().info("published plan")
+        if(self.tmsdbs[0].pathplan.poses != []):
+            msg: Path = self.tmsdbs[0].pathplan
+            self.pathpublisher_.publish(msg)
+            self.get_logger().info("published path plan")
+        elif(self.tmsdbs[0].jointplan != ""):
+            msg: JointTrajectory = self.tmsdbs[0].jointplan
+            self.jointpublisher_.publish(msg)
+            self.get_logger().info("published joint trajectory plan")
 
 
 

@@ -3,4 +3,5 @@ string type
 int32  id
 string name
 string msg
-nav_msgs/Path plan
+nav_msgs/Path pathplan
+trajectory_msgs/JointTrajectory jointplan

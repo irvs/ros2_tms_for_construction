@@ -44,6 +44,7 @@ def generate_launch_description():
         remappings=[
             ("planwritten", "/planwritten"),
             ("~/output/plan", "/output/mst110cr_plan"),
+            ("~/output/joint_plan", "/output/zx200_joint_plan"),
         ],
         parameters=[
             {

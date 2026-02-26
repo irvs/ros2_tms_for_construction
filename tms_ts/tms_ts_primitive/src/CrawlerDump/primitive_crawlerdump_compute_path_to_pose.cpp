@@ -157,7 +157,8 @@ void PrimitiveCrawlerDumpComputePathToPose::goal_response_callback(const GoalHan
     ///////
     auto message = diagnostic_msgs::msg::KeyValue();
     message.key = output_model_name_;
-    message.value = output_record_name_;
+    //message.value = output_record_name_;
+    message.value = "path_plan";
     publisher_->publish(message);
     ///////
   }
@@ -248,7 +249,7 @@ try {
   document set_doc;
   set_doc.append(
     kvp("model_name",  model_arr.extract()),
-    kvp("type",        "plan"),
+    kvp("type",        "path_plan"),
     kvp("record_name", record_name),
     kvp("frame_id",    path.header.frame_id),
     kvp("x",           x_arr.extract()),
