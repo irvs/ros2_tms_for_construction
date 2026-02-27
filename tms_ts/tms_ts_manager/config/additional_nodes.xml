@@ -16,14 +16,14 @@
         </Action>
 
         <Action ID="LeafNodeExcavator">
-            <input_port name=" model_name" default="zx200"/>
+            <input_port name="model_name" default="zx200"/>
             <inout_port name="previous_target_record_name"/>
             <inout_port name="target_record_name"/>
             <inout_port name="primitive_name"/> 
         </Action>
 
         <Action ID="LeafNodeExcavatorAssist">
-            <input_port name=" model_name" default="zx200"/>
+            <input_port name="model_name" default="zx200"/>
             <inout_port name="record_name"/>
             <inout_port name="primitive_name"/> 
         </Action>
