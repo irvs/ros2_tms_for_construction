@@ -38,6 +38,7 @@ find_package(com3_msgs)
 find_package(Qt5Widgets REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
 # find_package(geometric_shapes REQUIRED)
+find_package(geometric_shapes REQUIRED)
 find_package(srdfdom REQUIRED)
 find_package(moveit_core REQUIRED)
 # find_package(moveit_robot_model_loader REQUIRED)
@@ -84,6 +85,7 @@ add_executable(primitive_crawlerdump_swing_align_to_heading src/CrawlerDump/prim
 add_executable(primitive_excavator_change_pose_plan src/Excavator/primitive_excavator_change_pose_plan.cpp)
 add_executable(primitive_excavator_change_pose_execute_from_plan src/Excavator/primitive_excavator_change_pose_execute_from_plan.cpp)
 add_executable(primitive_excavator_change_pose_execute_from_plan_retime src/Excavator/primitive_excavator_change_pose_execute_from_plan_retime.cpp)
+add_executable(excavator_scene_manager src/Excavator/excavator_scene_manager.cpp)
 add_executable(primitive_excavator_follow_waypoints src/Excavator/primitive_excavator_follow_waypoints.cpp)
 add_executable(primitive_excavator_navigate_anywhere src/Excavator/primitive_excavator_navigate_anywhere.cpp)
 add_executable(primitive_excavator_navigate_through_poses src/Excavator/primitive_excavator_navigate_through_poses.cpp)
@@ -106,9 +108,9 @@ set(TARGETS
   primitive_crawlerdump_release_soil
   primitive_crawlerdump_swing
   primitive_crawlerdump_swing_align_to_heading
-  # assist_excavation_pose_to_joint_angles
   primitive_excavator_change_pose_plan
   primitive_excavator_change_pose_execute_from_plan
+  excavator_scene_manager
   primitive_excavator_change_pose_execute_from_plan_retime
   primitive_excavator_follow_waypoints
   primitive_excavator_navigate_anywhere
@@ -156,7 +158,8 @@ set(dependencies_cpp
   Qt5Widgets
   tf2_ros
   diagnostic_msgs
-  tf2_geometry_msgs)
+  tf2_geometry_msgs
+  geometric_shapes)
 
 foreach(target IN LISTS TARGETS)
 target_include_directories(${target} PUBLIC ${COMMON_INCLUDE_DIRS})

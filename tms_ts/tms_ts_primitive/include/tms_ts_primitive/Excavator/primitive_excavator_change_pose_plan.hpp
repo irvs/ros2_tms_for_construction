@@ -93,6 +93,17 @@ private:
     const sensor_msgs::msg::JointState& current_joint_states,
     std::unordered_map<int, trajectory_msgs::msg::JointTrajectoryPoint>& cache,
     trajectory_msgs::msg::JointTrajectoryPoint& out_pt);
+  void level_bucket_if_trigger(
+    tms_msg_rp::msg::TmsRpExcavatorJointValues& jv,
+    double trigger = 888.0,
+    double offset  = M_PI);
+  void finalize_motion_sequence_items(
+    std::vector<moveit_msgs::msg::MotionSequenceItem>& items,
+    double trigger = 888.0,
+    double offset = M_PI,
+    const std::string& boomname = "boom_joint",
+    const std::string& arm_name = "arm_joint",
+    const std::string& bucket_name = "bucket_joint");
 
 };
 

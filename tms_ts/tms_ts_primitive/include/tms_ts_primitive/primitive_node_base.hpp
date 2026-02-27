@@ -55,6 +55,7 @@ static inline std::string bson_type_name(bsoncxx::type t) {
     case bsoncxx::type::k_array:    return "array";
     case bsoncxx::type::k_int32:    return "int32";
     case bsoncxx::type::k_int64:    return "int64";
+    case bsoncxx::type::k_binary:   return "binary";
     default:                        return "unknown";
   }
 }
@@ -78,7 +79,7 @@ inline std::map<std::string, std::string> PrimitiveNodeBase::GetParamFromDBAsJso
 
     for (auto&& element : view) {
       std::string key = element.key().to_string();
-      if (key != "_id" && key != "model_name" && key != "type" && key != "record_name") {
+      if (key != "_id" && key != "model_name" && key != "record_name") {
         // 各要素を個別のJSONドキュメントとして保存
         bsoncxx::builder::basic::document doc;
         
@@ -96,6 +97,8 @@ inline std::map<std::string, std::string> PrimitiveNodeBase::GetParamFromDBAsJso
           doc.append(bsoncxx::builder::basic::kvp(key, element.get_bool().value));
         } else if (element.type() == bsoncxx::type::k_utf8) {
           doc.append(bsoncxx::builder::basic::kvp(key, element.get_utf8().value));
+        } else if (element.type() == bsoncxx::type::k_binary) {
+          doc.append(bsoncxx::builder::basic::kvp(key, element.get_binary()));
         } else {
           std::cout << "Unsupported type for key \"" << key << "\": " << bson_type_name(element.type()) << std::endl;
           continue;
@@ -103,7 +106,7 @@ inline std::map<std::string, std::string> PrimitiveNodeBase::GetParamFromDBAsJso
         
         std::string json_str = bsoncxx::to_json(doc.view());
         dataMap[key] = json_str;
-        std::cout << "Stored: " << key << " = " << json_str << std::endl;
+        // std::cout << "Stored: " << key << " = " << json_str << std::endl;
       }
     }
   } else {

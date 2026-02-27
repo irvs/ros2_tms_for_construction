@@ -107,11 +107,12 @@ def generate_launch_description():
                   output='screen',
                   parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   namespace = 'zx200'),
-            # Node(
-            #       package='tms_ts_subtask',
-            #       executable='subtask_excavation_retract_arm',
-            #       output='screen',
-            #       namespace = 'zx200'),
+            Node(
+                  package='tms_ts_primitive',
+                  executable='excavator_scene_manager',
+                  output='screen',
+                  namespace = 'zx200',
+                  parameters=[{"model_name": "zx200", "root_record_name": "collision_objects_shimiz", "planning_frame": "base_link"}]),
             
             # sample ###
             #ic120用
