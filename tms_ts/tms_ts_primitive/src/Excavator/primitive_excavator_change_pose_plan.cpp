@@ -223,6 +223,9 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
       handle_error("waypoints array is empty");
       return;
     }
+
+    std::unordered_map<int, trajectory_msgs::msg::JointTrajectoryPoint> start_cache;
+    start_cache.clear();
     
     // waypointsの数で処理を分岐
     if (num_waypoints == 1) {
@@ -267,6 +270,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
           handle_error("Failed to find valid joint values within limits");
           return;
         }
+        level_bucket_if_trigger(target_joint_values);
         goal_msg.joint_values_sequence.push_back(target_joint_values);
         RCLCPP_INFO(this->get_logger(), "  Target: %zu joints specified", target_joint_values.joint_names.size());
         RCLCPP_INFO(this->get_logger(), "  Joint values:");
@@ -303,6 +307,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
             }
           }
         }
+        level_bucket_if_trigger(target_joint_values);
         goal_msg.joint_values_sequence.push_back(target_joint_values);
         RCLCPP_INFO(this->get_logger(), "  Target: %zu joints specified (relative)", target_joint_values.joint_names.size());
         RCLCPP_INFO(this->get_logger(), "  Joint values:");
@@ -469,31 +474,54 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         } else if (type == "joint_values_relative") {
           if (!waypoint_doc["data"]) continue;
           auto data_doc = waypoint_doc["data"].get_document().value;
-          
+        
+          // この item の開始姿勢を解く（直前までの結果が基準）
+          int item_index = static_cast<int>(goal_msg.motion_sequence_items.size());
+          trajectory_msgs::msg::JointTrajectoryPoint start_pt;
+          if (!resolve_joint_state_before_recursive(
+                item_index,
+                goal_msg.motion_sequence_items,
+                current_joint_states_,
+                start_cache,
+                start_pt)) {
+            RCLCPP_ERROR(this->get_logger(), "resolve start_state failed at item %d", item_index);
+            continue;  // or handle_error
+          }
+        
+          if (start_pt.positions.size() != current_joint_states_.name.size()) {
+            RCLCPP_ERROR(this->get_logger(), "start_state size mismatch at item %d", item_index);
+            continue;
+          }
+        
           moveit_msgs::msg::Constraints constraints;
-          
+        
+          // data_doc の (joint_name -> delta) を start_state + delta にして入れる
           for (auto&& field : data_doc) {
             std::string joint_name = field.key().to_string();
-            double joint_value = get_numeric_value(field);
-            tms_msg_rp::msg::TmsRpExcavatorJointValues target_joint_values;
-            target_joint_values.joint_names  = current_joint_states_.name;
-            target_joint_values.joint_values = current_joint_states_.position;
-            for (size_t i = 0; i < target_joint_values.joint_names.size(); ++i) {
-              if (target_joint_values.joint_names[i] == joint_name) {
-                  moveit_msgs::msg::JointConstraint joint_constraint;
-                  joint_constraint.joint_name = joint_name;
-                  joint_constraint.position = target_joint_values.joint_values[i] + joint_value;
-                  joint_constraint.tolerance_above = 0.01;
-                  joint_constraint.tolerance_below = 0.01;
-                  joint_constraint.weight = 1.0;
-                  constraints.joint_constraints.push_back(joint_constraint);
-                  break;
+            double delta = get_numeric_value(field);
+        
+            // joint_name の index を master（current_joint_states_.name）から探す
+            int jidx = -1;
+            for (size_t i = 0; i < current_joint_states_.name.size(); ++i) {
+              if (current_joint_states_.name[i] == joint_name) {
+                jidx = static_cast<int>(i);
+                break;
               }
             }
+            if (jidx < 0) continue;
+        
+            moveit_msgs::msg::JointConstraint joint_constraint;
+            joint_constraint.joint_name = joint_name;
+            joint_constraint.position = start_pt.positions[static_cast<size_t>(jidx)] + delta;  // ★ここが本質
+            joint_constraint.tolerance_above = 0.01;
+            joint_constraint.tolerance_below = 0.01;
+            joint_constraint.weight = 1.0;
+            constraints.joint_constraints.push_back(joint_constraint);
           }
-          
+        
           item.req.goal_constraints.push_back(constraints);
-          RCLCPP_INFO(this->get_logger(), "  [%zu] joint_values (relative, %zu joints)", 
+        
+          RCLCPP_INFO(this->get_logger(), "  [%zu] joint_values (relative->absolute, %zu joints)",
                       waypoint_index + 1, constraints.joint_constraints.size());
           
         } else if (type == "pose") {
@@ -560,6 +588,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         goal_msg.motion_sequence_items.push_back(item);
         waypoint_index++;
       }
+      finalize_motion_sequence_items(goal_msg.motion_sequence_items);
       if(!binary_search_extreme_joint_value_for_motion_sequence(goal_msg, goal_msg.motion_sequence_items, *param_response)) {
         handle_error("Failed to find valid joint values within limits for motion sequence");
         return;
@@ -1587,6 +1616,8 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value_for_mot
     excavator_goal.constraints = goal_msg.constraints;
     excavator_goal.previous_pose = test_previous_pose;
 
+    finalize_motion_sequence_items(excavator_goal.motion_sequence_items);
+
     TmsRpExcavator::Result::SharedPtr result;
     const bool success = call_excavator_action_sync(excavator_goal, result);
 
@@ -1828,6 +1859,107 @@ bool PrimitiveExcavatorChangePosePlan::plan_pose_goal_and_get_last_joint_point(
   return true;
 }
 
+void PrimitiveExcavatorChangePosePlan::level_bucket_if_trigger(
+  tms_msg_rp::msg::TmsRpExcavatorJointValues& jv,
+  double trigger,
+  double offset)
+{
+  int ib=-1, ia=-1, ik=-1;
+
+  for (size_t i=0;i<jv.joint_names.size();++i) {
+    if (jv.joint_names[i]=="boom_joint")   ib=i;
+    if (jv.joint_names[i]=="arm_joint")    ia=i;
+    if (jv.joint_names[i]=="bucket_joint") ik=i;
+  }
+
+  if (ib<0 || ia<0 || ik<0) return;
+  if (std::abs(jv.joint_values[ik] - trigger) > 1e-9) return;
+
+  jv.joint_values[ik] =
+      -(jv.joint_values[ib] + jv.joint_values[ia]) + offset;
+}
+
+void PrimitiveExcavatorChangePosePlan::finalize_motion_sequence_items(
+  std::vector<moveit_msgs::msg::MotionSequenceItem>& items,
+  double trigger,
+  double offset,
+  const std::string& boom_name,
+  const std::string& arm_name,
+  const std::string& bucket_name)
+{
+  // joint名->index（masterは current_joint_states_ の並び）
+  std::unordered_map<std::string, size_t> name_to_idx;
+  name_to_idx.reserve(current_joint_states_.name.size());
+  for (size_t i = 0; i < current_joint_states_.name.size(); ++i) {
+    name_to_idx[current_joint_states_.name[i]] = i;
+  }
+
+  // resolve 用キャッシュ
+  std::unordered_map<int, trajectory_msgs::msg::JointTrajectoryPoint> cache;
+  cache.clear();
+
+  for (size_t item_i = 0; item_i < items.size(); ++item_i) {
+    // --- ① この item の開始姿勢（start_state）を resolve で取る ---
+    trajectory_msgs::msg::JointTrajectoryPoint start_pt;
+    if (!resolve_joint_state_before_recursive(
+          static_cast<int>(item_i), items, current_joint_states_, cache, start_pt)) {
+      RCLCPP_ERROR(this->get_logger(),
+                   "finalize_motion_sequence_items: resolve start_state failed at item %zu",
+                   item_i);
+      return;
+    }
+
+    // start_pt.positions は current_joint_states_.name と同じ並びの想定
+    if (start_pt.positions.size() != current_joint_states_.name.size()) {
+      RCLCPP_ERROR(this->get_logger(),
+                   "finalize_motion_sequence_items: start_state size mismatch at item %zu",
+                   item_i);
+      return;
+    }
+
+    // --- ② goal_constraints の joint_constraints を「start_stateで全関節分」揃える ---
+    // PilzのMotionSequenceは通常 goal_constraints[0] だけ使ってる前提（あなたのコメントでも現状0固定）
+    for (auto& gc : items[item_i].req.goal_constraints) {
+
+      // 既存 joint_constraints を map 化（上書き維持するため）
+      std::unordered_map<std::string, size_t> jc_idx;
+      jc_idx.reserve(gc.joint_constraints.size());
+      for (size_t k = 0; k < gc.joint_constraints.size(); ++k) {
+        jc_idx[gc.joint_constraints[k].joint_name] = k;
+      }
+
+      // 足りない関節を start_state で追加
+      for (size_t j = 0; j < current_joint_states_.name.size(); ++j) {
+        const std::string& jname = current_joint_states_.name[j];
+        if (jc_idx.find(jname) != jc_idx.end()) continue;
+
+        moveit_msgs::msg::JointConstraint jc;
+        jc.joint_name = jname;
+        jc.position   = start_pt.positions[j];
+        jc.tolerance_above = 0.01;
+        jc.tolerance_below = 0.01;
+        jc.weight = 1.0;
+
+        gc.joint_constraints.push_back(jc);
+        jc_idx[jname] = gc.joint_constraints.size() - 1;
+      }
+
+      // --- ③ bucket==trigger なら bucket を計算して上書き（boom/arm/bucketは“このgc内の値”を使う） ---
+      auto itB = jc_idx.find(boom_name);
+      auto itA = jc_idx.find(arm_name);
+      auto itK = jc_idx.find(bucket_name);
+      if (itB == jc_idx.end() || itA == jc_idx.end() || itK == jc_idx.end()) continue;
+
+      double& boom   = gc.joint_constraints[itB->second].position;
+      double& arm    = gc.joint_constraints[itA->second].position;
+      double& bucket = gc.joint_constraints[itK->second].position;
+
+      if (std::abs(bucket - trigger) <= 1e-9) {
+        bucket = -(boom + arm) + offset;
+      }
+    }
+  }
+}
 
 bool PrimitiveExcavatorChangePosePlan::call_excavator_action_sync(
   const TmsRpExcavator::Goal& goal,
