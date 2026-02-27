@@ -40,7 +40,7 @@
 #include "tms_ts_primitive/common/wait_for_click.hpp"
 //#include "tms_ts_primitive/common/wait_for_topic.hpp"
 #include "tms_ts_primitive/common/leaf_node.hpp"
-#include "tms_ts_primitive/common/primitive_wait_for_ur.hpp"
+#include "tms_ts_primitive/common/wait_for_ur.hpp"
 
 
 using namespace BT;
