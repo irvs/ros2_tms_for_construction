@@ -37,9 +37,16 @@ find_package(nav2_msgs REQUIRED)
 find_package(com3_msgs)
 find_package(Qt5Widgets REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
+# find_package(geometric_shapes REQUIRED)
+find_package(srdfdom REQUIRED)
+find_package(moveit_core REQUIRED)
+# find_package(moveit_robot_model_loader REQUIRED)
+find_package(moveit_ros_planning REQUIRED)
+
 
 add_library(${PROJECT_NAME} SHARED
   src/leaf_node_base.cpp
+  src/Excavator/leaf_node.cpp
   src/primitive_node_base.cpp)
 
 
@@ -73,19 +80,18 @@ add_executable(primitive_crawlerdump_swing src/CrawlerDump/primitive_crawlerdump
 add_executable(primitive_crawlerdump_swing_align_to_heading src/CrawlerDump/primitive_crawlerdump_swing_align_to_heading.cpp)
 
 # Primitive Nodes for Excavator
-add_executable(primitive_excavator_change_pose src/Excavator/primitive_excavator_change_pose.cpp)
-add_executable(primitive_excavator_level src/Excavator/primitive_excavator_level.cpp)
-add_executable(primitive_excavator_gather src/Excavator/primitive_excavator_gather.cpp)
+# add_executable(assist_excavation_pose_to_joint_angles src/Excavator/assist_excavation_pose_to_joint_angles.cpp)
 add_executable(primitive_excavator_change_pose_plan src/Excavator/primitive_excavator_change_pose_plan.cpp)
-add_executable(primitive_excavator_excavate_simple_plan src/Excavator/primitive_excavator_excavate_simple_plan.cpp)
-add_executable(primitive_excavator_excavate_simple src/Excavator/primitive_excavator_excavate_simple.cpp)
-add_executable(primitive_excavator_release_simple src/Excavator/primitive_excavator_release_simple.cpp)
+add_executable(primitive_excavator_change_pose_execute_from_plan src/Excavator/primitive_excavator_change_pose_execute_from_plan.cpp)
+add_executable(primitive_excavator_change_pose_execute_from_plan_retime src/Excavator/primitive_excavator_change_pose_execute_from_plan_retime.cpp)
 add_executable(primitive_excavator_follow_waypoints src/Excavator/primitive_excavator_follow_waypoints.cpp)
 add_executable(primitive_excavator_navigate_anywhere src/Excavator/primitive_excavator_navigate_anywhere.cpp)
 add_executable(primitive_excavator_navigate_through_poses src/Excavator/primitive_excavator_navigate_through_poses.cpp)
 
 add_executable(primitive_wait_for_ur src/common/wait_for_ur.cpp)
 
+add_library(excavator_pose_converter SHARED src/Excavator/lib/excavator_pose_converter.cpp)
+target_include_directories(excavator_pose_converter PUBLIC include)
 
 set(TARGETS
   primitive_bulldozer_blade_control
@@ -100,17 +106,20 @@ set(TARGETS
   primitive_crawlerdump_release_soil
   primitive_crawlerdump_swing
   primitive_crawlerdump_swing_align_to_heading
-  primitive_excavator_change_pose
-  primitive_excavator_level
-  primitive_excavator_gather
+  # assist_excavation_pose_to_joint_angles
   primitive_excavator_change_pose_plan
-  primitive_excavator_excavate_simple_plan
-  primitive_excavator_excavate_simple
-  primitive_excavator_release_simple
+  primitive_excavator_change_pose_execute_from_plan
+  primitive_excavator_change_pose_execute_from_plan_retime
   primitive_excavator_follow_waypoints
   primitive_excavator_navigate_anywhere
   primitive_excavator_navigate_through_poses
   primitive_wait_for_ur
+)
+
+ament_target_dependencies(primitive_excavator_change_pose_execute_from_plan_retime
+  srdfdom
+  moveit_core
+  moveit_ros_planning
 )
 
 set(COMMON_INCLUDE_DIRS
@@ -155,6 +164,9 @@ target_include_directories(${target} PUBLIC ${COMMON_INCLUDE_DIRS})
   target_link_libraries(${target} ${COMMON_LIBS})
 endforeach()
 
+# Link excavator_pose_converter to specific excavator targets
+target_link_libraries(primitive_excavator_change_pose_plan excavator_pose_converter)
+
 ament_target_dependencies(${PROJECT_NAME} ${dependencies_cpp})
 
 install(TARGETS ${TARGETS}
@@ -166,7 +178,14 @@ install(DIRECTORY include/
 )
 
 install(
-  TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
+  TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
+
+install(
+  TARGETS excavator_pose_converter
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)

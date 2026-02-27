@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LEAF_NODE_EXCAVATOR_HPP_
-#define LEAF_NODE_EXCAVATOR_HPP_
+#ifndef LEAF_NODE_EXCAVATOR_ASSIST_HPP_
+#define LEAF_NODE_EXCAVATOR_ASSIST_HPP_
 
 #include <chrono>
 #include <functional>
@@ -33,24 +33,20 @@
 using namespace BT;
 using namespace std::chrono_literals;
 
-class LeafNodeExcavator : public LeafNodeBase
+class LeafNodeExcavatorAssist : public LeafNodeBase
 {
 public:
-  inline LeafNodeExcavator(const std::string& name, const NodeConfiguration& config)
-    : LeafNodeBase("leaf_node_Excavator", config){};
+  inline LeafNodeExcavatorAssist(const std::string& name, const NodeConfiguration& config)
+    : LeafNodeBase("leaf_node_excavator_assist", config){};
   
   inline static PortsList providedPorts()
   {
     return { 
       InputPort<std::string>("model_name"),
-      InputPort<std::string>("previous_target_record_name"),  // 1個前のPlanが保存されているrecord_name
       InputPort<std::string>("primitive_name"),
-      InputPort<std::string>("target_record_name")            // 今回のゴール・Plan保存先record_name
+      InputPort<std::string>("record_name") 
     };
   }
-  
-  // tick()関数をオーバーライド
-  NodeStatus tick() override;
 };
 
 #endif

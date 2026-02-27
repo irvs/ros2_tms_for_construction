@@ -1,0 +1,26 @@
+# Request - 設定したい項目（負の値やNaNは変更しないことを意味する）
+float64 goal_position_tolerance     # 目標位置の許容誤差 [m] (例: 0.01)
+float64 goal_orientation_tolerance  # 目標姿勢の許容誤差 [rad] (例: 0.01)
+float64 goal_joint_tolerance        # 目標関節角の許容誤差 [rad] (例: 0.01)
+float64 max_velocity_scaling_factor # 最大速度のスケーリング係数 [0.0-1.0] (例: 0.1)
+float64 max_acceleration_scaling_factor # 最大加速度のスケーリング係数 [0.0-1.0] (例: 0.1)
+float64 planning_time               # プランニング時間 [sec] (例: 5.0)
+int32 num_planning_attempts         # プランニング試行回数 (例: 10)
+bool allow_replanning               # リプランニングを許可するか
+string planner_id                   # プランナーID (例: "RRTConnect", "LBKPIECE", "EST", "PTP", 空文字列=""で変更なし)
+string planning_pipeline_id         # プランニングパイプラインID (例: "ompl", "pilz_industrial_motion_planner", 空文字列=""で変更なし)
+---
+# Response
+bool success
+string message
+# 設定された値を返す
+float64 goal_position_tolerance
+float64 goal_orientation_tolerance
+float64 goal_joint_tolerance
+float64 max_velocity_scaling_factor
+float64 max_acceleration_scaling_factor
+float64 planning_time
+int32 num_planning_attempts
+bool allow_replanning
+string planner_id
+string planning_pipeline_id

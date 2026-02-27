@@ -1,0 +1,37 @@
+# Goal
+uint8 CMD_PLAN_TO_POSE=0
+uint8 CMD_PLAN_TO_JOINTS=1
+uint8 CMD_PLAN_AND_EXECUTE_POSE=2
+uint8 CMD_PLAN_AND_EXECUTE_JOINTS=3
+uint8 CMD_EXECUTE_LAST_PLAN=4
+uint8 CMD_EXECUTE_PLAN=5
+uint8 CMD_PLAN_MOTION_SEQUENCE=6 
+uint8 CMD_PLAN_AND_EXECUTE_MOTION_SEQUENCE=7
+
+uint8 command
+string planning_group
+
+# CMD_PLAN_TO_POSE, CMD_PLAN_TO_JOINTS, CMD_PLAN_AND_EXECUTE_POSE, CMD_PLAN_AND_EXECUTE_JOINTS, CMD_EXECUTE_LAST_PLAN, CMD_EXECUTE_PLAN
+geometry_msgs/Pose[] pose_sequence
+tms_msg_rp/TmsRpExcavatorJointValues[] joint_values_sequence
+moveit_msgs/RobotTrajectory[] previous_pose
+moveit_msgs/RobotTrajectory[] plan
+
+# CMD_PLAN_MOTION_SEQUENCE, CMD_PLAN_AND_EXECUTE_MOTION_SEQUENCE用
+moveit_msgs/MotionSequenceItem[] motion_sequence_items
+
+# Planning constraints and scene
+moveit_msgs/Constraints constraints
+moveit_msgs/PlanningScene planning_scene
+
+---
+# Result
+bool success
+int32 moveit_error_code
+string message
+moveit_msgs/RobotTrajectory[] plan
+
+---
+# Feedback
+string state
+float32 progress

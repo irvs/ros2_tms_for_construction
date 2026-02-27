@@ -1,5 +1,5 @@
-#ifndef PRIMITIVE_NODE_BASE_HPP
-#define PRIMITIVE_NODE_BASE_HPP
+#ifndef SUBTASK_NODE_BASE_HPP
+#define SUBTASK_NODE_BASE_HPP
 
 #include <chrono>
 #include <functional>
@@ -19,14 +19,12 @@
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 
-class PrimitiveNodeBase : public rclcpp::Node
+class SubtaskNodeBase : public rclcpp::Node
 {
 public:
-  PrimitiveNodeBase(const std::string& node_name_);
+  SubtaskNodeBase(const std::string& node_name_);
 
   static mongocxx::instance inst;
-
-  // std::map<std::string, float> GetParamFromDB(std::string model_name, std::string record_name);
 
   // 統合版: 全てのパラメータ型を扱える関数
   std::map<std::string, std::string> GetParamFromDBAsJson(std::string model_name, std::string record_name);
@@ -60,7 +58,7 @@ static inline std::string bson_type_name(bsoncxx::type t) {
 }
 
 // 統合版: 全てのパラメータ型（配列、ドキュメント、スカラー値）をJSON文字列として取得
-inline std::map<std::string, std::string> PrimitiveNodeBase::GetParamFromDBAsJson(std::string model_name, std::string record_name) {
+inline std::map<std::string, std::string> SubtaskNodeBase::GetParamFromDBAsJson(std::string model_name, std::string record_name) {
   mongocxx::client client{ mongocxx::uri{ "mongodb://localhost:27017" } };
   mongocxx::database db = client["rostmsdb"];
   mongocxx::collection collection = db["parameter"];
@@ -115,7 +113,7 @@ inline std::map<std::string, std::string> PrimitiveNodeBase::GetParamFromDBAsJso
 
 // This function is to get array-type parameters from the database. (This function only supports 2D arrays.)
 template <typename K, typename T>
-std::map<K, T> PrimitiveNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool>) {
+std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::pair<std::string, std::string>>, bool>) {
   mongocxx::client client{ mongocxx::uri{ "mongodb://localhost:27017" } };
   mongocxx::database db = client["rostmsdb"];
   mongocxx::collection collection = db["parameter"];
@@ -225,7 +223,7 @@ std::map<K, T> PrimitiveNodeBase::CustomGetParamFromDB(std::string model_name, s
 }
 // This function is to get non-array-type parameters from the database.
 template <typename K, typename T>
-std::map<K, T> PrimitiveNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::string>, bool>) {
+std::map<K, T> SubtaskNodeBase::CustomGetParamFromDB(std::string model_name, std::string record_name, std::enable_if_t<std::is_same_v<K, std::string>, bool>) {
   mongocxx::client client{ mongocxx::uri{ "mongodb://localhost:27017" } };
   mongocxx::database db = client["rostmsdb"];
   mongocxx::collection collection = db["parameter"];
@@ -289,7 +287,7 @@ std::map<K, T> PrimitiveNodeBase::CustomGetParamFromDB(std::string model_name, s
 }
 
 template <typename T>
-bool PrimitiveNodeBase::CustomUpdateParamInDB(std::string model_name, std::string record_name, const std::string& target_key, const std::vector<T>& new_values)
+bool SubtaskNodeBase::CustomUpdateParamInDB(std::string model_name, std::string record_name, const std::string& target_key, const std::vector<T>& new_values)
 {
   try {
     mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
@@ -323,13 +321,6 @@ bool PrimitiveNodeBase::CustomUpdateParamInDB(std::string model_name, std::strin
     update_builder << bsoncxx::builder::stream::close_document;
 
     auto result = collection.update_one(filter, update_builder.view());
-    if (result) {
-      RCLCPP_INFO(this->get_logger(),
-        "update_one: matched=%lld modified=%lld upserted=%s",
-        (long long)result->matched_count(),
-        (long long)result->modified_count(),
-        result->upserted_id() ? "yes" : "no");
-    }
 
     if (result && result->modified_count() > 0) {
       RCLCPP_INFO(this->get_logger(), "Successfully updated \"%s\" field.", target_key.c_str());
@@ -345,7 +336,7 @@ bool PrimitiveNodeBase::CustomUpdateParamInDB(std::string model_name, std::strin
 }
 
 // JSON文字列を直接MongoDBに保存する関数
-inline bool PrimitiveNodeBase::UpdateParamInDBFromJson(std::string model_name, std::string record_name, const std::string& target_key, const std::string& json_str)
+inline bool SubtaskNodeBase::UpdateParamInDBFromJson(std::string model_name, std::string record_name, const std::string& target_key, const std::string& json_str)
 {
   try {
     mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
@@ -364,10 +355,7 @@ inline bool PrimitiveNodeBase::UpdateParamInDBFromJson(std::string model_name, s
                    << target_key << bson_value
                    << bsoncxx::builder::stream::close_document;
 
-    mongocxx::options::update update_options;
-    update_options.upsert(true);
-
-    auto result = collection.update_one(filter, update_builder.view(), update_options);
+    auto result = collection.update_one(filter, update_builder.view());
 
     if (result && result->modified_count() > 0) {
       RCLCPP_INFO(this->get_logger(), "Successfully updated \"%s\" field from JSON.", target_key.c_str());
@@ -382,4 +370,4 @@ inline bool PrimitiveNodeBase::UpdateParamInDBFromJson(std::string model_name, s
   }
 }
 
-#endif // PRIMITIVE_NODE_BASE_HPP
+#endif // SUBTASK_NODE_BASE_HPP

@@ -2,6 +2,7 @@
 string model_name
 string record_name
 string read_direction
+string previous_target_record_name  # オプション: 1個前のPlanが保存されているrecord_name（空文字列の場合は使用しない）
 ---
 # Result
 bool result

@@ -74,24 +74,18 @@ def generate_launch_description():
             Node(
                   package='tms_ts_primitive', 
                   executable='primitive_excavator_change_pose',
+                  executable='primitive_excavator_change_pose_plan',
+                  output='screen',
+                  namespace = 'zx200'),   
+            Node(
+                  package='tms_ts_primitive',
+                  executable='primitive_excavator_change_pose_execute_from_plan',
                   output='screen',
                   parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   namespace = 'zx200'),
             Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_excavator_excavate_simple',
-                  output='screen',
-                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-                  namespace = 'zx200'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_excavator_excavate_simple_plan',
-                  output='screen',
-                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-                  namespace = 'zx200'),
-            Node(
-                  package='tms_ts_primitive', 
-                  executable='primitive_excavator_release_simple',
+                  package='tms_ts_primitive',
+                  executable='primitive_excavator_change_pose_execute_from_plan_retime',
                   output='screen',
                   parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   namespace = 'zx200'),
@@ -113,14 +107,11 @@ def generate_launch_description():
                   output='screen',
                   parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   namespace = 'zx200'),
-
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(tms_if_for_opera_excavator_path),
-                launch_arguments={
-                    'robot_name': 'zx200',
-                    'use_sim_time': LaunchConfiguration('use_sim_time')
-                }.items(),
-            ),
+            # Node(
+            #       package='tms_ts_subtask',
+            #       executable='subtask_excavation_retract_arm',
+            #       output='screen',
+            #       namespace = 'zx200'),
             
             # sample ###
             #ic120用

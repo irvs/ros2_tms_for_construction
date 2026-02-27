@@ -1,0 +1,32 @@
+# Request - 何を取得するか指定
+bool get_joint_limits      # 関節制限情報を取得
+bool get_current_state     # 現在の状態を取得
+bool get_configuration     # 現在の設定値を取得
+---
+# Response
+
+# === Joint Limits (get_joint_limits=true の場合のみ有効) ===
+string[] joint_names
+float64[] min_positions
+float64[] max_positions
+float64[] max_velocities
+float64[] max_accelerations
+
+# === Current State (get_current_state=true の場合のみ有効) ===
+sensor_msgs/JointState joint_states
+geometry_msgs/Pose current_ee_pose
+
+# === Configuration (get_configuration=true の場合のみ有効) ===
+float64 goal_position_tolerance
+float64 goal_orientation_tolerance
+float64 goal_joint_tolerance
+float64 max_velocity_scaling_factor
+float64 max_acceleration_scaling_factor
+float64 planning_time
+int32 num_planning_attempts
+string planner_id
+string planning_pipeline_id
+
+# === Common ===
+bool success
+string message

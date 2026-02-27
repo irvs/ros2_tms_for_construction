@@ -27,25 +27,30 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(moveit_msgs REQUIRED)
 
 set(msg_files
   "msg/TmsRpErrorCodes.msg"
-  "msg/TmsRpExcavatorPositionWithAngle.msg"
+  "msg/TmsRpExcavatorJointValues.msg"
 )
 
 set(action_files
   "action/TmsRpBulldozerBlade.action"
-  "action/TmsRpExcavatorChangePose.action"
-  "action/TmsRpExcavatorExcavateSimple.action"
-  "action/TmsRpExcavatorReleaseSimple.action"
+  "action/TmsRpExcavator.action"
   "action/TmsRpCrawlerDumpDumpAngle.action"
   "action/TmsRpCrawlerDumpSwingAngle.action"
+)
+
+set(srv_files
+  "srv/TmsRpExcavatorParamSet.srv"
+  "srv/TmsRpExcavatorParamGet.srv"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_files}
   ${action_files}
-  DEPENDENCIES builtin_interfaces std_msgs trajectory_msgs geometry_msgs
+  ${srv_files}
+  DEPENDENCIES builtin_interfaces std_msgs trajectory_msgs geometry_msgs moveit_msgs
 )
 
 ament_package()
