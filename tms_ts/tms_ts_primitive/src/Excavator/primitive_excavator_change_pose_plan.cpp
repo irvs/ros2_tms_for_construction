@@ -588,11 +588,11 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         goal_msg.motion_sequence_items.push_back(item);
         waypoint_index++;
       }
-      finalize_motion_sequence_items(goal_msg.motion_sequence_items);
       if(!binary_search_extreme_joint_value_for_motion_sequence(goal_msg, goal_msg.motion_sequence_items, *param_response)) {
         handle_error("Failed to find valid joint values within limits for motion sequence");
         return;
       }
+      finalize_motion_sequence_items(goal_msg.motion_sequence_items);
       
       RCLCPP_INFO(this->get_logger(), "Created %zu motion sequence items", 
                   goal_msg.motion_sequence_items.size());
@@ -1674,7 +1674,7 @@ bool PrimitiveExcavatorChangePosePlan::resolve_joint_state_before_recursive(
   base_pt.positions = current_joint_states.position;
 
   // index<=0: current
-  if (index <= 0) {
+  if (index == 0) {
     cache[index] = base_pt;
     out_pt = base_pt;
     return true;
@@ -1682,9 +1682,7 @@ bool PrimitiveExcavatorChangePosePlan::resolve_joint_state_before_recursive(
 
   const int item_i = index - 1;
   if (item_i < 0 || item_i >= static_cast<int>(motion_sequence_items.size())) {
-    cache[index] = base_pt;
-    out_pt = base_pt;
-    return true;
+    return false;
   }
 
   const auto& joint_names_master = current_joint_states.name;
@@ -1796,17 +1794,7 @@ bool PrimitiveExcavatorChangePosePlan::plan_pose_goal_and_get_last_joint_point(
       has_ori = true;
     }
 
-    if (!has_pos && !has_ori) return false;
-    if (!has_pos) {
-      RCLCPP_WARN(this->get_logger(), "Orientation-only constraint is not supported for pose extraction");
-      return false;
-    }
-    if (!has_ori) {
-      target_pose.orientation.x = 0.0;
-      target_pose.orientation.y = 0.0;
-      target_pose.orientation.z = 0.0;
-      target_pose.orientation.w = 1.0;
-    }
+    if (!has_pos || !has_ori) return false;
   }
 
   // start_state を previous_pose (RobotTrajectory[]) で渡す
@@ -1818,7 +1806,7 @@ bool PrimitiveExcavatorChangePosePlan::plan_pose_goal_and_get_last_joint_point(
   seed_traj.joint_trajectory.points.clear();
   seed_traj.joint_trajectory.points.push_back(seed_pt);
 
-  // Plan 요청
+  // Plan 
   auto excavator_goal = TmsRpExcavator::Goal();
   excavator_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_POSE;
   excavator_goal.planning_group = planning_group_;
@@ -1930,6 +1918,23 @@ void PrimitiveExcavatorChangePosePlan::finalize_motion_sequence_items(
 
       // 足りない関節を start_state で追加
       for (size_t j = 0; j < current_joint_states_.name.size(); ++j) {
+        const bool has_joint = !gc.joint_constraints.empty();
+        const bool is_cartesian =
+            (gc.position_constraints.size() == 1) &&
+            (gc.orientation_constraints.size() == 1);
+  
+        // cartesian 目標なら joint_constraints を絶対に追加しない（混在防止）
+        if (is_cartesian) {
+          // もし既に joint が入ってたら混在なので消す（安全側）
+          if (has_joint) {
+            RCLCPP_WARN(this->get_logger(),
+                        "finalize_motion_sequence_items: cartesian goal has joint_constraints; clearing to satisfy Pilz XOR");
+            gc.joint_constraints.clear();
+          }
+          // この gc は joint の補完をしない
+          continue;
+        }
+
         const std::string& jname = current_joint_states_.name[j];
         if (jc_idx.find(jname) != jc_idx.end()) continue;
 
@@ -1954,8 +1959,17 @@ void PrimitiveExcavatorChangePosePlan::finalize_motion_sequence_items(
       double& arm    = gc.joint_constraints[itA->second].position;
       double& bucket = gc.joint_constraints[itK->second].position;
 
+      RCLCPP_INFO(this->get_logger(),
+                  "Item %zu: boom=%f, arm=%f, bucket=%f (trigger=%f)",
+                  item_i, boom, arm, bucket, trigger);
       if (std::abs(bucket - trigger) <= 1e-9) {
+        RCLCPP_INFO(this->get_logger(),
+                    "Item %zu: bucket is at trigger! Adjusting bucket to level it. (boom=%f, arm=%f, offset=%f)",
+                    item_i, boom, arm, offset);
         bucket = -(boom + arm) + offset;
+        RCLCPP_INFO(this->get_logger(),
+                    "Item %zu: bucket adjusted to %f to level it with boom and arm",
+                    item_i, bucket);
       }
     }
   }

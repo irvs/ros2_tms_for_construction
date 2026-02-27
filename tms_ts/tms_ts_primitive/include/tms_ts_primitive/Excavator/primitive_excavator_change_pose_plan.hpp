@@ -101,7 +101,7 @@ private:
     std::vector<moveit_msgs::msg::MotionSequenceItem>& items,
     double trigger = 888.0,
     double offset = M_PI,
-    const std::string& boom_name = "boom_joint",
+    const std::string& boomname = "boom_joint",
     const std::string& arm_name = "arm_joint",
     const std::string& bucket_name = "bucket_joint");
 
