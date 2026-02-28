@@ -227,13 +227,13 @@ def generate_launch_description():
                   remappings=[('planwritten', '/planwritten')]
                   ), 
             
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(tms_if_for_opera_crawlerdump_path),
-                launch_arguments={
-                    'robot_name': 'mst110cr',
-                    'use_sim_time': LaunchConfiguration('use_sim_time')
-                }.items(),
-            ),
+            # IncludeLaunchDescription(
+            #     PythonLaunchDescriptionSource(tms_if_for_opera_crawlerdump_path),
+            #     launch_arguments={
+            #         'robot_name': 'mst110cr',
+            #         'use_sim_time': LaunchConfiguration('use_sim_time')
+            #     }.items(),
+            # ),
 
             
             #D37PXI
@@ -262,13 +262,13 @@ def generate_launch_description():
                   parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   namespace='d37pxi_24'),     
 
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(tms_if_for_opera_bulldozer_path),
-                launch_arguments={
-                    'robot_name': 'd37pxi_24',
-                    'use_sim_time': LaunchConfiguration('use_sim_time')
-                }.items(),
-            ),            
+            # IncludeLaunchDescription(
+            #     PythonLaunchDescriptionSource(tms_if_for_opera_bulldozer_path),
+            #     launch_arguments={
+            #         'robot_name': 'd37pxi_24',
+            #         'use_sim_time': LaunchConfiguration('use_sim_time')
+            #     }.items(),
+            # ),            
 
             # Node(
             #       package='tms_sp_sensing', 
