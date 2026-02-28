@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tms_ts_primitive/Excavator/primitive_excavator_change_pose_execute_from_plan.hpp"
+#include "tms_ts_primitive/Excavator/primitive_excavator_change_pose_execute_from_plan_retime.hpp"
 #include <glog/logging.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/robot_state/robot_state.h>
@@ -104,6 +104,17 @@ bool scale_trajectory_time(moveit_msgs::msg::RobotTrajectory& traj, double time_
 {
   if (time_scale <= 0.0) return false;
 
+  if (time_scale == 1.0) {
+    // スケーリングなしなら何もしない
+    return true;
+  }
+
+  for (auto& p : traj.joint_trajectory.points) {
+    p.velocities.clear();
+    p.accelerations.clear();
+    p.effort.clear();
+  }
+
   auto& jt = traj.joint_trajectory;
   if (jt.points.empty()) return true;
 
@@ -163,6 +174,17 @@ PrimitiveExcavatorChangePoseExecuteFromPlan::PrimitiveExcavatorChangePoseExecute
   {
     RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
   }
+
+  traj_action_client_ = rclcpp_action::create_client<traj_recorder_msgs::action::TrajFollow>(this, "traj_follow_record", nullptr, options_client);
+  if (traj_action_client_->wait_for_action_server())
+  {
+    RCLCPP_INFO(this->get_logger(), "Trajectory action server is ready");
+  }
+  else
+  {
+    RCLCPP_ERROR(this->get_logger(), "Trajectory action server not available after waiting");
+  }
+
 }
 
 rclcpp_action::GoalResponse PrimitiveExcavatorChangePoseExecuteFromPlan::handle_goal(
@@ -251,14 +273,16 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
     return;
   }
 
-  double time_scale = get_scale_from_db_json(param_from_db_, "time_scale", "time_scale", 1.0);
+  double time_scale = get_scale_from_db_json(param_from_db_, "time_scale", "time_scale", 0.0);
+  double velocity_scale = get_scale_from_db_json(param_from_db_, "velocity_scale", "velocity_scale", 0.0);
+  double acceleration_scale = get_scale_from_db_json(param_from_db_, "acceleration_scale", "acceleration_scale", 0.0);
 
-  if (time_scale < 1.0) {
+  if (time_scale < 1.0 && velocity_scale > 1.0 && acceleration_scale > 1.0) {
     RCLCPP_ERROR(this->get_logger(), "Time scaling from DB is less than 1.0: time_scale=%.3f. This may cause the trajectory to be executed faster than planned, which can be dangerous. Please ensure that time_scale is set appropriately.", time_scale);
     return;
   }
 
-  if (time_scale <= 0.0) {
+  if (time_scale <= 0.0 && velocity_scale <= 0.0 && acceleration_scale <= 0.0) {
     RCLCPP_ERROR(this->get_logger(), "Invalid time_scale from DB: %.3f. Must be > 0.", time_scale);
     return;
   }
@@ -488,11 +512,6 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
         }
       }
 
-      for (auto& p : robot_trajectory.joint_trajectory.points) {
-        p.velocities.clear();
-        p.accelerations.clear();
-        p.effort.clear();
-      }
       auto& pts = robot_trajectory.joint_trajectory.points;
       if (!pts.empty()) {
         RCLCPP_INFO(this->get_logger(), "[TIME BEFORE] tN=%.6f (N=%zu)",
@@ -530,6 +549,41 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
     handle_error("Failed to parse plan from DB");
     return;
   }
+
+  traj_recorder_msgs::action::TrajFollow::Goal traj_goal;
+  traj_goal.plan = goal_msg.plan;
+  traj_goal.time_scaling = time_scale;
+  traj_goal.velocity_scaling = velocity_scale;
+  traj_goal.acceleration_scaling = acceleration_scale;
+
+  auto traj_send_opts = rclcpp_action::Client<traj_recorder_msgs::action::TrajFollow>::SendGoalOptions();
+  traj_send_opts.goal_response_callback =
+    [this](const rclcpp_action::ClientGoalHandle<traj_recorder_msgs::action::TrajFollow>::SharedPtr& gh)
+    {
+      if (!gh) {
+        RCLCPP_ERROR(this->get_logger(), "traj_follow_record goal rejected");
+        return;
+      }
+      RCLCPP_INFO(this->get_logger(), "traj_follow_record goal accepted");
+      traj_goal_handle_ = gh;  // ★キャンセル用に保持
+    };
+
+  traj_send_opts.feedback_callback =
+    [this](auto, const std::shared_ptr<const traj_recorder_msgs::action::TrajFollow::Feedback> fb)
+    {
+      RCLCPP_INFO(this->get_logger(), "traj_follow_record: %s", fb->status.c_str());
+    };
+
+  // （optional）resultをログするだけ
+  traj_send_opts.result_callback =
+    [this](const rclcpp_action::ClientGoalHandle<traj_recorder_msgs::action::TrajFollow>::WrappedResult& res)
+    {
+      RCLCPP_INFO(this->get_logger(), "traj_follow_record finished (code=%d)",
+                  static_cast<int>(res.code));
+      traj_goal_handle_.reset();
+    };
+
+  traj_action_client_->async_send_goal(traj_goal, traj_send_opts);
 
   RCLCPP_INFO(this->get_logger(), "Sending EXECUTE_PLAN command to tms_rp_excavator");
 
@@ -607,6 +661,10 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::result_callback(const std::sha
       RCLCPP_ERROR(this->get_logger(), "Unknown result code");
       break;
   }
+  if (traj_goal_handle_) {
+    traj_action_client_->async_cancel_goal(traj_goal_handle_);
+  }
+
 }
 /*******************/
 

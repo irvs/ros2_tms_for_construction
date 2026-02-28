@@ -39,6 +39,8 @@ find_package(moveit_core REQUIRED)
 # find_package(moveit_robot_model_loader REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
 
+find_package(traj_recorder_msgs REQUIRED)
+
 
 add_library(${PROJECT_NAME} SHARED
   src/leaf_node_base.cpp
@@ -126,6 +128,7 @@ ament_target_dependencies(primitive_excavator_change_pose_execute_from_plan_reti
   srdfdom
   moveit_core
   moveit_ros_planning
+  traj_recorder_msgs
 )
 
 set(COMMON_INCLUDE_DIRS
