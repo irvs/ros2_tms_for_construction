@@ -162,8 +162,8 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
   // plannerを指定
   tms_msg_rp::srv::TmsRpExcavatorParamSet::Response::SharedPtr set_param_response;
   auto set_param_request = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamSet::Request>();
-  set_param_request->planning_pipeline_id = "pilz_industrial_motion_planner";
-  set_param_request->planner_id = "PTP";
+  set_param_request->planning_pipeline_id = "ompl";
+  set_param_request->planner_id = "RRTConnectkConfigDefault";
   auto set_param_future = param_set_client_->async_send_request(set_param_request);
   auto set_status = set_param_future.wait_for(std::chrono::seconds(5));
   if (set_status != std::future_status::ready) {
@@ -176,6 +176,92 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
       RCLCPP_INFO(this->get_logger(), "Planner parameters set successfully");
     }
   }
+
+  // データベースから速度・加速度スケーリングを取得して反映
+  auto it_vel = param_from_db_.find("velocity_scale");
+  if (it_vel != param_from_db_.end()) {
+    auto doc_velocity_scaling = bsoncxx::from_json(it_vel->second);
+    auto view_velocity_scaling = doc_velocity_scaling.view();
+    double velocity_scaling =
+        get_numeric_value(view_velocity_scaling["velocity_scale"]);
+
+    if (velocity_scaling <= 0.0 || velocity_scaling > 1.0) {
+      RCLCPP_ERROR(this->get_logger(),
+                  "Invalid velocity_scale from DB: %.3f. Must be in (0, 1].",
+                  velocity_scaling);
+      return;
+    }
+    velocity_scaling_ = velocity_scaling;
+  }
+  auto it_acc = param_from_db_.find("acceleration_scale");
+  if (it_acc != param_from_db_.end()) {
+    auto doc_acceleration_scaling = bsoncxx::from_json(it_acc->second);
+    auto view_acceleration_scaling = doc_acceleration_scaling.view();
+    double acceleration_scaling =
+        get_numeric_value(view_acceleration_scaling["acceleration_scale"]);
+
+    if (acceleration_scaling <= 0.0 || acceleration_scaling > 1.0) {
+      RCLCPP_ERROR(this->get_logger(),
+                  "Invalid acceleration_scale from DB: %.3f. Must be in (0, 1].",
+                  acceleration_scaling);
+      return;
+    }
+    acceleration_scaling_ = acceleration_scaling;
+  }
+  // toleranceと速度を設定
+  auto param_request_config = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamGet::Request>();
+  param_request_config->get_joint_limits = false;
+  param_request_config->get_current_state = false;
+  param_request_config->get_configuration = true;
+  auto param_future_config = param_get_client_->async_send_request(param_request_config);
+  auto status_config = param_future_config.wait_for(std::chrono::seconds(10));
+  if (status_config != std::future_status::ready) {
+    RCLCPP_WARN(this->get_logger(), "Failed to get parameters from service (timeout), using default values");
+  } else {
+    auto param_response = param_future_config.get();
+    if (param_response->success) {
+      RCLCPP_INFO(this->get_logger(), "Current goal tolerances:");
+      RCLCPP_INFO(this->get_logger(), "  Position: %.4f m", param_response->goal_position_tolerance);
+      RCLCPP_INFO(this->get_logger(), "  Orientation: %.4f rad (%.2f deg)", 
+                  param_response->goal_orientation_tolerance,
+                  param_response->goal_orientation_tolerance * 180.0 / M_PI);
+      RCLCPP_INFO(this->get_logger(), "  Joint: %.4f rad (%.2f deg)", 
+                  param_response->goal_joint_tolerance,
+                  param_response->goal_joint_tolerance * 180.0 / M_PI);
+
+      auto param_set_request = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamSet::Request>();
+      param_set_request->goal_position_tolerance = 0.5; 
+      param_set_request->goal_orientation_tolerance = 0.5; 
+
+      param_set_request->max_velocity_scaling_factor = velocity_scaling_;
+      param_set_request->max_acceleration_scaling_factor = acceleration_scaling_;
+      
+      auto param_set_future = param_set_client_->async_send_request(param_set_request);
+      auto set_status = param_set_future.wait_for(std::chrono::seconds(5));
+      
+      if (set_status == std::future_status::ready) {
+        auto param_set_response = param_set_future.get();
+        if (param_set_response->success) {
+          RCLCPP_INFO(this->get_logger(), "Updated goal tolerances:");
+          RCLCPP_INFO(this->get_logger(), "  Position: %.4f m", param_set_response->goal_position_tolerance);
+          RCLCPP_INFO(this->get_logger(), "  Orientation: %.4f rad (%.2f deg)", 
+                      param_set_response->goal_orientation_tolerance,
+                      param_set_response->goal_orientation_tolerance * 180.0 / M_PI);
+          RCLCPP_INFO(this->get_logger(), "  Joint: %.4f rad (%.2f deg)", 
+                      param_set_response->goal_joint_tolerance,
+                      param_set_response->goal_joint_tolerance * 180.0 / M_PI);
+        } else {
+          RCLCPP_WARN(this->get_logger(), "Failed to set tolerances: %s", param_set_response->message.c_str());
+        }
+      } else {
+        RCLCPP_WARN(this->get_logger(), "Timeout setting tolerances");
+      }
+    } else {
+      RCLCPP_WARN(this->get_logger(), "Parameter service returned failure: %s", 
+                  param_response->message.c_str());
+    }
+  }
+
 
   tms_msg_rp::srv::TmsRpExcavatorParamGet::Response::SharedPtr param_response;
 
@@ -358,63 +444,6 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         
         goal_msg.pose_sequence.push_back(target_pose);
         RCLCPP_INFO(this->get_logger(), "  Target pose: (%.2f, %.2f, %.2f)", x, y, z);
-
-        auto param_request = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamGet::Request>();
-        param_request->get_joint_limits = false;
-        param_request->get_current_state = false;
-        param_request->get_configuration = true;
-        
-        auto param_future = param_get_client_->async_send_request(param_request);
-        
-        // サービスコールの完了を待つ
-        auto status = param_future.wait_for(std::chrono::seconds(10));
-        if (status != std::future_status::ready) {
-          RCLCPP_WARN(this->get_logger(), "Failed to get parameters from service (timeout), using default values");
-        } else {
-          auto param_response = param_future.get();
-          
-          if (param_response->success) {
-            
-            // 許容誤差も取得
-            RCLCPP_INFO(this->get_logger(), "Current goal tolerances:");
-            RCLCPP_INFO(this->get_logger(), "  Position: %.4f m", param_response->goal_position_tolerance);
-            RCLCPP_INFO(this->get_logger(), "  Orientation: %.4f rad (%.2f deg)", 
-                        param_response->goal_orientation_tolerance,
-                        param_response->goal_orientation_tolerance * 180.0 / M_PI);
-            RCLCPP_INFO(this->get_logger(), "  Joint: %.4f rad (%.2f deg)", 
-                        param_response->goal_joint_tolerance,
-                        param_response->goal_joint_tolerance * 180.0 / M_PI);
-
-            auto param_set_request = std::make_shared<tms_msg_rp::srv::TmsRpExcavatorParamSet::Request>();
-            param_set_request->goal_position_tolerance = 0.1; 
-            param_set_request->goal_orientation_tolerance = 0.1; 
-            // param_set_request->goal_joint_tolerance = 0.1; 
-            
-            auto param_set_future = param_set_client_->async_send_request(param_set_request);
-            auto set_status = param_set_future.wait_for(std::chrono::seconds(5));
-            
-            if (set_status == std::future_status::ready) {
-              auto param_set_response = param_set_future.get();
-              if (param_set_response->success) {
-                RCLCPP_INFO(this->get_logger(), "Updated goal tolerances:");
-                RCLCPP_INFO(this->get_logger(), "  Position: %.4f m", param_set_response->goal_position_tolerance);
-                RCLCPP_INFO(this->get_logger(), "  Orientation: %.4f rad (%.2f deg)", 
-                            param_set_response->goal_orientation_tolerance,
-                            param_set_response->goal_orientation_tolerance * 180.0 / M_PI);
-                RCLCPP_INFO(this->get_logger(), "  Joint: %.4f rad (%.2f deg)", 
-                            param_set_response->goal_joint_tolerance,
-                            param_set_response->goal_joint_tolerance * 180.0 / M_PI);
-              } else {
-                RCLCPP_WARN(this->get_logger(), "Failed to set tolerances: %s", param_set_response->message.c_str());
-              }
-            } else {
-              RCLCPP_WARN(this->get_logger(), "Timeout setting tolerances");
-            }
-          } else {
-            RCLCPP_WARN(this->get_logger(), "Parameter service returned failure: %s", 
-                        param_response->message.c_str());
-          }
-        }
             
         } else {
             handle_error("Unknown waypoint type: " + type);
