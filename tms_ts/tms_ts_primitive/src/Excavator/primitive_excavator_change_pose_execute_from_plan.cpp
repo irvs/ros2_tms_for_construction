@@ -85,12 +85,39 @@ rclcpp_action::GoalResponse PrimitiveExcavatorChangePoseExecuteFromPlan::handle_
 {
   used_model_name_ = goal->model_name;
   used_record_name_ = goal->record_name;
-  param_from_db_ = GetParamFromDBAsJson(goal->model_name, goal->record_name);
-  if (param_from_db_.empty())
-  {
-    RCLCPP_ERROR(this->get_logger(), "Failed to get parameters from DB");
+  
+  // record_nameをカンマ区切りで分解
+  std::vector<std::string> record_names;
+  std::stringstream ss(goal->record_name);
+  std::string record_name;
+  while (std::getline(ss, record_name, ',')) {
+    // 前後の空白を削除
+    record_name.erase(0, record_name.find_first_not_of(" \t\n\r\f\v"));
+    record_name.erase(record_name.find_last_not_of(" \t\n\r\f\v") + 1);
+    if (!record_name.empty()) {
+      record_names.push_back(record_name);
+    }
+  }
+  
+  if (record_names.empty()) {
+    RCLCPP_ERROR(this->get_logger(), "No valid record names provided");
     return rclcpp_action::GoalResponse::REJECT;
   }
+  
+  RCLCPP_INFO(this->get_logger(), "Processing %zu record names", record_names.size());
+  
+  // 各record_nameからパラメータを取得
+  params_from_db_.clear();
+  for (const auto& rname : record_names) {
+    auto params = GetParamFromDBAsJson(goal->model_name, rname);
+    if (params.empty()) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to get parameters from DB for record: %s", rname.c_str());
+      return rclcpp_action::GoalResponse::REJECT;
+    }
+    params_from_db_.push_back(params);
+    RCLCPP_INFO(this->get_logger(), "Loaded parameters for record: %s", rname.c_str());
+  }
+  
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
@@ -124,10 +151,6 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
       goal_handle->abort(result);
       RCLCPP_ERROR(this->get_logger(), "%s", message.c_str());
     }
-    else
-    {
-      RCLCPP_INFO(this->get_logger(), "Goal is not active");
-    }
   };
   
   if (!action_client_->action_server_is_ready())
@@ -136,21 +159,22 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
     return;
   }
 
-  RCLCPP_INFO(this->get_logger(), "Getting plan from DB");
-  RCLCPP_INFO(this->get_logger(), "param_from_db_ contents:");
-  for (const auto& [key, value] : param_from_db_)
-  {
-    RCLCPP_INFO(this->get_logger(), "  %s: %s", key.c_str(), value.c_str());
-  }
+  RCLCPP_INFO(this->get_logger(), "Loading plans from %zu record(s)", params_from_db_.size());
 
   // TmsRpExcavatorのゴールメッセージを作成
   auto goal_msg = TmsRpExcavator::Goal();
   goal_msg.command = TmsRpExcavator::Goal::CMD_EXECUTE_PLAN;
   
-  // planning_groupを取得
-  if (param_from_db_.count("planning_group")) {
+  // 最初のレコードからplanning_groupを取得
+  if (params_from_db_.empty()) {
+    handle_error("No parameters loaded from database");
+    return;
+  }
+  
+  const auto& first_param = params_from_db_[0];
+  if (first_param.count("planning_group")) {
     try {
-      auto doc = bsoncxx::from_json(param_from_db_["planning_group"]);
+      auto doc = bsoncxx::from_json(first_param.at("planning_group"));
       auto view = doc.view();
       if (view["planning_group"] && view["planning_group"].type() == bsoncxx::type::k_string) {
         goal_msg.planning_group = view["planning_group"].get_string().value.to_string();
@@ -166,49 +190,31 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
     return;
   }
 
-  // データベースからplanを取得してRobotTrajectory配列に変換
+  // 各record_nameからplanを取得してRobotTrajectory配列に変換
   try {
-    if (!param_from_db_.count("plan")) {
-      RCLCPP_ERROR(this->get_logger(), "Missing required parameter: plan");
-      handle_error("Missing required parameter: plan");
-      return;
-    }
-
-    auto doc = bsoncxx::from_json(param_from_db_["plan"]);
-    auto view = doc.view();
-    
-    if (!view["plan"]) {
-      RCLCPP_ERROR(this->get_logger(), "plan field not found in JSON");
-      handle_error("plan field not found");
-      return;
-    }
-    
-    auto plan_element = view["plan"];
-    
-    if (plan_element.type() != bsoncxx::type::k_document) {
-      RCLCPP_ERROR(this->get_logger(), "plan must be a document");
-      handle_error("plan must be a document");
-      return;
-    }
-    
-    auto plan_doc = plan_element.get_document().value;
-    
-    // 各プラン（"1", "2", "3"...）を処理
-    for (auto&& plan_element : plan_doc) {
-      std::string plan_key = plan_element.key().to_string();
-      RCLCPP_INFO(this->get_logger(), "Processing plan: %s", plan_key.c_str());
+    for (size_t record_idx = 0; record_idx < params_from_db_.size(); ++record_idx) {
+      const auto& param_from_db = params_from_db_[record_idx];
       
-      if (plan_element.type() != bsoncxx::type::k_document) {
-        RCLCPP_WARN(this->get_logger(), "Plan element %s is not a document, skipping", plan_key.c_str());
+      if (!param_from_db.count("plan")) {
+        RCLCPP_WARN(this->get_logger(), "Record %zu missing plan field, skipping", record_idx);
         continue;
       }
+
+      auto doc = bsoncxx::from_json(param_from_db.at("plan"));
+      auto view = doc.view();
       
-      auto trajectory_doc = plan_element.get_document().value;
+      // "plan"キーでラップされているかチェック
+      auto plan_view = view;
+      if (view["plan"] && view["plan"].type() == bsoncxx::type::k_document) {
+        plan_view = view["plan"].get_document().value;
+      }
+      
+      // 単一のRobotTrajectoryとして読み込む
       moveit_msgs::msg::RobotTrajectory robot_trajectory;
       
       // joint_trajectoryの変換
-      if (trajectory_doc["joint_trajectory"]) {
-        auto joint_traj_doc = trajectory_doc["joint_trajectory"].get_document().value;
+      if (plan_view["joint_trajectory"]) {
+        auto joint_traj_doc = plan_view["joint_trajectory"].get_document().value;
         
         // joint_names
         if (joint_traj_doc["joint_names"]) {
@@ -268,8 +274,8 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
       }
       
       // multi_dof_joint_trajectoryの変換
-      if (trajectory_doc["multi_dof_joint_trajectory"]) {
-        auto multi_dof_doc = trajectory_doc["multi_dof_joint_trajectory"].get_document().value;
+      if (plan_view["multi_dof_joint_trajectory"]) {
+        auto multi_dof_doc = plan_view["multi_dof_joint_trajectory"].get_document().value;
         
         // joint_names
         if (multi_dof_doc["joint_names"]) {
@@ -386,27 +392,34 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
         }
       }
       
-      goal_msg.plan.push_back(robot_trajectory);
-      RCLCPP_INFO(this->get_logger(), "Added plan %s with %zu joint trajectory points", 
-                  plan_key.c_str(), 
-                  robot_trajectory.joint_trajectory.points.size());
+      // Validate trajectory has data
+      if (robot_trajectory.joint_trajectory.joint_names.empty() && 
+          robot_trajectory.multi_dof_joint_trajectory.joint_names.empty()) {
+        RCLCPP_WARN(this->get_logger(), "Record %zu has empty trajectory, skipping", record_idx);
+        continue;
+      }
+      
+      goal_msg.plans.push_back(robot_trajectory);
+      RCLCPP_INFO(this->get_logger(), "Loaded plan from record %zu with %zu joint trajectory points", 
+                  record_idx, robot_trajectory.joint_trajectory.points.size());
     }
     
-    if (goal_msg.plan.empty()) {
-      RCLCPP_ERROR(this->get_logger(), "No valid plans were added");
-      handle_error("No valid plans in plan field");
+    if (goal_msg.plans.empty()) {
+      RCLCPP_ERROR(this->get_logger(), "No valid plans were loaded from any record");
+      handle_error("No valid plans loaded from database");
       return;
     }
     
-    RCLCPP_INFO(this->get_logger(), "Successfully loaded %zu plan(s) from database", goal_msg.plan.size());
+    RCLCPP_INFO(this->get_logger(), "Successfully loaded %zu plan(s) from database", goal_msg.plans.size());
 
   } catch (const std::exception& e) {
-    RCLCPP_ERROR(this->get_logger(), "Failed to parse plan: %s", e.what());
-    handle_error("Failed to parse plan from DB");
+    RCLCPP_ERROR(this->get_logger(), "Failed to parse plans: %s", e.what());
+    handle_error("Failed to parse plans from DB");
     return;
   }
 
-  RCLCPP_INFO(this->get_logger(), "Sending EXECUTE_PLAN command to tms_rp_excavator");
+  RCLCPP_INFO(this->get_logger(), "Sending EXECUTE_PLAN command with %zu trajectories to tms_rp_excavator", 
+              goal_msg.plans.size());
 
   // Send goal to TMS_IF
   auto send_goal_options = rclcpp_action::Client<TmsRpExcavator>::SendGoalOptions();

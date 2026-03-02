@@ -340,8 +340,25 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         }
         auto data_doc = waypoint_doc["data"].get_document().value;
         tms_msg_rp::msg::TmsRpExcavatorJointValues target_joint_values;
-        target_joint_values.joint_names  = current_joint_states_.name;
-        target_joint_values.joint_values = current_joint_states_.position;
+        
+        // 初期値を決定：previous_poseがあればそこから、なければcurrent_joint_states_から
+        if (!goal_msg.previous_pose.empty()) {
+          const auto& last_traj = goal_msg.previous_pose.back().joint_trajectory;
+          if (!last_traj.joint_names.empty() && !last_traj.points.empty()) {
+            target_joint_values.joint_names  = last_traj.joint_names;
+            target_joint_values.joint_values = last_traj.points.back().positions;
+            RCLCPP_INFO(this->get_logger(), "  Using previous plan's final pose as base");
+          } else {
+            target_joint_values.joint_names  = current_joint_states_.name;
+            target_joint_values.joint_values = current_joint_states_.position;
+            RCLCPP_INFO(this->get_logger(), "  Using current joint states as base");
+          }
+        } else {
+          target_joint_values.joint_names  = current_joint_states_.name;
+          target_joint_values.joint_values = current_joint_states_.position;
+          RCLCPP_INFO(this->get_logger(), "  Using current joint states as base");
+        }
+        
         for (auto&& field : data_doc) {
           std::string joint_name = field.key().to_string();
           double joint_value = get_numeric_value(field);
@@ -357,7 +374,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
           return;
         }
         level_bucket_if_trigger(target_joint_values);
-        goal_msg.joint_values_sequence.push_back(target_joint_values);
+        goal_msg.joint_values = target_joint_values;
         RCLCPP_INFO(this->get_logger(), "  Target: %zu joints specified", target_joint_values.joint_names.size());
         RCLCPP_INFO(this->get_logger(), "  Joint values:");
         for (size_t i = 0; i < target_joint_values.joint_names.size(); ++i) {
@@ -381,8 +398,25 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         }
         auto data_doc = waypoint_doc["data"].get_document().value;
         tms_msg_rp::msg::TmsRpExcavatorJointValues target_joint_values;
-        target_joint_values.joint_names  = current_joint_states_.name;
-        target_joint_values.joint_values = current_joint_states_.position;
+
+        // 初期値を決定：previous_poseがあればそこから、なければcurrent_joint_states_から
+        if (!goal_msg.previous_pose.empty()) {
+          const auto& last_traj = goal_msg.previous_pose.back().joint_trajectory;
+          if (!last_traj.joint_names.empty() && !last_traj.points.empty()) {
+            target_joint_values.joint_names  = last_traj.joint_names;
+            target_joint_values.joint_values = last_traj.points.back().positions;
+            RCLCPP_INFO(this->get_logger(), "  Using previous plan's final pose as base");
+          } else {
+            target_joint_values.joint_names  = current_joint_states_.name;
+            target_joint_values.joint_values = current_joint_states_.position;
+            RCLCPP_INFO(this->get_logger(), "  Using current joint states as base");
+          }
+        } else {
+          target_joint_values.joint_names  = current_joint_states_.name;
+          target_joint_values.joint_values = current_joint_states_.position;
+          RCLCPP_INFO(this->get_logger(), "  Using current joint states as base");
+        }
+        
         for (auto&& field : data_doc) {
           std::string joint_name = field.key().to_string();
           double joint_value = get_numeric_value(field);
@@ -394,7 +428,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
           }
         }
         level_bucket_if_trigger(target_joint_values);
-        goal_msg.joint_values_sequence.push_back(target_joint_values);
+        goal_msg.joint_values = target_joint_values;
         RCLCPP_INFO(this->get_logger(), "  Target: %zu joints specified (relative)", target_joint_values.joint_names.size());
         RCLCPP_INFO(this->get_logger(), "  Joint values:");
         for (size_t i = 0; i < target_joint_values.joint_names.size(); ++i) {
@@ -442,7 +476,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         target_pose.orientation.z = converted_pose.qz;
         target_pose.orientation.w = converted_pose.qw;
         
-        goal_msg.pose_sequence.push_back(target_pose);
+        goal_msg.pose = target_pose;
         RCLCPP_INFO(this->get_logger(), "  Target pose: (%.2f, %.2f, %.2f)", x, y, z);
             
         } else {
@@ -451,180 +485,9 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         }
       
     } else {
-      // ========== 2個以上の場合: CMD_PLAN_MOTION_SEQUENCE ==========
-      goal_msg.command = TmsRpExcavator::Goal::CMD_PLAN_MOTION_SEQUENCE;
-      RCLCPP_INFO(this->get_logger(), "===================================================");
-      RCLCPP_INFO(this->get_logger(), "  Waypoints: %zu (Multiple waypoints)", num_waypoints);
-      RCLCPP_INFO(this->get_logger(), "  Command: CMD_PLAN_MOTION_SEQUENCE");
-      RCLCPP_INFO(this->get_logger(), "  Blend radius: 0.05 rad (~2.9 deg)");
-      RCLCPP_INFO(this->get_logger(), "===================================================");
-      
-      goal_msg.motion_sequence_items.clear();
-      
-      size_t waypoint_index = 0;
-      for (auto&& waypoint_element : waypoints_array) {
-        if (waypoint_element.type() != bsoncxx::type::k_document) continue;
-        
-        auto waypoint_doc = waypoint_element.get_document().value;
-        if (!waypoint_doc["type"]) continue;
-        
-        std::string type = waypoint_doc["type"].get_string().value.to_string();
-        moveit_msgs::msg::MotionSequenceItem item;
-        item.req.group_name = planning_group_;
-        item.req.max_velocity_scaling_factor = 1.0;
-        item.req.max_acceleration_scaling_factor = 1.0;
-        item.req.allowed_planning_time = 5.0;
-        item.req.planner_id = "PTP";
-        item.req.pipeline_id = "pilz_industrial_motion_planner";
-        
-        if (type == "joint_values_absolute") {
-          if (!waypoint_doc["data"]) continue;
-          auto data_doc = waypoint_doc["data"].get_document().value;
-          
-          moveit_msgs::msg::Constraints constraints;
-          
-          for (auto&& field : data_doc) {
-            std::string joint_name = field.key().to_string();
-            double joint_value = get_numeric_value(field);
-            
-            moveit_msgs::msg::JointConstraint joint_constraint;
-            joint_constraint.joint_name = joint_name;
-            joint_constraint.position = joint_value;
-            joint_constraint.tolerance_above = 0.01;
-            joint_constraint.tolerance_below = 0.01;
-            joint_constraint.weight = 1.0;
-            constraints.joint_constraints.push_back(joint_constraint);
-          }
-          
-          item.req.goal_constraints.push_back(constraints);
-          RCLCPP_INFO(this->get_logger(), "  [%zu] joint_values (%zu joints)", 
-                      waypoint_index + 1, constraints.joint_constraints.size());
-
-        } else if (type == "joint_values_relative") {
-          if (!waypoint_doc["data"]) continue;
-          auto data_doc = waypoint_doc["data"].get_document().value;
-        
-          // この item の開始姿勢を解く（直前までの結果が基準）
-          int item_index = static_cast<int>(goal_msg.motion_sequence_items.size());
-          trajectory_msgs::msg::JointTrajectoryPoint start_pt;
-          if (!resolve_joint_state_before_recursive(
-                item_index,
-                goal_msg.motion_sequence_items,
-                current_joint_states_,
-                start_cache,
-                start_pt)) {
-            RCLCPP_ERROR(this->get_logger(), "resolve start_state failed at item %d", item_index);
-            continue;  // or handle_error
-          }
-        
-          if (start_pt.positions.size() != current_joint_states_.name.size()) {
-            RCLCPP_ERROR(this->get_logger(), "start_state size mismatch at item %d", item_index);
-            continue;
-          }
-        
-          moveit_msgs::msg::Constraints constraints;
-        
-          // data_doc の (joint_name -> delta) を start_state + delta にして入れる
-          for (auto&& field : data_doc) {
-            std::string joint_name = field.key().to_string();
-            double delta = get_numeric_value(field);
-        
-            // joint_name の index を master（current_joint_states_.name）から探す
-            int jidx = -1;
-            for (size_t i = 0; i < current_joint_states_.name.size(); ++i) {
-              if (current_joint_states_.name[i] == joint_name) {
-                jidx = static_cast<int>(i);
-                break;
-              }
-            }
-            if (jidx < 0) continue;
-        
-            moveit_msgs::msg::JointConstraint joint_constraint;
-            joint_constraint.joint_name = joint_name;
-            joint_constraint.position = start_pt.positions[static_cast<size_t>(jidx)] + delta;  // ★ここが本質
-            joint_constraint.tolerance_above = 0.01;
-            joint_constraint.tolerance_below = 0.01;
-            joint_constraint.weight = 1.0;
-            constraints.joint_constraints.push_back(joint_constraint);
-          }
-        
-          item.req.goal_constraints.push_back(constraints);
-        
-          RCLCPP_INFO(this->get_logger(), "  [%zu] joint_values (relative->absolute, %zu joints)",
-                      waypoint_index + 1, constraints.joint_constraints.size());
-          
-        } else if (type == "pose") {
-          if (!waypoint_doc["data"]) continue;
-          auto data_doc = waypoint_doc["data"].get_document().value;
-          
-          if (!data_doc["x"] || !data_doc["y"] || !data_doc["z"] || !data_doc["theta_w"]) continue;
-          
-          double x = get_numeric_value(data_doc["x"]);
-          double y = get_numeric_value(data_doc["y"]);
-          double z = get_numeric_value(data_doc["z"]);
-          double theta_w = get_numeric_value(data_doc["theta_w"]);
-          
-          Pose converted_pose;
-          pose_converter.convertToXYZQuaternion(x, y, z, theta_w, converted_pose);
-          
-          geometry_msgs::msg::Pose target_pose;
-          target_pose.position.x = converted_pose.x;
-          target_pose.position.y = converted_pose.y;
-          target_pose.position.z = converted_pose.z;
-          target_pose.orientation.x = converted_pose.qx;
-          target_pose.orientation.y = converted_pose.qy;
-          target_pose.orientation.z = converted_pose.qz;
-          target_pose.orientation.w = converted_pose.qw;
-          
-          moveit_msgs::msg::Constraints constraints;
-          
-          // Position constraint
-          moveit_msgs::msg::PositionConstraint position_constraint;
-          position_constraint.header.frame_id = "base_link";
-          position_constraint.link_name = "bucket_end_link";
-          
-          shape_msgs::msg::SolidPrimitive primitive;
-          primitive.type = shape_msgs::msg::SolidPrimitive::SPHERE;
-          primitive.dimensions.push_back(0.001);
-          position_constraint.constraint_region.primitives.push_back(primitive);
-          position_constraint.constraint_region.primitive_poses.push_back(target_pose);
-          position_constraint.weight = 1.0;
-          constraints.position_constraints.push_back(position_constraint);
-          
-          // Orientation constraint
-          moveit_msgs::msg::OrientationConstraint orientation_constraint;
-          orientation_constraint.header.frame_id = "base_link";
-          orientation_constraint.link_name = "bucket_end_link";
-          orientation_constraint.orientation = target_pose.orientation;
-          orientation_constraint.absolute_x_axis_tolerance = 0.01;
-          orientation_constraint.absolute_y_axis_tolerance = 0.01;
-          orientation_constraint.absolute_z_axis_tolerance = 0.01;
-          orientation_constraint.weight = 1.0;
-          constraints.orientation_constraints.push_back(orientation_constraint);
-          
-          item.req.goal_constraints.push_back(constraints);
-          RCLCPP_INFO(this->get_logger(), "  [%zu] pose (%.2f, %.2f, %.2f)", 
-                      waypoint_index + 1, x, y, z);
-        }
-        
-        // Blend radius設定（最後以外）
-        if (waypoint_index < num_waypoints - 1) {
-          item.blend_radius = 0.01;
-        } else {
-          item.blend_radius = 0.0;
-        }
-        
-        goal_msg.motion_sequence_items.push_back(item);
-        waypoint_index++;
-      }
-      if(!binary_search_extreme_joint_value_for_motion_sequence(goal_msg, goal_msg.motion_sequence_items, *param_response)) {
-        handle_error("Failed to find valid joint values within limits for motion sequence");
-        return;
-      }
-      finalize_motion_sequence_items(goal_msg.motion_sequence_items);
-      
-      RCLCPP_INFO(this->get_logger(), "Created %zu motion sequence items", 
-                  goal_msg.motion_sequence_items.size());
+      // 2個の場合はない。今後消す。
+      handle_error("Multiple waypoints not supported in this version");
+      return;
     }
     
   } catch (const std::exception& e) {
@@ -713,74 +576,157 @@ void PrimitiveExcavatorChangePosePlan::result_callback(
 void PrimitiveExcavatorChangePosePlan::save_plan_to_db(const TmsRpExcavator::Result::SharedPtr& result)
 {
   try {
-    if (result->plan.empty()) {
+    // Check if plan has valid data
+    if (result->plan.joint_trajectory.joint_names.empty() && 
+        result->plan.multi_dof_joint_trajectory.joint_names.empty()) {
       RCLCPP_WARN(this->get_logger(), "Plan is empty, nothing to save");
       return;
     }
     
     bsoncxx::builder::basic::document plan_doc;
-    int index = 1;
     
-    for (const auto& robot_trajectory : result->plan) {
-      bsoncxx::builder::basic::document trajectory_doc;
+    // ========== joint_trajectory ==========
+    if (!result->plan.joint_trajectory.joint_names.empty()) {
+      bsoncxx::builder::basic::document joint_traj_doc;
       
-      if (!robot_trajectory.joint_trajectory.joint_names.empty()) {
-        bsoncxx::builder::basic::document joint_traj_doc;
-        
-        bsoncxx::builder::basic::array joint_names_array;
-        for (const auto& name : robot_trajectory.joint_trajectory.joint_names) {
-          joint_names_array.append(name);
-        }
-        joint_traj_doc.append(bsoncxx::builder::basic::kvp("joint_names", joint_names_array));
-        
-        bsoncxx::builder::basic::array points_array;
-        for (const auto& point : robot_trajectory.joint_trajectory.points) {
-          bsoncxx::builder::basic::document point_doc;
-          
-          bsoncxx::builder::basic::array positions_array;
-          for (const auto& pos : point.positions) {
-            positions_array.append(pos);
-          }
-          point_doc.append(bsoncxx::builder::basic::kvp("positions", positions_array));
-          
-          if (!point.velocities.empty()) {
-            bsoncxx::builder::basic::array velocities_array;
-            for (const auto& vel : point.velocities) {
-              velocities_array.append(vel);
-            }
-            point_doc.append(bsoncxx::builder::basic::kvp("velocities", velocities_array));
-          }
-          
-          if (!point.accelerations.empty()) {
-            bsoncxx::builder::basic::array accelerations_array;
-            for (const auto& acc : point.accelerations) {
-              accelerations_array.append(acc);
-            }
-            point_doc.append(bsoncxx::builder::basic::kvp("accelerations", accelerations_array));
-          }
-          
-          point_doc.append(bsoncxx::builder::basic::kvp("time_from_start", 
-            bsoncxx::builder::basic::make_document(
-              bsoncxx::builder::basic::kvp("sec", static_cast<int32_t>(point.time_from_start.sec)),
-              bsoncxx::builder::basic::kvp("nanosec", static_cast<int32_t>(point.time_from_start.nanosec))
-            )
-          ));
-          
-          points_array.append(point_doc);
-        }
-        joint_traj_doc.append(bsoncxx::builder::basic::kvp("points", points_array));
-        trajectory_doc.append(bsoncxx::builder::basic::kvp("joint_trajectory", joint_traj_doc));
+      bsoncxx::builder::basic::array joint_names_array;
+      for (const auto& name : result->plan.joint_trajectory.joint_names) {
+        joint_names_array.append(name);
       }
+      joint_traj_doc.append(bsoncxx::builder::basic::kvp("joint_names", joint_names_array));
       
-      plan_doc.append(bsoncxx::builder::basic::kvp(std::to_string(index), trajectory_doc));
-      index++;
+      bsoncxx::builder::basic::array points_array;
+      for (const auto& point : result->plan.joint_trajectory.points) {
+        bsoncxx::builder::basic::document point_doc;
+        
+        bsoncxx::builder::basic::array positions_array;
+        for (const auto& pos : point.positions) {
+          positions_array.append(pos);
+        }
+        point_doc.append(bsoncxx::builder::basic::kvp("positions", positions_array));
+        
+        if (!point.velocities.empty()) {
+          bsoncxx::builder::basic::array velocities_array;
+          for (const auto& vel : point.velocities) {
+            velocities_array.append(vel);
+          }
+          point_doc.append(bsoncxx::builder::basic::kvp("velocities", velocities_array));
+        }
+        
+        if (!point.accelerations.empty()) {
+          bsoncxx::builder::basic::array accelerations_array;
+          for (const auto& acc : point.accelerations) {
+            accelerations_array.append(acc);
+          }
+          point_doc.append(bsoncxx::builder::basic::kvp("accelerations", accelerations_array));
+        }
+        
+        point_doc.append(bsoncxx::builder::basic::kvp("time_from_start", 
+          bsoncxx::builder::basic::make_document(
+            bsoncxx::builder::basic::kvp("sec", static_cast<int32_t>(point.time_from_start.sec)),
+            bsoncxx::builder::basic::kvp("nanosec", static_cast<int32_t>(point.time_from_start.nanosec))
+          )
+        ));
+        
+        points_array.append(point_doc);
+      }
+      joint_traj_doc.append(bsoncxx::builder::basic::kvp("points", points_array));
+      plan_doc.append(bsoncxx::builder::basic::kvp("joint_trajectory", joint_traj_doc));
+    }
+    
+    // ========== multi_dof_joint_trajectory ==========
+    if (!result->plan.multi_dof_joint_trajectory.joint_names.empty()) {
+      bsoncxx::builder::basic::document multi_dof_doc;
+      
+      bsoncxx::builder::basic::array joint_names_array;
+      for (const auto& name : result->plan.multi_dof_joint_trajectory.joint_names) {
+        joint_names_array.append(name);
+      }
+      multi_dof_doc.append(bsoncxx::builder::basic::kvp("joint_names", joint_names_array));
+      
+      bsoncxx::builder::basic::array points_array;
+      for (const auto& point : result->plan.multi_dof_joint_trajectory.points) {
+        bsoncxx::builder::basic::document point_doc;
+        
+        // transforms
+        if (!point.transforms.empty()) {
+          bsoncxx::builder::basic::array transforms_array;
+          for (const auto& transform : point.transforms) {
+            transforms_array.append(bsoncxx::builder::basic::make_document(
+              bsoncxx::builder::basic::kvp("translation", bsoncxx::builder::basic::make_document(
+                bsoncxx::builder::basic::kvp("x", transform.translation.x),
+                bsoncxx::builder::basic::kvp("y", transform.translation.y),
+                bsoncxx::builder::basic::kvp("z", transform.translation.z)
+              )),
+              bsoncxx::builder::basic::kvp("rotation", bsoncxx::builder::basic::make_document(
+                bsoncxx::builder::basic::kvp("x", transform.rotation.x),
+                bsoncxx::builder::basic::kvp("y", transform.rotation.y),
+                bsoncxx::builder::basic::kvp("z", transform.rotation.z),
+                bsoncxx::builder::basic::kvp("w", transform.rotation.w)
+              ))
+            ));
+          }
+          point_doc.append(bsoncxx::builder::basic::kvp("transforms", transforms_array));
+        }
+        
+        // velocities
+        if (!point.velocities.empty()) {
+          bsoncxx::builder::basic::array velocities_array;
+          for (const auto& twist : point.velocities) {
+            velocities_array.append(bsoncxx::builder::basic::make_document(
+              bsoncxx::builder::basic::kvp("linear", bsoncxx::builder::basic::make_document(
+                bsoncxx::builder::basic::kvp("x", twist.linear.x),
+                bsoncxx::builder::basic::kvp("y", twist.linear.y),
+                bsoncxx::builder::basic::kvp("z", twist.linear.z)
+              )),
+              bsoncxx::builder::basic::kvp("angular", bsoncxx::builder::basic::make_document(
+                bsoncxx::builder::basic::kvp("x", twist.angular.x),
+                bsoncxx::builder::basic::kvp("y", twist.angular.y),
+                bsoncxx::builder::basic::kvp("z", twist.angular.z)
+              ))
+            ));
+          }
+          point_doc.append(bsoncxx::builder::basic::kvp("velocities", velocities_array));
+        }
+        
+        // accelerations
+        if (!point.accelerations.empty()) {
+          bsoncxx::builder::basic::array accelerations_array;
+          for (const auto& twist : point.accelerations) {
+            accelerations_array.append(bsoncxx::builder::basic::make_document(
+              bsoncxx::builder::basic::kvp("linear", bsoncxx::builder::basic::make_document(
+                bsoncxx::builder::basic::kvp("x", twist.linear.x),
+                bsoncxx::builder::basic::kvp("y", twist.linear.y),
+                bsoncxx::builder::basic::kvp("z", twist.linear.z)
+              )),
+              bsoncxx::builder::basic::kvp("angular", bsoncxx::builder::basic::make_document(
+                bsoncxx::builder::basic::kvp("x", twist.angular.x),
+                bsoncxx::builder::basic::kvp("y", twist.angular.y),
+                bsoncxx::builder::basic::kvp("z", twist.angular.z)
+              ))
+            ));
+          }
+          point_doc.append(bsoncxx::builder::basic::kvp("accelerations", accelerations_array));
+        }
+        
+        point_doc.append(bsoncxx::builder::basic::kvp("time_from_start", 
+          bsoncxx::builder::basic::make_document(
+            bsoncxx::builder::basic::kvp("sec", static_cast<int32_t>(point.time_from_start.sec)),
+            bsoncxx::builder::basic::kvp("nanosec", static_cast<int32_t>(point.time_from_start.nanosec))
+          )
+        ));
+        
+        points_array.append(point_doc);
+      }
+      multi_dof_doc.append(bsoncxx::builder::basic::kvp("points", points_array));
+      plan_doc.append(bsoncxx::builder::basic::kvp("multi_dof_joint_trajectory", multi_dof_doc));
     }
     
     std::string plan_json = bsoncxx::to_json(plan_doc.view());
     
     if(UpdateParamInDBFromJson(used_model_name_, used_record_name_, "plan", plan_json))
     {
-      RCLCPP_INFO(this->get_logger(), "Successfully saved %zu plan(s) to database", result->plan.size());
+      RCLCPP_INFO(this->get_logger(), "Successfully saved plan to database");
     }
     else
     {
@@ -793,7 +739,6 @@ void PrimitiveExcavatorChangePosePlan::save_plan_to_db(const TmsRpExcavator::Res
 
 bool PrimitiveExcavatorChangePosePlan::parse_previous_plan(TmsRpExcavator::Goal& goal_msg)
 {
-  // 元コードの条件をそのまま
   if (previous_target_record_name_.empty() || previous_param_from_db_.empty())
   {
     RCLCPP_INFO(this->get_logger(), "No previous plan specified, will plan from current pose");
@@ -810,236 +755,212 @@ bool PrimitiveExcavatorChangePosePlan::parse_previous_plan(TmsRpExcavator::Goal&
       return true;
     }
 
-    // DBから来る "plan" は {"plan": {...}} でラップされていることがある
+    // DBから来る "plan" は {"plan": {...}} でラップされている
     auto plan_doc  = bsoncxx::from_json(previous_param_from_db_["plan"]);
     auto plan_view = plan_doc.view();
 
-    // --- ★重要：planキーで1段ラップされていたら剥がす ---
-    // 例: {"plan": {"1": {...}, "2": {...}}}
+    // planキーで1段ラップされていたら剥がす
     if (plan_view["plan"] && plan_view["plan"].type() == bsoncxx::type::k_document)
     {
       plan_view = plan_view["plan"].get_document().value;
     }
 
-    // 念のため、トップレベルが数字キーを持つ doc になっていることを軽く検証
-    // （ここでは落とさず、単に0件になるだけにする）
-    for (auto&& element : plan_view)
+    // 単一のRobotTrajectoryを作成
+    moveit_msgs::msg::RobotTrajectory robot_trajectory;
+
+    // ---------------- joint_trajectory ----------------
+    if (plan_view["joint_trajectory"] && plan_view["joint_trajectory"].type() == bsoncxx::type::k_document)
     {
-      std::string key = element.key().to_string();
+      auto joint_traj_doc = plan_view["joint_trajectory"].get_document().value;
 
-      // 数字キー以外（例: "_id" 等）があってもスキップ
-      int traj_index = -1;
-      try
+      if (joint_traj_doc["joint_names"] && joint_traj_doc["joint_names"].type() == bsoncxx::type::k_array)
       {
-        traj_index = std::stoi(key);
-        (void)traj_index;
-      }
-      catch (...)
-      {
-        continue;
-      }
-
-      if (element.type() != bsoncxx::type::k_document)
-      {
-        continue;
-      }
-
-      auto trajectory_doc = element.get_document().value;
-      moveit_msgs::msg::RobotTrajectory robot_trajectory;
-
-      // ---------------- joint_trajectory ----------------
-      if (trajectory_doc["joint_trajectory"] && trajectory_doc["joint_trajectory"].type() == bsoncxx::type::k_document)
-      {
-        auto joint_traj_doc = trajectory_doc["joint_trajectory"].get_document().value;
-
-        if (joint_traj_doc["joint_names"] && joint_traj_doc["joint_names"].type() == bsoncxx::type::k_array)
+        auto joint_names_array = joint_traj_doc["joint_names"].get_array().value;
+        for (auto&& name : joint_names_array)
         {
-          auto joint_names_array = joint_traj_doc["joint_names"].get_array().value;
-          for (auto&& name : joint_names_array)
-          {
-            if (name.type() == bsoncxx::type::k_utf8)
-              robot_trajectory.joint_trajectory.joint_names.push_back(name.get_string().value.to_string());
-          }
-        }
-
-        if (joint_traj_doc["points"] && joint_traj_doc["points"].type() == bsoncxx::type::k_array)
-        {
-          auto points_array = joint_traj_doc["points"].get_array().value;
-          for (auto&& point_element : points_array)
-          {
-            if (point_element.type() != bsoncxx::type::k_document) continue;
-            auto point_doc = point_element.get_document().value;
-
-            trajectory_msgs::msg::JointTrajectoryPoint point;
-
-            if (point_doc["positions"] && point_doc["positions"].type() == bsoncxx::type::k_array)
-            {
-              auto arr = point_doc["positions"].get_array().value;
-              for (auto&& v : arr) point.positions.push_back(get_numeric_value(v));
-            }
-
-            if (point_doc["velocities"] && point_doc["velocities"].type() == bsoncxx::type::k_array)
-            {
-              auto arr = point_doc["velocities"].get_array().value;
-              for (auto&& v : arr) point.velocities.push_back(get_numeric_value(v));
-            }
-
-            if (point_doc["accelerations"] && point_doc["accelerations"].type() == bsoncxx::type::k_array)
-            {
-              auto arr = point_doc["accelerations"].get_array().value;
-              for (auto&& v : arr) point.accelerations.push_back(get_numeric_value(v));
-            }
-
-            if (point_doc["time_from_start"] && point_doc["time_from_start"].type() == bsoncxx::type::k_document)
-            {
-              auto time_doc = point_doc["time_from_start"].get_document().value;
-              if (time_doc["sec"]     && time_doc["sec"].type() == bsoncxx::type::k_int32)
-                point.time_from_start.sec     = time_doc["sec"].get_int32().value;
-              if (time_doc["nanosec"] && time_doc["nanosec"].type() == bsoncxx::type::k_int32)
-                point.time_from_start.nanosec = time_doc["nanosec"].get_int32().value;
-            }
-
-            robot_trajectory.joint_trajectory.points.push_back(point);
-          }
+          if (name.type() == bsoncxx::type::k_utf8)
+            robot_trajectory.joint_trajectory.joint_names.push_back(name.get_string().value.to_string());
         }
       }
 
-      // ---------------- multi_dof_joint_trajectory ----------------
-      if (trajectory_doc["multi_dof_joint_trajectory"] &&
-          trajectory_doc["multi_dof_joint_trajectory"].type() == bsoncxx::type::k_document)
+      if (joint_traj_doc["points"] && joint_traj_doc["points"].type() == bsoncxx::type::k_array)
       {
-        auto multi_dof_doc = trajectory_doc["multi_dof_joint_trajectory"].get_document().value;
-
-        if (multi_dof_doc["joint_names"] && multi_dof_doc["joint_names"].type() == bsoncxx::type::k_array)
+        auto points_array = joint_traj_doc["points"].get_array().value;
+        for (auto&& point_element : points_array)
         {
-          auto arr = multi_dof_doc["joint_names"].get_array().value;
-          for (auto&& name : arr)
+          if (point_element.type() != bsoncxx::type::k_document) continue;
+          auto point_doc = point_element.get_document().value;
+
+          trajectory_msgs::msg::JointTrajectoryPoint point;
+
+          if (point_doc["positions"] && point_doc["positions"].type() == bsoncxx::type::k_array)
           {
-            if (name.type() == bsoncxx::type::k_utf8)
-              robot_trajectory.multi_dof_joint_trajectory.joint_names.push_back(name.get_string().value.to_string());
+            auto arr = point_doc["positions"].get_array().value;
+            for (auto&& v : arr) point.positions.push_back(get_numeric_value(v));
           }
-        }
 
-        if (multi_dof_doc["points"] && multi_dof_doc["points"].type() == bsoncxx::type::k_array)
-        {
-          auto points_array = multi_dof_doc["points"].get_array().value;
-          for (auto&& point_element : points_array)
+          if (point_doc["velocities"] && point_doc["velocities"].type() == bsoncxx::type::k_array)
           {
-            if (point_element.type() != bsoncxx::type::k_document) continue;
-            auto point_doc = point_element.get_document().value;
-
-            trajectory_msgs::msg::MultiDOFJointTrajectoryPoint point;
-
-            if (point_doc["transforms"] && point_doc["transforms"].type() == bsoncxx::type::k_array)
-            {
-              auto arr = point_doc["transforms"].get_array().value;
-              for (auto&& t : arr)
-              {
-                if (t.type() != bsoncxx::type::k_document) continue;
-                auto td = t.get_document().value;
-
-                geometry_msgs::msg::Transform transform;
-
-                if (td["translation"] && td["translation"].type() == bsoncxx::type::k_document)
-                {
-                  auto tr = td["translation"].get_document().value;
-                  if (tr["x"]) transform.translation.x = get_numeric_value(tr["x"]);
-                  if (tr["y"]) transform.translation.y = get_numeric_value(tr["y"]);
-                  if (tr["z"]) transform.translation.z = get_numeric_value(tr["z"]);
-                }
-
-                if (td["rotation"] && td["rotation"].type() == bsoncxx::type::k_document)
-                {
-                  auto ro = td["rotation"].get_document().value;
-                  if (ro["x"]) transform.rotation.x = get_numeric_value(ro["x"]);
-                  if (ro["y"]) transform.rotation.y = get_numeric_value(ro["y"]);
-                  if (ro["z"]) transform.rotation.z = get_numeric_value(ro["z"]);
-                  if (ro["w"]) transform.rotation.w = get_numeric_value(ro["w"]);
-                }
-
-                point.transforms.push_back(transform);
-              }
-            }
-
-            if (point_doc["velocities"] && point_doc["velocities"].type() == bsoncxx::type::k_array)
-            {
-              auto arr = point_doc["velocities"].get_array().value;
-              for (auto&& v : arr)
-              {
-                if (v.type() != bsoncxx::type::k_document) continue;
-                auto vd = v.get_document().value;
-
-                geometry_msgs::msg::Twist twist;
-
-                if (vd["linear"] && vd["linear"].type() == bsoncxx::type::k_document)
-                {
-                  auto li = vd["linear"].get_document().value;
-                  if (li["x"]) twist.linear.x = get_numeric_value(li["x"]);
-                  if (li["y"]) twist.linear.y = get_numeric_value(li["y"]);
-                  if (li["z"]) twist.linear.z = get_numeric_value(li["z"]);
-                }
-                if (vd["angular"] && vd["angular"].type() == bsoncxx::type::k_document)
-                {
-                  auto an = vd["angular"].get_document().value;
-                  if (an["x"]) twist.angular.x = get_numeric_value(an["x"]);
-                  if (an["y"]) twist.angular.y = get_numeric_value(an["y"]);
-                  if (an["z"]) twist.angular.z = get_numeric_value(an["z"]);
-                }
-
-                point.velocities.push_back(twist);
-              }
-            }
-
-            if (point_doc["accelerations"] && point_doc["accelerations"].type() == bsoncxx::type::k_array)
-            {
-              auto arr = point_doc["accelerations"].get_array().value;
-              for (auto&& a : arr)
-              {
-                if (a.type() != bsoncxx::type::k_document) continue;
-                auto ad = a.get_document().value;
-
-                geometry_msgs::msg::Twist twist;
-
-                if (ad["linear"] && ad["linear"].type() == bsoncxx::type::k_document)
-                {
-                  auto li = ad["linear"].get_document().value;
-                  if (li["x"]) twist.linear.x = get_numeric_value(li["x"]);
-                  if (li["y"]) twist.linear.y = get_numeric_value(li["y"]);
-                  if (li["z"]) twist.linear.z = get_numeric_value(li["z"]);
-                }
-                if (ad["angular"] && ad["angular"].type() == bsoncxx::type::k_document)
-                {
-                  auto an = ad["angular"].get_document().value;
-                  if (an["x"]) twist.angular.x = get_numeric_value(an["x"]);
-                  if (an["y"]) twist.angular.y = get_numeric_value(an["y"]);
-                  if (an["z"]) twist.angular.z = get_numeric_value(an["z"]);
-                }
-
-                point.accelerations.push_back(twist);
-              }
-            }
-
-            if (point_doc["time_from_start"] && point_doc["time_from_start"].type() == bsoncxx::type::k_document)
-            {
-              auto time_doc = point_doc["time_from_start"].get_document().value;
-              if (time_doc["sec"]     && time_doc["sec"].type() == bsoncxx::type::k_int32)
-                point.time_from_start.sec     = time_doc["sec"].get_int32().value;
-              if (time_doc["nanosec"] && time_doc["nanosec"].type() == bsoncxx::type::k_int32)
-                point.time_from_start.nanosec = time_doc["nanosec"].get_int32().value;
-            }
-
-            robot_trajectory.multi_dof_joint_trajectory.points.push_back(point);
+            auto arr = point_doc["velocities"].get_array().value;
+            for (auto&& v : arr) point.velocities.push_back(get_numeric_value(v));
           }
+
+          if (point_doc["accelerations"] && point_doc["accelerations"].type() == bsoncxx::type::k_array)
+          {
+            auto arr = point_doc["accelerations"].get_array().value;
+            for (auto&& v : arr) point.accelerations.push_back(get_numeric_value(v));
+          }
+
+          if (point_doc["time_from_start"] && point_doc["time_from_start"].type() == bsoncxx::type::k_document)
+          {
+            auto time_doc = point_doc["time_from_start"].get_document().value;
+            if (time_doc["sec"]     && time_doc["sec"].type() == bsoncxx::type::k_int32)
+              point.time_from_start.sec     = time_doc["sec"].get_int32().value;
+            if (time_doc["nanosec"] && time_doc["nanosec"].type() == bsoncxx::type::k_int32)
+              point.time_from_start.nanosec = time_doc["nanosec"].get_int32().value;
+          }
+
+          robot_trajectory.joint_trajectory.points.push_back(point);
         }
       }
-
-      // ここまで来たら trajectory として追加
-      goal_msg.previous_pose.push_back(robot_trajectory);
     }
 
+    // ---------------- multi_dof_joint_trajectory ----------------
+    if (plan_view["multi_dof_joint_trajectory"] &&
+        plan_view["multi_dof_joint_trajectory"].type() == bsoncxx::type::k_document)
+    {
+      auto multi_dof_doc = plan_view["multi_dof_joint_trajectory"].get_document().value;
+
+      if (multi_dof_doc["joint_names"] && multi_dof_doc["joint_names"].type() == bsoncxx::type::k_array)
+      {
+        auto arr = multi_dof_doc["joint_names"].get_array().value;
+        for (auto&& name : arr)
+        {
+          if (name.type() == bsoncxx::type::k_utf8)
+            robot_trajectory.multi_dof_joint_trajectory.joint_names.push_back(name.get_string().value.to_string());
+        }
+      }
+
+      if (multi_dof_doc["points"] && multi_dof_doc["points"].type() == bsoncxx::type::k_array)
+      {
+        auto points_array = multi_dof_doc["points"].get_array().value;
+        for (auto&& point_element : points_array)
+        {
+          if (point_element.type() != bsoncxx::type::k_document) continue;
+          auto point_doc = point_element.get_document().value;
+
+          trajectory_msgs::msg::MultiDOFJointTrajectoryPoint point;
+
+          if (point_doc["transforms"] && point_doc["transforms"].type() == bsoncxx::type::k_array)
+          {
+            auto arr = point_doc["transforms"].get_array().value;
+            for (auto&& t : arr)
+            {
+              if (t.type() != bsoncxx::type::k_document) continue;
+              auto td = t.get_document().value;
+
+              geometry_msgs::msg::Transform transform;
+
+              if (td["translation"] && td["translation"].type() == bsoncxx::type::k_document)
+              {
+                auto tr = td["translation"].get_document().value;
+                if (tr["x"]) transform.translation.x = get_numeric_value(tr["x"]);
+                if (tr["y"]) transform.translation.y = get_numeric_value(tr["y"]);
+                if (tr["z"]) transform.translation.z = get_numeric_value(tr["z"]);
+              }
+
+              if (td["rotation"] && td["rotation"].type() == bsoncxx::type::k_document)
+              {
+                auto ro = td["rotation"].get_document().value;
+                if (ro["x"]) transform.rotation.x = get_numeric_value(ro["x"]);
+                if (ro["y"]) transform.rotation.y = get_numeric_value(ro["y"]);
+                if (ro["z"]) transform.rotation.z = get_numeric_value(ro["z"]);
+                if (ro["w"]) transform.rotation.w = get_numeric_value(ro["w"]);
+              }
+
+              point.transforms.push_back(transform);
+            }
+          }
+
+          if (point_doc["velocities"] && point_doc["velocities"].type() == bsoncxx::type::k_array)
+          {
+            auto arr = point_doc["velocities"].get_array().value;
+            for (auto&& v : arr)
+            {
+              if (v.type() != bsoncxx::type::k_document) continue;
+              auto vd = v.get_document().value;
+
+              geometry_msgs::msg::Twist twist;
+
+              if (vd["linear"] && vd["linear"].type() == bsoncxx::type::k_document)
+              {
+                auto li = vd["linear"].get_document().value;
+                if (li["x"]) twist.linear.x = get_numeric_value(li["x"]);
+                if (li["y"]) twist.linear.y = get_numeric_value(li["y"]);
+                if (li["z"]) twist.linear.z = get_numeric_value(li["z"]);
+              }
+              if (vd["angular"] && vd["angular"].type() == bsoncxx::type::k_document)
+              {
+                auto an = vd["angular"].get_document().value;
+                if (an["x"]) twist.angular.x = get_numeric_value(an["x"]);
+                if (an["y"]) twist.angular.y = get_numeric_value(an["y"]);
+                if (an["z"]) twist.angular.z = get_numeric_value(an["z"]);
+              }
+
+              point.velocities.push_back(twist);
+            }
+          }
+
+          if (point_doc["accelerations"] && point_doc["accelerations"].type() == bsoncxx::type::k_array)
+          {
+            auto arr = point_doc["accelerations"].get_array().value;
+            for (auto&& a : arr)
+            {
+              if (a.type() != bsoncxx::type::k_document) continue;
+              auto ad = a.get_document().value;
+
+              geometry_msgs::msg::Twist twist;
+
+              if (ad["linear"] && ad["linear"].type() == bsoncxx::type::k_document)
+              {
+                auto li = ad["linear"].get_document().value;
+                if (li["x"]) twist.linear.x = get_numeric_value(li["x"]);
+                if (li["y"]) twist.linear.y = get_numeric_value(li["y"]);
+                if (li["z"]) twist.linear.z = get_numeric_value(li["z"]);
+              }
+              if (ad["angular"] && ad["angular"].type() == bsoncxx::type::k_document)
+              {
+                auto an = ad["angular"].get_document().value;
+                if (an["x"]) twist.angular.x = get_numeric_value(an["x"]);
+                if (an["y"]) twist.angular.y = get_numeric_value(an["y"]);
+                if (an["z"]) twist.angular.z = get_numeric_value(an["z"]);
+              }
+
+              point.accelerations.push_back(twist);
+            }
+          }
+
+          if (point_doc["time_from_start"] && point_doc["time_from_start"].type() == bsoncxx::type::k_document)
+          {
+            auto time_doc = point_doc["time_from_start"].get_document().value;
+            if (time_doc["sec"]     && time_doc["sec"].type() == bsoncxx::type::k_int32)
+              point.time_from_start.sec     = time_doc["sec"].get_int32().value;
+            if (time_doc["nanosec"] && time_doc["nanosec"].type() == bsoncxx::type::k_int32)
+              point.time_from_start.nanosec = time_doc["nanosec"].get_int32().value;
+          }
+
+          robot_trajectory.multi_dof_joint_trajectory.points.push_back(point);
+        }
+      }
+    }
+
+    // 読み込んだtrajectoryを追加
+    goal_msg.previous_pose.push_back(robot_trajectory);
+
     RCLCPP_INFO(this->get_logger(),
-                "Successfully loaded %zu trajectories from previous plan",
-                goal_msg.previous_pose.size());
+                "Successfully loaded previous plan (joint_trajectory: %zu points, multi_dof: %zu points)",
+                robot_trajectory.joint_trajectory.points.size(),
+                robot_trajectory.multi_dof_joint_trajectory.points.size());
     return true;
   }
   catch (const std::exception& e)
@@ -1467,7 +1388,7 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value(
     auto excavator_goal = TmsRpExcavator::Goal();
     excavator_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_JOINTS;
     excavator_goal.planning_group = planning_group_;
-    excavator_goal.joint_values_sequence.push_back(test_joint_values);
+    excavator_goal.joint_values = test_joint_values;
     excavator_goal.constraints = goal_msg.constraints;
     excavator_goal.previous_pose = goal_msg.previous_pose;
 
@@ -1504,506 +1425,6 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value(
   return true;
 }
 
-bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value_for_motion_sequence(
-  const TmsRpExcavator::Goal& goal_msg,
-  std::vector<moveit_msgs::msg::MotionSequenceItem>& motion_sequence_items,
-  const tms_msg_rp::srv::TmsRpExcavatorParamGet::Response& res)
-{
-  int numuntillimit = 0;
-  std::string serch_joint_name_ = "";
-  int direction = 0;  // +1: upper limit, -1: lower limit
-  size_t sequence_index_ = -1;
-  size_t gc_sequence_index_ = 0; // 現状、常に0、TODO: 将来的に1itemに複数のgoal_constraintsに対応する場合は、これも特定する必要がある
-  size_t item_index_ = -1;
-  std::vector<moveit_msgs::msg::MotionSequenceItem> best_motion_sequence_items;
-  bool found_any_success = false;
-  double original = 0.0;
-  std::vector<moveit_msgs::msg::RobotTrajectory> test_previous_pose;
-
-  for (auto& item : motion_sequence_items) {
-    for (const auto& gc : item.req.goal_constraints){
-      if (gc.joint_constraints.empty()) continue;
-      for (const auto& jc : gc.joint_constraints) {
-        if (jc.position >= 999 || jc.position <= -999) {
-          numuntillimit += 1;
-          serch_joint_name_ = jc.joint_name;
-          direction = (jc.position >= 999) ? 1 : -1;
-          sequence_index_ = &jc - &gc.joint_constraints[0];
-          item_index_ = &item - &motion_sequence_items[0];
-        }
-      }
-    }
-  }
-  if (numuntillimit == 0) {
-    RCLCPP_INFO(this->get_logger(), "No joint with 'until limit' (999) found, skipping binary search");
-    return true;
-  } else if (numuntillimit > 1) { // 現状、1アイテムかつ、1jointのみのjoint_constraintsに対応していない
-    RCLCPP_WARN(this->get_logger(), "Multiple joints with 'until limit' (999) detected, but handling multiple is not supported yet. Found: %d", numuntillimit);
-    return false;
-  }
-
-  RCLCPP_INFO(this->get_logger(), "Found joint '%s' with 'until limit' (999) in motion sequence item %zu, goal constraint %zu, joint constraint %zu", serch_joint_name_.c_str(), item_index_, gc_sequence_index_, sequence_index_);
-
-  tms_msg_rp::msg::TmsRpExcavatorJointValues previous_joint_values;
-  if (!goal_msg.previous_pose.empty()) {
-    const auto& traj = goal_msg.previous_pose.back().joint_trajectory;
-    if (traj.joint_names.empty() || traj.points.empty()) {
-      RCLCPP_ERROR(this->get_logger(), "previous_pose last trajectory has no joint_names or points");
-      return false;
-    }
-    const auto& last_pt = traj.points.back();
-    if (last_pt.positions.size() != traj.joint_names.size()) {
-      RCLCPP_ERROR(this->get_logger(),
-        "Size mismatch: joint_names=%zu positions=%zu",
-        traj.joint_names.size(), last_pt.positions.size());
-      return false;
-    }
-    previous_joint_values.joint_names  = traj.joint_names;
-    previous_joint_values.joint_values = last_pt.positions;
-  }
-  const auto& joint_names = res.joint_names;
-  double lowest, highest;
-  size_t limit_joint_idx = std::find(joint_names.begin(), joint_names.end(), serch_joint_name_) - joint_names.begin();
-  if (limit_joint_idx >= joint_names.size()) {
-    RCLCPP_ERROR(this->get_logger(), "Joint '%s' not found in response", serch_joint_name_.c_str());
-    return false;
-  }
-  if (previous_joint_values.joint_names.empty() && item_index_ == 0) {
-    size_t joint_idx = std::find(current_joint_states_.name.begin(), current_joint_states_.name.end(), serch_joint_name_) - current_joint_states_.name.begin();
-    if (joint_idx >= current_joint_states_.name.size()) {
-      RCLCPP_ERROR(this->get_logger(), "Joint '%s' not found in current joint values", serch_joint_name_.c_str());
-      return false;
-    }
-    original = current_joint_states_.position[joint_idx];
-    test_previous_pose = goal_msg.previous_pose;
-  } else if (!previous_joint_values.joint_names.empty() && item_index_ == 0) {
-    size_t joint_idx = std::find(previous_joint_values.joint_names.begin(), previous_joint_values.joint_names.end(), serch_joint_name_) - previous_joint_values.joint_names.begin();
-    if (joint_idx >= previous_joint_values.joint_names.size()) {
-      RCLCPP_ERROR(this->get_logger(), "Joint '%s' not found in previous joint values", serch_joint_name_.c_str());
-      return false;
-    }
-    original = previous_joint_values.joint_values[joint_idx];
-    test_previous_pose = goal_msg.previous_pose;
-  } else {
-    std::unordered_map<int, trajectory_msgs::msg::JointTrajectoryPoint> cache;
-    cache.clear();
-    trajectory_msgs::msg::JointTrajectoryPoint start_pt;
-    if (!resolve_joint_state_before_recursive(
-            static_cast<int>(item_index_),
-            motion_sequence_items,
-            current_joint_states_,
-            cache,
-            start_pt)) {
-      RCLCPP_ERROR(this->get_logger(), "Failed to resolve start_state recursively (pose planning failed)");
-      return false;
-    }
-    moveit_msgs::msg::RobotTrajectory traj;
-    traj.joint_trajectory.joint_names = current_joint_states_.name;
-    trajectory_msgs::msg::JointTrajectoryPoint pt;
-    pt.positions = start_pt.positions;
-    {
-      std::unordered_map<std::string, size_t> name_to_idx;
-      name_to_idx.reserve(traj.joint_trajectory.joint_names.size());
-      for (size_t i = 0; i < traj.joint_trajectory.joint_names.size(); ++i) {
-        name_to_idx[traj.joint_trajectory.joint_names[i]] = i;
-      }
-    
-      auto it = name_to_idx.find(serch_joint_name_);
-      if (it == name_to_idx.end()) {
-        RCLCPP_ERROR(this->get_logger(), "serch_joint_name_ '%s' not found in joint_names",
-                     serch_joint_name_.c_str());
-        return false;
-      }
-      original = pt.positions[it->second];
-    }
-  }
-  if (direction > 0)  { lowest = original; highest = res.max_positions[limit_joint_idx]; }
-  else                { lowest = res.min_positions[limit_joint_idx]; highest = original; }
-
-  RCLCPP_INFO(this->get_logger(), "Starting binary search for joint '%s' in motion sequence. Original: %f, direction: %s, lowest: %f, highest: %f",
-              serch_joint_name_.c_str(), original, (direction > 0) ? "upper" : "lower", lowest, highest);
-
-  int iteration = 0;
-  while (std::abs(highest - lowest) > search_precision_) {
-    const double mid = (lowest + highest) / 2.0;
-    iteration++;
-
-    auto test_motion_sequence_items = motion_sequence_items;
-    auto& test_item = test_motion_sequence_items[item_index_];
-    for (auto& jc : test_item.req.goal_constraints[gc_sequence_index_].joint_constraints) {
-      RCLCPP_INFO(this->get_logger(), "Checking joint constraint '%s' with position %f against search joint '%s'", jc.joint_name.c_str(), jc.position, serch_joint_name_.c_str());
-      if (jc.joint_name == serch_joint_name_) {
-        jc.position = mid;
-        break;
-      }
-    }
-
-    auto excavator_goal = TmsRpExcavator::Goal();
-    excavator_goal.command = TmsRpExcavator::Goal::CMD_PLAN_MOTION_SEQUENCE;
-    excavator_goal.planning_group = planning_group_;
-    excavator_goal.motion_sequence_items = test_motion_sequence_items;
-    excavator_goal.constraints = goal_msg.constraints;
-    excavator_goal.previous_pose = test_previous_pose;
-
-    finalize_motion_sequence_items(excavator_goal.motion_sequence_items);
-
-    TmsRpExcavator::Result::SharedPtr result;
-    const bool success = call_excavator_action_sync(excavator_goal, result);
-
-    if (success) {
-      best_motion_sequence_items = test_motion_sequence_items;
-      found_any_success = true;
-      if (direction > 0) {
-        lowest = mid;
-      } else {
-        highest = mid;          // min側へ（より小さい値へ）
-      }
-    } else {
-      // failなら「戻す」方向に狭める
-      if (direction > 0) {
-        highest = mid;
-      } else {
-        lowest = mid;
-      }
-    }
-  }
-
-  if (!found_any_success) {
-    RCLCPP_WARN(this->get_logger(), "Binary search failed to find any valid joint value for joint '%s'", serch_joint_name_.c_str());
-    return false;
-  }
-  // 最終的な成功した値を motion_sequence_items に反映
-  for (auto& jc : motion_sequence_items[item_index_].req.goal_constraints[gc_sequence_index_].joint_constraints) {
-    if (jc.joint_name == serch_joint_name_) {
-      jc.position = best_motion_sequence_items[item_index_].req.goal_constraints[gc_sequence_index_].joint_constraints[sequence_index_].position;
-      break;
-    }
-  }
-  RCLCPP_INFO(this->get_logger(),
-              "Binary search for joint '%s' in motion sequence completed in %d iterations. Final value: %f (original: %f, direction: %s)",
-              serch_joint_name_.c_str(), iteration, best_motion_sequence_items[item_index_].req.goal_constraints[gc_sequence_index_].joint_constraints[sequence_index_].position, original, (direction > 0) ? "upper" : "lower");
-
-  return true;
-}
-
-bool PrimitiveExcavatorChangePosePlan::resolve_joint_state_before_recursive(
-  int index,
-  const std::vector<moveit_msgs::msg::MotionSequenceItem>& motion_sequence_items,
-  const sensor_msgs::msg::JointState& current_joint_states,
-  std::unordered_map<int, trajectory_msgs::msg::JointTrajectoryPoint>& cache,
-  trajectory_msgs::msg::JointTrajectoryPoint& out_pt)
-{
-  // cache hit
-  auto cache_it = cache.find(index);
-  if (cache_it != cache.end()) {
-    out_pt = cache_it->second;
-    return true;
-  }
-  trajectory_msgs::msg::JointTrajectoryPoint base_pt;
-  base_pt.positions = current_joint_states.position;
-
-  // index<=0: current
-  if (index == 0) {
-    cache[index] = base_pt;
-    out_pt = base_pt;
-    return true;
-  }
-
-  const int item_i = index - 1;
-  if (item_i < 0 || item_i >= static_cast<int>(motion_sequence_items.size())) {
-    return false;
-  }
-
-  const auto& joint_names_master = current_joint_states.name;
-
-  // name_to_idx（直書き）
-  std::unordered_map<std::string, size_t> name_to_idx;
-  name_to_idx.reserve(joint_names_master.size());
-  for (size_t i = 0; i < joint_names_master.size(); ++i) {
-    name_to_idx[joint_names_master[i]] = i;
-  }
-
-  const auto& item = motion_sequence_items[static_cast<size_t>(item_i)];
-
-  // まず “それより前” を解く（再帰）
-  trajectory_msgs::msg::JointTrajectoryPoint prev_pt;
-  if (!resolve_joint_state_before_recursive(
-          item_i, motion_sequence_items, current_joint_states, cache, prev_pt)) {
-    return false;
-  }
-
-  // pose goal 判定（直書き）
-  bool has_pose = false;
-  for (const auto& gc : item.req.goal_constraints) {
-    if (!gc.position_constraints.empty() || !gc.orientation_constraints.empty()) {
-      has_pose = true;
-      break;
-    }
-  }
-
-  // joint override 適用ラムダ（直書き）
-  auto apply_joint_override = [&](trajectory_msgs::msg::JointTrajectoryPoint& io_pt) -> bool {
-    for (const auto& gc : item.req.goal_constraints) {
-      for (const auto& jc : gc.joint_constraints) {
-        auto it = name_to_idx.find(jc.joint_name);
-        if (it == name_to_idx.end()) {
-          // master にない joint 名が混ざるのは異常としてエラーにするかは方針次第
-          // 今回は “無視”ではなく “エラー”にしたいなら false に変える
-          continue;
-        }
-        const size_t idx = it->second;
-        if (idx >= io_pt.positions.size()) return false;
-        io_pt.positions[idx] = jc.position;
-      }
-    }
-    return true;
-  };
-
-  if (has_pose) {
-    // prev_pt を start_state にして pose plan → 完全jointへ正規化
-    sensor_msgs::msg::JointState start_state;
-    start_state.name = joint_names_master;
-    start_state.position = prev_pt.positions;
-
-    trajectory_msgs::msg::JointTrajectoryPoint planned_last_pt;
-    if (!plan_pose_goal_and_get_last_joint_point(item, start_state, joint_names_master, planned_last_pt)) {
-      RCLCPP_ERROR(this->get_logger(), "Pose planning failed while resolving at item %d", item_i);
-      return false; // ★即エラー
-    }
-
-    // pose plan の結果に joint_constraints 上書き
-    auto result_pt = planned_last_pt;
-    if (!apply_joint_override(result_pt)) return false;
-
-    cache[index] = result_pt;
-    out_pt = result_pt;
-    return true;
-  }
-
-  // joint item：prev に上書きして完成
-  auto result_pt = prev_pt;
-  if (!apply_joint_override(result_pt)) return false;
-
-  cache[index] = result_pt;
-  out_pt = result_pt;
-  return true;
-}
-
-bool PrimitiveExcavatorChangePosePlan::plan_pose_goal_and_get_last_joint_point(
-  const moveit_msgs::msg::MotionSequenceItem& item,
-  const sensor_msgs::msg::JointState& start_state,
-  const std::vector<std::string>& joint_names_master,
-  trajectory_msgs::msg::JointTrajectoryPoint& out_pt)
-{
-  if (item.req.goal_constraints.empty()) {
-    RCLCPP_WARN(this->get_logger(), "Pose item has no goal_constraints");
-    return false;
-  }
-
-  // goal_constraints から Pose 1点を抽出（小関数化しない）
-  geometry_msgs::msg::Pose target_pose;
-  {
-    const auto& gc = item.req.goal_constraints.front();
-    bool has_pos = false;
-    bool has_ori = false;
-
-    if (!gc.position_constraints.empty()) {
-      const auto& pc = gc.position_constraints.front();
-      if (!pc.constraint_region.primitive_poses.empty()) {
-        const auto& prim_pose = pc.constraint_region.primitive_poses.front();
-        target_pose.position = prim_pose.position;
-        target_pose.orientation = prim_pose.orientation; // orientation無い時の仮
-        has_pos = true;
-      }
-    }
-
-    if (!gc.orientation_constraints.empty()) {
-      const auto& oc = gc.orientation_constraints.front();
-      target_pose.orientation = oc.orientation;
-      has_ori = true;
-    }
-
-    if (!has_pos || !has_ori) return false;
-  }
-
-  // start_state を previous_pose (RobotTrajectory[]) で渡す
-  moveit_msgs::msg::RobotTrajectory seed_traj;
-  seed_traj.joint_trajectory.joint_names = start_state.name;
-
-  trajectory_msgs::msg::JointTrajectoryPoint seed_pt;
-  seed_pt.positions = start_state.position;
-  seed_traj.joint_trajectory.points.clear();
-  seed_traj.joint_trajectory.points.push_back(seed_pt);
-
-  // Plan 
-  auto excavator_goal = TmsRpExcavator::Goal();
-  excavator_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_POSE;
-  excavator_goal.planning_group = planning_group_;
-  excavator_goal.pose_sequence.push_back(target_pose);
-
-  excavator_goal.previous_pose.clear();
-  excavator_goal.previous_pose.push_back(seed_traj);
-
-  TmsRpExcavator::Result::SharedPtr plan_result;
-  if (!call_excavator_action_sync(excavator_goal, plan_result)) return false;
-  if (plan_result->plan.empty()) return false;
-
-  const auto& traj = plan_result->plan[0].joint_trajectory;
-  if (traj.points.empty()) return false;
-
-  const auto& last = traj.points.back();
-
-  // joint_names が一致してればそのまま
-  if (traj.joint_names == joint_names_master) {
-    out_pt = last;
-    return true;
-  }
-
-  // 並びが違う場合は詰め替え
-  std::unordered_map<std::string, size_t> idx;
-  idx.reserve(traj.joint_names.size());
-  for (size_t i = 0; i < traj.joint_names.size(); ++i) idx[traj.joint_names[i]] = i;
-
-  out_pt.positions.assign(joint_names_master.size(), 0.0);
-  for (size_t i = 0; i < joint_names_master.size(); ++i) {
-    auto it = idx.find(joint_names_master[i]);
-    if (it == idx.end()) return false;
-    const size_t j = it->second;
-    if (j >= last.positions.size()) return false;
-    out_pt.positions[i] = last.positions[j];
-  }
-
-  return true;
-}
-
-void PrimitiveExcavatorChangePosePlan::level_bucket_if_trigger(
-  tms_msg_rp::msg::TmsRpExcavatorJointValues& jv,
-  double trigger,
-  double offset)
-{
-  int ib=-1, ia=-1, ik=-1;
-
-  for (size_t i=0;i<jv.joint_names.size();++i) {
-    if (jv.joint_names[i]=="boom_joint")   ib=i;
-    if (jv.joint_names[i]=="arm_joint")    ia=i;
-    if (jv.joint_names[i]=="bucket_joint") ik=i;
-  }
-
-  if (ib<0 || ia<0 || ik<0) return;
-  if (std::abs(jv.joint_values[ik] - trigger) > 1e-9) return;
-
-  jv.joint_values[ik] =
-      -(jv.joint_values[ib] + jv.joint_values[ia]) + offset;
-}
-
-void PrimitiveExcavatorChangePosePlan::finalize_motion_sequence_items(
-  std::vector<moveit_msgs::msg::MotionSequenceItem>& items,
-  double trigger,
-  double offset,
-  const std::string& boom_name,
-  const std::string& arm_name,
-  const std::string& bucket_name)
-{
-  // joint名->index（masterは current_joint_states_ の並び）
-  std::unordered_map<std::string, size_t> name_to_idx;
-  name_to_idx.reserve(current_joint_states_.name.size());
-  for (size_t i = 0; i < current_joint_states_.name.size(); ++i) {
-    name_to_idx[current_joint_states_.name[i]] = i;
-  }
-
-  // resolve 用キャッシュ
-  std::unordered_map<int, trajectory_msgs::msg::JointTrajectoryPoint> cache;
-  cache.clear();
-
-  for (size_t item_i = 0; item_i < items.size(); ++item_i) {
-    // --- ① この item の開始姿勢（start_state）を resolve で取る ---
-    trajectory_msgs::msg::JointTrajectoryPoint start_pt;
-    if (!resolve_joint_state_before_recursive(
-          static_cast<int>(item_i), items, current_joint_states_, cache, start_pt)) {
-      RCLCPP_ERROR(this->get_logger(),
-                   "finalize_motion_sequence_items: resolve start_state failed at item %zu",
-                   item_i);
-      return;
-    }
-
-    // start_pt.positions は current_joint_states_.name と同じ並びの想定
-    if (start_pt.positions.size() != current_joint_states_.name.size()) {
-      RCLCPP_ERROR(this->get_logger(),
-                   "finalize_motion_sequence_items: start_state size mismatch at item %zu",
-                   item_i);
-      return;
-    }
-
-    // --- ② goal_constraints の joint_constraints を「start_stateで全関節分」揃える ---
-    // PilzのMotionSequenceは通常 goal_constraints[0] だけ使ってる前提（あなたのコメントでも現状0固定）
-    for (auto& gc : items[item_i].req.goal_constraints) {
-
-      // 既存 joint_constraints を map 化（上書き維持するため）
-      std::unordered_map<std::string, size_t> jc_idx;
-      jc_idx.reserve(gc.joint_constraints.size());
-      for (size_t k = 0; k < gc.joint_constraints.size(); ++k) {
-        jc_idx[gc.joint_constraints[k].joint_name] = k;
-      }
-
-      // 足りない関節を start_state で追加
-      for (size_t j = 0; j < current_joint_states_.name.size(); ++j) {
-        const bool has_joint = !gc.joint_constraints.empty();
-        const bool is_cartesian =
-            (gc.position_constraints.size() == 1) &&
-            (gc.orientation_constraints.size() == 1);
-  
-        // cartesian 目標なら joint_constraints を絶対に追加しない（混在防止）
-        if (is_cartesian) {
-          // もし既に joint が入ってたら混在なので消す（安全側）
-          if (has_joint) {
-            RCLCPP_WARN(this->get_logger(),
-                        "finalize_motion_sequence_items: cartesian goal has joint_constraints; clearing to satisfy Pilz XOR");
-            gc.joint_constraints.clear();
-          }
-          // この gc は joint の補完をしない
-          continue;
-        }
-
-        const std::string& jname = current_joint_states_.name[j];
-        if (jc_idx.find(jname) != jc_idx.end()) continue;
-
-        moveit_msgs::msg::JointConstraint jc;
-        jc.joint_name = jname;
-        jc.position   = start_pt.positions[j];
-        jc.tolerance_above = 0.01;
-        jc.tolerance_below = 0.01;
-        jc.weight = 1.0;
-
-        gc.joint_constraints.push_back(jc);
-        jc_idx[jname] = gc.joint_constraints.size() - 1;
-      }
-
-      // --- ③ bucket==trigger なら bucket を計算して上書き（boom/arm/bucketは“このgc内の値”を使う） ---
-      auto itB = jc_idx.find(boom_name);
-      auto itA = jc_idx.find(arm_name);
-      auto itK = jc_idx.find(bucket_name);
-      if (itB == jc_idx.end() || itA == jc_idx.end() || itK == jc_idx.end()) continue;
-
-      double& boom   = gc.joint_constraints[itB->second].position;
-      double& arm    = gc.joint_constraints[itA->second].position;
-      double& bucket = gc.joint_constraints[itK->second].position;
-
-      RCLCPP_INFO(this->get_logger(),
-                  "Item %zu: boom=%f, arm=%f, bucket=%f (trigger=%f)",
-                  item_i, boom, arm, bucket, trigger);
-      if (std::abs(bucket - trigger) <= 1e-9) {
-        RCLCPP_INFO(this->get_logger(),
-                    "Item %zu: bucket is at trigger! Adjusting bucket to level it. (boom=%f, arm=%f, offset=%f)",
-                    item_i, boom, arm, offset);
-        bucket = -(boom + arm) + offset;
-        RCLCPP_INFO(this->get_logger(),
-                    "Item %zu: bucket adjusted to %f to level it with boom and arm",
-                    item_i, bucket);
-      }
-    }
-  }
-}
-
 bool PrimitiveExcavatorChangePosePlan::call_excavator_action_sync(
   const TmsRpExcavator::Goal& goal,
   TmsRpExcavator::Result::SharedPtr& result)
@@ -2038,6 +1459,26 @@ auto wrapped_result = result_future.get();
 result = wrapped_result.result;
 
 return wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED && result->success;
+}
+
+void PrimitiveExcavatorChangePosePlan::level_bucket_if_trigger(
+  tms_msg_rp::msg::TmsRpExcavatorJointValues& jv,
+  double trigger,
+  double offset)
+{
+  int ib=-1, ia=-1, ik=-1;
+
+  for (size_t i=0;i<jv.joint_names.size();++i) {
+    if (jv.joint_names[i]=="boom_joint")   ib=i;
+    if (jv.joint_names[i]=="arm_joint")    ia=i;
+    if (jv.joint_names[i]=="bucket_joint") ik=i;
+  }
+
+  if (ib<0 || ia<0 || ik<0) return;
+  if (std::abs(jv.joint_values[ik] - trigger) > 1e-9) return;
+
+  jv.joint_values[ik] =
+      -(jv.joint_values[ib] + jv.joint_values[ia]) + offset;
 }
 
 int main(int argc, char* argv[])

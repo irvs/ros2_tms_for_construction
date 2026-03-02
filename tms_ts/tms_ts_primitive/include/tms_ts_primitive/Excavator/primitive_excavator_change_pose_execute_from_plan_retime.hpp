@@ -17,34 +17,21 @@
 
 #include <memory>
 #include <map>
-
+#include <vector>
 #include <chrono>
 #include <functional>
 #include <future>
 #include <string>
 #include <sstream>
-#include <cmath>
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "tms_msg_ts/action/leaf_node_base.hpp"
 #include "tms_ts_primitive/primitive_node_base.hpp"
-
 #include "tms_msg_rp/action/tms_rp_excavator.hpp"
-#include "tms_msg_rp/msg/tms_rp_excavator_joint_values.hpp"
 
 #include <rclcpp/qos.hpp>   
-#include <rmw/qos_profiles.h>  
-
-#include <moveit_msgs/msg/constraints.hpp>
-#include <moveit_msgs/msg/joint_constraint.hpp>
-#include <moveit_msgs/msg/position_constraint.hpp>
-#include <moveit_msgs/msg/orientation_constraint.hpp>
-#include <moveit_msgs/msg/visibility_constraint.hpp>
-#include <moveit_msgs/msg/planning_scene.hpp>
-#include <moveit_msgs/msg/collision_object.hpp>
-#include <shape_msgs/msg/solid_primitive.hpp>
-#include <geometry_msgs/msg/pose.hpp>
+#include <rmw/qos_profiles.h>
 
 #include "traj_recorder_msgs/action/traj_follow.hpp"
 
@@ -52,7 +39,6 @@ class PrimitiveExcavatorChangePoseExecuteFromPlan : public PrimitiveNodeBase
 {
 public:
   using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
-
   using TmsRpExcavator = tms_msg_rp::action::TmsRpExcavator;
   using GoalHandleTmsRpExcavator = rclcpp_action::ClientGoalHandle<TmsRpExcavator>;
 
@@ -62,7 +48,7 @@ private:
   rclcpp_action::Server<tms_msg_ts::action::LeafNodeBase>::SharedPtr action_server_;
   std::string used_model_name_;
   std::string used_record_name_;
-  std::map<std::string, std::string> param_from_db_;
+  std::vector<std::map<std::string, std::string>> params_from_db_;
 
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
                                           std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal);
@@ -70,7 +56,6 @@ private:
   void handle_accepted(const std::shared_ptr<GoalHandle> goal_handle);
   void execute(const std::shared_ptr<GoalHandle> goal_handle);
 
-  // Member as an action client
   rclcpp_action::Client<TmsRpExcavator>::SharedPtr action_client_;
   std::shared_future<GoalHandleTmsRpExcavator::SharedPtr> client_future_goal_handle_;
   void goal_response_callback(const GoalHandleTmsRpExcavator::SharedPtr& goal_handle);
