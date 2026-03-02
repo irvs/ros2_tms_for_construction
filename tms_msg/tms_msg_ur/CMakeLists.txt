@@ -14,6 +14,7 @@ find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(unique_identifier_msgs REQUIRED)
 
 # メッセージとサービスのファイルリストを明確に定義
 set(msg_files
@@ -36,6 +37,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   ${srv_files}
   ${action_files}
   DEPENDENCIES builtin_interfaces geometry_msgs sensor_msgs
+  DEPENDENCIES unique_identifier_msgs
 )
 
 ament_package()

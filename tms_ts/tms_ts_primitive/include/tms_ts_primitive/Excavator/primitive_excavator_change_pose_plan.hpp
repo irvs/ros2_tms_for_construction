@@ -63,6 +63,8 @@ private:
   double search_precision_= 0.01;
   sensor_msgs::msg::JointState current_joint_states_;
   ExcavatorPoseConverter pose_converter;
+  double velocity_scaling_ = 0.5; // 安全のため、デフォルトは0.5に設定。DBから取得した値で上書きされる。
+  double acceleration_scaling_ = 0.5;
 
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
                                           std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal);

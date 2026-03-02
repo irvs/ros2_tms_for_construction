@@ -43,7 +43,7 @@ public:
     apply_client_ = this->create_client<moveit_msgs::srv::ApplyPlanningScene>(
       "tms_rp_excavator_apply_planning_scene");
 
-    if (!apply_client_->wait_for_service(std::chrono::seconds(5))) {
+    if (!apply_client_->wait_for_service(std::chrono::seconds(20))) {
       RCLCPP_ERROR(this->get_logger(), "Service not available: tms_rp_excavator_apply_planning_scene");
       return;
     }
