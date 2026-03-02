@@ -35,6 +35,12 @@ source install/setup.bash
 ros2 launch tms_ts_launch tms_ts_construction.launch.py
 ```
 
+If you want to run a different task and specify it from the command line, you can specify it like this:
+```
+ros2 launch tms_ts_launch tms_ts_construction.launch.py task_id:=<task_id>
+```
+
+
 The following GUI button will then be activated.
 
 ![](docs/gui_button.png)

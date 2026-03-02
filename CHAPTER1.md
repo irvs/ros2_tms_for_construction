@@ -1,10 +1,43 @@
-### 3. Store and get data simultaneously in real-time
+### 1. Store and get data simultaneously in real-time
 
+#### This chapter explains how to store information from sensors on earthwork site such as location information and joint angles, terrain information. If you don't store sensor information, you can skip this chapter.
+
+#
 Run the following commands to store data in MongoDB and get the data.
 
 
 
-#### Launch
+#### Store sensor data
+To store the position and joint angles of a construction vehicle to mongoDB, run the following steps:
+
+
+Please rewrite "executable" and output topic neme, machine name to your system.
+
+```
+tms_sp_machine_odom_node1 = Node(
+        name="tms_sp_machine_odom",
+        package="tms_ur_construction",
+        executable="<tms_sp_machine_odom or tms_sp_machine_posest, tms_sp_machine_joints>",
+        output="screen",
+        remappings=[
+            ("~/input/odom", "<your output topic name>"),
+        ],
+        parameters=[
+            {
+                "machine_name": "<your machine name>",
+            },
+            {
+                "to_frame": LaunchConfiguration("to_frame"),
+            },
+        ],
+    )
+```
+
+| executable file name | message type of input | message type of stored data |
+|--------|---------|---------|
+|tms_sp_machine_odom | `nav_msgs::msg::Odometry` | `nav_msgs::msg::Odometry`|
+|tms_sp_machine_posest | `geometry_msgs::msg::PoseStamped` | `geometry_msgs::msg::PoseStamped`|
+|tms_sp_machine_joints | `sensor_msgs::msg::JointState` | `sensor_msgs::msg::JointState`|
 
 Run the following commands to store data in MongoDB.
 
@@ -16,18 +49,6 @@ ros2 launch tms_db_manager tms_db_manager.launch.py
 ros2 launch tms_sp_machine tms_sp_machine_odom_and_joints_launch.py
 ```
 The position and orientation data of the construction machine is stored in "rostmsdb/machine_pose" on MongoDB, while joint core information is stored in "rostmsdb/machine_joints" on MongoDB.
-
-#### Launch tms_ur_construction
-
-Run the following commands to get data from MongoDB.
-
-```
-# MongoDB manager(if it is not running)
-ros2 launch tms_db_manager tms_db_manager.launch.py
-
-# Get odometry and jointstates
-ros2 launch tms_ur_construction tms_ur_cv_odom_demo_launch.py
-```
 
 <!--
 #### Play rosbag
