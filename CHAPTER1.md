@@ -11,7 +11,7 @@ Run the following commands to store data in MongoDB and get the data.
 To store the position and joint angles of a construction vehicle to mongoDB, run the following steps:
 
 
-Please rewrite "executable" and output topic neme, machine name to your system.
+Please rewrite "executable" and output topic neme, machine name to your system in "tms_sp_machine_odom_and_joints_launch.py".
 
 ```
 tms_sp_machine_odom_node1 = Node(
