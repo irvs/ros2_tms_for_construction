@@ -6,7 +6,7 @@
 #### Vizualizing location of machine by Rviz2 or OperaSimVR
 To read the position and joint angles of a construction vehicle stored in mongoDB using the method in Chapter 1 and visualize them in OperaSimVR, run the following steps:
 
-Please rewrite "executable" and output topic neme, machine name to your system.
+Please rewrite "executable" and output topic neme, machine name to your system in "tms_ur_cv_odom_demo_launch.py".
 
 ```
 tms_ur_cv_odom_node = Node(
