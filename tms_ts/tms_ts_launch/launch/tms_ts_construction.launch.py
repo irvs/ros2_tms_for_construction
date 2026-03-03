@@ -82,12 +82,12 @@ def generate_launch_description():
                   output='screen',
                   parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
                   namespace = 'zx200'),
-            Node(
-                  package='tms_ts_primitive',
-                  executable='primitive_excavator_change_pose_execute_from_plan_retime',
-                  output='screen',
-                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-                  namespace = 'zx200'),
+            # Node(
+            #       package='tms_ts_primitive',
+            #       executable='primitive_excavator_change_pose_execute_from_plan_retime',
+            #       output='screen',
+            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            #       namespace = 'zx200'),
             Node(
                   package='tms_ts_primitive',
                   executable='primitive_excavator_follow_waypoints',

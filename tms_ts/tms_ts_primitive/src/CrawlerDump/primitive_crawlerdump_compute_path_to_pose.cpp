@@ -49,7 +49,7 @@ PrimitiveCrawlerDumpComputePathToPose::PrimitiveCrawlerDumpComputePathToPose() :
 
   action_client_ = rclcpp_action::create_client<ComputePathToPose>(this, "compute_path_to_pose");
   //
-  publisher_ = this->create_publisher<diagnostic_msgs::msg::KeyValue>("planwritten", 10);
+  publisher_ = this->create_publisher<diagnostic_msgs::msg::KeyValue>("/planwritten", 10);
   //
   RCLCPP_INFO(get_logger(), "Mongo ready: db=rostmsdb collection=parameter");
 }

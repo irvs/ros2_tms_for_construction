@@ -96,15 +96,17 @@ class TmsDbReader(Node):
         
         elif request.latest_only and request.param_type == "joint_plan":
             #self.get_logger().info("obtain joint plan request")
-            plan_data: dict = self.get_joint_plan_data(request, collection)
-            if plan_data is None:
-                self.get_logger().info("get no plan")
-                return response
+            for i in range(len(request.recordnames) - 1):
+                plan_data: dict = self.get_joint_plan_data(request, collection, i + 1)
+                if plan_data is None:
+                    self.get_logger().info("get no plan")
+                    return response
 
-            self.get_logger().info("plan_data")
-            joint_path = self.plan_to_joint(plan_data)
-            self.get_logger().info("joint_path")
-            response.tmsdbs.append(self.joint_plan_tmsdb(joint_path))
+                self.get_logger().info("plan_data")
+                joint_path = self.plan_to_joint(plan_data)
+                self.get_logger().info("joint_path")
+                response.tmsdbs.append(self.joint_plan_tmsdb(joint_path))
+
             self.get_logger().info("retuen plan")
             return response
 
@@ -198,12 +200,12 @@ class TmsDbReader(Node):
             )
         return plan_data
     
-    def get_joint_plan_data(self, request, collection) -> dict:
+    def get_joint_plan_data(self, request, collection, num) -> dict:
         # name が空でない場合
         if request.name != "":
             plan_data = collection.find_one(
-                #{"record_name": request.recordnames[0], "model_name": request.name}
-                {"type": "joint_plan", "model_name": request.name}
+                {"record_name": request.recordnames[num], "model_name": request.name}
+                # {"type": "joint_plan", "model_name": request.name}
             )
         # name が空の場合
         else:
@@ -307,7 +309,7 @@ class TmsDbReader(Node):
     def plan_to_joint(self, data: dict, frame_id: str = "map") -> JointTrajectory:
         jointplan = JointTrajectory()
         traj = JointTrajectory()
-        traj.joint_names = traj.joint_names = data["plan"]["1"]["joint_trajectory"]["joint_names"]
+        traj.joint_names = traj.joint_names = data["plan"]["joint_trajectory"]["joint_names"]
     
     #     traj.joint_names = [
     #     "swing_joint",
@@ -317,7 +319,7 @@ class TmsDbReader(Node):
     #     "bucket_end_joint"
     # ]
 
-        for p in data["plan"]["1"]["joint_trajectory"]["points"]:
+        for p in data["plan"]["joint_trajectory"]["points"]:
             point = JointTrajectoryPoint()
             point.positions = [float(v) for v in p["positions"]]
             point.velocities = [float(v) for v in p["velocities"]]

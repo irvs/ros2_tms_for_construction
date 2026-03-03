@@ -24,6 +24,10 @@ from tms_msg_db.srv import TmsdbGetData
 
 import tms_db_manager.tms_db_util as db_util
 
+from builtin_interfaces.msg import Duration
+import copy
+
+
 
 NODE_NAME = "tms_ur_plan_reader"
 DATA_ID = 3012#2012
@@ -50,7 +54,6 @@ class TmsUrPlanReader(Node):
             'planwritten',
             self.writer_callback,
             10)
-        self.subscription
 
         self.pathpublisher_ = self.create_publisher(Path, "~/output/plan", 10)
 
@@ -63,8 +66,15 @@ class TmsUrPlanReader(Node):
     
     def writer_callback(self, msg):
         self.machine_name = msg.key
-        self.record_name = msg.value#path_plan or joint_plan
+        if "," not in msg.value:
+            self.record_name = [msg.value]#path_plan or joint_plan
+        else:
+            record_names = msg.value.split(",")
+            self.record_name = record_names#path_plan or joint_plan
         self.send_request()
+            
+
+        
 
     def send_request(self):
         """
@@ -75,9 +85,9 @@ class TmsUrPlanReader(Node):
         self.req.id = DATA_ID
         self.req.latest_only = self.latest
         #self.req.param_type = "plan"
-        self.req.param_type = self.record_name
+        self.req.param_type = self.record_name[0]
         self.req.name = self.machine_name
-        self.req.recordnames = [self.record_name]
+        self.req.recordnames = self.record_name
 
         future = self.cli.call_async(self.req)
         future.add_done_callback(partial(self.callback_response))
@@ -95,6 +105,17 @@ class TmsUrPlanReader(Node):
             return
         
     def publish_plan(self) -> None:
+        if(len(self.tmsdbs)>1):
+            # self.merge_plans(self.tmsdbs)
+            # self.concatenate_trajectories(self.tmsdbs)
+            traj_list = []
+            for db in self.tmsdbs:
+                traj_list.append(db.jointplan)
+
+            merged = self.concatenate_trajectories(traj_list)
+            self.jointpublisher_.publish(merged)
+            self.get_logger().info("published merged joint trajectory")
+            return
         if(self.tmsdbs[0].pathplan.poses != []):
             msg: Path = self.tmsdbs[0].pathplan
             self.pathpublisher_.publish(msg)
@@ -103,6 +124,60 @@ class TmsUrPlanReader(Node):
             msg: JointTrajectory = self.tmsdbs[0].jointplan
             self.jointpublisher_.publish(msg)
             self.get_logger().info("published joint trajectory plan")
+
+            
+
+    def merge_plans(plan_list):
+        plans = []
+        for i in range(len(plan_list)):
+            if i > 0:
+                step_plan
+            plans.append(step_plan)
+
+    def duration_to_sec(self, duration: Duration) -> float:
+        return duration.sec + duration.nanosec * 1e-9
+
+
+    def sec_to_duration(self, t: float) -> Duration:
+        d = Duration()
+        d.sec = int(t)
+        d.nanosec = int((t - int(t)) * 1e9)
+        return d
+
+
+    def concatenate_trajectories(self, trajectories):
+
+        if not trajectories:
+            return None
+
+        result = JointTrajectory()
+        result.header = trajectories[0].header
+        result.joint_names = trajectories[0].joint_names.copy()
+
+        time_offset = 0.0
+
+        for i, traj in enumerate(trajectories):
+
+            if traj.joint_names != result.joint_names:
+                raise ValueError("joint_names が一致していません")
+
+            for j, point in enumerate(traj.points):
+
+                if i > 0 and j == 0:
+                    continue
+
+                new_point = copy.deepcopy(point)
+
+                t = self.duration_to_sec(point.time_from_start)
+                new_point.time_from_start = self.sec_to_duration(t + time_offset)
+
+                result.points.append(new_point)
+
+            if traj.points:
+                last_time = self.duration_to_sec(traj.points[-1].time_from_start)
+                time_offset += last_time
+
+        return result
 
 
 

@@ -14,6 +14,7 @@
 
 #include "tms_ts_primitive/Excavator/primitive_excavator_change_pose_execute_from_plan.hpp"
 #include <glog/logging.h>
+#include "diagnostic_msgs/msg/key_value.hpp"
 
 using namespace std::chrono_literals;
 
@@ -78,6 +79,8 @@ PrimitiveExcavatorChangePoseExecuteFromPlan::PrimitiveExcavatorChangePoseExecute
   {
     RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
   }
+
+  publisher_ = this->create_publisher<diagnostic_msgs::msg::KeyValue>("/planwritten", 10);
 }
 
 rclcpp_action::GoalResponse PrimitiveExcavatorChangePoseExecuteFromPlan::handle_goal(
@@ -106,6 +109,14 @@ rclcpp_action::GoalResponse PrimitiveExcavatorChangePoseExecuteFromPlan::handle_
   
   RCLCPP_INFO(this->get_logger(), "Processing %zu record names", record_names.size());
   
+  ////
+  auto message = diagnostic_msgs::msg::KeyValue();
+  message.key = used_model_name_;
+  //message.value = output_record_name_;
+  message.value = "joint_plan,"+used_record_name_;
+  publisher_->publish(message);
+  ////
+
   // 各record_nameからパラメータを取得
   params_from_db_.clear();
   for (const auto& rname : record_names) {
