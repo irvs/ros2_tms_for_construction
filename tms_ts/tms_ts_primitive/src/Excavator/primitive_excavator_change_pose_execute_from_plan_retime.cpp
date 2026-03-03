@@ -289,24 +289,73 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
     return;
   }
 
-  // 最初のレコードからtime_scaleを取得
-  double time_scale = get_scale_from_db_json(first_param, "time_scale", "time_scale", 1.0);
-  double velocity_scale = get_scale_from_db_json(first_param, "velocity_scale", "velocity_scale", 0.0);
-  double acceleration_scale = get_scale_from_db_json(first_param, "acceleration_scale", "acceleration_scale", 0.0);
+  // 各レコードからスケーリング値を取得して配列に格納
+  std::vector<double> time_scales;
+  std::vector<double> velocity_scales;
+  std::vector<double> acceleration_scales;
+  
+  for (size_t i = 0; i < params_from_db_.size(); ++i) {
+    const auto& param = params_from_db_[i];
+    
+    double time_scale = get_scale_from_db_json(param, "time_scale", "time_scale", 1.0);
+    double velocity_scale = get_scale_from_db_json(param, "velocity_scale", "velocity_scale", 0.0);
+    double acceleration_scale = get_scale_from_db_json(param, "acceleration_scale", "acceleration_scale", 0.0);
+    
+    if (time_scale < 1.0 && velocity_scale > 1.0 && acceleration_scale > 1.0) {
+      RCLCPP_ERROR(this->get_logger(), "Record %zu: Time scaling from DB is less than 1.0: time_scale=%.3f. This may cause the trajectory to be executed faster than planned, which can be dangerous.", i, time_scale);
+      return;
+    }
 
-  if (time_scale < 1.0 && velocity_scale > 1.0 && acceleration_scale > 1.0) {
-    RCLCPP_ERROR(this->get_logger(), "Time scaling from DB is less than 1.0: time_scale=%.3f. This may cause the trajectory to be executed faster than planned, which can be dangerous. Please ensure that time_scale is set appropriately.", time_scale);
-    return;
-  }
-
-  if (time_scale <= 0.0) {
-    RCLCPP_ERROR(this->get_logger(), "Invalid time_scale from DB: %.3f. Must be > 0.", time_scale);
-    return;
+    if (time_scale <= 0.0) {
+      RCLCPP_ERROR(this->get_logger(), "Record %zu: Invalid time_scale from DB: %.3f. Must be > 0.", i, time_scale);
+      return;
+    }
+    
+    time_scales.push_back(time_scale);
+    velocity_scales.push_back(velocity_scale);
+    acceleration_scales.push_back(acceleration_scale);
+    
+    RCLCPP_INFO(this->get_logger(), "Record %zu: time_scale=%.3f, velocity_scale=%.3f, acceleration_scale=%.3f",
+                i, time_scale, velocity_scale, acceleration_scale);
   }
   
-  const double speed_scale = 1.0 / time_scale;
-  RCLCPP_INFO(this->get_logger(), "Time scaling from DB: time_scale=%.3f => speed_scale=%.3f",
-              time_scale, speed_scale);
+  // スケーリング値の整合性チェック: 全て同じ値でないとエラー
+  if (time_scales.size() > 1) {
+    double first_time_scale = time_scales[0];
+    double first_velocity_scale = velocity_scales[0];
+    double first_acceleration_scale = acceleration_scales[0];
+    
+    for (size_t i = 1; i < time_scales.size(); ++i) {
+      if (std::abs(time_scales[i] - first_time_scale) > 1e-6) {
+        RCLCPP_ERROR(this->get_logger(), 
+                     "Scaling values must be consistent across all records. "
+                     "Record 0 has time_scale=%.3f, but record %zu has time_scale=%.3f",
+                     first_time_scale, i, time_scales[i]);
+        handle_error("Inconsistent time_scale values across records");
+        return;
+      }
+      if (std::abs(velocity_scales[i] - first_velocity_scale) > 1e-6) {
+        RCLCPP_ERROR(this->get_logger(), 
+                     "Scaling values must be consistent across all records. "
+                     "Record 0 has velocity_scale=%.3f, but record %zu has velocity_scale=%.3f",
+                     first_velocity_scale, i, velocity_scales[i]);
+        handle_error("Inconsistent velocity_scale values across records");
+        return;
+      }
+      if (std::abs(acceleration_scales[i] - first_acceleration_scale) > 1e-6) {
+        RCLCPP_ERROR(this->get_logger(), 
+                     "Scaling values must be consistent across all records. "
+                     "Record 0 has acceleration_scale=%.3f, but record %zu has acceleration_scale=%.3f",
+                     first_acceleration_scale, i, acceleration_scales[i]);
+        handle_error("Inconsistent acceleration_scale values across records");
+        return;
+      }
+    }
+    
+    RCLCPP_INFO(this->get_logger(), 
+                "Scaling values are consistent across all %zu records: time=%.3f, velocity=%.3f, accel=%.3f",
+                time_scales.size(), first_time_scale, first_velocity_scale, first_acceleration_scale);
+  }
 
   // 各record_nameからplanを取得してRobotTrajectory配列に変換
   std::vector<moveit_msgs::msg::RobotTrajectory> loaded_plans;
@@ -474,8 +523,8 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
       }
 
       // time_scalingを適用
-      if (!scale_trajectory_time(robot_trajectory, time_scale)) {
-        RCLCPP_ERROR(this->get_logger(), "Failed to scale trajectory time for record %zu (time_scale=%.3f)", record_idx, time_scale);
+      if (!scale_trajectory_time(robot_trajectory, time_scales[record_idx])) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to scale trajectory time for record %zu (time_scale=%.3f)", record_idx, time_scales[record_idx]);
         handle_error("Failed to scale trajectory time");
         return;
       }
@@ -587,9 +636,23 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
   // traj_follow_recordにも送信
   traj_recorder_msgs::action::TrajFollow::Goal traj_goal;
   traj_goal.plan = goal_msg.plan;
-  traj_goal.time_scaling = time_scale;
-  traj_goal.velocity_scaling = velocity_scale;
-  traj_goal.acceleration_scaling = acceleration_scale;
+  
+  // doubleからfloatに変換して代入
+  traj_goal.time_scaling.resize(time_scales.size());
+  traj_goal.velocity_scaling.resize(velocity_scales.size());
+  traj_goal.acceleration_scaling.resize(acceleration_scales.size());
+  
+  for (size_t i = 0; i < time_scales.size(); ++i) {
+    traj_goal.time_scaling[i] = static_cast<float>(time_scales[i]);
+  }
+  for (size_t i = 0; i < velocity_scales.size(); ++i) {
+    traj_goal.velocity_scaling[i] = static_cast<float>(velocity_scales[i]);
+  }
+  for (size_t i = 0; i < acceleration_scales.size(); ++i) {
+    traj_goal.acceleration_scaling[i] = static_cast<float>(acceleration_scales[i]);
+  }
+
+  RCLCPP_INFO(this->get_logger(), "Sending trajectory to traj_follow_record with %zu scaling values", time_scales.size());
 
   auto traj_send_opts = rclcpp_action::Client<traj_recorder_msgs::action::TrajFollow>::SendGoalOptions();
   traj_send_opts.goal_response_callback =
