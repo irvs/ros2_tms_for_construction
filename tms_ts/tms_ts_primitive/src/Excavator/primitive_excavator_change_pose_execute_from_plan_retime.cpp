@@ -132,174 +132,6 @@ bool scale_trajectory_time(moveit_msgs::msg::RobotTrajectory& traj, double time_
   return true;
 }
 
-// 複数のRobotTrajectoryを1つに結合する関数
-moveit_msgs::msg::RobotTrajectory combineTrajectories(
-  const std::vector<moveit_msgs::msg::RobotTrajectory>& trajectories,
-  const rclcpp::Logger& logger)
-{
-  if (trajectories.empty()) {
-    RCLCPP_ERROR(logger, "Cannot combine empty trajectory list");
-    return moveit_msgs::msg::RobotTrajectory();
-  }
-  
-  if (trajectories.size() == 1) {
-    RCLCPP_INFO(logger, "Only one trajectory, no combination needed");
-    return trajectories[0];
-  }
-  
-  RCLCPP_INFO(logger, "Combining %zu trajectories into one", trajectories.size());
-  
-  moveit_msgs::msg::RobotTrajectory combined = trajectories[0];
-  
-  for (size_t i = 1; i < trajectories.size(); ++i) {
-    const auto& next_traj = trajectories[i].joint_trajectory;
-    auto& base_traj = combined.joint_trajectory;
-    
-    if (base_traj.points.empty()) {
-      RCLCPP_WARN(logger, "Base trajectory %zu is empty, using next trajectory", i-1);
-      combined = trajectories[i];
-      continue;
-    }
-    
-    if (next_traj.points.empty()) {
-      RCLCPP_WARN(logger, "Trajectory %zu is empty, skipping", i);
-      continue;
-    }
-    
-    // 最後のポイントの時刻を取得
-    auto last_time = base_traj.points.back().time_from_start;
-    double last_time_sec = duration_to_sec(last_time);
-    
-    RCLCPP_INFO(logger, "Trajectory %zu: last_time=%.3f sec, adding %zu points",
-                i-1, last_time_sec, next_traj.points.size());
-    
-    // 次のtrajectoryの最初のポイントが現在の最後のポイントと重複している場合はスキップ
-    size_t start_idx = 0;
-    if (next_traj.points.size() > 0) {
-      const auto& last_pos = base_traj.points.back().positions;
-      const auto& first_pos = next_traj.points[0].positions;
-      
-      // 位置が一致しているかチェック
-      bool positions_match = true;
-      if (last_pos.size() == first_pos.size()) {
-        for (size_t j = 0; j < last_pos.size(); ++j) {
-          if (std::abs(last_pos[j] - first_pos[j]) > 1e-6) {
-            positions_match = false;
-            break;
-          }
-        }
-        if (positions_match) {
-          start_idx = 1;  // 最初のポイントはスキップ
-          RCLCPP_INFO(logger, "Skipping duplicate first point in trajectory %zu", i);
-        }
-      }
-    }
-    
-    // 次のtrajectoryのポイントを追加（時間オフセット付き）
-    for (size_t j = start_idx; j < next_traj.points.size(); ++j) {
-      auto new_point = next_traj.points[j];
-      
-      // 時間オフセットを追加
-      double point_time = duration_to_sec(new_point.time_from_start);
-      double new_time = last_time_sec + point_time;
-      new_point.time_from_start = sec_to_duration(new_time);
-      
-      base_traj.points.push_back(new_point);
-    }
-  }
-  
-  RCLCPP_INFO(logger, "Combined trajectory has %zu points, total duration: %.3f sec",
-              combined.joint_trajectory.points.size(),
-              duration_to_sec(combined.joint_trajectory.points.back().time_from_start));
-  
-  return combined;
-}
-
-// RobotTrajectoryにtime parameterizationを再計算する関数
-bool retimeTrajectoryWithJointLimits(
-  const rclcpp::Node::SharedPtr& node,
-  moveit_msgs::msg::RobotTrajectory& traj_msg,
-  const std::string& planning_group,
-  double vel_scale,
-  double acc_scale,
-  const rclcpp::Logger& logger)
-{
-  try {
-    RCLCPP_INFO(logger, "Loading robot model for time parameterization...");
-    
-    // Robot modelを読み込む
-    robot_model_loader::RobotModelLoader robot_model_loader(node, "robot_description");
-    const moveit::core::RobotModelPtr& robot_model = robot_model_loader.getModel();
-    
-    if (!robot_model) {
-      RCLCPP_ERROR(logger, "Failed to load robot model");
-      return false;
-    }
-    
-    // Joint model groupを取得
-    const moveit::core::JointModelGroup* joint_model_group = 
-        robot_model->getJointModelGroup(planning_group);
-    
-    if (!joint_model_group) {
-      RCLCPP_ERROR(logger, "Joint model group '%s' not found", planning_group.c_str());
-      return false;
-    }
-    
-    RCLCPP_INFO(logger, "Creating RobotTrajectory for group '%s'", planning_group.c_str());
-    
-    // RobotTrajectoryオブジェクトを作成
-    robot_trajectory::RobotTrajectory rt(robot_model, planning_group);
-    
-    // 開始状態を設定
-    moveit::core::RobotState start_state(robot_model);
-    if (!traj_msg.joint_trajectory.points.empty()) {
-      const auto& first_point = traj_msg.joint_trajectory.points[0];
-      for (size_t i = 0; i < traj_msg.joint_trajectory.joint_names.size(); ++i) {
-        if (i < first_point.positions.size()) {
-          start_state.setJointPositions(
-              traj_msg.joint_trajectory.joint_names[i], 
-              &first_point.positions[i]);
-        }
-      }
-      start_state.update();
-    }
-    
-    // メッセージからRobotTrajectoryに変換
-    rt.setRobotTrajectoryMsg(start_state, traj_msg);
-    
-    RCLCPP_INFO(logger, "Trajectory before retime: %zu waypoints, duration=%.3f sec",
-                rt.getWayPointCount(),
-                rt.getWayPointDurationFromStart(rt.getWayPointCount() - 1));
-    
-    // joint_limitsを考慮してtime parameterizationを再計算
-    trajectory_processing::IterativeParabolicTimeParameterization iptp;
-    
-    RCLCPP_INFO(logger, "Computing time stamps with vel_scale=%.3f, acc_scale=%.3f",
-                vel_scale, acc_scale);
-    
-    bool success = iptp.computeTimeStamps(rt, vel_scale, acc_scale);
-    
-    if (!success) {
-      RCLCPP_ERROR(logger, "Failed to compute time stamps for trajectory");
-      return false;
-    }
-    
-    RCLCPP_INFO(logger, "Trajectory after retime: %zu waypoints, duration=%.3f sec",
-                rt.getWayPointCount(),
-                rt.getWayPointDurationFromStart(rt.getWayPointCount() - 1));
-    
-    // RobotTrajectoryからメッセージに戻す
-    rt.getRobotTrajectoryMsg(traj_msg);
-    
-    RCLCPP_INFO(logger, "Time parameterization completed successfully");
-    return true;
-    
-  } catch (const std::exception& e) {
-    RCLCPP_ERROR(logger, "Exception in retimeTrajectoryWithJointLimits: %s", e.what());
-    return false;
-  }
-}
-
 }
 
 PrimitiveExcavatorChangePoseExecuteFromPlan::PrimitiveExcavatorChangePoseExecuteFromPlan() : PrimitiveNodeBase("primitive_excavator_change_pose_execute_from_plan_node")
@@ -477,6 +309,7 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
               time_scale, speed_scale);
 
   // 各record_nameからplanを取得してRobotTrajectory配列に変換
+  std::vector<moveit_msgs::msg::RobotTrajectory> loaded_plans;
   try {
     for (size_t record_idx = 0; record_idx < params_from_db_.size(); ++record_idx) {
       const auto& param_from_db = params_from_db_[record_idx];
@@ -652,18 +485,18 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
                     record_idx, duration_to_sec(pts.back().time_from_start));
       }
       
-      goal_msg.plans.push_back(robot_trajectory);
+      loaded_plans.push_back(robot_trajectory);
       RCLCPP_INFO(this->get_logger(), "Loaded plan from record %zu with %zu joint trajectory points (time scaled)", 
                   record_idx, robot_trajectory.joint_trajectory.points.size());
     }
     
-    if (goal_msg.plans.empty()) {
+    if (loaded_plans.empty()) {
       RCLCPP_ERROR(this->get_logger(), "No valid plans were loaded from any record");
       handle_error("No valid plans loaded from database");
       return;
     }
     
-    RCLCPP_INFO(this->get_logger(), "Successfully loaded %zu plan(s) from database (all time-scaled)", goal_msg.plans.size());
+    RCLCPP_INFO(this->get_logger(), "Successfully loaded %zu plan(s) from database (all time-scaled)", loaded_plans.size());
 
   } catch (const std::exception& e) {
     RCLCPP_ERROR(this->get_logger(), "Failed to parse plans: %s", e.what());
@@ -671,25 +504,89 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
     return;
   }
 
-  // Combine trajectories
-  auto combined_trajectory = combineTrajectories(goal_msg.plans, this->get_logger());
-  if (combined_trajectory.joint_trajectory.points.empty()) {
-    handle_error("Failed to combine trajectories");
-    return;
+  // 複数のtrajectoryを時間を調整して結合
+  RCLCPP_INFO(this->get_logger(), "Combining %zu trajectory(ies) by adjusting time_from_start", loaded_plans.size());
+    
+  moveit_msgs::msg::RobotTrajectory combined_trajectory;
+  rclcpp::Duration accumulated_time(0, 0);  // 累積時間
+
+  for (size_t i = 0; i < loaded_plans.size(); ++i) {
+    const auto& current_traj = loaded_plans[i];
+    
+    if (current_traj.joint_trajectory.points.empty()) {
+      RCLCPP_WARN(this->get_logger(), "Trajectory %zu is empty, skipping", i+1);
+      continue;
+    }
+
+    if (i == 0) {
+      // 最初のtrajectoryはそのまま使用
+      combined_trajectory = current_traj;
+      
+      // 最後のポイントの時刻を取得
+      const auto& last_point = combined_trajectory.joint_trajectory.points.back();
+      accumulated_time = last_point.time_from_start;
+      
+      double duration_sec = accumulated_time.nanoseconds() * 1e-9;
+      RCLCPP_INFO(this->get_logger(), "Trajectory 1/%zu: %zu waypoints, duration=%.2f sec", 
+                  loaded_plans.size(),
+                  combined_trajectory.joint_trajectory.points.size(),
+                  duration_sec);
+    } else {
+      // 2番目以降は時間をオフセットして追加
+      // 最初のポイント（前のtrajectoryの最後と重複）はスキップ
+      for (size_t j = 1; j < current_traj.joint_trajectory.points.size(); ++j) {
+        const auto& point = current_traj.joint_trajectory.points[j];
+        auto adjusted_point = point;
+        // 累積時間を加算
+        adjusted_point.time_from_start = accumulated_time + point.time_from_start;
+        combined_trajectory.joint_trajectory.points.push_back(adjusted_point);
+      }
+      
+      // 最後のポイントの時刻を更新
+      const auto& last_point = combined_trajectory.joint_trajectory.points.back();
+      accumulated_time = last_point.time_from_start;
+      
+      double duration_sec = accumulated_time.nanoseconds() * 1e-9;
+      RCLCPP_INFO(this->get_logger(), "Trajectory %zu/%zu: added %zu waypoints (skipped first), total duration=%.2f sec", 
+                  i+1, loaded_plans.size(),
+                  current_traj.joint_trajectory.points.size() - 1,
+                  duration_sec);
+    }
   }
 
-  // Retime trajectory with joint limits
-  if (!retimeTrajectoryWithJointLimits(this->shared_from_this(), combined_trajectory, goal_msg.planning_group, velocity_scale, acceleration_scale, this->get_logger())) {
-    handle_error("Failed to retime trajectory with joint limits");
-    return;
+  double total_duration_sec = accumulated_time.nanoseconds() * 1e-9;
+  RCLCPP_INFO(this->get_logger(), "Combined trajectory: %zu total waypoints, %.2f sec total duration",
+              combined_trajectory.joint_trajectory.points.size(),
+              total_duration_sec);
+
+  // 時間が厳密に増加していることを検証
+  for (size_t i = 1; i < combined_trajectory.joint_trajectory.points.size(); ++i) {
+    const auto& prev_time = combined_trajectory.joint_trajectory.points[i-1].time_from_start;
+    const auto& curr_time = combined_trajectory.joint_trajectory.points[i].time_from_start;
+    
+    // time_from_startを秒単位に変換して比較
+    double prev_sec = prev_time.sec + prev_time.nanosec * 1e-9;
+    double curr_sec = curr_time.sec + curr_time.nanosec * 1e-9;
+    
+    if (curr_sec <= prev_sec) {
+      RCLCPP_ERROR(this->get_logger(), "Time between points %zu and %zu is not strictly increasing: %.6f and %.6f",
+                  i-1, i, prev_sec, curr_sec);
+      handle_error("Time is not strictly increasing between waypoints.");
+      return;
+    }
   }
 
-  goal_msg.plans.clear();
-  goal_msg.plans.push_back(combined_trajectory);
+  RCLCPP_INFO(this->get_logger(), "Time validation passed: all waypoints have strictly increasing time");
+
+  // 結合したtrajectoryを単一のplanとして送信
+  goal_msg.plan = combined_trajectory;
+
+  RCLCPP_INFO(this->get_logger(), "Sending EXECUTE_PLAN command with combined trajectory (from %zu original plans) to tms_rp_excavator", 
+              loaded_plans.size());
 
   // traj_follow_recordにも送信
   traj_recorder_msgs::action::TrajFollow::Goal traj_goal;
-  traj_goal.plan = goal_msg.plans;
+  traj_goal.plan = goal_msg.plan;
   traj_goal.time_scaling = time_scale;
   traj_goal.velocity_scaling = velocity_scale;
   traj_goal.acceleration_scaling = acceleration_scale;
@@ -721,9 +618,6 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
     };
 
   traj_action_client_->async_send_goal(traj_goal, traj_send_opts);
-
-  RCLCPP_INFO(this->get_logger(), "Sending EXECUTE_PLAN command with %zu trajectories to tms_rp_excavator", 
-              goal_msg.plans.size());
 
   // Send goal to TMS_IF
   auto send_goal_options = rclcpp_action::Client<TmsRpExcavator>::SendGoalOptions();

@@ -12,7 +12,7 @@ tms_msg_rp/TmsRpExcavatorJointValues joint_values
 moveit_msgs/RobotTrajectory[] previous_pose
 
 # CMD_EXECUTE_PLAN
-moveit_msgs/RobotTrajectory[] plans
+moveit_msgs/RobotTrajectory plan
 
 # Constraints
 moveit_msgs/Constraints constraints
