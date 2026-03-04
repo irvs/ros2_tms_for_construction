@@ -88,7 +88,8 @@ void WaitForUr::execute(const std::shared_ptr<GoalHandle> goal_handle)
     auto goal_msg = NextStepPermission::Goal();
     //goal_msg.taskname = parameters["window_title"];
     auto goal = goal_handle->get_goal();
-    goal_msg.machinename = goal->model_name;
+//    goal_msg.machinename = goal->model_name;
+    goal_msg.machinename = goal->model_name + "," + goal->record_name;
 
     //RCLCPP_INFO(this->get_logger(), "target_angle: %d", parameters["target_angle"]);
 
@@ -104,6 +105,8 @@ void WaitForUr::execute(const std::shared_ptr<GoalHandle> goal_handle)
 
     //Goal をサーバ�?�に送信
     RCLCPP_INFO(this->get_logger(), "Sending goal");
+    RCLCPP_INFO(this->get_logger(),"waiting : %s", goal_msg.machinename.c_str());
+    
     client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, send_goal_options);
 }
 

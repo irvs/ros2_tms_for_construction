@@ -125,15 +125,6 @@ class TmsUrPlanReader(Node):
             self.jointpublisher_.publish(msg)
             self.get_logger().info("published joint trajectory plan")
 
-            
-
-    def merge_plans(plan_list):
-        plans = []
-        for i in range(len(plan_list)):
-            if i > 0:
-                step_plan
-            plans.append(step_plan)
-
     def duration_to_sec(self, duration: Duration) -> float:
         return duration.sec + duration.nanosec * 1e-9
 

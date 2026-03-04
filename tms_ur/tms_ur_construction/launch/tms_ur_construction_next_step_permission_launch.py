@@ -35,6 +35,18 @@ def generate_launch_description():
     output='screen'
     )
 
+    tms_ur_next_step_permission2 = Node(
+    package='tms_ur_construction',
+    executable='tms_ur_construction_next_step_permission',
+    name='wait_ur_node',
+    namespace='zx200',
+    remappings=[
+        ('urpermission', '/urpermission'),
+        ('permissionrequest', '/permissionrequest'),
+    ],
+    output='screen'
+    )
+
     
     tms_ur_plan_reader = Node(
         name="plan_reader",
@@ -146,6 +158,7 @@ def generate_launch_description():
         [
             latest,
             tms_ur_next_step_permission1,
+            tms_ur_next_step_permission2,
             tms_ur_plan_reader
         #    tms_ur_paramwriter_odom_node1
         #    tms_ur_cv_odom_node1,

@@ -91,7 +91,7 @@ add_executable(primitive_excavator_follow_waypoints src/Excavator/primitive_exca
 add_executable(primitive_excavator_navigate_anywhere src/Excavator/primitive_excavator_navigate_anywhere.cpp)
 add_executable(primitive_excavator_navigate_through_poses src/Excavator/primitive_excavator_navigate_through_poses.cpp)
 
-add_executable(primitive_wait_for_ur src/common/wait_for_ur.cpp)
+add_executable(wait_for_ur src/common/wait_for_ur.cpp)
 
 add_library(excavator_pose_converter SHARED src/Excavator/lib/excavator_pose_converter.cpp)
 target_include_directories(excavator_pose_converter PUBLIC include)
@@ -116,7 +116,7 @@ set(TARGETS
   primitive_excavator_follow_waypoints
   primitive_excavator_navigate_anywhere
   primitive_excavator_navigate_through_poses
-  primitive_wait_for_ur
+  wait_for_ur
 )
 
 # ament_target_dependencies(primitive_excavator_change_pose_execute_from_plan_retime

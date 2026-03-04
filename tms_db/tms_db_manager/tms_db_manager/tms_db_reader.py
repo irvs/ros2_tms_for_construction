@@ -70,7 +70,7 @@ class TmsDbReader(Node):
         """
         collection: pymongo.collection.Collection = self.db[request.type]
 
-        if request.latest_only and not (request.param_type == "path_plan" or request.param_type == "joint_plan"):
+        if request.latest_only and not (request.param_type == "plan" or request.param_type == "path_plan" or request.param_type == "joint_plan"):
             latest_data: dict = self.get_latest_data(request, collection)
             if latest_data == None:
                 return response
@@ -108,6 +108,36 @@ class TmsDbReader(Node):
                 response.tmsdbs.append(self.joint_plan_tmsdb(joint_path))
 
             self.get_logger().info("retuen plan")
+            return response
+        
+        elif request.latest_only and request.param_type == "plan":
+            self.get_logger().info("get recuest for plan")
+            if len(request.recordnames) == 1:
+                record_num = 1
+            else:
+                record_num = len(request.recordnames)
+            for i in range(record_num):
+                plan_data = self.get_plan_data(request, collection, i)
+
+                if plan_data is None:
+                    self.get_logger().info("no plan found")
+                    continue
+
+                self.get_logger().info("plan_data")
+                # ===== ここでタイプ判定 =====
+                if plan_data["type"] == "path_plan":
+                    path_msg = self.plan_to_path(plan_data)
+                    response.tmsdbs.append(self.path_plan_tmsdb(path_msg))
+                    self.get_logger().info("waypoint_path")
+
+                elif plan_data["type"] == "joint_plan":
+                    joint_msg = self.plan_to_joint(plan_data)
+                    response.tmsdbs.append(self.joint_plan_tmsdb(joint_msg))
+                    self.get_logger().info("joint_path")
+
+                else:
+                    self.get_logger().warn("unknown plan type")
+
             return response
 
         else:
@@ -213,6 +243,15 @@ class TmsDbReader(Node):
                 {"id": request.id}
             )
         return plan_data
+    
+            
+    def get_plan_data(self, request, collection, num) -> dict:
+
+        if request.name != "":
+            self.get_logger().info(f"record_name: {request.recordnames[num]}, model_name: {request.name}")
+            return collection.find_one({"record_name": request.recordnames[num], "model_name": request.name})
+        else:
+            return collection.find_one({"id": request.id}, sort=[("time", pymongo.DESCENDING)])
 
 
     def allocate_tmsdb(self, data: dict) -> Tmsdb:
