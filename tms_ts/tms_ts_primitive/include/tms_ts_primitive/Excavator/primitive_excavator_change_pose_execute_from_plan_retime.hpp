@@ -33,6 +33,9 @@
 #include <rclcpp/qos.hpp>   
 #include <rmw/qos_profiles.h>
 
+#include <mutex>
+#include <condition_variable>
+
 #include "traj_recorder_msgs/action/traj_follow.hpp"
 
 class PrimitiveExcavatorChangePoseExecuteFromPlan : public PrimitiveNodeBase
@@ -66,6 +69,23 @@ private:
 
   rclcpp_action::Client<traj_recorder_msgs::action::TrajFollow>::SharedPtr traj_action_client_;
   rclcpp_action::ClientGoalHandle<traj_recorder_msgs::action::TrajFollow>::SharedPtr traj_goal_handle_;
+  // primitive_excavator_change_pose_execute_from_plan_retime.hpp などに追加
+  std::mutex pending_mtx_;
+  std::shared_ptr<GoalHandle> pending_leaf_goal_handle_;
+  tms_msg_ts::action::LeafNodeBase::Result pending_leaf_result_;
+  bool pending_leaf_ready_ = false;
+  bool waiting_traj_result_ = false;
+  std::shared_future<rclcpp_action::ClientGoalHandle<traj_recorder_msgs::action::TrajFollow>::SharedPtr> traj_future_goal_handle_;
+
+  std::mutex traj_mtx_;
+  std::condition_variable traj_cv_;
+  bool traj_done_{true};  // 何も送ってないときは done 扱い
+  rclcpp_action::ResultCode traj_last_code_{rclcpp_action::ResultCode::UNKNOWN};
+
+  rclcpp::CallbackGroup::SharedPtr cbg_server_;
+  rclcpp::CallbackGroup::SharedPtr cbg_tms_;
+  rclcpp::CallbackGroup::SharedPtr cbg_traj_;
+
 };
 
 #endif

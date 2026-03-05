@@ -91,7 +91,7 @@ builtin_interfaces::msg::Duration sec_to_duration(double t)
   return d;
 }
 
-// time_from_start を一律倍率でスケールする（pointsの形は変えない）
+// time_from_start を一律倍率でスケールし、velocity/accelerationも適切にスケールする
 bool scale_trajectory_time(moveit_msgs::msg::RobotTrajectory& traj, double time_scale)
 {
   if (time_scale <= 0.0) return false;
@@ -101,12 +101,6 @@ bool scale_trajectory_time(moveit_msgs::msg::RobotTrajectory& traj, double time_
     return true;
   }
 
-  for (auto& p : traj.joint_trajectory.points) {
-    p.velocities.clear();
-    p.accelerations.clear();
-    p.effort.clear();
-  }
-
   auto& jt = traj.joint_trajectory;
   if (jt.points.empty()) return true;
 
@@ -114,6 +108,7 @@ bool scale_trajectory_time(moveit_msgs::msg::RobotTrajectory& traj, double time_
   double last_t = -1.0;
 
   for (auto& p : jt.points) {
+    // 時間をスケール
     double t = duration_to_sec(p.time_from_start);
     t *= time_scale;
 
@@ -124,9 +119,23 @@ bool scale_trajectory_time(moveit_msgs::msg::RobotTrajectory& traj, double time_
     p.time_from_start = sec_to_duration(t);
     last_t = t;
 
-    // 速度/加速度などは送らない（既にclearしてるが念のため）
-    p.velocities.clear();
-    p.accelerations.clear();
+    // velocity（速度）をスケール: v' = v / time_scale
+    // 時間が長くなる分、速度は遅くなる
+    if (!p.velocities.empty()) {
+      for (auto& vel : p.velocities) {
+        vel /= time_scale;
+      }
+    }
+
+    // acceleration（加速度）をスケール: a' = a / (time_scale^2)
+    // 時間が長くなる分、加速度はさらに小さくなる
+    if (!p.accelerations.empty()) {
+      for (auto& acc : p.accelerations) {
+        acc /= (time_scale * time_scale);
+      }
+    }
+
+    // effortはクリア（力/トルクは時間スケーリングの影響を受けるが、単純な計算では不正確）
     p.effort.clear();
   }
   return true;
@@ -134,8 +143,13 @@ bool scale_trajectory_time(moveit_msgs::msg::RobotTrajectory& traj, double time_
 
 }
 
-PrimitiveExcavatorChangePoseExecuteFromPlan::PrimitiveExcavatorChangePoseExecuteFromPlan() : PrimitiveNodeBase("primitive_excavator_change_pose_execute_from_plan_node")
+PrimitiveExcavatorChangePoseExecuteFromPlan::PrimitiveExcavatorChangePoseExecuteFromPlan() : PrimitiveNodeBase("primitive_excavator_change_pose_execute_from_plan_retime_node")
 {
+
+    cbg_server_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+    cbg_tms_    = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+    cbg_traj_   = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+
     auto options_server = rcl_action_server_get_default_options();
     options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
     options_server.result_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
@@ -155,9 +169,9 @@ PrimitiveExcavatorChangePoseExecuteFromPlan::PrimitiveExcavatorChangePoseExecute
       std::bind(&PrimitiveExcavatorChangePoseExecuteFromPlan::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
       std::bind(&PrimitiveExcavatorChangePoseExecuteFromPlan::handle_cancel, this, std::placeholders::_1),
       std::bind(&PrimitiveExcavatorChangePoseExecuteFromPlan::handle_accepted, this, std::placeholders::_1),
-      options_server);
+      options_server, cbg_server_);
 
-  action_client_ = rclcpp_action::create_client<TmsRpExcavator>(this, "tms_rp_excavator", nullptr, options_client);
+  action_client_ = rclcpp_action::create_client<TmsRpExcavator>(this, "tms_rp_excavator", cbg_tms_, options_client);
   if (action_client_->wait_for_action_server())
   {
     RCLCPP_INFO(this->get_logger(), "Action server is ready");
@@ -167,7 +181,7 @@ PrimitiveExcavatorChangePoseExecuteFromPlan::PrimitiveExcavatorChangePoseExecute
     RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
   }
 
-  traj_action_client_ = rclcpp_action::create_client<traj_recorder_msgs::action::TrajFollow>(this, "traj_follow_record", nullptr, options_client);
+  traj_action_client_ = rclcpp_action::create_client<traj_recorder_msgs::action::TrajFollow>(this, "traj_follow_record", cbg_traj_, options_client);
   if (traj_action_client_->wait_for_action_server())
   {
     RCLCPP_INFO(this->get_logger(), "Trajectory action server is ready");
@@ -677,10 +691,48 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
     {
       RCLCPP_INFO(this->get_logger(), "traj_follow_record finished (code=%d)",
                   static_cast<int>(res.code));
+  
+      {
+        std::lock_guard<std::mutex> lk(traj_mtx_);
+        traj_done_ = true;
+        traj_last_code_ = res.code;
+      }
+      traj_cv_.notify_all();
+  
       traj_goal_handle_.reset();
     };
 
-  traj_action_client_->async_send_goal(traj_goal, traj_send_opts);
+    RCLCPP_INFO(this->get_logger(),
+    "Before send: ready=%d raj_goal_handle_=%s",
+    traj_action_client_->action_server_is_ready(),
+    traj_goal_handle_ ? "set" : "null");
+
+  {
+    std::lock_guard<std::mutex> lk(traj_mtx_);
+    traj_done_ = false;
+    traj_last_code_ = rclcpp_action::ResultCode::UNKNOWN;
+  }
+
+  traj_future_goal_handle_ = traj_action_client_->async_send_goal(traj_goal, traj_send_opts);
+
+  // ★ここで確実に GoalHandle を掴む（タイムアウト付）
+  if (traj_future_goal_handle_.wait_for(std::chrono::seconds(2)) != std::future_status::ready) {
+    RCLCPP_ERROR(this->get_logger(), "traj_follow_record: goal response timeout");
+    handle_error("traj_follow_record goal response timeout");
+    return;
+  }
+  
+  auto gh = traj_future_goal_handle_.get();
+  if (!gh) {
+    RCLCPP_ERROR(this->get_logger(), "traj_follow_record: goal rejected");
+    handle_error("traj_follow_record goal rejected");
+    return;
+  }
+  
+  traj_goal_handle_ = gh;
+  RCLCPP_INFO(this->get_logger(), "traj_follow_record: goal accepted (handle set)");
+
+  RCLCPP_INFO(this->get_logger(), "After async_send_goal() called");
 
   // Send goal to TMS_IF
   auto send_goal_options = rclcpp_action::Client<TmsRpExcavator>::SendGoalOptions();
@@ -721,6 +773,24 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::result_callback(const std::sha
     return;
   }
 
+  // まず cancel を投げる（handle がある場合）
+  if (traj_goal_handle_) {
+    auto cancel_future = traj_action_client_->async_cancel_goal(traj_goal_handle_);
+
+    // cancel応答は一応待つ（任意）
+    (void)cancel_future.wait_for(std::chrono::seconds(2));
+
+    // 重要：traj の result_callback が来るまで待つ
+    std::unique_lock<std::mutex> lk(traj_mtx_);
+    bool ok = traj_cv_.wait_for(lk, std::chrono::seconds(10), [this] { return traj_done_; });
+    if (!ok) {
+      RCLCPP_WARN(this->get_logger(), "traj_follow_record result did not arrive within timeout");
+      // ここで「待てなかった」扱いをどうするかは設計次第（abortにする/ログだけ等）
+    } else {
+      RCLCPP_INFO(this->get_logger(), "traj_follow_record result arrived (code=%d)",
+                  static_cast<int>(traj_last_code_));
+    }
+  }
   auto result_to_leaf = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
   
   switch (result.code)
@@ -756,21 +826,26 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::result_callback(const std::sha
       RCLCPP_ERROR(this->get_logger(), "Unknown result code");
       break;
   }
-  if (traj_goal_handle_) {
-    traj_action_client_->async_cancel_goal(traj_goal_handle_);
-  }
 
 }
 /*******************/
 
 int main(int argc, char* argv[])
 {
-  // Initialize Google's logging library.
   google::InitGoogleLogging(argv[0]);
   google::InstallFailureSignalHandler();
 
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<PrimitiveExcavatorChangePoseExecuteFromPlan>());
+
+  auto node = std::make_shared<PrimitiveExcavatorChangePoseExecuteFromPlan>();
+
+  // 2スレッド以上。PCに余裕あるなら 4 とかでもOK
+  rclcpp::executors::MultiThreadedExecutor exec(
+      rclcpp::ExecutorOptions(), 4);
+
+  exec.add_node(node);
+  exec.spin();
+
   rclcpp::shutdown();
   return 0;
 }
