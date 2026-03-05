@@ -1385,6 +1385,8 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value(
     auto test_joint_values = target_joint_values;
     test_joint_values.joint_values[joint_idx] = mid;
 
+    level_bucket_if_trigger(test_joint_values);
+
     auto excavator_goal = TmsRpExcavator::Goal();
     excavator_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_JOINTS;
     excavator_goal.planning_group = planning_group_;
