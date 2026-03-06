@@ -254,6 +254,13 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::handle_accepted(const std::sha
 
 void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
+
+  std::lock_guard<std::mutex> lk(primitive_exec_mtx_);
+  std::vector<std::map<std::string, std::string>> params_local;
+  {
+    std::lock_guard<std::mutex> lk(params_mtx_);
+    params_local = params_from_db_;
+  }
   auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
 
   // Function for error handling
@@ -272,19 +279,19 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
     return;
   }
 
-  RCLCPP_INFO(this->get_logger(), "Loading plans from %zu record(s)", params_from_db_.size());
+  RCLCPP_INFO(this->get_logger(), "Loading plans from %zu record(s)", params_local.size());
 
   // TmsRpExcavatorのゴールメッセージを作成
   auto goal_msg = TmsRpExcavator::Goal();
   goal_msg.command = TmsRpExcavator::Goal::CMD_EXECUTE_PLAN;
   
   // 最初のレコードからplanning_groupを取得
-  if (params_from_db_.empty()) {
+  if (params_local.empty()) {
     handle_error("No parameters loaded from database");
     return;
   }
   
-  const auto& first_param = params_from_db_[0];
+  const auto& first_param = params_local[0];
   if (first_param.count("planning_group")) {
     try {
       auto doc = bsoncxx::from_json(first_param.at("planning_group"));
@@ -308,8 +315,8 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
   std::vector<double> velocity_scales;
   std::vector<double> acceleration_scales;
   
-  for (size_t i = 0; i < params_from_db_.size(); ++i) {
-    const auto& param = params_from_db_[i];
+  for (size_t i = 0; i < params_local.size(); ++i) {
+    const auto& param = params_local[i];
     
     double time_scale = get_scale_from_db_json(param, "time_scale", "time_scale", 1.0);
     double velocity_scale = get_scale_from_db_json(param, "velocity_scale", "velocity_scale", 0.0);
@@ -374,8 +381,8 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
   // 各record_nameからplanを取得してRobotTrajectory配列に変換
   std::vector<moveit_msgs::msg::RobotTrajectory> loaded_plans;
   try {
-    for (size_t record_idx = 0; record_idx < params_from_db_.size(); ++record_idx) {
-      const auto& param_from_db = params_from_db_[record_idx];
+    for (size_t record_idx = 0; record_idx < params_local.size(); ++record_idx) {
+      const auto& param_from_db = params_local[record_idx];
       
       if (!param_from_db.count("plan")) {
         RCLCPP_WARN(this->get_logger(), "Record %zu missing plan field, skipping", record_idx);

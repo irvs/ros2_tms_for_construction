@@ -86,6 +86,9 @@ private:
   rclcpp::CallbackGroup::SharedPtr cbg_tms_;
   rclcpp::CallbackGroup::SharedPtr cbg_traj_;
 
+  std::mutex primitive_exec_mtx_;
+  std::mutex params_mtx_;
+
 };
 
 #endif
