@@ -8,7 +8,7 @@
 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
@@ -202,6 +202,7 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
   }
 
   // 各record_nameからplanを取得してRobotTrajectory配列に変換
+  std::vector<moveit_msgs::msg::RobotTrajectory> loaded_plans;
   try {
     for (size_t record_idx = 0; record_idx < params_from_db_.size(); ++record_idx) {
       const auto& param_from_db = params_from_db_[record_idx];
@@ -410,18 +411,18 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
         continue;
       }
       
-      goal_msg.plans.push_back(robot_trajectory);
+      loaded_plans.push_back(robot_trajectory);
       RCLCPP_INFO(this->get_logger(), "Loaded plan from record %zu with %zu joint trajectory points", 
                   record_idx, robot_trajectory.joint_trajectory.points.size());
     }
     
-    if (goal_msg.plans.empty()) {
+    if (loaded_plans.empty()) {
       RCLCPP_ERROR(this->get_logger(), "No valid plans were loaded from any record");
       handle_error("No valid plans loaded from database");
       return;
     }
     
-    RCLCPP_INFO(this->get_logger(), "Successfully loaded %zu plan(s) from database", goal_msg.plans.size());
+    RCLCPP_INFO(this->get_logger(), "Successfully loaded %zu plan(s) from database", loaded_plans.size());
 
   } catch (const std::exception& e) {
     RCLCPP_ERROR(this->get_logger(), "Failed to parse plans: %s", e.what());
@@ -429,8 +430,85 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
     return;
   }
 
-  RCLCPP_INFO(this->get_logger(), "Sending EXECUTE_PLAN command with %zu trajectories to tms_rp_excavator", 
-              goal_msg.plans.size());
+  // 複数のtrajectoryを時間を調整して結合
+  RCLCPP_INFO(this->get_logger(), "Combining %zu trajectory(ies) by adjusting time_from_start", loaded_plans.size());
+  
+  moveit_msgs::msg::RobotTrajectory combined_trajectory;
+  rclcpp::Duration accumulated_time(0, 0);  // 累積時間
+
+  for (size_t i = 0; i < loaded_plans.size(); ++i) {
+    const auto& current_traj = loaded_plans[i];
+    
+    if (current_traj.joint_trajectory.points.empty()) {
+      RCLCPP_WARN(this->get_logger(), "Trajectory %zu is empty, skipping", i+1);
+      continue;
+    }
+
+    if (i == 0) {
+      // 最初のtrajectoryはそのまま使用
+      combined_trajectory = current_traj;
+      
+      // 最後のポイントの時刻を取得
+      const auto& last_point = combined_trajectory.joint_trajectory.points.back();
+      accumulated_time = last_point.time_from_start;
+      
+      double duration_sec = accumulated_time.nanoseconds() * 1e-9;
+      RCLCPP_INFO(this->get_logger(), "Trajectory 1/%zu: %zu waypoints, duration=%.2f sec", 
+                  loaded_plans.size(),
+                  combined_trajectory.joint_trajectory.points.size(),
+                  duration_sec);
+    } else {
+      // 2番目以降は時間をオフセットして追加
+      // 最初のポイント（前のtrajectoryの最後と重複）はスキップ
+      for (size_t j = 1; j < current_traj.joint_trajectory.points.size(); ++j) {
+        const auto& point = current_traj.joint_trajectory.points[j];
+        auto adjusted_point = point;
+        // 累積時間を加算
+        adjusted_point.time_from_start = accumulated_time + point.time_from_start;
+        combined_trajectory.joint_trajectory.points.push_back(adjusted_point);
+      }
+      
+      // 最後のポイントの時刻を更新
+      const auto& last_point = combined_trajectory.joint_trajectory.points.back();
+      accumulated_time = last_point.time_from_start;
+      
+      double duration_sec = accumulated_time.nanoseconds() * 1e-9;
+      RCLCPP_INFO(this->get_logger(), "Trajectory %zu/%zu: added %zu waypoints (skipped first), total duration=%.2f sec", 
+                  i+1, loaded_plans.size(),
+                  current_traj.joint_trajectory.points.size() - 1,
+                  duration_sec);
+    }
+  }
+
+  double total_duration_sec = accumulated_time.nanoseconds() * 1e-9;
+  RCLCPP_INFO(this->get_logger(), "Combined trajectory: %zu total waypoints, %.2f sec total duration",
+              combined_trajectory.joint_trajectory.points.size(),
+              total_duration_sec);
+
+  // 時間が厳密に増加していることを検証
+  for (size_t i = 1; i < combined_trajectory.joint_trajectory.points.size(); ++i) {
+    const auto& prev_time = combined_trajectory.joint_trajectory.points[i-1].time_from_start;
+    const auto& curr_time = combined_trajectory.joint_trajectory.points[i].time_from_start;
+    
+    // time_from_startを秒単位に変換して比較
+    double prev_sec = prev_time.sec + prev_time.nanosec * 1e-9;
+    double curr_sec = curr_time.sec + curr_time.nanosec * 1e-9;
+    
+    if (curr_sec <= prev_sec) {
+      RCLCPP_ERROR(this->get_logger(), "Time between points %zu and %zu is not strictly increasing: %.6f and %.6f",
+                   i-1, i, prev_sec, curr_sec);
+      handle_error("Time is not strictly increasing between waypoints.");
+      return;
+    }
+  }
+  
+  RCLCPP_INFO(this->get_logger(), "Time validation passed: all waypoints have strictly increasing time");
+
+  // 結合したtrajectoryを単一のplanとして送信
+  goal_msg.plan = combined_trajectory;
+
+  RCLCPP_INFO(this->get_logger(), "Sending EXECUTE_PLAN command with combined trajectory (from %zu original plans) to tms_rp_excavator", 
+              loaded_plans.size());
 
   // Send goal to TMS_IF
   auto send_goal_options = rclcpp_action::Client<TmsRpExcavator>::SendGoalOptions();

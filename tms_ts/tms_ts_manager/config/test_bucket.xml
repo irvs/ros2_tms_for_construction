@@ -3,7 +3,14 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action  model_name="zx200" ID="LeafNodeExcavator" previous_target_record_name="" primitive_name="primitive_excavator_change_pose_plan" target_record_name="target_excavate_pose_1"/>
+            <RetryUntilSuccessful num_attempts="-1">
+                <Sequence>
+                    <Action  model_name="zx200" ID="LeafNodeExcavator" previous_target_record_name="" primitive_name="primitive_excavator_change_pose_plan" target_record_name="target_excavate_pose_1"/>
+                    <Action  model_name="zx200" ID="LeafNodeExcavator" previous_target_record_name="target_excavate_pose_1" primitive_name="primitive_excavator_change_pose_plan" target_record_name="target_excavate_pose_2"/>
+                </Sequence>
+            </RetryUntilSuccessful>
+            <Action  model_name="zx200" ID="LeafNodeExcavator" previous_target_record_name="" primitive_name="primitive_excavator_change_pose_execute_from_plan_retime" target_record_name="target_excavate_pose_1"/>
+            <Action  model_name="zx200" ID="LeafNodeExcavator" previous_target_record_name="" primitive_name="primitive_excavator_change_pose_execute_from_plan_retime" target_record_name="target_excavate_pose_2"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
