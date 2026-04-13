@@ -87,49 +87,70 @@ public:
     bool type_ok = false;
     const std::string& v = input_str.value();
 
+    std::cout << "[MongoValueWriter] input_value is: "<< v << std::endl;
+
     // ---------- Blackboard value ----------
-    if (v.size() >= 2 && v.front() == '{' && v.back() == '}')
+    if (!v.empty() && v.front() == '\\' && v.back() == '\\')
     {
         std::string bb_key = v.substr(1, v.size() - 2);
         auto bb = config().blackboard;
 
-        BT::Any* any = bb->getAny(bb_key);
-        if (!any)
+        bool b;
+        int i;
+        double d;
+        std::string s;
+
+        std::cout << "[MongoValueWriter] search black board by: "<< bb_key << std::endl;
+
+
+        if (bb->get(bb_key, s))
         {
-            std::cout << "[MongoValueWriter] Blackboard key not found: "<< bb_key << std::endl;
-            return NodeStatus::FAILURE;
-        }
+            std::cout << "[MongoValueWriter] Blackboard string: " << s << std::endl;
 
-        try {
-            update_doc << param_name.value() << bsoncxx::types::b_bool{any->cast<bool>()};
+            if (s == "true" || s == "false")
+            {
+                update_doc << param_name.value()
+                        << bsoncxx::types::b_bool{s == "true"};
+            }
+            else
+            {
+                update_doc << param_name.value()
+                        << bsoncxx::types::b_utf8{s};
+            }
             type_ok = true;
-        } catch (...) {}
-
-        if (!type_ok) {
-            try {
-                update_doc << param_name.value() << bsoncxx::types::b_int32{any->cast<int>()};
-                type_ok = true;
-            } catch (...) {}
         }
-
-        if (!type_ok) {
-            try {
-                update_doc << param_name.value() << bsoncxx::types::b_double{any->cast<double>()};
-                type_ok = true;
-            } catch (...) {}
+        else if (bb->get(bb_key, b))
+        {
+            update_doc << param_name.value() << bsoncxx::types::b_bool{b};
+            type_ok = true;
         }
-
-        if (!type_ok) {
-            try {
-                update_doc << param_name.value() << bsoncxx::types::b_utf8{any->cast<std::string>()};
-                type_ok = true;
-            } catch (...) {}
+        else if (bb->get(bb_key, i))
+        {
+            update_doc << param_name.value() << bsoncxx::types::b_int32{i};
+            type_ok = true;
+        }
+        else if (bb->get(bb_key, d))
+        {
+            update_doc << param_name.value() << bsoncxx::types::b_double{d};
+            type_ok = true;
+        }
+        else
+        {
+            std::cout << "Unsupported Blackboard type" << std::endl;
+            return NodeStatus::FAILURE;
         }
     }
     // ---------- Literal value ----------
     else
     {
-        if (v == "true" || v == "false")
+        // 🔽 追加：ダブルクォートで囲まれている場合は強制的にstring
+        if (v.size() >= 2 && v.front() == '"' && v.back() == '"')
+        {
+            std::string unquoted = v.substr(1, v.size() - 2);
+            update_doc << param_name.value() << bsoncxx::types::b_utf8{unquoted};
+            type_ok = true;
+        }
+        else if (v == "true" || v == "false")
         {
             update_doc << param_name.value() << bsoncxx::types::b_bool{v == "true"};
             type_ok = true;

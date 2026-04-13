@@ -29,6 +29,14 @@ MONGODB_PORTNUMBER = 27017
 
 NODE_NAME = "tms_ur_if_to_db"
 
+TARGET_KEYS = [
+    "record_name",
+    "section_id",
+    "related_point_up_main",
+    "related_point_up_sub",
+    "related_point_down_main",
+    "related_point_down_sub"
+]
 
 
 class TmsURIfToDbWriter(Node):
@@ -42,9 +50,10 @@ class TmsURIfToDbWriter(Node):
 
         client = pymongo.MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client['rostmsdb']
-        self.collection = db['parameter_test']
+        # self.collection = db['parameter_test']
+        self.collection = db['parameter']
 
-        self.parameter_info = {"model_name":None, "type":None, "x":None, "y":None, "z":None, "qx":None, "qy":None, "qz":None, "qw":None, "record_name":None,"section_id":None , "lavel": None, "related_point_up_main": None, "related_point_up_sub": None, "related_point_down_main":None , "related_point_down_sub":None, "preferred_direction": None}
+        self.parameter_info = {"model_name":None, "type":None, "x":None, "y":None, "z":None, "qx":None, "qy":None, "qz":None, "qw":None, "record_name":None,"section_id":None , "label": None, "related_point_up_main": None, "related_point_up_sub": None, "related_point_down_main":None , "related_point_down_sub":None, "preferred_direction": None}
 
         self.get_logger().info("DBWriter service is ready")
 
@@ -125,7 +134,7 @@ class TmsURIfToDbWriter(Node):
 
     def create_db_data(self, data, num, index):
 
-        self.parameter_info = {"model_name":None, "type":None, "x":None, "y":None, "z":None, "qx":None, "qy":None, "qz":None, "qw":None, "record_name":None,"section_id":None , "lavel": None, "related_point_up_main": None, "related_point_up_sub": None, "related_point_down_main":None , "related_point_down_sub":None, "preferred_direction": None}
+        self.parameter_info = {"model_name":None, "type":None, "x":None, "y":None, "z":None, "qx":None, "qy":None, "qz":None, "qw":None, "record_name":None,"section_id":None , "label": None, "related_point_up_main": None, "related_point_up_sub": None, "related_point_down_main":None , "related_point_down_sub":None, "preferred_direction": None}
 
         self.parameter_info["type"] = "static"
        # self.parameter_info["id"] = data["taskset_0"][0]["id"]
@@ -140,11 +149,19 @@ class TmsURIfToDbWriter(Node):
 
         section_id = waypoints[num]["id"]
 
-        self.parameter_info["section_id"] = section_id
-        self.parameter_info["record_name"] = section_id
-        self.parameter_info["x"] = waypoints[num]["position"]["x"]
-        self.parameter_info["y"] = waypoints[num]["position"]["y"]
-        self.parameter_info["z"] = waypoints[num]["position"]["z"]
+        self.parameter_info["section_id"] = str(section_id)
+        self.parameter_info["record_name"] = str(section_id)
+        pos = waypoints[num]["position"]
+
+        self.parameter_info["x"] = self.ensure_list(pos["x"])
+        self.parameter_info["y"] = self.ensure_list(pos["y"])
+        self.parameter_info["z"] = self.ensure_list(pos["z"])
+
+        self.parameter_info["qx"] = self.ensure_list(pos.get("qx", 0))
+        self.parameter_info["qy"] = self.ensure_list(pos.get("qy", 0))
+        self.parameter_info["qz"] = self.ensure_list(pos.get("qz", 0))
+        self.parameter_info["qw"] = self.ensure_list(pos.get("qw", 0))
+
         related_points = waypoints[num]["list"]
 
         self.starting_point = data["taskset_0"][0]["parameters"]["load"]
@@ -160,26 +177,59 @@ class TmsURIfToDbWriter(Node):
                 relate_point_distance = relate_point_distance[1]
                 this_distance = this_distance[1]
             if this_distance < relate_point_distance and related_points[i] in data["taskset_0"][0]["parameters"]["main_road"]:
-                self.parameter_info["related_point_up_main"] = related_points[i]
+                self.parameter_info["related_point_up_main"] = str(related_points[i])
             elif this_distance < relate_point_distance and related_points[i] in data["taskset_0"][0]["parameters"]["sub_road"]:
-                self.parameter_info["related_point_up_sub"] = related_points[i]
+                self.parameter_info["related_point_up_sub"] = str(related_points[i])
             elif this_distance > relate_point_distance and related_points[i] in data["taskset_0"][0]["parameters"]["main_road"]:
-                self.parameter_info["related_point_down_main"] = related_points[i]
+                self.parameter_info["related_point_down_main"] = str(related_points[i])
             elif this_distance > relate_point_distance and related_points[i] in data["taskset_0"][0]["parameters"]["sub_road"]:
-                self.parameter_info["related_point_down_sub"] = related_points[i]
+                self.parameter_info["related_point_down_sub"] = str(related_points[i])
 
         if section_id in data["taskset_0"][0]["parameters"]["main_road"]:
-            self.parameter_info["lavel"] = "main"
+            self.parameter_info["label"] = "main"
         elif section_id in data["taskset_0"][0]["parameters"]["sub_road"]:
-            self.parameter_info["lavel"] = "sub"
+            self.parameter_info["label"] = "sub"
 
         self.parameter_info["preferred_direction"] = "up"
 
         return
 
     def write_param(self):
-        self.collection.insert_one(self.parameter_info)
-        self.get_logger().info(f"Completed Inseting parameter data into the rostmsdb database !")
+        # cleaned_data = self.replace_none_with_empty(self.parameter_info)
+        cleaned_data = self.format_parameter_info(self.parameter_info)
+        self.collection.insert_one(cleaned_data)
+        self.get_logger().info("Completed Inseting parameter data into the rostmsdb database !")
+
+    def replace_none_with_empty(self, data):
+        if isinstance(data, dict):
+            return {k: self.replace_none_with_empty(v) for k, v in data.items()}
+        elif isinstance(data, list):
+            return [self.replace_none_with_empty(v) for v in data]
+        elif data is None:
+            return ""
+        else:
+            return data
+        
+    def format_parameter_info(self, data):
+        formatted = {}
+        for k, v in data.items():
+            if v is None:
+                if k in ["x", "y", "z", "qx", "qy", "qz", "qw"]:
+                    formatted[k] = []   # ← 空リストにする（可変長対応）
+                else:
+                    formatted[k] = ""
+            else:
+                if k in TARGET_KEYS:
+                    formatted[k] = str(v)
+                else:
+                    formatted[k] = v
+        return formatted
+    
+    def ensure_list(self, value):
+        if isinstance(value, list):
+            return value
+        else:
+            return [value]
 
 
 def main(args=None):

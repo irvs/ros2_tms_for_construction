@@ -3,11 +3,11 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="MongoValueWriter" input_value="Section1" mongo_param_name="CURRENT_SECTION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr"/>
+            <Action ID="MongoValueWriter" input_value="&quot;2725960300000&quot;" mongo_param_name="CURRENT_SECTION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr"/>
             <Action ID="MongoValueWriter" input_value="up" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr"/>
-            <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr" model_name="mst110cr" subtask_name="st_cruise" terminate_condition="Section7"/>
+            <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr" model_name="mst110cr" subtask_name="st_cruise" terminate_condition="2725960300007"/>
             <Action ID="MongoValueWriter" input_value="down" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr"/>
-            <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr" model_name="mst110cr" subtask_name="st_cruise" terminate_condition="Section1"/>
+            <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr" model_name="mst110cr" subtask_name="st_cruise" terminate_condition="2725960300000"/>
             <Action ID="MongoValueWriter" input_value="up" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr"/>
         </Sequence>
     </BehaviorTree>

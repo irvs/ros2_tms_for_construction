@@ -84,6 +84,11 @@ def generate_launch_description():
         'task_ids',
         default_value='[1, 2, 3]',
     )
+
+    declare_use_sim_time_arg = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='false',
+        description='Use simulation (Gazebo) clock if true')
     
     # Define ZMQ port parameters for multiple machine deployment
     declare_zmq_server_port_base = DeclareLaunchArgument(
@@ -100,6 +105,7 @@ def generate_launch_description():
     
     return LaunchDescription([
         declare_task_ids,
+        declare_use_sim_time_arg,
         declare_zmq_server_port_base,
         declare_zmq_publisher_port_base,
         OpaqueFunction(function=launch_setup)
@@ -153,29 +159,45 @@ def launch_setup(context, *args, **kwargs):
         # primitives
         Node(
               package='tms_ts_primitive', 
-              executable='primitive_excavator_change_pose',
-              output='screen',
-              namespace = 'zx200'),
-        Node(
-              package='tms_ts_primitive', 
               executable='primitive_excavator_change_pose_plan',
               output='screen',
               namespace = 'zx200'),
         Node(
-              package='tms_ts_primitive', 
-              executable='primitive_excavator_excavate_simple',
+              package='tms_ts_primitive',
+              executable='primitive_excavator_change_pose_execute_from_plan',
               output='screen',
+              parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+              namespace = 'zx200'),
+      # Node(
+      #       package='tms_ts_primitive',
+      #       executable='primitive_excavator_change_pose_execute_from_plan_retime',
+      #       output='screen',
+      #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+      #       namespace = 'zx200'),
+        Node(
+            package='tms_ts_primitive',
+            executable='primitive_excavator_follow_waypoints',
+            output='screen',
+            parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            namespace = 'zx200'),
+        Node(
+              package='tms_ts_primitive',
+              executable='primitive_excavator_navigate_anywhere',
+              output='screen',
+              parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
               namespace = 'zx200'),
         Node(
-              package='tms_ts_primitive', 
-              executable='primitive_excavator_excavate_simple_plan',
+              package='tms_ts_primitive',
+              executable='primitive_excavator_navigate_through_poses',
               output='screen',
+              parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
               namespace = 'zx200'),
         Node(
-              package='tms_ts_primitive', 
-              executable='primitive_excavator_release_simple',
+              package='tms_ts_primitive',
+              executable='excavator_scene_manager',
               output='screen',
-              namespace = 'zx200'),
+              namespace = 'zx200',
+              parameters=[{"model_name": "zx200", "root_record_name": "collision_objects_shimiz", "planning_frame": "base_link"}]),      
         Node(
               package='tms_ts_primitive',
               executable='primitive_excavator_follow_waypoints',

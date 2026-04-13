@@ -22,10 +22,8 @@
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/uri.hpp>
-#include <mongocxx/stdx.hpp>
 #include <mongocxx/pool.hpp>
 #include "behaviortree_cpp_v3/action_node.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
 #include <sstream>
 #include <vector>
 #include <cctype>
@@ -38,21 +36,23 @@ public:
     BlackboardValueSearcherMongo(const std::string& name, const NodeConfiguration& config)
         : SyncActionNode(name, config), pool_(mongocxx::uri{})
     {
-        node_ = rclcpp::Node::make_shared("blackboard_value_sercher_mongo");
+        node_ = rclcpp::Node::make_shared("blackboard_value_searcher_mongo");
         spin_thread_ = std::thread([this]() { rclcpp::spin(node_); });
     }
 
     ~BlackboardValueSearcherMongo()
     {
         rclcpp::shutdown();
-        if (spin_thread_.joinable()) {
-            spin_thread_.join();
-        }
+        if (spin_thread_.joinable()) spin_thread_.join();
     }
 
     static PortsList providedPorts()
     {
-        return { OutputPort<bool>("output_port"), InputPort<std::string>("mongo_param_name"), InputPort<std::string>("mongo_value") };
+        return {
+            OutputPort<bool>("output_port"),
+            InputPort<std::string>("mongo_param_name"),
+            InputPort<std::string>("mongo_value")
+        };
     }
 
     static std::vector<std::string> split(const std::string& s, char delimiter)
@@ -63,7 +63,6 @@ public:
 
         while (std::getline(ss, item, delimiter))
         {
-            // 空白除去（必要なら）
             item.erase(0, item.find_first_not_of(" "));
             item.erase(item.find_last_not_of(" ") + 1);
             tokens.push_back(item);
@@ -71,141 +70,123 @@ public:
         return tokens;
     }
 
-    std::string expandBlackboardVar(const std::string &val) {
-        std::string result = val;
-        // {var_name} の形なら blackboard から取得
-        if (!val.empty() && val.front() == '{' && val.back() == '}') {
+    // =========================
+    // Blackboard → BSON変換（型保持）
+    // =========================
+    bsoncxx::types::bson_value::value toBson(const std::string &val)
+    {
+        if (!val.empty() && val.front() == '\\' && val.back() == '\\')
+        {
             std::string key = val.substr(1, val.size() - 2);
-            Optional<std::string> bb_val = config().blackboard->get<std::string>(key);
-            if (bb_val) {
-                result = bb_val.value();
-                std::cout << "[BlackboardValueSearcherMongo]" << key << " : Get from blackboard" << std::endl;
-            } else {
-                std::cout << "[BlackboardValueSearcherMongo] WARNING: Blackboard key [" << key << "] not found!" << std::endl;
-            }
+            auto bb = config().blackboard;
+            BT::Any* any = bb->getAny(key);
+
+            if (!any)
+                throw std::runtime_error("Blackboard key not found: " + key);
+
+            if (any->type() == typeid(bool))
+                return bsoncxx::types::b_bool{any->cast<bool>()};
+
+            if (any->type() == typeid(int))
+                return bsoncxx::types::b_int32{any->cast<int>()};
+
+            if (any->type() == typeid(double))
+                return bsoncxx::types::b_double{any->cast<double>()};
+
+            if (any->type() == typeid(std::string))
+                return bsoncxx::types::b_utf8{any->cast<std::string>()};
+
+            throw std::runtime_error("Unsupported Blackboard type");
         }
-        return result;
+
+        // literal fallback
+        return parseValue(val);
     }
 
-
+    // =========================
+    // literal string → BSON推定
+    // =========================
     bsoncxx::types::bson_value::value parseValue(const std::string& value)
     {
-        // bool
-        if (value == "true")
-            return bsoncxx::types::bson_value::value{bsoncxx::types::b_bool{true}};
-        if (value == "false")
-            return bsoncxx::types::bson_value::value{bsoncxx::types::b_bool{false}};
-        // int
-        bool is_int = !value.empty() &&
-        std::all_of(value.begin(), value.end(), ::isdigit);
-        if (is_int)
+        if (value.size() >= 2 && value.front() == '"' && value.back() == '"')
         {
-            return bsoncxx::types::bson_value::value{
-                bsoncxx::types::b_int32{std::stoi(value)}
-            };
+            return bsoncxx::types::b_utf8{value.substr(1, value.size() - 2)};
         }
-        // double
-        try
-        {
+
+        if (value == "true")  return bsoncxx::types::b_bool{true};
+        if (value == "false") return bsoncxx::types::b_bool{false};
+
+        bool is_int =
+            !value.empty() &&
+            (std::isdigit(value[0]) || value[0] == '-') &&
+            std::all_of(value.begin() + 1, value.end(), ::isdigit);
+
+        if (is_int)
+            return bsoncxx::types::b_int32{std::stoi(value)};
+
+        try {
             size_t idx;
             double d = std::stod(value, &idx);
             if (idx == value.size())
-            {
-                return bsoncxx::types::bson_value::value{
-                    bsoncxx::types::b_double{d}
-                };
-            }
-        }
-        catch (...) {}
-        // string（デフォルト）
-        return bsoncxx::types::bson_value::value{
-            bsoncxx::types::b_utf8{value}
-        };
+                return bsoncxx::types::b_double{d};
+        } catch (...) {}
+
+        return bsoncxx::types::b_utf8{value};
     }
 
-
+    // =========================
+    // tick
+    // =========================
     NodeStatus tick() override
     {
-       // Optional<std::string> key1 = getInput<std::string>("output_port");
-        Optional<std::string> key2 = getInput<std::string>("mongo_param_name");
-        Optional<std::string> key3 = getInput<std::string>("mongo_value");
+        auto key2 = getInput<std::string>("mongo_param_name");
+        auto key3 = getInput<std::string>("mongo_value");
 
-        if ( !key2 || !key3)
-        {
-            std::cout << "[BlackboardValueSearcherMongo] missing required input." << std::endl;
-            std::cout << "[BlackboardValueSearcherMongo] input param [" << key2.value() << "]" << std::endl;
-            std::cout << "[BlackboardValueSearcherMongo] input value [" << key3.value() << "]" << std::endl;
+        if (!key2 || !key3)
             return NodeStatus::FAILURE;
-        }
 
         std::string mongo_value = key3.value();
 
         if (!mongo_value.empty() && mongo_value.front() == '=')
-        {
             mongo_value.erase(0, 1);
-        }
 
-        auto param_names  = split(key2.value(), ',');  
-        //auto param_values_raw = split(mongo_value.value(), ','); 
+        auto param_names = split(key2.value(), ',');
         auto param_values_raw = split(mongo_value, ',');
 
-        if (param_names.size() != param_values_raw.size()) {
-            std::cout << "[BlackboardValueSearcherMongo] size mismatch" << std::endl;
+        if (param_names.size() != param_values_raw.size())
             return NodeStatus::FAILURE;
-        }
 
-        // 展開後の値を作る
-        std::vector<std::string> param_values;
-        for (auto &v : param_values_raw) {
-            param_values.push_back(expandBlackboardVar(v));
-        }
+        mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
+        auto db = client["rostmsdb"];
+        auto collection = db["parameter"];
 
-        mongocxx::client client{ mongocxx::uri{ "mongodb://localhost:27017" } };
-        mongocxx::database db = client["rostmsdb"];
-        mongocxx::collection collection = db["parameter"];
-        bsoncxx::builder::stream::document filter_builder;
+        bsoncxx::builder::stream::document filter;
 
         for (size_t i = 0; i < param_names.size(); ++i)
         {
-            std::cout << "Filter: " << param_names[i] << " = " << param_values[i] << std::endl;
-            filter_builder << param_names[i] << parseValue(param_values[i]);
-        }
-        std::cout << "Final BSON: " << bsoncxx::to_json(filter_builder.view()) << std::endl;
+            auto bson_val = toBson(param_values_raw[i]);
 
-        auto filter = filter_builder.view();
-        std::cout << bsoncxx::to_json(filter) << std::endl;
-        auto doc = collection.find_one(filter);
-        auto cursor = collection.find(filter);
-        for (auto&& doc : cursor) {
-            std::cout << bsoncxx::to_json(doc) << std::endl;
+            // デバッグ表示（安全）
+            bsoncxx::builder::stream::document dbg;
+            dbg << "v" << bson_val;
+            std::cout << bsoncxx::to_json(dbg.view()) << std::endl;
+
+            // Mongo filter
+            filter << param_names[i] << bson_val;
         }
 
-        if (!doc)
-        {
-            setOutput("output_port", false);
-            std::cout << "[BlackboardValueSearcherMongo]  Stored blackboard parameter [" << key2.value() << " == " << mongo_value << "] : " << "false" << std::endl;  
-            //std::cout << "[BlackboardValueSearcherMongo]  Stored blackboard parameter [" << key2.value() << " == " << key3.value() << "] : " << "false" << std::endl;          
-            return NodeStatus::SUCCESS;
-        }
-        
-        try
-        {
-            setOutput("output_port", true);
-            std::cout << "[BlackboardValueSearcherMongo]  Stored blackboard parameter [" << key2.value() << " == " << mongo_value << "] : true" << std::endl;
-            return NodeStatus::SUCCESS;
-        }
 
-        catch (const std::exception& e)
-        {
-            std::cout << "[BlackboardValueSearcherMongo]  Exception caught: " << e.what() << std::endl;
-            return NodeStatus::FAILURE;
-        }
+        auto result = collection.find_one(filter.view());
+
+        setOutput("output_port", result.has_value());
+
+        return NodeStatus::SUCCESS;
     }
 
 private:
     rclcpp::Node::SharedPtr node_;
     std::thread spin_thread_;
-    mongocxx::pool pool_; // Create a pool of connections.
+    mongocxx::pool pool_;
 };
 
 #endif
