@@ -33,7 +33,10 @@ public:
 
     static PortsList providedPorts()
     {
-        return { InputPort<std::string>("key") };
+        return {
+            InputPort<std::string>("key"),
+            InputPort<std::string>("while_or_dowhile")  // ★追加
+        };
     }
 
 private:
@@ -44,14 +47,55 @@ inline NodeStatus KeepRunningUntilFlgup::tick()
 {
     setStatus(NodeStatus::RUNNING);
 
-    Optional<std::string> key = getInput<std::string>("key");
+    // --- key取得 ---
+    auto key = getInput<std::string>("key");
     if (!key)
     {
         throw RuntimeError("Missing required input [key]");
     }
 
-    const NodeStatus child_state = child_node_->executeTick();
+    // --- モード取得 ---
+    auto mode = getInput<std::string>("while_or_dowhile");
+    if (!mode)
+    {
+        // throw RuntimeError("Missing required input [while_or_dowhile]");
+        mode = ""
+    }
+
+    const std::string mode_str = mode.value();
+
+    // --- Blackboard値取得 ---
     auto any_value = config().blackboard->getAny(key.value());
+
+    auto checkFlagTrue = [&]() -> bool {
+        if (any_value)
+        {
+            if (any_value->type() == typeid(bool))
+            {
+                return any_value->cast<bool>();
+            }
+            else
+            {
+                throw RuntimeError("Unsupported type for key [", key.value(), "]");
+            }
+        }
+        return false;
+    };
+
+    // =========================
+    // Whileモード（即終了可能）
+    // =========================
+    if (mode_str == "While" || mode_str == "while" )
+    {
+        if (checkFlagTrue())
+        {
+            resetChild();
+            return NodeStatus::SUCCESS;
+        }
+    }
+
+    // --- 子ノード実行 ---
+    const NodeStatus child_state = child_node_->executeTick();
 
     switch (child_state)
     {
@@ -60,38 +104,31 @@ inline NodeStatus KeepRunningUntilFlgup::tick()
             resetChild();
             return NodeStatus::FAILURE;
         }
+
         case NodeStatus::SUCCESS:
         {
             resetChild();
-            if(any_value)
+
+            if (checkFlagTrue())
             {
-                if (any_value->type() == typeid(bool))
-                {
-                    bool value = any_value->cast<bool>();
-                    if (value)
-                    {
-                        return NodeStatus::SUCCESS;
-                    }
-                }
-                else
-                {
-                    throw RuntimeError("Unsupported type for key [", key.value(), "]");
-                }
+                return NodeStatus::SUCCESS;
             }
-            
+
             return NodeStatus::RUNNING;
         }
+
         case NodeStatus::RUNNING:
         {
             return NodeStatus::RUNNING;
         }
+
         default:
         {
             throw LogicError("Unexpected child state");
         }
     }
-    return status();
 }
+
 } // namespace BT
 
 #endif // KEEP_RUNNING_UNTIL_FLGUP_NODE_HPP

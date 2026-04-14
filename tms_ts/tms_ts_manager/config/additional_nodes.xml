@@ -52,6 +52,7 @@
 
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>        
+            <input_port name="while_or_dowhile"/>
         </Decorator>     
 
         <Action ID="SetLocalBlackboard">
@@ -84,10 +85,11 @@
         </Action>   
 
         <Action ID="ExecuteSubtask">
-            <input_port name="machine_name"/>
+            <input_port name="model_name"/>
             <input_port name="subtask_name"/>
             <input_port name="machine_record_name"/>
             <input_port name="terminate_condition"/>
+            <input_port name="subtask_parameters"/>
         </Action>
 
 
