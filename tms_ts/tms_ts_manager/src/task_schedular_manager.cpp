@@ -305,41 +305,54 @@ public:
 
   std::string process_whole_tag(const std::string& full_tag)
   {
-    std::regex attr_regex(R"((\w+)="([^"]*))");
-    std::map<std::string, std::string> params;
+      std::regex attr_regex(R"((\w+)="([^"]*))");
+      std::map<std::string, std::string> params;
 
-    auto begin = std::sregex_iterator(full_tag.begin(), full_tag.end(), attr_regex);
-    auto end = std::sregex_iterator();
+      auto begin = std::sregex_iterator(full_tag.begin(), full_tag.end(), attr_regex);
+      auto end = std::sregex_iterator();
 
-    for (auto it = begin; it != end; ++it) {
-        std::string key = (*it)[1];
-        std::string value = (*it)[2];
-        params[key] = value;
-    }
+      for (auto it = begin; it != end; ++it) {
+          std::string key = (*it)[1];
+          std::string value = (*it)[2];
+          params[key] = value;
+      }
 
-    if (params.find("subtask_name") == params.end())
-        return full_tag;
+      // subtask_nameがなければそのまま返す
+      if (params.find("subtask_name") == params.end())
+          return full_tag;
 
-    std::string subtask_name = params["subtask_name"];
+      //  ① subtask_parametersを先に展開
+      if (params.find("subtask_parameters") != params.end())
+      {
+          auto extra_params = parse_subtask_parameters(params["subtask_parameters"]);
 
-    task_searcher_->search_task(subtask_name);
+          for (const auto& [k, v] : extra_params)
+          {
+              params[k] = v;
+          }
+      }
 
-    if (!task_searcher_->is_valid_taskid()) {
-        return "<!-- Task not found -->";
-    }
+      std::string subtask_name = params["subtask_name"];
 
-    std::string task_sequence = task_searcher_->get_task_sequence();
+      task_searcher_->search_task(subtask_name);
 
-    for (const auto& [key, value] : params) {
+      if (!task_searcher_->is_valid_taskid()) {
+          return "<!-- Task not found -->";
+      }
 
-        if (key == "ID" || key == "subtask_name")
-            continue;
+      std::string task_sequence = task_searcher_->get_task_sequence();
 
-        std::string placeholder = "$" + key + "$";
-        replace_all(task_sequence, placeholder, value);
-    }
+      //  ② まとめて置換
+      for (const auto& [key, value] : params)
+      {
+          if (key == "ID" || key == "subtask_name" || key == "subtask_parameters")
+              continue;
 
-    return task_sequence;
+          std::string placeholder = "$" + key + "$";
+          replace_all(task_sequence, placeholder, value);
+      }
+
+      return task_sequence;
   }
 
 
@@ -354,7 +367,27 @@ public:
     }
   }
 
+  
+  std::map<std::string, std::string> parse_subtask_parameters(const std::string& input)
+  {
+      std::map<std::string, std::string> result;
 
+      std::stringstream ss(input);
+      std::string pair;
+
+      while (std::getline(ss, pair, ','))
+      {
+          size_t pos = pair.find(':');
+          if (pos == std::string::npos) continue;
+
+          std::string key = pair.substr(0, pos);
+          std::string value = pair.substr(pos + 1);
+
+          result[key] = value;
+      }
+
+      return result;
+  }
 
 
   std::string replace_whole_execute_subtask_tags(const std::string& xml) {
