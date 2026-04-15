@@ -56,13 +56,9 @@ inline NodeStatus KeepRunningUntilFlgup::tick()
 
     // --- モード取得 ---
     auto mode = getInput<std::string>("while_or_dowhile");
-    if (!mode)
-    {
-        // throw RuntimeError("Missing required input [while_or_dowhile]");
-        mode = ""
-    }
+    std::string mode_str = mode ? mode.value() : "";
 
-    const std::string mode_str = mode.value();
+    // const std::string mode_str = mode.value();
 
     // --- Blackboard値取得 ---
     auto any_value = config().blackboard->getAny(key.value());
