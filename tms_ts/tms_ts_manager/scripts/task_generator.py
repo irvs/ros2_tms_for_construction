@@ -72,6 +72,9 @@ class TaskGenerator(Node):
         else:
             self.get_logger().info(f"This task sequence is already registered in the database. The task_id of the task sequence is {duplicated_task_id}.")
 
+        self.destroy_node()
+        rclpy.shutdown()
+
         
     # XML形式で記載されたBT treeを読み込んで整形し、文字列に変換する関数
     def format_task_sequnece(self):
@@ -132,9 +135,9 @@ class TaskGenerator(Node):
 def main(args=None):
     rclpy.init(args=args)
     task_generator = TaskGenerator()
-    rclpy.spin_once(task_generator)
-    task_generator.destroy_node()
-    rclpy.shutdown()
+    # rclpy.spin_once(task_generator)
+    # task_generator.destroy_node()
+    # rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
