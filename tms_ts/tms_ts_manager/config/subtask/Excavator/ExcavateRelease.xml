@@ -3,8 +3,8 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="ExecuteSubtask" machine_name="zx200" machine_record_name="" subtask_name="Excavate" terminate_condition=""/>
-            <Action ID="ExecuteSubtask" machine_name="zx200" machine_record_name="" subtask_name="Release" terminate_condition=""/>
+            <Action ID="ExecuteSubtask" machine_record_name="" model_name="zx200" subtask_name="Excavate" subtask_parameters="" terminate_condition=""/>
+            <Action ID="ExecuteSubtask" machine_record_name="" model_name="zx200" subtask_name="Release" subtask_parameters="" terminate_condition=""/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
@@ -26,13 +26,15 @@
             <input_port name="key"/>
         </Action>
         <Action ID="ExecuteSubtask">
-            <input_port name="machine_name"/>
             <input_port name="machine_record_name"/>
+            <input_port name="model_name"/>
             <input_port name="subtask_name"/>
+            <input_port name="subtask_parameters"/>
             <input_port name="terminate_condition"/>
         </Action>
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>
+            <input_port name="while_or_dowhile"/>
         </Decorator>
         <Action ID="LeafNodeBulldozer">
             <input_port default="d37pxi_24" name="model_name"/>

@@ -352,8 +352,28 @@ public:
           replace_all(task_sequence, placeholder, value);
       }
 
+      // 未置換の $変数$ を "none" にする
+      task_sequence = replace_unresolved_with_none(task_sequence);
+
       return task_sequence;
   }
+
+  std::string replace_unresolved_with_none(const std::string& input)
+{
+    std::regex placeholder_regex(R"(\$([a-zA-Z0-9_]+)\$)");
+
+    auto begin = std::sregex_iterator(input.begin(), input.end(), placeholder_regex);
+    auto end = std::sregex_iterator();
+
+    for (auto it = begin; it != end; ++it)
+    {
+        RCLCPP_WARN(this->get_logger(), "Unresolved param: %s", (*it)[1].str().c_str());
+    }
+
+    return std::regex_replace(input, placeholder_regex, "none");
+}
+
+
 
 
   void replace_all(std::string& str, const std::string& from, const std::string& to)

@@ -16,6 +16,11 @@
             <input_port name="mongo_record_name"/>
             <input_port name="output_port"/>
         </Action>
+        <Action ID="BlackboardValueSearcherMongo">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_value"/>
+            <input_port name="output_port"/>
+        </Action>
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
         </Action>
@@ -23,30 +28,40 @@
             <input_port name="key"/>
         </Action>
         <Action ID="ExecuteSubtask">
-            <input_port name="parameter"/>
-            <input_port name="task_name"/>
+            <input_port name="machine_record_name"/>
+            <input_port name="model_name"/>
+            <input_port name="subtask_name"/>
+            <input_port name="subtask_parameters"/>
+            <input_port name="terminate_condition"/>
         </Action>
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>
+            <input_port name="while_or_dowhile"/>
         </Decorator>
         <Action ID="LeafNodeBulldozer">
-            <input_port default="d37pxi" name=" model_name"/>
+            <input_port default="d37pxi_24" name="model_name"/>
             <inout_port name="primitive_name"/>
             <inout_port name="record_name"/>
         </Action>
-        <Action ID="LeafNodeCrawlerdump">
-            <input_port name=" model_name"/>
+        <Action ID="LeafNodeCommon">
+            <input_port name="model_name"/>
             <inout_port name="primitive_name"/>
+            <inout_port name="record_name"/>
+        </Action>
+        <Action ID="LeafNodeCrawlerDump">
+            <input_port name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="read_direction"/>
             <inout_port name="record_name"/>
         </Action>
         <Action ID="LeafNodeExcavator">
-            <input_port default="zx200" name=" model_name"/>
+            <input_port default="zx200" name="model_name"/>
             <inout_port name="previous_target_record_name"/>
             <inout_port name="primitive_name"/>
             <inout_port name="target_record_name"/>
         </Action>
         <Action ID="LeafNodeExcavatorAssist">
-            <input_port default="zx200" name=" model_name"/>
+            <input_port default="zx200" name="model_name"/>
             <inout_port name="primitive_name"/>
             <inout_port name="record_name"/>
         </Action>
