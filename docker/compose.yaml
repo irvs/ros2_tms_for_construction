@@ -1,0 +1,46 @@
+name: ros2-tms-for-construction
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: ros2_tms_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  tms:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        USER_UID: ${UID:-1000}
+        USER_GID: ${GID:-1000}
+    image: ros2_tms_for_construction:dev
+    container_name: ros2_tms_dev
+    network_mode: host
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - MONGO_HOST=localhost
+      - MONGO_PORT=27017
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY:-${HOME}/.Xauthority}:/home/ros/.Xauthority:ro
+      - ../:/workspace/src/ros2_tms_for_construction
+      - tms_build:/workspace/build
+      - tms_install:/workspace/install
+      - tms_log:/workspace/log
+    depends_on:
+      - mongodb
+    stdin_open: true
+    tty: true
+
+volumes:
+  mongodb_data:
+  tms_build:
+  tms_install:
+  tms_log:
