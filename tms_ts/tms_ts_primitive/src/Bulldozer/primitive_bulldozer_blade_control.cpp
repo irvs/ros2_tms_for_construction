@@ -4,11 +4,11 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 
 PrimitiveBulldozerBladeControl::PrimitiveBulldozerBladeControl()
-: PrimitiveNodeBase("st_bulldozer_blade_control_node")
+: PrimitiveNodeBase("primitive_bulldozer_blade_control_node")
 {
   action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
     this,
-    "st_bulldozer_blade_control",
+    "primitive_bulldozer_blade_control",
     std::bind(&PrimitiveBulldozerBladeControl::handle_goal, this, _1, _2),
     std::bind(&PrimitiveBulldozerBladeControl::handle_cancel, this, _1),
     std::bind(&PrimitiveBulldozerBladeControl::handle_accepted, this, _1));
@@ -88,7 +88,7 @@ void PrimitiveBulldozerBladeControl::handle_accepted(const std::shared_ptr<Serve
 
 void PrimitiveBulldozerBladeControl::execute(const std::shared_ptr<ServerGoalHandle> server_goal_handle)
 {
-  RCLCPP_INFO(this->get_logger(), "primitive(st_bulldozer_blade_control) is executing...");
+  RCLCPP_INFO(this->get_logger(), "primitive(primitive_bulldozer_blade_control) is executing...");
 
   auto leaf_result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
   leaf_result->result = false;

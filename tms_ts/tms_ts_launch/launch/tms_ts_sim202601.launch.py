@@ -450,6 +450,31 @@ def launch_setup(context, *args, **kwargs):
               executable='primitive_crawlerdump_swing',
               output='screen',
               namespace='mst2200vd'),
+      #D37PXI
+        Node(
+              package='tms_ts_primitive', 
+              executable='primitive_bulldozer_blade_control',
+              output='screen',
+              parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+              namespace='d37pxi_24'),
+        Node(
+              package='tms_ts_primitive', 
+              executable='primitive_bulldozer_follow_waypoints',
+              output='screen',
+              parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+              namespace='d37pxi_24'),
+        Node(
+              package='tms_ts_primitive', 
+              executable='primitive_bulldozer_navigate_anywhere',
+              output='screen',
+              parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+              namespace='d37pxi_24'),
+        Node(
+              package='tms_ts_primitive', 
+              executable='primitive_bulldozer_navigate_through_poses',
+              output='screen',
+              parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+              namespace='d37pxi_24'),  
        
         
         # センシング処�?後�?��?ータをデータベ�?�スに取り込むためのノ�?�ド�?
