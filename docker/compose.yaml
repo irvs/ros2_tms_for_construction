@@ -20,6 +20,7 @@ services:
     image: ros2_tms_for_construction:dev
     container_name: ros2_tms_dev
     network_mode: host
+    shm_size: 1g
     environment:
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
