@@ -76,20 +76,46 @@ docker exec -it -u ros -e DISPLAY=$DISPLAY ros2_tms_dev bash
 
 `-u ros` は必須（コンテナの `USER` が root のまま、entrypoint 内で `gosu` drop しているため）。
 
-### Step A. 4 ターミナル起動（順序任意）
+### Step A. 2 ターミナル起動
 
-各ターミナルで前置きの `docker exec ...` を実行してから以下を起動する。
+各ターミナルで前置きの `docker exec ...` を実行してから以下を起動する。**Terminal 1 を起動して Unity を再生したあとに Terminal 2 を起動する** 順序を守ること（理由は後述）。
 
 | Terminal | 役割 | コマンド |
 |---|---|---|
 | 1 | Unity ↔ ROS 2 ブリッジ | `ros2 launch ros_tcp_endpoint endpoint.py` |
-| 2 | tms_if_for_opera アクションサーバ群 | `ros2 launch tms_if_for_opera tms_if_for_opera.launch.py` |
-| 3 | zx200 MoveIt2 + ros2_control + RViz | `ros2 launch zx200_bringup vehicle.launch.py use_rviz:=true command_interface_name:=velocity` |
-| 4 | task scheduler + zx200 subtask 群 + `tms_ur_button` GUI | `ros2 launch tms_ts_launch tms_ts_construction.launch.py task_id:=4` |
+| 2 | zx200 MoveIt2 + RViz / `tms_if_for_opera` / `tms_ts_construction` を順次起動 | `ros2 launch /workspace/src/ros2_tms_for_construction/docker/launch/bringup.launch.yaml` |
 
-Terminal 3 の `command_interface_name:=velocity` は Unity 側で `boom_link` / `arm_link` / `bucket_link` の Control Type を Velocity に設定する Step B と整合させるため。`use_rviz:=true` で MoveIt2 用 RViz が起動する。
+Terminal 2 で起動する `bringup.launch.yaml` は内部で 3 つの launch ファイルを timer 付きで連鎖起動する:
 
-Terminal 3 までの起動状態で、RViz の MotionPlanning パネルから手動 Plan & Execute も可能（BT を使わない動作確認）。
+1. **t = 0 s** — `zx200_bringup vehicle.launch.py`（`command_interface_name:=velocity`、`use_rviz:=true` がデフォルト）
+2. **t = `tms_if_delay` s（既定 5）** — `tms_if_for_opera tms_if_for_opera.launch.py`
+3. **t = `tms_ts_delay` s（既定 10）** — `tms_ts_launch tms_ts_construction.launch.py`（`task_id:=4` がデフォルト）
+
+時間差を入れているのは `zx200_bringup` が `robot_description_semantic` (SRDF) を publish する前に `tms_if_for_opera` 側の MoveGroupInterface が subscribe すると 10 秒タイムアウトで FATAL 終了するため。低性能ホストで FATAL が出る場合は後述の `tms_if_delay` / `tms_ts_delay` を増やす。
+
+Terminal 1 を先に起動する理由: Unity 側の `JointStatePublisher` が `/zx200/joint_states` を publish する前に `zx200_bringup` の `ros2_control` を起動すると、初期姿勢を取得できずコントローラ初期化が不安定になる。Terminal 1 の `ros_tcp_endpoint` を立ててから Step B で Unity を再生し、joint_states が流れ始めてから Terminal 2 を起動する。
+
+利用可能な引数（任意）:
+
+| 引数 | デフォルト | 説明 |
+|---|---|---|
+| `task_id` | `4` | 緑ボタンで実行する BT の task_id |
+| `command_interface_name` | `velocity` | ros2_control の command interface (`velocity` / `position` / `effort`) |
+| `use_rviz` | `true` | `zx200_bringup` の RViz を起動するか |
+| `tms_if_delay` | `5.0` | `tms_if_for_opera` 起動までの待ち時間（秒）。SRDF の subscribe timeout 回避用 |
+| `tms_ts_delay` | `10.0` | `tms_ts_construction` 起動までの待ち時間（秒）。`tms_if_delay` より大きく |
+
+例:
+
+```bash
+# 別の task を試す
+ros2 launch <…>/bringup.launch.yaml task_id:=5
+
+# 低性能ホストで SRDF subscribe timeout が出る場合は遅延を伸ばす
+ros2 launch <…>/bringup.launch.yaml tms_if_delay:=8 tms_ts_delay:=14
+```
+
+Terminal 2 起動後（`tms_ts_delay` 経過以降）、緑ボタンを押す前に RViz の MotionPlanning パネルから手動 Plan & Execute も可能（BT を使わない動作確認）。
 
 ### Step B. Unity 側の設定（初回のみ）と再生
 
@@ -102,7 +128,7 @@ ROS-TCP-Endpoint (Terminal 1) が listen 状態になってから Unity を再�
 
 ### Step C. RViz で初期姿勢を回避（衝突回避の前処理）
 
-Terminal 3 で起動した RViz2 の MoveIt パネルを操作する。
+Terminal 2 で起動した RViz2 の MoveIt パネルを操作する。
 
 起動直後はバックホウのアームが伸び切った姿勢で、バケットが地面に接触している（バケットが**ピンク色**で表示される＝衝突状態）。この状態のまま緑ボタンを押すと BT 実行中に planning が破綻し表示が崩れるため、**先に手動で 1 回だけ姿勢を正しておく**:
 
@@ -111,13 +137,13 @@ Terminal 3 で起動した RViz2 の MoveIt パネルを操作する。
 3. **`Planning` タブ → `Plan and Execute`** で実行
 4. バケットがピンク色でなくなったことを確認
 
-Terminal 4 を起動するたびに必要（停止 → 再起動でこの状態に戻る）。
+Terminal 2 を起動するたびに必要（停止 → 再起動でこの状態に戻る）。
 
 ### Step D. `tms_ur_button` GUI の緑ボタンで BT 実行
 
-Terminal 4 起動時に `tms_ur_button` が Tkinter のウィンドウを表示する。緑ボタンを押すと task_id=4 の Behavior Tree が `task_schedular_manager` に送られ、Unity 上のバックホウが掘削動作する。
+Terminal 2 起動から `tms_ts_delay` 秒（既定 10）経過後、`tms_ts_construction` 側の `tms_ur_button` が Tkinter のウィンドウを表示する。緑ボタンを押すと `task_id`（デフォルト `4`）の Behavior Tree が `task_schedular_manager` に送られ、Unity 上のバックホウが掘削動作する。
 
-1 回の実行で BT 全体が SUCCESS して終端する設計のため、**もう一度動かしたい場合は Terminal 4 を Ctrl-C → 再起動** してから Step C → 緑ボタンを押す（または BT 自体を `Repeat num_cycles=N` 構造で登録し直す。シードの `task_id=5` は task_id=4 を 4 回反復する版）。
+1 回の実行で BT 全体が SUCCESS して終端する設計のため、**もう一度動かしたい場合は Terminal 2 を Ctrl-C → 再起動** してから Step C → 緑ボタンを押す（または BT 自体を `Repeat num_cycles=N` 構造で登録し直す。シードの `task_id=5` は task_id=4 を 4 回反復する版）。
 
 ## 停止
 
@@ -142,7 +168,8 @@ docker compose down -v      # named volume ごと削除（DB・build キャッ�
 |---|---|
 | `Dockerfile` | ベース image + ROS 2 依存 + source build で BehaviorTree.CPP / mongocxx / mongo-c-driver + `vcs import` |
 | `Dockerfile.dockerignore` | このビルド専用の ignore ファイル（BuildKit の per-Dockerfile ignore）。allowlist 形式でビルドコンテキストを絞る |
-| `compose.yaml` | `mongodb`（`mongo:6.0`）と `tms` の 2 サービス、named volume、X11 forward、`network_mode: host` |
+| `compose.yaml` | `mongodb`（`mongo:6.0`）と `tms` の 2 サービス、named volume、X11 forward、`network_mode: host`、`tms` には Fast DDS の SHM lock 用に `shm_size: 1g` を割当 |
 | `entrypoint.sh` | root で named volume 所有権を修正後、`gosu` で `ros` に drop。成功 sentinel で初回 `colcon build` を一度だけ実行 |
 | `restore-db.sh` | `demo/rostmsdb_collections.zip` を展開して `mongorestore`、その後 `parameter` collection から `description` (string) フィールドを除去（subtask が数値型のみ対応のため） |
 | `src.repos` | vcstool 管理。外部 repo を 40 桁 full commit SHA で pin（コメントで元ブランチと日付を保持） |
+| `launch/bringup.launch.yaml` | Terminal 2 用。`zx200_bringup` → 8 s → `tms_if_for_opera` → 14 s → `tms_ts_construction` の 3 launch を timer 連鎖起動する YAML launch |
