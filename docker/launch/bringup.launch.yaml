@@ -1,0 +1,44 @@
+launch:
+  - arg:
+      name: task_id
+      default: "4"
+      description: "Task ID executed by tms_ur_button when the green button is pressed"
+  - arg:
+      name: command_interface_name
+      default: "velocity"
+      description: "ros2_control command interface (velocity / position / effort)"
+  - arg:
+      name: use_rviz
+      default: "true"
+      description: "Launch RViz alongside zx200_bringup"
+  - arg:
+      name: tms_if_delay
+      default: "5.0"
+      description: "Seconds to wait before launching tms_if_for_opera (avoids SRDF subscribe timeout). Increase on slower hosts."
+  - arg:
+      name: tms_ts_delay
+      default: "10.0"
+      description: "Seconds to wait before launching tms_ts_construction (must be > tms_if_delay). Increase on slower hosts."
+
+  - include:
+      file: $(find-pkg-share zx200_bringup)/launch/vehicle.launch.py
+      arg:
+        - name: command_interface_name
+          value: $(var command_interface_name)
+        - name: use_rviz
+          value: $(var use_rviz)
+
+  - timer:
+      period: $(var tms_if_delay)
+      children:
+        - include:
+            file: $(find-pkg-share tms_if_for_opera)/launch/tms_if_for_opera.launch.py
+
+  - timer:
+      period: $(var tms_ts_delay)
+      children:
+        - include:
+            file: $(find-pkg-share tms_ts_launch)/launch/tms_ts_construction.launch.py
+            arg:
+              - name: task_id
+                value: $(var task_id)

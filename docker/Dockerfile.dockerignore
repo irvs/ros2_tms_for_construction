@@ -1,0 +1,14 @@
+# Per-Dockerfile ignore file (Docker 20.10+ with BuildKit). Scoped to
+# docker/Dockerfile only — the rest of the repo is unaffected.
+#
+# Build context is the repository root (compose.yaml sets `context: ..`).
+# This Dockerfile only COPYs:
+#   - requirements.txt           (from repo root)
+#   - docker/src.repos
+#   - docker/entrypoint.sh
+# so we use an allowlist to keep the build context tiny (host repo root is
+# dominated by demo/ and .git/, both ~250 MB).
+*
+!requirements.txt
+!docker/src.repos
+!docker/entrypoint.sh
