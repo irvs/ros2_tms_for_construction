@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BLACKBOARD_VALUE_READER_MONGO_NODE_HPP
-#define BLACKBOARD_VALUE_READER_MONGO_NODE_HPP
+#ifndef MONGO_VALUE_READER_HPP
+#define MONGO_VALUE_READER_HPP
 
 #include "rclcpp/rclcpp.hpp"
 #include <thread>
@@ -29,17 +29,17 @@
 
 using namespace BT;
 
-class BlackboardValueReaderMongo : public SyncActionNode
+class MongoValueReader : public SyncActionNode
 {
 public:
-    BlackboardValueReaderMongo(const std::string& name, const NodeConfiguration& config)
+    MongoValueReader(const std::string& name, const NodeConfiguration& config)
         : SyncActionNode(name, config), pool_(mongocxx::uri{})
     {
-        node_ = rclcpp::Node::make_shared("blackboard_value_reader_mongo");
+        node_ = rclcpp::Node::make_shared("mongo_value_reader");
         spin_thread_ = std::thread([this]() { rclcpp::spin(node_); });
     }
 
-    ~BlackboardValueReaderMongo()
+    ~MongoValueReader()
     {
         rclcpp::shutdown();
         if (spin_thread_.joinable()) {
@@ -59,7 +59,7 @@ public:
         Optional<std::string> key3 = getInput<std::string>("mongo_param_name");
         if (!key1 || !key2 || !key3)
         {
-            std::cout << "[BlackboardValueReaderMongo] missing required input. Please fill key or value parameters." << std::endl;
+            std::cout << "[MongoValueReader] missing required input. Please fill key or value parameters." << std::endl;
             return NodeStatus::FAILURE;
         }
 
@@ -73,7 +73,7 @@ public:
 
         if (!doc)
         {
-            std::cout << "[BlackboardValueReaderMongo]  Couldn't find parameter data containing " << key2.value() << " as record_name in parameter collection" << std::endl;
+            std::cout << "[MongoValueReader]  Couldn't find parameter data containing " << key2.value() << " as record_name in parameter collection" << std::endl;
             return NodeStatus::FAILURE;
         }
 
@@ -84,26 +84,26 @@ public:
             {
                 case bsoncxx::type::k_utf8:
                     config().blackboard->set(key1.value(), value.get_utf8().value.to_string());
-                    std::cout << "[BlackboardValueReaderMongo]  Stored blackboard parameter [" << key1.value() << "] : " << value.get_utf8().value.to_string() << std::endl;
+                    std::cout << "[MongoValueReader]  Stored blackboard parameter [" << key1.value() << "] : " << value.get_utf8().value.to_string() << std::endl;
                     break;
                 case bsoncxx::type::k_int32:
                     config().blackboard->set(key1.value(), value.get_int32().value);
-                    std::cout << "[BlackboardValueReaderMongo]  Stored blackboard parameter [" << key1.value() << "] : " << value.get_int32().value << std::endl;
+                    std::cout << "[MongoValueReader]  Stored blackboard parameter [" << key1.value() << "] : " << value.get_int32().value << std::endl;
                     break;
                 case bsoncxx::type::k_int64:
                     config().blackboard->set(key1.value(), value.get_int64().value);
-                    std::cout << "[BlackboardValueReaderMongo]  Stored blackboard parameter [" << key1.value() << "] : " << value.get_int64().value << std::endl;
+                    std::cout << "[MongoValueReader]  Stored blackboard parameter [" << key1.value() << "] : " << value.get_int64().value << std::endl;
                     break;
                 case bsoncxx::type::k_double:
                     config().blackboard->set(key1.value(), value.get_double().value);
-                    std::cout << "[BlackboardValueReaderMongo]  Stored blackboard parameter [" << key1.value() << "] : " << value.get_double().value << std::endl;
+                    std::cout << "[MongoValueReader]  Stored blackboard parameter [" << key1.value() << "] : " << value.get_double().value << std::endl;
                     break;
                 case bsoncxx::type::k_bool:
                     config().blackboard->set(key1.value(), value.get_bool().value);
-                    std::cout << "[BlackboardValueReaderMongo]  Stored blackboard parameter [" << key1.value() << "] : " << (value.get_bool().value ? "true" : "false") << std::endl;
+                    std::cout << "[MongoValueReader]  Stored blackboard parameter [" << key1.value() << "] : " << (value.get_bool().value ? "true" : "false") << std::endl;
                     break;
                 default:
-                    std::cout << "[BlackboardValueReaderMongo]  Unsupported BSON type: " << bsoncxx::to_string(value.type()) << std::endl;
+                    std::cout << "[MongoValueReader]  Unsupported BSON type: " << bsoncxx::to_string(value.type()) << std::endl;
                     return NodeStatus::FAILURE;
             }
 
@@ -111,7 +111,7 @@ public:
         }
         catch (const std::exception& e)
         {
-            std::cout << "[BlackboardValueReaderMongo]  Exception caught: " << e.what() << std::endl;
+            std::cout << "[MongoValueReader]  Exception caught: " << e.what() << std::endl;
             return NodeStatus::FAILURE;
         }
     }
