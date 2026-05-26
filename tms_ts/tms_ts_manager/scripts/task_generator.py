@@ -43,7 +43,10 @@ class TaskGenerator(Node):
         self.declare_parameter("output_text_file_directory_path", tms_ts_subtask_package_directory + '/config')
         self.declare_parameter("output_file_name", 'task_sequence')
         self.declare_parameter("output_txt_file", False)
-        self.declare_parameter("description", "No Commented ...")
+
+        self.xml_file_name = self.get_parameter("bt_tree_xml_file_name").get_parameter_value().string_value
+
+        self.declare_parameter("description", self.xml_file_name + '.xml')
 
         self.xml_file_name = self.get_parameter("bt_tree_xml_file_name").get_parameter_value().string_value
         output_text_file_directory = self.get_parameter("output_text_file_directory_path").get_parameter_value().string_value
