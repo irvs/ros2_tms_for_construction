@@ -5,8 +5,8 @@
         <Sequence>
             <Decorator ID="KeepRunningUntilFlgup" key="SUBTASK_TERMINAL_FLG" while_or_dowhile="While">
                 <Sequence>
-                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$" output_port="CURRENT_SECTION"/>
-                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="UP_DOWN" mongo_record_name="$machine_record_name$" output_port="UP_DOWN"/>
+                    <Action ID="MongoValueReader" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$" output_port="CURRENT_SECTION"/>
+                    <Action ID="MongoValueReader" mongo_param_name="UP_DOWN" mongo_record_name="$machine_record_name$" output_port="UP_DOWN"/>
                     <Decorator ID="KeepRunningUntilFlgup" key="SUBTASK_INITIAL_FLG" while_or_dowhile="While">
                         <Sequence>
                             <IfThenElse>
@@ -27,20 +27,20 @@
                             <IfThenElse>
                                 <Action ID="ConditionalExpression" conditional_expression="UP_DOWN == &quot;up&quot;"/>
                                 <Sequence>
-                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="related_point_up_main" mongo_record_name="{CURRENT_SECTION}" output_port="related_point_main"/>
-                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="related_point_up_sub" mongo_record_name="{CURRENT_SECTION}" output_port="related_point_sub"/>
-                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="related_point_up_main" mongo_record_name="{related_point_main}" output_port="next_point_main"/>
-                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="related_point_up_sub" mongo_record_name="{related_point_main}" output_port="next_point_sub"/>
+                                    <Action ID="MongoValueReader" mongo_param_name="related_point_up_main" mongo_record_name="{CURRENT_SECTION}" output_port="related_point_main"/>
+                                    <Action ID="MongoValueReader" mongo_param_name="related_point_up_sub" mongo_record_name="{CURRENT_SECTION}" output_port="related_point_sub"/>
+                                    <Action ID="MongoValueReader" mongo_param_name="related_point_up_main" mongo_record_name="{related_point_main}" output_port="next_point_main"/>
+                                    <Action ID="MongoValueReader" mongo_param_name="related_point_up_sub" mongo_record_name="{related_point_main}" output_port="next_point_sub"/>
                                 </Sequence>
                                 <AlwaysSuccess/>
                             </IfThenElse>
                             <IfThenElse>
                                 <Action ID="ConditionalExpression" conditional_expression="UP_DOWN == &quot;down&quot;"/>
                                 <Sequence>
-                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="related_point_down_main" mongo_record_name="{CURRENT_SECTION}" output_port="related_point_main"/>
-                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="related_point_down_sub" mongo_record_name="{CURRENT_SECTION}" output_port="related_point_sub"/>
-                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="related_point_down_main" mongo_record_name="{related_point_main}" output_port="next_point_main"/>
-                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="related_point_down_sub" mongo_record_name="{related_point_main}" output_port="next_point_sub"/>
+                                    <Action ID="MongoValueReader" mongo_param_name="related_point_down_main" mongo_record_name="{CURRENT_SECTION}" output_port="related_point_main"/>
+                                    <Action ID="MongoValueReader" mongo_param_name="related_point_down_sub" mongo_record_name="{CURRENT_SECTION}" output_port="related_point_sub"/>
+                                    <Action ID="MongoValueReader" mongo_param_name="related_point_down_main" mongo_record_name="{related_point_main}" output_port="next_point_main"/>
+                                    <Action ID="MongoValueReader" mongo_param_name="related_point_down_sub" mongo_record_name="{related_point_main}" output_port="next_point_sub"/>
                                 </Sequence>
                                 <AlwaysSuccess/>
                             </IfThenElse>
@@ -55,14 +55,14 @@
                         <Sequence>
                             <Action ID="BlackboardValueSearcherMongo" mongo_param_name="CURRENT_SECTION" mongo_value="\related_point_sub\" output_port="sub_flg"/>
                             <Action ID="BlackboardValueSearcherMongo" mongo_param_name="CURRENT_SECTION,UP_DOWN" mongo_value="=\related_point_sub\,\UP_DOWN\" output_port="sub_up"/>
-                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="label" mongo_record_name="{related_point_sub}" output_port="sub_label"/>
+                            <Action ID="MongoValueReader" mongo_param_name="label" mongo_record_name="{related_point_sub}" output_port="sub_label"/>
                         </Sequence>
                         <AlwaysSuccess/>
                     </IfThenElse>
                     <IfThenElse>
                         <Action ID="ConditionalExpression" conditional_expression="(related_point_sub == &quot;&quot; and main_flg == false) or (related_point_sub != &quot;&quot; and (main_up == false and sub_up == false))"/>
                         <Sequence>
-                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="label" mongo_record_name="{related_point_main}" output_port="main_label"/>
+                            <Action ID="MongoValueReader" mongo_param_name="label" mongo_record_name="{related_point_main}" output_port="main_label"/>
                             <IfThenElse>
                                 <Action ID="ConditionalExpression" conditional_expression="main_label == UP_DOWN"/>
                                 <Sequence>
@@ -96,7 +96,7 @@
                             <IfThenElse>
                                 <Action ID="ConditionalExpression" conditional_expression="main_label == &quot;main&quot; or sub_label == &quot;sub&quot;"/>
                                 <Sequence>
-                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="preferred_direction" mongo_record_name="{CURRENT_SECTION}" output_port="preferred_direction"/>
+                                    <Action ID="MongoValueReader" mongo_param_name="preferred_direction" mongo_record_name="{CURRENT_SECTION}" output_port="preferred_direction"/>
                                     <IfThenElse>
                                         <Action ID="ConditionalExpression" conditional_expression="preferred_direction == UP_DOWN"/>
                                         <Sequence>
@@ -193,7 +193,7 @@
                         <AlwaysSuccess/>
                     </IfThenElse>
                     <Sequence>
-                        <Action ID="BlackboardValueReaderMongo" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$" output_port="CURRENT_SECTION"/>
+                        <Action ID="MongoValueReader" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$" output_port="CURRENT_SECTION"/>
                         <IfThenElse>
                             <Action ID="ConditionalExpression" conditional_expression="CURRENT_SECTION == &quot;$terminate_condition$&quot;"/>
                             <Action ID="SetLocalBlackboard" output_key="SUBTASK_TERMINAL_FLG" value="true"/>
@@ -208,7 +208,7 @@
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="BlackboardValueReaderMongo">
+        <Action ID="MongoValueReader">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
             <input_port name="output_port"/>
