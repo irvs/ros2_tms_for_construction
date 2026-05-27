@@ -13,12 +13,21 @@ Unity ([pwri-opera/OperaSim-PhysX](https://github.com/pwri-opera/OperaSim-PhysX)
 
 ## Step A. 2 ターミナル起動
 
-各ターミナルで `./scripts/exec.sh` 経由で以下を起動する。**Terminal 1 を起動して Unity を再生したあとに Terminal 2 を起動する** 順序を守ること（理由は後述）。
+**Terminal 1 を起動して Unity を再生したあとに Terminal 2 を起動する** 順序を守ること（理由は後述）。
 
-| Terminal | 役割 | コマンド |
-|---|---|---|
-| 1 | Unity ↔ ROS 2 ブリッジ | `./scripts/exec.sh ros2 launch ros_tcp_endpoint endpoint.py` |
-| 2 | zx200 MoveIt2 + RViz / `tms_if_for_opera` / `tms_ts_construction` を順次起動 | `./scripts/exec.sh ros2 launch /workspace/src/ros2_tms_for_construction/docker/launch/bringup.launch.yaml` |
+Terminal 1: Unity ↔ ROS 2 ブリッジ
+
+```bash
+# cd ros2_tms_for_construction/docker
+./scripts/exec.sh ros2 launch ros_tcp_endpoint endpoint.py
+```
+
+Terminal 2: zx200 MoveIt2 + RViz / `tms_if_for_opera` / `tms_ts_construction` を順次起動
+
+```bash
+# cd ros2_tms_for_construction/docker
+./scripts/exec.sh ros2 launch /workspace/src/ros2_tms_for_construction/docker/launch/bringup.launch.yaml
+```
 
 Terminal 2 で起動する `bringup.launch.yaml` は内部で 3 つの launch ファイルを timer 付きで連鎖起動する:
 
@@ -30,7 +39,7 @@ Terminal 2 で起動する `bringup.launch.yaml` は内部で 3 つの launch �
 
 Terminal 1 を先に起動する理由: Unity 側の `JointStatePublisher` が `/zx200/joint_states` を publish する前に `zx200_bringup` の `ros2_control` を起動すると、初期姿勢を取得できずコントローラ初期化が不安定になる。Terminal 1 の `ros_tcp_endpoint` を立ててから Step B で Unity を再生し、joint_states が流れ始めてから Terminal 2 を起動する。
 
-利用可能な引数（任意）:
+### bringup の引数（任意）
 
 | 引数 | デフォルト | 説明 |
 |---|---|---|
@@ -40,13 +49,15 @@ Terminal 1 を先に起動する理由: Unity 側の `JointStatePublisher` が `
 | `tms_if_delay` | `5.0` | `tms_if_for_opera` 起動までの待ち時間（秒）。SRDF の subscribe timeout 回避用 |
 | `tms_ts_delay` | `10.0` | `tms_ts_construction` 起動までの待ち時間（秒）。`tms_if_delay` より大きく |
 
-例:
+別の task を試す場合:
 
 ```bash
-# 別の task を試す
 ./scripts/exec.sh ros2 launch /workspace/src/ros2_tms_for_construction/docker/launch/bringup.launch.yaml task_id:=5
+```
 
-# 低性能ホストで SRDF subscribe timeout が出る場合は遅延を伸ばす
+低性能ホストで SRDF subscribe timeout が出る場合:
+
+```bash
 ./scripts/exec.sh ros2 launch /workspace/src/ros2_tms_for_construction/docker/launch/bringup.launch.yaml tms_if_delay:=8 tms_ts_delay:=14
 ```
 
@@ -83,6 +94,7 @@ Terminal 2 起動から `tms_ts_delay` 秒（既定 10）経過後、`tms_ts_con
 ## 停止
 
 ```bash
+# cd ros2_tms_for_construction/docker
 docker compose down         # コンテナ停止（named volume は保持）
-docker compose down -v      # named volume ごと削除（DB・build キャッシュも消える）
+# docker compose down -v    # named volume ごと削除（DB・build キャッシュも消える）
 ```

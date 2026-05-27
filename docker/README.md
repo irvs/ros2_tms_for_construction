@@ -12,7 +12,7 @@
 ### 環境構築
 
 ```bash
-cd docker
+# cd ros2_tms_for_construction/docker
 UID=$(id -u) GID=$(id -g) docker compose build      # 初回 20-30 分
 xhost +local:                                        # GUI 用 X 許可（セッションごと）
 docker compose up -d                                  # 初回 colcon build (10 分)
@@ -25,13 +25,15 @@ docker compose exec tms restore-db.sh                 # DB seed 投入（初回�
 
 Unity ([pwri-opera/OperaSim-PhysX](https://github.com/pwri-opera/OperaSim-PhysX)) を別途起動した状態で 2 ターミナルで実行:
 
+Terminal 1: Unity ↔ ROS 2 ブリッジ
 ```bash
-# Terminal 1: Unity ↔ ROS 2 ブリッジ
 ./scripts/exec.sh ros2 launch ros_tcp_endpoint endpoint.py
+```
 
-# (Unity を再生して接続を確認してから Terminal 2 を起動する)
+(Unity を再生して接続を確認してから Terminal 2 を起動する)
 
-# Terminal 2: bringup (zx200 / tms_if / tms_ts を 3 段連鎖起動)
+Terminal 2: bringup (zx200 / tms_if / tms_ts を 3 段連鎖起動)
+```bash
 ./scripts/exec.sh ros2 launch /workspace/src/ros2_tms_for_construction/docker/launch/bringup.launch.yaml
 ```
 
@@ -41,7 +43,7 @@ Unity 設定、RViz の初期姿勢回避、緑ボタン押下までの詳細手
 
 ```bash
 docker compose down         # コンテナ停止（named volume は保持）
-docker compose down -v      # named volume ごと削除（DB・build キャッシュも消える）
+# docker compose down -v    # named volume ごと削除（DB・build キャッシュも消える）
 ```
 
 ## ドキュメント
