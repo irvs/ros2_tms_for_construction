@@ -59,7 +59,7 @@ docker compose up -d
 `demo/rostmsdb_collections.zip` を展開して `mongorestore` する:
 
 ```bash
-docker compose exec tms /workspace/src/ros2_tms_for_construction/docker/restore-db.sh
+docker compose exec tms restore-db.sh
 ```
 
 完了すると `rostmsdb` に task 11 件・parameter 40 件ほどが投入される。スクリプト末尾でシードの `parameter` collection から `description` (string) フィールドを自動除去している（subtask 側の型不整合 workaround）。
