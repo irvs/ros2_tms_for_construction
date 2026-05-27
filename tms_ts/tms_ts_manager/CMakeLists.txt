@@ -81,6 +81,7 @@ ament_python_install_package(scripts)
 install(PROGRAMS
   scripts/task_generator.py
   scripts/task_remover.py
+  scripts/subtask_generator.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
