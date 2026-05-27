@@ -3,12 +3,14 @@
 #
 # Build context is the repository root (compose.yaml sets `context: ..`).
 # This Dockerfile only COPYs:
-#   - requirements.txt           (from repo root)
+#   - requirements.txt                  (from repo root)
 #   - docker/src.repos
-#   - docker/entrypoint.sh
+#   - docker/scripts/entrypoint.sh
+#   - docker/scripts/restore-db.sh
 # so we use an allowlist to keep the build context tiny (host repo root is
 # dominated by demo/ and .git/, both ~250 MB).
 *
 !requirements.txt
 !docker/src.repos
-!docker/entrypoint.sh
+!docker/scripts/entrypoint.sh
+!docker/scripts/restore-db.sh
