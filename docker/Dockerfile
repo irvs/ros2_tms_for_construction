@@ -112,8 +112,11 @@ RUN echo 'source /opt/ros/humble/setup.bash' >> /home/${USERNAME}/.bashrc \
 
 # Container starts as root so entrypoint.sh can chown the named volumes on
 # first mount; it then drops to `${USERNAME}` via gosu before exec'ing CMD.
+# restore-db.sh is placed on PATH so it can be invoked as `restore-db.sh`
+# from `docker compose exec tms ...` without typing the full path.
 WORKDIR /workspace
-COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY docker/scripts/entrypoint.sh /entrypoint.sh
+COPY docker/scripts/restore-db.sh /usr/local/bin/restore-db.sh
+RUN chmod +x /entrypoint.sh /usr/local/bin/restore-db.sh
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
