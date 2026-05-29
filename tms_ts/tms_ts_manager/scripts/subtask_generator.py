@@ -20,24 +20,26 @@ import pymongo
 from ament_index_python.packages import get_package_share_directory
 import xml.etree.ElementTree as ET
 import re
+import os
 
 package_name = 'tms_ts_manager'
 
 MONGODB_IPADDRESS = '127.0.0.1'
 MONGODB_PORTNUMBER = 27017
 
-# XML形式で記載されたBT treeを読み込んでmongodbのtaskコレクションに新たなタスクを生成し格納するノード
+# XML形式で記載されたBT treeを読み込んでmongodbのsubtaskコレクションに新たなサブタスクを生成し格納するノード
+# task_idの代わりにtask_nameを登録する
 
-class TaskGenerator(Node):
+class SubtaskGenerator(Node):
     
     def __init__(self):
-        super().__init__('task_generator')
+        super().__init__('subtask_generator')
         client = pymongo.MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client['rostmsdb']
-        self.collection = db['task']
+        self.collection = db['subtask']
 
         tms_ts_subtask_package_directory = get_package_share_directory(package_name)
-        self.task_info = {"task_id": None, "type": None, "model_name": None, "description": None, "task_sequence": None}
+        self.task_info = {"task_name": None, "type": None, "model_name": None, "description": None, "task_sequence": None}
 
         self.declare_parameter('bt_tree_xml_file_name', 'sample_construction_tree')
         self.declare_parameter("output_text_file_directory_path", tms_ts_subtask_package_directory + '/config')
@@ -48,7 +50,6 @@ class TaskGenerator(Node):
 
         self.declare_parameter("description", self.xml_file_name + '.xml')
 
-        self.xml_file_name = self.get_parameter("bt_tree_xml_file_name").get_parameter_value().string_value
         output_text_file_directory = self.get_parameter("output_text_file_directory_path").get_parameter_value().string_value
         output_file_name = self.get_parameter("output_file_name").get_parameter_value().string_value
         self.output_txt_file = self.get_parameter("output_txt_file").get_parameter_value().bool_value
@@ -63,17 +64,17 @@ class TaskGenerator(Node):
         if self.output_txt_file == True:
             self.create_text_file(self.output_file_path, self.task_sequence)
         
-        duplicated_task_id = self.dupricate_task_sequence_checker()
+        duplicated_task_name = self.dupricate_task_sequence_checker()
         if(self.unique_task_sequence == True):
-            self.task_info["task_id"] = self.search_recommend_task_id()
-            self.task_info["type"] = "task"
+            self.task_info["task_name"] = os.path.basename(self.xml_file_name)
+            self.task_info["type"] = "subtask"
             self.task_info["task_sequence"] = self.task_sequence
             self.task_info["model_name"] = self.model_name
             self.task_info["description"] = self.get_parameter("description").get_parameter_value().string_value
             self.set_task()
-            self.get_logger().info(f"Completed Inseting task data into the rostmsdb database ! The task_id is {self.task_info['task_id']}.")
+            self.get_logger().info(f"Completed Inserting subtask data into the rostmsdb database ! The task_name is {self.task_info['task_name']}.")
         else:
-            self.get_logger().info(f"This task sequence is already registered in the database. The task_id of the task sequence is {duplicated_task_id}.")
+            self.get_logger().info(f"This subtask sequence is already registered in the database. The task_name of the subtask sequence is {duplicated_task_name}.")
 
         self.destroy_node()
         rclpy.shutdown()
@@ -101,46 +102,27 @@ class TaskGenerator(Node):
         except Exception as e:
             print(f"Error: {e}")
     
-    # mongodbのrostmsdbデータベースのtaskコレクションに含まれるすべてのタスクの内、もっとも適したtask_idを返す関数
-    def search_recommend_task_id(self):
-        max_num = self.collection.find_one(sort=[("task_id", pymongo.DESCENDING)])["task_id"]
-        existing_task_ids = set()
-        reccomend_task_id = None
-        for document in self.collection.find({}, {"task_id": 1}):
-            existing_task_ids.add(document["task_id"])
-        for i in range(1, max_num + 1):
-            if i not in existing_task_ids:
-                reccomend_task_id = i
-                break
-        if(reccomend_task_id != None):
-            return reccomend_task_id
-        else:
-            return max_num + 1
-    
-    # mongodbのrostmsdbデータベースのtaskコレクションに新たなタスクを格納する関数
+    # mongodbのrostmsdbデータベースのsubtaskコレクションに新たなサブタスクを格納する関数
     def set_task(self):
         self.task_info["task_sequence"] = self.task_sequence
         self.collection.insert_one(self.task_info)
-        self.get_logger().info(f"Completed Inseting task data into the rostmsdb database !")
+        self.get_logger().info(f"Completed Inserting subtask data into the rostmsdb database !")
     
-    # mongodbのrostmsdbデータベースのtaskコレクションに新たなタスクを格納する前に、すでに同じタスク列を持つタスクが格納されていないか確認する関数
+    # mongodbのrostmsdbデータベースのsubtaskコレクションに新たなサブタスクを格納する前に、すでに同じサブタスク列を持つサブタスクが格納されていないか確認する関数
     def dupricate_task_sequence_checker(self):
         for document in self.collection.find({}):
              if "task_sequence" in document:
                 task_sequence_value = document["task_sequence"]
-                task_id = document["task_id"]
+                task_name = document.get("task_name")
                 if isinstance(task_sequence_value, str) and self.task_sequence in task_sequence_value:
                     self.unique_task_sequence = False
-                    return task_id
+                    return task_name
     
 
 
 def main(args=None):
     rclpy.init(args=args)
-    task_generator = TaskGenerator()
-    # rclpy.spin_once(task_generator)
-    # task_generator.destroy_node()
-    # rclpy.shutdown()
+    subtask_generator = SubtaskGenerator()
 
 if __name__ == '__main__':
     main()

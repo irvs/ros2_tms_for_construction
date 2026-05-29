@@ -29,7 +29,7 @@
 #include "tms_ts_primitive/Excavator/leaf_node_assist.hpp"
 #include "tms_ts_primitive/CrawlerDump/leaf_node.hpp"
 #include "tms_ts_primitive/Bulldozer/leaf_node.hpp"
-#include "tms_ts_primitive/common/blackboard_value_reader_mongo.hpp"
+#include "tms_ts_primitive/common/mongo_value_reader.hpp"
 #include "tms_ts_primitive/common/blackboard_value_searcher_mongo.hpp"
 #include "tms_ts_primitive/common/mongo_value_writer.hpp"
 #include "tms_ts_primitive/common/conditional_expression.hpp"
@@ -163,7 +163,7 @@ public:
     factory.registerNodeType<LeafNodeExcavatorAssist>("LeafNodeExcavatorAssist");
     factory.registerNodeType<LeafNodeCrawlerDump>("LeafNodeCrawlerDump");
     factory.registerNodeType<LeafNodeBulldozer>("LeafNodeBulldozer");
-    factory.registerNodeType<BlackboardValueReaderMongo>("BlackboardValueReaderMongo");
+    factory.registerNodeType<MongoValueReader>("MongoValueReader");
     factory.registerNodeType<BlackboardValueSearcherMongo>("BlackboardValueSearcherMongo");
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");

@@ -3,14 +3,14 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Parallel failure_threshold="1" success_threshold="">
-            <Action  model_name="zx200_1" ID="LeafNodeExcavator" record_name="param1ぱ" subtask_name="subtask_excavator_change_pose"/>
+            <Action  model_name="zx200_1" ID="LeafNodeExcavator" record_name="param1" subtask_name="subtask_excavator_change_pose"/>
             <Action  model_name="IC120_1" ID="LeafNodeCrawlerDump" record_name="param2" subtask_name="st_crawlerdump_follow_waypoints"/>
             <Action  model_name="IC120_2" ID="LeafNodeCrawlerDump" record_name="param3" subtask_name="st_crawlerdump_follow_waypoints"/>
         </Parallel>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="BlackboardValueReaderMongo">
+        <Action ID="MongoValueReader">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
             <input_port name="output_port"/>
