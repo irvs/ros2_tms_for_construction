@@ -19,6 +19,9 @@ https://www.mongodb.com/docs/v6.0/tutorial/install-mongodb-on-ubuntu/
 
 https://www.mongodb.com/docs/compass/current/install/
 
+### Cyclone-DDS
+
+https://docs.ros.org/en/humble/Installation/RMW-Implementations/DDS-Implementations/Working-with-Eclipse-CycloneDDS.html
 
 ### Related packages for ROS2-TMS-FOR-CONSTRUCTION
 - pymongo 4.3.3
@@ -157,6 +160,13 @@ sudo apt -y install ros-humble-*nav2*
 sudo apt -y install ros-humble-robot-localization 
 #install tf package
 sudo apt -y install ros-humble-*tf*
+```
+
+### Setup Cyclone-DDS
+```
+# Install Cyclone DDS
+sudo apt install -y ros-humble-rmw-cyclonedds-cpp
+echo 'export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp' >> ~/.bashrc
 ```
 
 ### Build the workspace

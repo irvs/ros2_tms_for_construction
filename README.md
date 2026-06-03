@@ -22,9 +22,10 @@ Project page: [https://moonshot-cafe-project.org/en/](https://moonshot-cafe-proj
 ![](docs/ros2_tms_for_construction_architecture.png)
 
 ## Setup
-There are two ways to set up ROS2-TMS for Construction: by entering individual commands directly or by using scripts.
+There are two ways to set up ROS2-TMS for Construction: by entering individual commands directly or by using scripts.  
+It is recommended to use **Cyclone DDS** as the RMW.
 
-1. [Etering individual commands directly](setup.md)
+1. [Enter individual commands directly](setup.md)
 2. Using scripts. 
 
     ```

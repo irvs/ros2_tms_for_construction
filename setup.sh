@@ -59,9 +59,9 @@ echo "mongodb-org-mongos hold" | sudo dpkg --set-selections
 echo "mongodb-org-tools hold" | sudo dpkg --set-selections
 
 #MongoDB Compass
-wget https://downloads.mongodb.com/compass/mongodb-compass_1.43.0_amd64.deb
-sudo dpkg -i mongodb-compass_1.43.0_amd64.deb
-rm mongodb-compass_1.43.0_amd64.deb
+wget https://downloads.mongodb.com/compass/mongodb-compass_1.49.8_amd64.deb
+sudo dpkg -i mongodb-compass_1.49.8_amd64.deb
+rm mongodb-compass_1.49.8_amd64.deb
 
 # install required python packages
 sudo apt install -y pip
@@ -153,6 +153,10 @@ sudo apt -y install ros-humble-*tf*
 
 #Commands for error countermeasures
 rm -rf "$WS_SRC"/{ic120,zx200,opera/ROS-TCP-Endpoint}
+
+#Setup Cyclone-DDS
+sudo apt install -y ros-humble-rmw-cyclonedds-cpp
+echo 'export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp' >> ~/.bashrc
 
 #Build the workspace 
 cd ~/ros2-tms-for-construction_ws
