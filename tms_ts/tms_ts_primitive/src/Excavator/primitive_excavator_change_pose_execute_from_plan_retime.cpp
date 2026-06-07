@@ -181,6 +181,9 @@ PrimitiveExcavatorChangePoseExecuteFromPlan::PrimitiveExcavatorChangePoseExecute
     RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
   }
 
+  RCLCPP_INFO(this->get_logger(), "You need to start traj_recorder_node for this primitive.");
+  RCLCPP_INFO(this->get_logger(), "Waiting for trajectory action server...");
+
   traj_action_client_ = rclcpp_action::create_client<traj_recorder_msgs::action::TrajFollow>(this, "traj_follow_record", cbg_traj_, options_client);
   if (traj_action_client_->wait_for_action_server())
   {
