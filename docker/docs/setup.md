@@ -53,6 +53,27 @@ docker compose up -d    # sentinel があるので colcon build は skip、秒�
 
 `src.repos` / `Dockerfile` を更新したときは `docker compose down -v` で named volume ごと削除してから build → up する（`down` だけでは volume が残り古い artifact が再利用される）。
 
+## RMW (DDS) の選択と切替
+
+デフォルトは Cyclone DDS (`rmw_cyclonedds_cpp`)。両 RMW 実装は image に同梱済み (`ros-humble-rmw-{fastrtps,cyclonedds}-cpp`) で、ホスト側に DDS をインストールする必要はない（RMW プラグインはコンテナ内 ROS 2 プロセスに linked-in される）。
+
+| RMW | 起動コマンド | 備考 |
+|---|---|---|
+| Cyclone DDS (default) | `docker compose up -d` | 同梱 `cyclonedds.xml` (loopback-only + `DontRoute`) を既定適用し単一ホスト内に隔離 |
+| Fast DDS | `RMW_IMPLEMENTATION=rmw_fastrtps_cpp docker compose up -d` | `shm_size: 1g` で共有メモリ転送を有効化済み |
+
+### discovery のスコープ
+
+既定の `cyclonedds.xml` は loopback (`127.0.0.1`) のみで discovery するため、**同一ホスト上の他 ROS 2 プロセス（`network_mode: host` の別コンテナ含む）とだけ discover し、LAN 上の別マシンとは繋がらない**。
+
+- 複数マシンで discover したい: `CYCLONEDDS_URI=` で空にして built-in default (host NIC の multicast) に戻す。
+- 独自設定を使う: `docker/cyclonedds.xml` を直接編集するか、`CYCLONEDDS_URI=file:///path/to/your.xml` で別ファイルを指す（compose.yaml で pass-through 済み）。
+- ホスト内でさらに分離したい: `ROS_DOMAIN_ID` を変更する。
+
+### Zenoh で複数現場を繋ぐ場合
+
+WAN / NAT 越し・複数現場を繋ぎたい場合は、`rmw_zenoh` をコンテナに入れるのではなく、ホストで [`zenoh-bridge-ros2dds`](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds) を起動して DDS を Zenoh network に bridge する構成を推奨する（コンテナ側は DDS のままで OK）。`rmw_zenoh` 同梱の `rmw_zenohd` は rmw_zenoh ノード専用 router で DDS との bridge を持たないため、この用途には使えない。
+
 ## 次のステップ
 
 - 動作確認 (`task_id=4` 完走): [usage.md](usage.md)

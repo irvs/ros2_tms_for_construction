@@ -48,7 +48,7 @@ docker compose down         # コンテナ停止（named volume は保持）
 
 ## ドキュメント
 
-- [docs/setup.md](docs/setup.md) — 前提・ワークスペース構造・起動手順（詳細）
+- [docs/setup.md](docs/setup.md) — 前提・ワークスペース構造・起動手順（詳細）・RMW(DDS)切替
 - [docs/usage.md](docs/usage.md) — `task_id=4` 完走手順（Terminal 1 / 2、Unity 設定、RViz 操作、緑ボタン）
 - [docs/known-issues.md](docs/known-issues.md) — 既知の制約・トラブルシュート
 
@@ -58,7 +58,8 @@ docker compose down         # コンテナ停止（named volume は保持）
 |---|---|
 | `Dockerfile` | ベース image + ROS 2 依存 + source build (BehaviorTree.CPP / mongocxx / mongo-c-driver) + `vcs import` |
 | `Dockerfile.dockerignore` | このビルド専用の ignore ファイル（BuildKit の per-Dockerfile ignore）。allowlist 形式でビルドコンテキストを絞る |
-| `compose.yaml` | `mongodb`（`mongo:6.0`）と `tms` の 2 サービス、named volume、X11 forward、`network_mode: host`、`tms` には Fast DDS の SHM lock 用に `shm_size: 1g` を割当 |
+| `compose.yaml` | `mongodb`（`mongo:6.0`）と `tms` の 2 サービス、named volume、X11 forward、`network_mode: host`、`tms` には Fast DDS 使用時の SHM lock 用に `shm_size: 1g` を割当。`RMW_IMPLEMENTATION` で Cyclone DDS(既定)/Fast DDS、`CYCLONEDDS_URI` で discovery profile を切替 |
+| `cyclonedds.xml` | Cyclone DDS の discovery profile（loopback-only + `DontRoute`）。compose の `CYCLONEDDS_URI` 既定がこれを指す。詳細は [docs/setup.md](docs/setup.md) |
 | `src.repos` | vcstool 管理。外部 repo を 40 桁 full commit SHA で pin（コメントで元ブランチと日付を保持） |
 | `launch/bringup.launch.yaml` | Terminal 2 用。`zx200_bringup` → `tms_if_for_opera` → `tms_ts_construction` の 3 launch を timer 連鎖起動する YAML launch |
 | `scripts/entrypoint.sh` | container 起動時に root で named volume 所有権を修正後、`gosu` で `ros` に drop、成功 sentinel で初回 `colcon build` を一度だけ実行 |
