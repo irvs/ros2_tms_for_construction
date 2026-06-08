@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CycloneDDS>
+ <Domain>
+     <General>
+         <Interfaces>
+            <NetworkInterface address="127.0.0.1" multicast="true"/> 
+         </Interfaces>
+         <DontRoute>true</DontRoute>
+     </General>
+ </Domain>
+</CycloneDDS>
