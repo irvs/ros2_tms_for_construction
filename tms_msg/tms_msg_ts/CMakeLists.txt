@@ -7,6 +7,7 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(moveit_msgs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -30,6 +31,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/LeafNodeBase.action"
   "srv/BlackboardParameters.srv"
   "srv/TargetAngle.srv"
+  "action/AnalyzeTrajectory.action"
+  DEPENDENCIES moveit_msgs
 )
 
 ament_package()

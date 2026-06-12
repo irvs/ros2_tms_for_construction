@@ -181,10 +181,10 @@ PrimitiveExcavatorChangePoseExecuteFromPlan::PrimitiveExcavatorChangePoseExecute
     RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
   }
 
-  RCLCPP_INFO(this->get_logger(), "You need to start traj_recorder_node for this primitive.");
+  RCLCPP_INFO(this->get_logger(), "You need to start trajectory_analyzer for this primitive.");
   RCLCPP_INFO(this->get_logger(), "Waiting for trajectory action server...");
 
-  traj_action_client_ = rclcpp_action::create_client<traj_recorder_msgs::action::TrajFollow>(this, "traj_follow_record", cbg_traj_, options_client);
+  traj_action_client_ = rclcpp_action::create_client<tms_msg_ts::action::AnalyzeTrajectory>(this, "analyze_trajectory", cbg_traj_, options_client);
   if (traj_action_client_->wait_for_action_server())
   {
     RCLCPP_INFO(this->get_logger(), "Trajectory action server is ready");
@@ -657,8 +657,8 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
   RCLCPP_INFO(this->get_logger(), "Sending EXECUTE_PLAN command with combined trajectory (from %zu original plans) to tms_rp_excavator", 
               loaded_plans.size());
 
-  // traj_follow_recordにも送信
-  traj_recorder_msgs::action::TrajFollow::Goal traj_goal;
+  // trajectory_analyzerにも送信
+  tms_msg_ts::action::AnalyzeTrajectory::Goal traj_goal;
   traj_goal.plan = goal_msg.plan;
   
   // doubleからfloatに変換して代入
@@ -676,30 +676,30 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
     traj_goal.acceleration_scaling[i] = static_cast<float>(acceleration_scales[i]);
   }
 
-  RCLCPP_INFO(this->get_logger(), "Sending trajectory to traj_follow_record with %zu scaling values", time_scales.size());
+  RCLCPP_INFO(this->get_logger(), "Sending trajectory to trajectory_analyzer with %zu scaling values", time_scales.size());
 
-  auto traj_send_opts = rclcpp_action::Client<traj_recorder_msgs::action::TrajFollow>::SendGoalOptions();
+  auto traj_send_opts = rclcpp_action::Client<tms_msg_ts::action::AnalyzeTrajectory>::SendGoalOptions();
   traj_send_opts.goal_response_callback =
-    [this](const rclcpp_action::ClientGoalHandle<traj_recorder_msgs::action::TrajFollow>::SharedPtr& gh)
+    [this](const rclcpp_action::ClientGoalHandle<tms_msg_ts::action::AnalyzeTrajectory>::SharedPtr& gh)
     {
       if (!gh) {
-        RCLCPP_ERROR(this->get_logger(), "traj_follow_record goal rejected");
+        RCLCPP_ERROR(this->get_logger(), "trajectory_analyzer goal rejected");
         return;
       }
-      RCLCPP_INFO(this->get_logger(), "traj_follow_record goal accepted");
+      RCLCPP_INFO(this->get_logger(), "trajectory_analyzer goal accepted");
       traj_goal_handle_ = gh;
     };
 
   traj_send_opts.feedback_callback =
-    [this](auto, const std::shared_ptr<const traj_recorder_msgs::action::TrajFollow::Feedback> fb)
+    [this](auto, const std::shared_ptr<const tms_msg_ts::action::AnalyzeTrajectory::Feedback> fb)
     {
-      RCLCPP_INFO(this->get_logger(), "traj_follow_record: %s", fb->status.c_str());
+      RCLCPP_INFO(this->get_logger(), "trajectory_analyzer: %s", fb->status.c_str());
     };
 
   traj_send_opts.result_callback =
-    [this](const rclcpp_action::ClientGoalHandle<traj_recorder_msgs::action::TrajFollow>::WrappedResult& res)
+    [this](const rclcpp_action::ClientGoalHandle<tms_msg_ts::action::AnalyzeTrajectory>::WrappedResult& res)
     {
-      RCLCPP_INFO(this->get_logger(), "traj_follow_record finished (code=%d)",
+      RCLCPP_INFO(this->get_logger(), "trajectory_analyzer finished (code=%d)",
                   static_cast<int>(res.code));
   
       {
@@ -727,20 +727,20 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
 
   // ★ここで確実に GoalHandle を掴む（タイムアウト付）
   if (traj_future_goal_handle_.wait_for(std::chrono::seconds(2)) != std::future_status::ready) {
-    RCLCPP_ERROR(this->get_logger(), "traj_follow_record: goal response timeout");
-    handle_error("traj_follow_record goal response timeout");
+    RCLCPP_ERROR(this->get_logger(), "trajectory_analyzer: goal response timeout");
+    handle_error("trajectory_analyzer goal response timeout");
     return;
   }
   
   auto gh = traj_future_goal_handle_.get();
   if (!gh) {
-    RCLCPP_ERROR(this->get_logger(), "traj_follow_record: goal rejected");
-    handle_error("traj_follow_record goal rejected");
+    RCLCPP_ERROR(this->get_logger(), "trajectory_analyzer: goal rejected");
+    handle_error("trajectory_analyzer goal rejected");
     return;
   }
   
   traj_goal_handle_ = gh;
-  RCLCPP_INFO(this->get_logger(), "traj_follow_record: goal accepted (handle set)");
+  RCLCPP_INFO(this->get_logger(), "trajectory_analyzer: goal accepted (handle set)");
 
   RCLCPP_INFO(this->get_logger(), "After async_send_goal() called");
 
@@ -794,10 +794,10 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::result_callback(const std::sha
     std::unique_lock<std::mutex> lk(traj_mtx_);
     bool ok = traj_cv_.wait_for(lk, std::chrono::seconds(10), [this] { return traj_done_; });
     if (!ok) {
-      RCLCPP_WARN(this->get_logger(), "traj_follow_record result did not arrive within timeout");
+      RCLCPP_WARN(this->get_logger(), "trajectory_analyzer result did not arrive within timeout");
       // ここで「待てなかった」扱いをどうするかは設計次第（abortにする/ログだけ等）
     } else {
-      RCLCPP_INFO(this->get_logger(), "traj_follow_record result arrived (code=%d)",
+      RCLCPP_INFO(this->get_logger(), "trajectory_analyzer result arrived (code=%d)",
                   static_cast<int>(traj_last_code_));
     }
   }
