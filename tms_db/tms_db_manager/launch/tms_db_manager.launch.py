@@ -57,16 +57,6 @@ def generate_launch_description():
                   'init_db': LaunchConfiguration('init_db'),
             }]
       )
-      tms_db_param_writer_node = Node(
-            package='tms_db_manager',
-            executable='tms_db_writer_param',
-            output='screen',
-            parameters=[{
-                  'db_host': LaunchConfiguration('db_host'),
-                  'db_port': LaunchConfiguration('db_port'),
-                  'init_db': LaunchConfiguration('init_db'),
-            }]
-      )
       tms_db_reader_node = Node(
             package='tms_db_manager',
             executable='tms_db_reader',
