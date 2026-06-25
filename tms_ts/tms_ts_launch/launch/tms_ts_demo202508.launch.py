@@ -16,6 +16,67 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
+import yaml
+import os
+from pymongo import MongoClient
+
+def initialize_mongodb_from_yaml():
+    """
+    initial_values.yamlファイルからMongoDBを初期化する関数
+    """
+    try:
+        yaml_path = os.path.join(os.path.dirname(__file__), "../config", "initial_values.yaml")
+        
+        # YAMLファイルを読み込み
+        with open(yaml_path, 'r', encoding='utf-8') as file:
+            config = yaml.safe_load(file)
+        
+        # MongoDB接続設定を取得
+        mongodb_config = config.get('mongodb', {})
+        ip_address = mongodb_config.get('ip_address', 'localhost')
+        port = mongodb_config.get('port', 27017)
+        database_name = mongodb_config.get('database', 'rostmsdb')
+        collection_name = mongodb_config.get('collection', 'parameter')
+        
+        # MongoDBに接続
+        client = MongoClient(ip_address, port)
+        db = client[database_name]
+        collection = db[collection_name]
+        
+        # 初期パラメータを取得して挿入
+        initial_params = config.get('initial_parameters', {})
+        
+        for param in initial_params:
+            record_name = param.get('record_name')
+            values = param.get('values', {})
+            
+            if not record_name:
+                print(f"Error: record_name is missing in parameter config: {param}")
+                continue
+            
+            if not values:
+                print(f"Warning: No values specified for record_name: {record_name}")
+                
+            # 既存のドキュメントを検索
+            query = {"type": "dynamic", "record_name": record_name}
+            existing_doc = collection.find_one(query)
+            
+            # $setで更新する形式で値を準備
+            update_data = {"$set": values}
+            
+            if existing_doc:
+                # 既存のドキュメントを更新
+                collection.update_one(query, update_data)
+                print(f"Updated parameter: {record_name}")
+            else:
+                # 既存のドキュメントが見つからない場合はエラー
+                print(f"Error: Document not found for record_name: {record_name}, type: {param_type}")
+                continue
+        
+        print("MongoDB initialization completed successfully")
+        
+    except Exception as e:
+        print(f"Failed to initialize MongoDB: {str(e)}")
 
 def generate_launch_description():
     # Define the task IDs for the demo
@@ -46,6 +107,8 @@ def generate_launch_description():
 
 
 def launch_setup(context, *args, **kwargs):
+    initialize_mongodb_from_yaml()
+
     # Get the task_ids parameter and convert to int array
     task_ids_str = LaunchConfiguration('task_ids').perform(context)
     zmq_server_port_base = int(LaunchConfiguration('zmq_server_port_base').perform(context))
@@ -88,42 +151,42 @@ def launch_setup(context, *args, **kwargs):
         # subtasks
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_zx200_change_pose',
+              executable='subtask_excavator_change_pose',
               output='screen',
               namespace = 'zx200'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_zx200_change_pose_plan',
+              executable='subtask_excavator_change_pose_plan',
               output='screen',
               namespace = 'zx200'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_zx200_excavate_simple',
+              executable='subtask_excavator_excavate_simple',
               output='screen',
               namespace = 'zx200'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_zx200_excavate_simple_plan',
+              executable='subtask_excavator_excavate_simple_plan',
               output='screen',
               namespace = 'zx200'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_zx200_release_simple',
+              executable='subtask_excavator_release_simple',
               output='screen',
               namespace = 'zx200'),
         Node(
               package='tms_ts_subtask',
-              executable='subtask_zx200_follow_waypoints',
+              executable='subtask_excavator_follow_waypoints',
               output='screen',
               namespace = 'zx200'),
         Node(
               package='tms_ts_subtask',
-              executable='subtask_zx200_navigate_anywhere',
+              executable='subtask_excavator_navigate_anywhere',
               output='screen',
               namespace = 'zx200'),
         Node(
               package='tms_ts_subtask',
-              executable='subtask_zx200_navigate_through_poses',
+              executable='subtask_excavator_navigate_through_poses',
               output='screen',
               namespace = 'zx200'),
         
@@ -273,93 +336,93 @@ def launch_setup(context, *args, **kwargs):
             # mst110cr用
       Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst110cr_follow_waypoints_deg',
+              executable='subtask_crawlerdump_follow_waypoints_deg',
               output='screen',
               namespace='mst110cr_2'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst110cr_follow_waypoints',
+              executable='subtask_crawlerdump_follow_waypoints',
               output='screen',
               namespace='mst110cr_2'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst110cr_navigate_anywhere_deg',
+              executable='subtask_crawlerdump_navigate_anywhere_deg',
               output='screen',
               namespace='mst110cr_2'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst110cr_navigate_anywhere',
+              executable='subtask_crawlerdump_navigate_anywhere',
               output='screen',
               namespace='mst110cr_2'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst110cr_navigate_through_poses_deg',
+              executable='subtask_crawlerdump_navigate_through_poses_deg',
               output='screen',
               namespace='mst110cr_2'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst110cr_navigate_through_poses',
+              executable='subtask_crawlerdump_navigate_through_poses',
               output='screen',
               namespace='mst110cr_2'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst110cr_release_soil',
+              executable='subtask_crawlerdump_release_soil',
               output='screen',
               namespace='mst110cr_2'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst110cr_swing_align_to_heading',
+              executable='subtask_crawlerdump_swing_align_to_heading',
               output='screen',
               namespace='mst110cr_2'),   
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst110cr_swing',
+              executable='subtask_crawlerdump_swing',
               output='screen',
               namespace='mst110cr_2'),
         # mst2200vd用
         Node(
                   package='tms_ts_subtask', 
-                  executable='subtask_mst2200_follow_waypoints_deg',
+                  executable='subtask_crawlerdump_follow_waypoints_deg',
                   output='screen',
                   namespace='mst2200vd'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst2200_follow_waypoints',
+              executable='subtask_crawlerdump_follow_waypoints',
               output='screen',
               namespace='mst2200vd'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst2200_navigate_anywhere_deg',
+              executable='subtask_crawlerdump_navigate_anywhere_deg',
               output='screen',
               namespace='mst2200vd'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst2200_navigate_anywhere',
+              executable='subtask_crawlerdump_navigate_anywhere',
               output='screen',
               namespace='mst2200vd'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst2200_navigate_through_poses_deg',
+              executable='subtask_crawlerdump_navigate_through_poses_deg',
               output='screen',
               namespace='mst2200vd'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst2200_navigate_through_poses',
+              executable='subtask_crawlerdump_navigate_through_poses',
               output='screen',
               namespace='mst2200vd'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst2200_release_soil',
+              executable='subtask_crawlerdump_release_soil',
               output='screen',
               namespace='mst2200vd'),
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst2200_swing_align_to_heading',
+              executable='subtask_crawlerdump_swing_align_to_heading',
               output='screen',
               namespace='mst2200vd'),   
         Node(
               package='tms_ts_subtask', 
-              executable='subtask_mst2200_swing',
+              executable='subtask_crawlerdump_swing',
               output='screen',
               namespace='mst2200vd'),
        

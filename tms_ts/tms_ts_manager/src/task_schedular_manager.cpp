@@ -23,11 +23,9 @@
 #include <mongocxx/uri.hpp>
 
 // leaf nodesのインクルード
-#include "tms_ts_subtask/FUJITA/mst2200/leaf_node.hpp"
-#include "tms_ts_subtask/OPERA/d37pxi/leaf_node.hpp"
-#include "tms_ts_subtask/OPERA/ic120/leaf_node.hpp"
-#include "tms_ts_subtask/OPERA/zx200/leaf_node.hpp"
-#include "tms_ts_subtask/OPERA/mst110cr/leaf_node.hpp"
+#include "tms_ts_subtask/Excavator/leaf_node.hpp"
+#include "tms_ts_subtask/CrawlerDump/leaf_node.hpp"
+#include "tms_ts_subtask/Bulldozer/leaf_node.hpp"
 #include "tms_ts_subtask/common/blackboard_value_reader_mongo.hpp"
 #include "tms_ts_subtask/common/mongo_value_writer.hpp"
 #include "tms_ts_subtask/common/conditional_expression.hpp"
@@ -55,11 +53,9 @@ public:
     subscription_ = this->create_subscription<std_msgs::msg::String>(
         "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
     
-    factory.registerNodeType<LeafNodeD37pxi>("LeafNodeD37pxi");
-    factory.registerNodeType<LeafNodeMst2200>("LeafNodeMst2200");
-    factory.registerNodeType<LeafNodeIc120>("LeafNodeIc120");
-    factory.registerNodeType<LeafNodeMst110cr>("LeafNodeMst110cr");
-    factory.registerNodeType<LeafNodeZx200>("LeafNodeZx200");
+    factory.registerNodeType<LeafNodeExcavator>("LeafNodeExcavator");
+    factory.registerNodeType<LeafNodeCrawlerDump>("LeafNodeCrawlerDump");
+    factory.registerNodeType<LeafNodeBulldozer>("LeafNodeBulldozer");
     factory.registerNodeType<BlackboardValueReaderMongo>("BlackboardValueReaderMongo");
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");

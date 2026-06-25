@@ -22,6 +22,8 @@ find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(rosidl_default_runtime REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(bsoncxx REQUIRED)
@@ -52,102 +54,57 @@ target_link_libraries(${PROJECT_NAME}
 mongocxx
 bsoncxx)
 
-# Subtask Nodes for D37PXI 
-add_executable(subtask_d37pxi_follow_waypoints_deg src/OPERA/d37pxi/subtask_d37pxi_follow_waypoints_deg.cpp)
-add_executable(subtask_d37pxi_follow_waypoints src/OPERA/d37pxi/subtask_d37pxi_follow_waypoints.cpp)
-add_executable(subtask_d37pxi_navigate_anywhere_deg src/OPERA/d37pxi/subtask_d37pxi_navigate_anywhere_deg.cpp)
-add_executable(subtask_d37pxi_navigate_anywhere src/OPERA/d37pxi/subtask_d37pxi_navigate_anywhere.cpp)
-add_executable(subtask_d37pxi_navigate_through_poses_deg src/OPERA/d37pxi/subtask_d37pxi_navigate_through_poses_deg.cpp)
-add_executable(subtask_d37pxi_navigate_through_poses src/OPERA/d37pxi/subtask_d37pxi_navigate_through_poses.cpp)
+# Subtask Nodes for Bulldozer 
+add_executable(subtask_bulldozer_blade_control src/Bulldozer/subtask_bulldozer_blade_control.cpp)
+add_executable(subtask_bulldozer_follow_waypoints src/Bulldozer/subtask_bulldozer_follow_waypoints.cpp)
+add_executable(subtask_bulldozer_navigate_anywhere src/Bulldozer/subtask_bulldozer_navigate_anywhere.cpp)
+add_executable(subtask_bulldozer_navigate_through_poses src/Bulldozer/subtask_bulldozer_navigate_through_poses.cpp)
 
-# Subtask Nodes for MST2200
-add_executable(subtask_mst2200_follow_waypoints_deg src/FUJITA/mst2200/subtask_mst2200_follow_waypoints_deg.cpp)
-add_executable(subtask_mst2200_follow_waypoints src/FUJITA/mst2200/subtask_mst2200_follow_waypoints.cpp)
-add_executable(subtask_mst2200_navigate_anywhere_deg src/FUJITA/mst2200/subtask_mst2200_navigate_anywhere_deg.cpp)
-add_executable(subtask_mst2200_navigate_anywhere src/FUJITA/mst2200/subtask_mst2200_navigate_anywhere.cpp)
-add_executable(subtask_mst2200_navigate_through_poses_deg src/FUJITA/mst2200/subtask_mst2200_navigate_through_poses_deg.cpp)
-add_executable(subtask_mst2200_navigate_through_poses src/FUJITA/mst2200/subtask_mst2200_navigate_through_poses.cpp)
-add_executable(subtask_mst2200_release_soil src/FUJITA/mst2200/subtask_mst2200_release_soil.cpp)
-add_executable(subtask_mst2200_swing src/FUJITA/mst2200/subtask_mst2200_swing.cpp)
-add_executable(subtask_mst2200_swing_align_to_heading src/FUJITA/mst2200/subtask_mst2200_swing_align_to_heading.cpp)
+# Subtask Nodes for CrawlerDump
+add_executable(subtask_crawlerdump_compute_path_to_pose src/CrawlerDump/subtask_crawlerdump_compute_path_to_pose.cpp)
+add_executable(subtask_crawlerdump_follow_path src/CrawlerDump/subtask_crawlerdump_follow_path.cpp)
+add_executable(subtask_crawlerdump_follow_waypoints src/CrawlerDump/subtask_crawlerdump_follow_waypoints.cpp)
+add_executable(subtask_crawlerdump_navigate_anywhere src/CrawlerDump/subtask_crawlerdump_navigate_anywhere.cpp)
+add_executable(subtask_crawlerdump_navigate_through_poses src/CrawlerDump/subtask_crawlerdump_navigate_through_poses.cpp)
+add_executable(subtask_crawlerdump_release_soil src/CrawlerDump/subtask_crawlerdump_release_soil.cpp)
+add_executable(subtask_crawlerdump_swing src/CrawlerDump/subtask_crawlerdump_swing.cpp)
+add_executable(subtask_crawlerdump_swing_align_to_heading src/CrawlerDump/subtask_crawlerdump_swing_align_to_heading.cpp)
 
-# Subtask Nodes for IC120
-add_executable(subtask_ic120_follow_waypoints_deg src/OPERA/ic120/subtask_ic120_follow_waypoints_deg.cpp)
-add_executable(subtask_ic120_follow_waypoints src/OPERA/ic120/subtask_ic120_follow_waypoints.cpp)
-add_executable(subtask_ic120_navigate_anywhere_deg src/OPERA/ic120/subtask_ic120_navigate_anywhere_deg.cpp)
-add_executable(subtask_ic120_navigate_anywhere src/OPERA/ic120/subtask_ic120_navigate_anywhere.cpp)
-add_executable(subtask_ic120_navigate_through_poses_deg src/OPERA/ic120/subtask_ic120_navigate_through_poses_deg.cpp)
-add_executable(subtask_ic120_navigate_through_poses src/OPERA/ic120/subtask_ic120_navigate_through_poses.cpp)
-add_executable(subtask_ic120_release_soil src/OPERA/ic120/subtask_ic120_release_soil.cpp)
-
-# Subtask Nodes for ZX200
-add_executable(subtask_zx200_change_pose src/OPERA/zx200/subtask_zx200_change_pose.cpp)
-add_executable(subtask_zx200_change_pose_plan src/OPERA/zx200/subtask_zx200_change_pose_plan.cpp)
-add_executable(subtask_zx200_excavate_simple_plan src/OPERA/zx200/subtask_zx200_excavate_simple_plan.cpp)
-add_executable(subtask_zx200_excavate_simple src/OPERA/zx200/subtask_zx200_excavate_simple.cpp)
-add_executable(subtask_zx200_release_simple src/OPERA/zx200/subtask_zx200_release_simple.cpp)
-add_executable(subtask_zx200_follow_waypoints src/OPERA/zx200/subtask_zx200_follow_waypoints.cpp)
-add_executable(subtask_zx200_follow_waypoints_deg src/OPERA/zx200/subtask_zx200_follow_waypoints_deg.cpp)
-add_executable(subtask_zx200_navigate_anywhere src/OPERA/zx200/subtask_zx200_navigate_anywhere.cpp)
-add_executable(subtask_zx200_navigate_anywhere_deg src/OPERA/zx200/subtask_zx200_navigate_anywhere_deg.cpp)
-add_executable(subtask_zx200_navigate_through_poses src/OPERA/zx200/subtask_zx200_navigate_through_poses.cpp)
-add_executable(subtask_zx200_navigate_through_poses_deg src/OPERA/zx200/subtask_zx200_navigate_through_poses_deg.cpp)
-
-# Substak Nodes for MST110CR
-add_executable(subtask_mst110cr_follow_waypoints src/OPERA/mst110cr/subtask_mst110cr_follow_waypoints.cpp)
-add_executable(subtask_mst110cr_follow_waypoints_deg src/OPERA/mst110cr/subtask_mst110cr_follow_waypoints_deg.cpp)
-add_executable(subtask_mst110cr_navigate_anywhere src/OPERA/mst110cr/subtask_mst110cr_navigate_anywhere.cpp)
-add_executable(subtask_mst110cr_navigate_anywhere_deg src/OPERA/mst110cr/subtask_mst110cr_navigate_anywhere_deg.cpp)
-add_executable(subtask_mst110cr_navigate_through_poses src/OPERA/mst110cr/subtask_mst110cr_navigate_through_poses.cpp)
-add_executable(subtask_mst110cr_navigate_through_poses_deg src/OPERA/mst110cr/subtask_mst110cr_navigate_through_poses_deg.cpp)
-add_executable(subtask_mst110cr_release_soil src/OPERA/mst110cr/subtask_mst110cr_release_soil.cpp)
-add_executable(subtask_mst110cr_swing src/OPERA/mst110cr/subtask_mst110cr_swing.cpp)
-add_executable(subtask_mst110cr_swing_align_to_heading src/OPERA/mst110cr/subtask_mst110cr_swing_align_to_heading.cpp)
-
+# Subtask Nodes for Excavator
+add_executable(subtask_excavator_change_pose src/Excavator/subtask_excavator_change_pose.cpp)
+add_executable(subtask_excavator_level src/Excavator/subtask_excavator_level.cpp)
+add_executable(subtask_excavator_gather src/Excavator/subtask_excavator_gather.cpp)
+add_executable(subtask_excavator_change_pose_plan src/Excavator/subtask_excavator_change_pose_plan.cpp)
+add_executable(subtask_excavator_excavate_simple_plan src/Excavator/subtask_excavator_excavate_simple_plan.cpp)
+add_executable(subtask_excavator_excavate_simple src/Excavator/subtask_excavator_excavate_simple.cpp)
+add_executable(subtask_excavator_release_simple src/Excavator/subtask_excavator_release_simple.cpp)
+add_executable(subtask_excavator_follow_waypoints src/Excavator/subtask_excavator_follow_waypoints.cpp)
+add_executable(subtask_excavator_navigate_anywhere src/Excavator/subtask_excavator_navigate_anywhere.cpp)
+add_executable(subtask_excavator_navigate_through_poses src/Excavator/subtask_excavator_navigate_through_poses.cpp)
 
 set(TARGETS
-  subtask_d37pxi_follow_waypoints_deg
-  subtask_d37pxi_follow_waypoints
-  subtask_d37pxi_navigate_anywhere_deg
-  subtask_d37pxi_navigate_anywhere
-  subtask_d37pxi_navigate_through_poses_deg
-  subtask_d37pxi_navigate_through_poses
-  subtask_mst2200_follow_waypoints_deg
-  subtask_mst2200_follow_waypoints
-  subtask_mst2200_navigate_anywhere_deg
-  subtask_mst2200_navigate_anywhere
-  subtask_mst2200_navigate_through_poses_deg
-  subtask_mst2200_navigate_through_poses
-  subtask_mst2200_release_soil
-  subtask_mst2200_swing
-  subtask_mst2200_swing_align_to_heading
-  subtask_ic120_follow_waypoints_deg
-  subtask_ic120_follow_waypoints
-  subtask_ic120_navigate_anywhere_deg
-  subtask_ic120_navigate_anywhere
-  subtask_ic120_navigate_through_poses_deg
-  subtask_ic120_navigate_through_poses
-  subtask_ic120_release_soil
-  subtask_zx200_change_pose
-  subtask_zx200_change_pose_plan
-  subtask_zx200_excavate_simple_plan
-  subtask_zx200_excavate_simple
-  subtask_zx200_release_simple
-  subtask_zx200_follow_waypoints_deg
-  subtask_zx200_follow_waypoints
-  subtask_zx200_navigate_anywhere_deg
-  subtask_zx200_navigate_anywhere
-  subtask_zx200_navigate_through_poses_deg
-  subtask_zx200_navigate_through_poses
-  subtask_mst110cr_follow_waypoints_deg
-  subtask_mst110cr_follow_waypoints
-  subtask_mst110cr_navigate_anywhere_deg
-  subtask_mst110cr_navigate_anywhere
-  subtask_mst110cr_navigate_through_poses_deg
-  subtask_mst110cr_navigate_through_poses
-  subtask_mst110cr_release_soil
-  subtask_mst110cr_swing
-  subtask_mst110cr_swing_align_to_heading
+  subtask_bulldozer_blade_control
+  subtask_bulldozer_follow_waypoints
+  subtask_bulldozer_navigate_anywhere
+  subtask_bulldozer_navigate_through_poses
+  subtask_crawlerdump_compute_path_to_pose
+  subtask_crawlerdump_follow_path
+  subtask_crawlerdump_follow_waypoints
+  subtask_crawlerdump_navigate_anywhere
+  subtask_crawlerdump_navigate_through_poses
+  subtask_crawlerdump_release_soil
+  subtask_crawlerdump_swing
+  subtask_crawlerdump_swing_align_to_heading
+  subtask_excavator_change_pose
+  subtask_excavator_level
+  subtask_excavator_gather
+  subtask_excavator_change_pose_plan
+  subtask_excavator_excavate_simple_plan
+  subtask_excavator_excavate_simple
+  subtask_excavator_release_simple
+  subtask_excavator_follow_waypoints
+  subtask_excavator_navigate_anywhere
+  subtask_excavator_navigate_through_poses
 )
 
 set(COMMON_INCLUDE_DIRS
@@ -180,7 +137,9 @@ set(dependencies_cpp
   tms_msg_db
   nav2_msgs
   com3_msgs
-  Qt5Widgets)
+  Qt5Widgets
+  tf2_ros
+  tf2_geometry_msgs)
 
 foreach(target IN LISTS TARGETS)
 target_include_directories(${target} PUBLIC ${COMMON_INCLUDE_DIRS})
@@ -203,14 +162,6 @@ install(
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
-
-
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-  add_subdirectory(test)
-endif()
-
 
 ament_export_dependencies(${dependencies_cpp})
 ament_export_libraries(${PROJECT_NAME} mongocxx bsoncxx)

@@ -61,6 +61,11 @@ public:
             std::cout << "[MongoValueWriter] missing required input. Please fill key or value parameters." << std::endl;
             return NodeStatus::FAILURE;
         }
+        if (param_name.value().find("SENSING") != std::string::npos)
+        {
+            std::cout << "[MongoValueWriter] param_name '" << param_name.value() << "' containing 'SENSING' is not allowed." << std::endl;
+            return NodeStatus::FAILURE;
+        }
         bsoncxx::builder::stream::document update_builder;
         try {
             if (input_value_str.value() == "true" || input_value_str.value() == "false") {

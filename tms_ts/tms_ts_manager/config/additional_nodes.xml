@@ -1,33 +1,21 @@
 <root>
     <TreeNodesModel>
 
-        <Action ID="LeafNodeD37pxi">
-            <input_port name=" model_name" default="d37pxi"/>
+        <Action ID="LeafNodeBulldozer">
+            <input_port name=" model_name" default="d37pxi_24"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/> 
         </Action>
         
         
-        <Action ID="LeafNodeMst2200">
-            <input_port name=" model_name" default="mst2200"/>
+        <Action ID="LeafNodeCrawlerDump">
+            <input_port name=" model_name"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/> 
         </Action>
 
-        <Action ID="LeafNodeZx200">
+        <Action ID="LeafNodeExcavator">
             <input_port name=" model_name" default="zx200"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/> 
-        </Action>
-
-        <Action ID="LeafNodeIc120">
-            <input_port name=" model_name" default="ic120"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/> 
-        </Action>
-
-        <Action ID="LeafNodeMst110cr">
-            <input_port name=" model_name" default="mst110cr"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/> 
         </Action>
