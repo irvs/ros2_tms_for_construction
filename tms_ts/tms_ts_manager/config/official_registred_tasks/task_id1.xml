@@ -21,12 +21,12 @@
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>
-        <Action ID="LeafNodeIc120">
+        <Action ID="LeafNodeCrawlerDump">
             <input_port name=" model_name" default="ic120"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>
-        <Action ID="LeafNodeZx200">
+        <Action ID="LeafNodeExcavator">
             <input_port name=" model_name" default="zx200"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>

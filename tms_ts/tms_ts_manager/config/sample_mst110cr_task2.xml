@@ -3,12 +3,12 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action  model_name="mst110cr_2" ID="LeafNodeMst110cr" record_name="SAMPLE_GOAL" subtask_name="st_mst110cr_navigate_anywhere"/>
-            <Action  model_name="mst110cr_2" ID="LeafNodeMst110cr" record_name="SAMPLE_PATH1" subtask_name="st_mst110cr_follow_waypoints"/>
-            <Action  model_name="mst110cr_2" ID="LeafNodeMst110cr" record_name="RELEASE_AGNLE" subtask_name="st_mst110cr_release_soil"/>
-            <Action  model_name="mst110cr_2" ID="LeafNodeMst110cr" record_name="SWING_ANGLE1" subtask_name="st_mst110cr_swing"/>
-            <Action  model_name="mst110cr_2" ID="LeafNodeMst110cr" record_name="SWING_ANGLE2" subtask_name="st_mst110cr_swing"/>
-            <Action  model_name="mst110cr_2" ID="LeafNodeMst110cr" record_name="SAMPLE_PATH2" subtask_name="st_mst110cr_navigate_through_poses"/>
+            <Action  model_name="mst110cr_2" ID="LeafNodeCrawlerDump" record_name="SAMPLE_GOAL" subtask_name="st_crawlerdump_navigate_anywhere"/>
+            <Action  model_name="mst110cr_2" ID="LeafNodeCrawlerDump" record_name="SAMPLE_PATH1" subtask_name="st_crawlerdump_follow_waypoints"/>
+            <Action  model_name="mst110cr_2" ID="LeafNodeCrawlerDump" record_name="RELEASE_AGNLE" subtask_name="st_crawlerdump_release_soil"/>
+            <Action  model_name="mst110cr_2" ID="LeafNodeCrawlerDump" record_name="SWING_ANGLE1" subtask_name="st_crawlerdump_swing"/>
+            <Action  model_name="mst110cr_2" ID="LeafNodeCrawlerDump" record_name="SWING_ANGLE2" subtask_name="st_crawlerdump_swing"/>
+            <Action  model_name="mst110cr_2" ID="LeafNodeCrawlerDump" record_name="SAMPLE_PATH2" subtask_name="st_crawlerdump_navigate_through_poses"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
@@ -24,17 +24,17 @@
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>
         </Decorator>
-        <Action ID="LeafNodeIc120">
+        <Action ID="LeafNodeCrawlerDump">
             <input_port default="ic120" name=" model_name"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>
-        <Action ID="LeafNodeMst110cr">
+        <Action ID="LeafNodeCrawlerDump">
             <input_port default="mst110cr" name=" model_name"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>
-        <Action ID="LeafNodeMst2200">
+        <Action ID="LeafNodeCrawlerDump">
             <input_port default="mst2200" name=" model_name"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
@@ -49,7 +49,7 @@
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>
-        <Action ID="LeafNodeZx200">
+        <Action ID="LeafNodeExcavator">
             <input_port default="zx200" name=" model_name"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>

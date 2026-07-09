@@ -7,10 +7,10 @@
             <Action  model_name="zx120" ID="LeafNodeSampleZx120" record_name="swing_joint" subtask_name="st_zx120_sample_swing"/>
             <Action  model_name="zx120" ID="LeafNodeSampleZx120" record_name="arm_joint" subtask_name="st_zx120_sample_arm"/>
             <Action  model_name="zx120" ID="LeafNodeSampleZx120" record_name="bucket_joint" subtask_name="st_zx120_sample_bucket"/>
-            <Action  model_name="zx200" ID="LeafNodeSampleZx200" record_name="boom_joint" subtask_name="st_zx200_sample_boom"/>
-            <Action  model_name="zx200" ID="LeafNodeSampleZx200" record_name="swing_joint" subtask_name="st_zx200_sample_swing"/>
-            <Action  model_name="zx200" ID="LeafNodeSampleZx200" record_name="arm_joint" subtask_name="st_zx200_sample_arm"/>
-            <Action  model_name="zx200" ID="LeafNodeSampleZx200" record_name="bucket_joint" subtask_name="st_zx200_sample_bucket"/>
+            <Action  model_name="zx200" ID="LeafNodeSampleZx200" record_name="boom_joint" subtask_name="st_excavator_sample_boom"/>
+            <Action  model_name="zx200" ID="LeafNodeSampleZx200" record_name="swing_joint" subtask_name="st_excavator_sample_swing"/>
+            <Action  model_name="zx200" ID="LeafNodeSampleZx200" record_name="arm_joint" subtask_name="st_excavator_sample_arm"/>
+            <Action  model_name="zx200" ID="LeafNodeSampleZx200" record_name="bucket_joint" subtask_name="st_excavator_sample_bucket"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
@@ -25,12 +25,12 @@
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>
-        <Action ID="LeafNodeIc120">
+        <Action ID="LeafNodeCrawlerDump">
             <input_port name=" model_name" default="ic120"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>
-        <Action ID="LeafNodeZx200">
+        <Action ID="LeafNodeExcavator">
             <input_port name=" model_name" default="zx200"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>

@@ -9,7 +9,7 @@
                     <IfThenElse>
                         <Action ID="ConditionalExpressionBool" conditional_expression_bool="CONTINUE_FLG == true"/>
                         <Sequence>
-                            <Action  model_name="zx200" ID="LeafNodeZx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
+                            <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="initial_pose" subtask_name="subtask_excavator_change_pose"/>
                             <ForceSuccess>
                                 <KeepRunningUntilFailure>
                                     <Parallel failure_threshold="1" success_threshold="-1">
@@ -20,12 +20,12 @@
                                         <IfThenElse>
                                             <Action ID="ConditionalExpressionBool" conditional_expression_bool="ARRIVAL_FLG == true and SENSING_ARRIVAL_FLG == true and SENSING_LOADED_FLG == false and SENSING_CHECK_MOUND_FLG == false "/>
                                             <Sequence>
-                                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="target_excavate_pose" subtask_name="subtask_zx200_excavate_simple"/>
-                                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_zx200_change_pose"/>
-                                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="hold_soil_while_turning_pose" subtask_name="subtask_zx200_change_pose"/>
-                                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="target_release_pose" subtask_name="subtask_zx200_change_pose"/>
-                                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="release_angle" subtask_name="subtask_zx200_release_simple"/>
-                                                <Action  model_name="zx200" ID="LeafNodeZx200" record_name="after_release_soil_pose" subtask_name="subtask_zx200_change_pose"/>
+                                                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="target_excavate_pose" subtask_name="subtask_excavator_excavate_simple"/>
+                                                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_excavator_change_pose"/>
+                                                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="hold_soil_while_turning_pose" subtask_name="subtask_excavator_change_pose"/>
+                                                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="target_release_pose" subtask_name="subtask_excavator_change_pose"/>
+                                                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="release_angle" subtask_name="subtask_excavator_release_simple"/>
+                                                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="after_release_soil_pose" subtask_name="subtask_excavator_change_pose"/>
                                                 <Delay delay_msec="3000">
                                                     <AlwaysFailure/>
                                                 </Delay>
@@ -46,7 +46,7 @@
                             </ForceSuccess>
                         </Sequence>
                         <Sequence>
-                            <Action  model_name="zx200" ID="LeafNodeZx200" record_name="initial_pose" subtask_name="subtask_zx200_change_pose"/>
+                            <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="initial_pose" subtask_name="subtask_excavator_change_pose"/>
                             <AlwaysFailure/>
                         </Sequence>
                     </IfThenElse>
@@ -78,7 +78,7 @@
         <Action ID="ConditionalExpressionBool">
             <input_port name="conditional_expression_bool" type="std::string"/>
         </Action>
-        <Action ID="LeafNodeIc120">
+        <Action ID="LeafNodeCrawlerDump">
             <input_port name="model_name" type="float"/>
             <input_port name="record_name" type="float"/>
             <input_port name="subtask_name" type="float"/>
@@ -93,7 +93,7 @@
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>
-        <Action ID="LeafNodeZx200">
+        <Action ID="LeafNodeExcavator">
             <input_port default="zx200" name=" model_name"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
