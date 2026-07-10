@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<root main_tree_to_execute="BehaviorTree">
+<root main_tree_to_execute="MainTree">
     <!-- ////////// -->
-    <BehaviorTree ID="BehaviorTree">
-        <Sequence>
-            <Action ID="LeafNodeCrawlerDump" model_name="ic120" record_name="path1" subtask_name="subtask_crawlerdump_navigate_through_poses"/>
+    <BehaviorTree ID="MainTree">
+        <Sequence name="root_sequence">
+            <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="position_and_pose" subtask_name="subtask_crawlerdump_navigate_anywhere"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->

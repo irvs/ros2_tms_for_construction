@@ -2,21 +2,40 @@
 <root main_tree_to_execute="BehaviorTree">
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
-        <Repeat num_cycles="4">
+        <Repeat num_cycles="2">
             <Sequence>
-                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="initial_pose" subtask_name="subtask_excavator_change_pose"/>
-                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="target_excavate_pose" subtask_name="subtask_excavator_excavate_simple"/>
-                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_excavator_change_pose"/>
-                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="hold_soil_while_turning_pose" subtask_name="subtask_excavator_change_pose"/>
-                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="target_release_pose" subtask_name="subtask_excavator_change_pose"/>
-                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="release_angle" subtask_name="subtask_excavator_release_simple"/>
+                <Parallel failure_threshold="1" success_threshold="2">
+                    <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="initial_pose" subtask_name="subtask_excavator_change_pose"/>
+                    <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="LOAD_PATH_1" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                </Parallel>
+                <Repeat num_cycles="1">
+                    <Sequence>
+                        <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="target_excavate_pose" subtask_name="subtask_excavator_excavate_simple"/>
+                        <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_excavator_change_pose"/>
+                        <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="hold_soil_while_turning_pose" subtask_name="subtask_excavator_change_pose"/>
+                        <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="target_release_pose" subtask_name="subtask_excavator_change_pose"/>
+                        <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="release_angle" subtask_name="subtask_excavator_release_simple"/>
+                    </Sequence>
+                </Repeat>
+                <Parallel failure_threshold="1" success_threshold="2">
+                    <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="initial_pose" subtask_name="subtask_excavator_change_pose"/>
+                    <Sequence>
+                        <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="RELEASE_PATH" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                        <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="LOAD_PATH_2" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                    </Sequence>
+                </Parallel>
             </Sequence>
         </Repeat>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
+        <Action ID="LeafNodeCrawlerDump">
+            <input_port name=" model_name"/>
+            <inout_port name="record_name"/>
+            <inout_port name="subtask_name"/>
+        </Action>
         <Action ID="LeafNodeExcavator">
-            <input_port name=" model_name" default="zx200"/>
+            <input_port default="zx200" name=" model_name"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>
