@@ -3,28 +3,13 @@
     <!-- ////////// -->
     <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-            <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="SIM_SAMPLE_GOAL" subtask_name="st_excavator_navigate_anywhere"/>
-            <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="SIM_SAMPLE_WAYPOINTS_1" subtask_name="st_excavator_follow_waypoints"/>
-            <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="SIM_SAMPLE_WAYPOINTS_2" subtask_name="st_excavator_navigate_through_poses"/>
+            <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="SIM_SAMPLE_GOAL" subtask_name="subtask_excavator_navigate_anywhere"/>
+            <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="SIM_SAMPLE_WAYPOINTS_1" subtask_name="subtask_excavator_follow_waypoints"/>
+            <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="SIM_SAMPLE_WAYPOINTS_2" subtask_name="subtask_excavator_navigate_through_poses"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="LeafNodeCrawlerDump">
-            <input_port default="ic120" name=" model_name"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeSampleZx120">
-            <input_port default="zx120" name=" model_name"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeSampleZx200">
-            <input_port default="zx200" name=" model_name"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
         <Action ID="LeafNodeExcavator">
             <input_port default="zx200" name=" model_name"/>
             <inout_port name="record_name"/>

@@ -4,7 +4,7 @@
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
             <Action ID="WaitForClick" button_info="mst110cr" window_title="swing_mst110cr_align_to_headingを実行"/>
-            <Action  model_name="mst110cr_2" ID="LeafNodeCrawlerDump" record_name="dummy" subtask_name="st_crawlerdump_swing_align_to_heading"/>
+            <Action  model_name="mst110cr_2" ID="LeafNodeCrawlerDump" record_name="dummy" subtask_name="subtask_crawlerdump_swing_align_to_heading"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->

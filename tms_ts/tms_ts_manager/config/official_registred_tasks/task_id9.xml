@@ -3,28 +3,13 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="LeafNodeCrawlerDump" model_name="ic120" record_name="path1" subtask_name="st_crawlerdump_navigate_through_poses"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="ic120" record_name="path1" subtask_name="subtask_crawlerdump_navigate_through_poses"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="LeafNodeSampleZx120">
-            <input_port name=" model_name" default="zx120"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeSampleZx200">
-            <input_port name=" model_name" default="zx200"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
         <Action ID="LeafNodeCrawlerDump">
             <input_port name=" model_name" default="ic120"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeExcavator">
-            <input_port name=" model_name" default="zx200"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>

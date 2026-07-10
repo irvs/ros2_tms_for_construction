@@ -3,7 +3,7 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="SAMPLE_POINT" subtask_name="st_crawlerdump_follow_waypoints"/>
+            <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="SAMPLE_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->

@@ -3,8 +3,8 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="release_angle_1" subtask_name="st_crawlerdump_release_soil"/>
-            <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="release_angle_2" subtask_name="st_crawlerdump_release_soil"/>
+            <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="release_angle_1" subtask_name="subtask_crawlerdump_release_soil"/>
+            <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="release_angle_2" subtask_name="subtask_crawlerdump_release_soil"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->

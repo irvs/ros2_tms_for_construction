@@ -37,7 +37,7 @@
                                             <IfThenElse>
                                                 <Action ID="ConditionalExpression" conditional_expression="LOADAREA == false"/>
                                                 <Sequence>
-                                                    <Action ID="LeafNodeExcavator" model_name="zx200" record_name="SIM_GOAL" subtask_name="st_excavator_navigate_anywhere"/>
+                                                    <Action ID="LeafNodeExcavator" model_name="zx200" record_name="SIM_GOAL" subtask_name="subtask_excavator_navigate_anywhere"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_NEXTPOINT_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="SetLocalBlackboard" output_key="ALREADY_NEXTPOINT" value="true"/>
                                                 </Sequence>

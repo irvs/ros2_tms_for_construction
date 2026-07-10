@@ -31,7 +31,7 @@
                     <Action ID="SetLocalBlackboardWithCounter" counter_key="N" key="initial_position_n"/>
                     <Action ID="SetLocalBlackboardWithCounter" counter_key="N" key="initial_pose_n"/>
                     <Action ID="BlackboardValueReaderMongo" mongo_param_name="dig_cycle" mongo_record_name="{number_of_dig_cycle_n}" output_port="dig_cycle"/>
-                    <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="{initial_position_n}" subtask_name="st_excavator_follow_waypoints"/>
+                    <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="{initial_position_n}" subtask_name="subtask_excavator_follow_waypoints"/>
                     <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="{initial_pose_n}" subtask_name="subtask_excavator_change_pose"/>
                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="global_blackboard"/>
                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="FINISH_FLG" mongo_record_name="global_blackboard"/>

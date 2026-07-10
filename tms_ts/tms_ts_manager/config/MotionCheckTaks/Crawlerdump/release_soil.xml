@@ -2,7 +2,7 @@
 <root main_tree_to_execute="BehaviorTree">
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
-        <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="vessel_angle" subtask_name="st_crawlerdump_release_soil"/>
+        <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="vessel_angle" subtask_name="subtask_crawlerdump_release_soil"/>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>

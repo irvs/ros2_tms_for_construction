@@ -3,9 +3,9 @@
     <!-- ////////// -->
     <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-            <Action  model_name="d37pxi_24" ID="LeafNodeBulldozer" record_name="SIM_SAMPLE_GOAL" subtask_name="st_bulldozer_navigate_anywhere"/>
-            <Action  model_name="d37pxi_24" ID="LeafNodeBulldozer" record_name="SIM_SAMPLE_WAYPOINTS_1" subtask_name="st_bulldozer_follow_waypoints"/>
-            <Action  model_name="d37pxi_24" ID="LeafNodeBulldozer" record_name="SIM_SAMPLE_WAYPOINTS_2" subtask_name="st_bulldozer_navigate_through_poses"/>
+            <Action  model_name="d37pxi_24" ID="LeafNodeBulldozer" record_name="SIM_SAMPLE_GOAL" subtask_name="subtask_bulldozer_navigate_anywhere"/>
+            <Action  model_name="d37pxi_24" ID="LeafNodeBulldozer" record_name="SIM_SAMPLE_WAYPOINTS_1" subtask_name="subtask_bulldozer_follow_waypoints"/>
+            <Action  model_name="d37pxi_24" ID="LeafNodeBulldozer" record_name="SIM_SAMPLE_WAYPOINTS_2" subtask_name="subtask_bulldozer_navigate_through_poses"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->

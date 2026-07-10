@@ -18,7 +18,7 @@
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskCrawlerDumpNavigateAnywhere::SubtaskCrawlerDumpNavigateAnywhere() : SubtaskNodeBase("st_crawlerdump_navigate_anywhere_node")
+SubtaskCrawlerDumpNavigateAnywhere::SubtaskCrawlerDumpNavigateAnywhere() : SubtaskNodeBase("subtask_crawlerdump_navigate_anywhere_node")
 {
     auto options_server = rcl_action_server_get_default_options();
     options_server.goal_service_qos = rclcpp::QoS(10).reliable().durability_volatile().get_rmw_qos_profile();
@@ -36,7 +36,7 @@ SubtaskCrawlerDumpNavigateAnywhere::SubtaskCrawlerDumpNavigateAnywhere() : Subta
 
     
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_crawlerdump_navigate_anywhere",
+        this, "subtask_crawlerdump_navigate_anywhere",
         std::bind(&SubtaskCrawlerDumpNavigateAnywhere::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&SubtaskCrawlerDumpNavigateAnywhere::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskCrawlerDumpNavigateAnywhere::handle_accepted, this, std::placeholders::_1),
@@ -86,7 +86,7 @@ void SubtaskCrawlerDumpNavigateAnywhere::handle_accepted(const std::shared_ptr<G
 
 void SubtaskCrawlerDumpNavigateAnywhere::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_crawlerdump_navigate_anywhere_node) is executing...");
+    RCLCPP_INFO(this->get_logger(), "subtask(subtask_crawlerdump_navigate_anywhere_node) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())

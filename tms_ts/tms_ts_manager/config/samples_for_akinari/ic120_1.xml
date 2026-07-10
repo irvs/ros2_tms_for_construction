@@ -3,10 +3,10 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="LeafNodeCrawlerDump" model_name="ic120_1" name="leaf_node_ic120" record_name="SIM_LOAD_POINT" subtask_name="st_crawlerdump_follow_waypoints"/>
-            <Action ID="LeafNodeCrawlerDump" model_name="ic120_1" name="leaf_node_ic120" record_name="SIM_RELEASE_PATH" subtask_name="st_crawlerdump_follow_waypoints"/>
-            <Action ID="LeafNodeCrawlerDump" model_name="ic120_1" name="leaf_node_ic120" record_name="SIM_LOAD_PATH" subtask_name="st_crawlerdump_follow_waypoints"/>
-            <Action ID="LeafNodeCrawlerDump" model_name="ic120_1" name="leaf_node_ic120" record_name="SIM_LOAD_POINT" subtask_name="st_crawlerdump_follow_waypoints"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="ic120_1" name="leaf_node_ic120" record_name="SIM_LOAD_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="ic120_1" name="leaf_node_ic120" record_name="SIM_RELEASE_PATH" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="ic120_1" name="leaf_node_ic120" record_name="SIM_LOAD_PATH" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="ic120_1" name="leaf_node_ic120" record_name="SIM_LOAD_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->

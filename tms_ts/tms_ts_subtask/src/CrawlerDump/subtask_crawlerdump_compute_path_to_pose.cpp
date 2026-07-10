@@ -24,7 +24,7 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 
 SubtaskCrawlerDumpComputePathToPose::SubtaskCrawlerDumpComputePathToPose()
-: SubtaskNodeBase("st_crawlerdump_compute_path_to_pose_node")
+: SubtaskNodeBase("subtask_crawlerdump_compute_path_to_pose_node")
 , mongo_client_(mongocxx::uri{"mongodb://localhost:27017"})
 , mongo_db_(mongo_client_["rostmsdb"])
 , mongo_collection_(mongo_db_["parameter"]) 
@@ -40,7 +40,7 @@ SubtaskCrawlerDumpComputePathToPose::SubtaskCrawlerDumpComputePathToPose()
   
     action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
     this,
-    "st_crawlerdump_compute_path_to_pose",
+    "subtask_crawlerdump_compute_path_to_pose",
     std::bind(&SubtaskCrawlerDumpComputePathToPose::handle_goal, this, _1, _2),
     std::bind(&SubtaskCrawlerDumpComputePathToPose::handle_cancel, this, _1),
     std::bind(&SubtaskCrawlerDumpComputePathToPose::handle_accepted, this, _1)

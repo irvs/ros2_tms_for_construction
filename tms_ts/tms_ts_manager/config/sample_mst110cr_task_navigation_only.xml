@@ -3,9 +3,9 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="SAMPLE_GOAL" subtask_name="st_crawlerdump_navigate_anywhere"/>
-            <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="SAMPLE_PATH1" subtask_name="st_crawlerdump_follow_waypoints"/>
-            <Action  model_name="mst110cr_2" ID="LeafNodeCrawlerDump" record_name="SAMPLE_PATH2" subtask_name="st_crawlerdump_follow_waypoints"/>
+            <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="SAMPLE_GOAL" subtask_name="subtask_crawlerdump_navigate_anywhere"/>
+            <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="SAMPLE_PATH1" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+            <Action  model_name="mst110cr_2" ID="LeafNodeCrawlerDump" record_name="SAMPLE_PATH2" subtask_name="subtask_crawlerdump_follow_waypoints"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->

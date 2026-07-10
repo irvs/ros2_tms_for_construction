@@ -19,11 +19,11 @@ inline double get_or0(const std::map<std::string, double> & m, const std::string
 }  // namespace
 
 SubtaskCrawlerDumpReleaseSoil::SubtaskCrawlerDumpReleaseSoil()
-: SubtaskNodeBase("st_crawlerdump_release_soil_node")
+: SubtaskNodeBase("subtask_crawlerdump_release_soil_node")
 {
   action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
     this,
-    "st_crawlerdump_release_soil",
+    "subtask_crawlerdump_release_soil",
     std::bind(&SubtaskCrawlerDumpReleaseSoil::handle_goal, this, _1, _2),
     std::bind(&SubtaskCrawlerDumpReleaseSoil::handle_cancel, this, _1),
     std::bind(&SubtaskCrawlerDumpReleaseSoil::handle_accepted, this, _1));
@@ -71,7 +71,7 @@ void SubtaskCrawlerDumpReleaseSoil::handle_accepted(const std::shared_ptr<GoalHa
 
 void SubtaskCrawlerDumpReleaseSoil::execute(const std::shared_ptr<GoalHandle> server_goal_handle)
 {
-  RCLCPP_INFO(this->get_logger(), "subtask(st_crawlerdump_release_soil) is executing...");
+  RCLCPP_INFO(this->get_logger(), "subtask(subtask_crawlerdump_release_soil) is executing...");
 
   auto leaf_result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
 

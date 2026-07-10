@@ -6,7 +6,7 @@
             <Sequence>
                 <Parallel failure_threshold="1" success_threshold="2">
                     <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="initial_pose" subtask_name="subtask_excavator_change_pose"/>
-                    <Action ID="LeafNodeCrawlerDump" model_name="ic120" record_name="position_and_pose_1" subtask_name="st_crawlerdump_navigate_anywhere"/>
+                    <Action ID="LeafNodeCrawlerDump" model_name="ic120" record_name="position_and_pose_1" subtask_name="subtask_crawlerdump_navigate_anywhere"/>
                 </Parallel>
                 <Repeat num_cycles="1">
                     <Sequence>
@@ -20,9 +20,9 @@
                 <Parallel failure_threshold="1" success_threshold="2">
                     <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="initial_pose" subtask_name="subtask_excavator_change_pose"/>
                     <Sequence>
-                        <Action ID="LeafNodeCrawlerDump" model_name="ic120" record_name="position_and_pose_2" subtask_name="st_crawlerdump_navigate_anywhere"/>
-                        <Action ID="LeafNodeCrawlerDump" model_name="ic120" record_name="soil_release_vessel_angle" subtask_name="st_crawlerdump_release_soil"/>
-                        <Action ID="LeafNodeCrawlerDump" model_name="ic120" record_name="position_and_pose_3" subtask_name="st_crawlerdump_navigate_anywhere"/>
+                        <Action ID="LeafNodeCrawlerDump" model_name="ic120" record_name="position_and_pose_2" subtask_name="subtask_crawlerdump_navigate_anywhere"/>
+                        <Action ID="LeafNodeCrawlerDump" model_name="ic120" record_name="soil_release_vessel_angle" subtask_name="subtask_crawlerdump_release_soil"/>
+                        <Action ID="LeafNodeCrawlerDump" model_name="ic120" record_name="position_and_pose_3" subtask_name="subtask_crawlerdump_navigate_anywhere"/>
                     </Sequence>
                 </Parallel>
             </Sequence>
@@ -30,16 +30,6 @@
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="LeafNodeSampleZx120">
-            <input_port name=" model_name" default="zx120"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeSampleZx200">
-            <input_port name=" model_name" default="zx200"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
         <Action ID="LeafNodeCrawlerDump">
             <input_port name=" model_name" default="ic120"/>
             <inout_port name="record_name"/>

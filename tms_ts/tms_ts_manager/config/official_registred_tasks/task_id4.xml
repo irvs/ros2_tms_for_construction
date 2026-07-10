@@ -15,21 +15,6 @@
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="LeafNodeSampleZx120">
-            <input_port name=" model_name" default="zx120"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeSampleZx200">
-            <input_port name=" model_name" default="zx200"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeCrawlerDump">
-            <input_port name=" model_name" default="ic120"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
         <Action ID="LeafNodeExcavator">
             <input_port name=" model_name" default="zx200"/>
             <inout_port name="record_name"/>

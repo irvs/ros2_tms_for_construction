@@ -4,11 +4,11 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 
 SubtaskBulldozerBladeControl::SubtaskBulldozerBladeControl()
-: SubtaskNodeBase("st_bulldozer_blade_control_node")
+: SubtaskNodeBase("subtask_bulldozer_blade_control_node")
 {
   action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
     this,
-    "st_bulldozer_blade_control",
+    "subtask_bulldozer_blade_control",
     std::bind(&SubtaskBulldozerBladeControl::handle_goal, this, _1, _2),
     std::bind(&SubtaskBulldozerBladeControl::handle_cancel, this, _1),
     std::bind(&SubtaskBulldozerBladeControl::handle_accepted, this, _1));
@@ -88,7 +88,7 @@ void SubtaskBulldozerBladeControl::handle_accepted(const std::shared_ptr<ServerG
 
 void SubtaskBulldozerBladeControl::execute(const std::shared_ptr<ServerGoalHandle> server_goal_handle)
 {
-  RCLCPP_INFO(this->get_logger(), "subtask(st_bulldozer_blade_control) is executing...");
+  RCLCPP_INFO(this->get_logger(), "subtask(subtask_bulldozer_blade_control) is executing...");
 
   auto leaf_result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
   leaf_result->result = false;
