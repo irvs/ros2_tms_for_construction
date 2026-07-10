@@ -72,11 +72,7 @@
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key" type="std::string"/>
         </Decorator>
-        <Action ID="LeafNodeSampleZx200">
-            <input_port name="model_name" type="float"/>
-            <input_port name="record_name" type="float"/>
-            <input_port name="subtask_name" type="float"/>
-        </Action>
+
         <Action ID="LeafNodeExcavator">
             <input_port name="model_name" type="float"/>
             <input_port name="record_name" type="float"/>

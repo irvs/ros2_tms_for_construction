@@ -389,16 +389,8 @@
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>
-        <Action ID="LeafNodeSampleZx120">
-            <input_port default="zx120" name=" model_name"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeSampleZx200">
-            <input_port default="zx200" name=" model_name"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
+
+
         <Action ID="LeafNodeExcavator">
             <input_port name="model_name" type="float"/>
             <input_port name="record_name" type="float"/>
