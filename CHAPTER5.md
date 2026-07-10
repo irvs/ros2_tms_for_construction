@@ -19,15 +19,20 @@ As explained in Chapter 4, you can execute the specified task using the task sch
 Additionally, the current ROS2-TMS for Construction includes several tasks for operating actual construction machinery and machines on OperaSim-PhysX. 
 The summary of the task data currently stored in the database is as follows:
 
-![](docs/task_data.png)
+
+| task_id | The contents of the task | Used machine |
+| ------------ | -------- | ---- |
+| 1 | Excavate and load the soil once using the zx200 | zx200(MoveIt!) |
+| 2 | Excavate and load the soil four times using the zx200 | zx200(MoveIt!) |
+| 3 | The ic120 navigates along the route between two points | ic120(Nav2) |
+| 4 | The ic120 makes two round trips between the loading point and the dumping point | ic120(Nav2) |
+| 5 | Excavate and load the soil using the zx200, then transport it with the ic120 (2 trips) | zx200(MoveIt!) and ic120(Nav2) |
 
 
+Additionally, to successfully execute the tasks in the table above, it is necessary to pre-launch the ROS2 packages for zx200 and ic120 prepared on the OPERA. Because the packages to launch differ for cases involving the operation of zx200 and ic120, the procedures are explained separately below.
 
-Additionally, to successfully execute the tasks with task_id ranging from 3 to 7 as mentioned in the table above, it is necessary to pre-launch the ROS2 packages for zx200 and ic120 prepared on the OPERA. Because the packages to launch differ for cases involving the operation of zx200 and ic120, the procedures are explained separately below.
 
-※ It is not necessary to execute the following command when running sample tasks (task_id: 1 ~ 3).
-
-#### Packages for operating OPERA-compatible ZX200 on the OperaSim-PhysX using MoveIt! (task_id: 4, 5)
+#### Packages for operating OPERA-compatible ZX200 on the OperaSim-PhysX using MoveIt! (task_id: 1, 2, 5)
 
 Please open terminals and execute the following commands separately.
 
@@ -53,7 +58,7 @@ cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch tms_ts_launch tms_ts_construction.launch.py task_id:=<task_id>
 ```
 
-#### Packages for operating OPOERA-compatible IC120 on the OperaSim-PhysX using Nav2! (task_id: 6, 7) 
+#### Packages for operating OPOERA-compatible IC120 on the OperaSim-PhysX using Nav2! (task_id: 3, 4, 5) 
 
 Please open terminals and execute the following commands separately.
 
@@ -80,7 +85,6 @@ ros2 launch tms_if_for_opera tms_if_for_opera.launch.py
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch tms_ts_launch tms_ts_construction.launch.py task_id:=<task_id>
 ```
-
 
 
 Of course, you can also use Groot to monitor the tasks being performed by the Behavior Tree while the Task Scheduler is running, as shown in the following video.

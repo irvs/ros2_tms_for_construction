@@ -13,7 +13,7 @@
     <!-- ////////// -->
     <TreeNodesModel>
         <Action ID="LeafNodeCrawlerDump">
-            <input_port name=" model_name"/>
+            <input_port name="model_name"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>

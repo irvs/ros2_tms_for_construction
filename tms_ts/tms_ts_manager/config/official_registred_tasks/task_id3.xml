@@ -9,7 +9,7 @@
     <!-- ////////// -->
     <TreeNodesModel>
         <Action ID="LeafNodeCrawlerDump">
-            <input_port name=" model_name" default="ic120"/>
+            <input_port name="model_name" default="ic120"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>

@@ -16,7 +16,7 @@
     <!-- ////////// -->
     <TreeNodesModel>
         <Action ID="LeafNodeExcavator">
-            <input_port name=" model_name" default="zx200"/>
+            <input_port name="model_name" default="zx200"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>
