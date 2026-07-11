@@ -28,7 +28,7 @@
                                     <Action ID="ConditionalExpression" conditional_expression="INITIAL_POS_FLG == true and STANDBY_FLG == true"/>
                                     <Sequence>
                                         <Action ID="SetLocalBlackboard" key="false" output_key="STANDBY_FLG"/>
-                                        <Action  model_name="ic120" ID="LeafNodeCrawlerDump" name="leaf_node_ic120" record_name="LOAD_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                        <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="LOAD_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                         <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
                                     </Sequence>
                                     <AlwaysSuccess/>
@@ -37,11 +37,11 @@
                                     <Action ID="ConditionalExpressionBool" conditional_expression_bool="ARRIVAL_FLG == true and SENSING_ARRIVAL_FLG == true and MOVING_FLG == true and (SENSING_LOADED_FLG == true or SENSING_CHECK_MOUND_FLG ==true)"/>
                                     <Sequence>
                                         <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
-                                        <Action  model_name="ic120" ID="LeafNodeCrawlerDump" name="leaf_node_ic120" record_name="RELEASE_PATH" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                        <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="RELEASE_PATH" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                         <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="release_angle_1" subtask_name="subtask_crawlerdump_release_soil"/>
                                         <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="release_angle_2" subtask_name="subtask_crawlerdump_release_soil"/>
                                         <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
-                                        <Action  model_name="ic120" ID="LeafNodeCrawlerDump" name="leaf_node_ic120" record_name="LOAD_PATH" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                        <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="LOAD_PATH" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                         <Action ID="SetLocalBlackboard" key="true" output_key="STANDBY_FLG"/>
                                         <IfThenElse>
                                             <Action ID="ConditionalExpression" conditional_expression="SENSING_CHECK_MOUND_FLG  == true"/>

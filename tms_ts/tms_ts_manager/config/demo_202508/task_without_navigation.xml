@@ -19,7 +19,7 @@
                             <IfThenElse>
                                 <Action ID="ConditionalExpression" conditional_expression="INITIAL_POS_FLG == false"/>
                                 <Sequence>
-                                    <Action ID="LeafNodeExcavator" model_name="zx200" name="leaf_node_zx200" record_name="initial_pose" subtask_name="subtask_excavator_change_pose"/>
+                                    <Action ID="LeafNodeExcavator" model_name="zx200" record_name="initial_pose" subtask_name="subtask_excavator_change_pose"/>
                                 </Sequence>
                                 <AlwaysSuccess/>
                             </IfThenElse>
@@ -38,37 +38,37 @@
                                         <Action ID="MongoValueWriter" input_value="false" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                         <RetryUntilSuccessful num_attempts="-1">
                                             <Fallback>
-                                                <Action ID="LeafNodeExcavator" model_name="zx200" name="leaf_node_zx200" record_name="target_excavate_pose" subtask_name="subtask_excavator_excavate_simple_plan"/>
+                                                <Action ID="LeafNodeExcavator" model_name="zx200" record_name="target_excavate_pose" subtask_name="subtask_excavator_excavate_simple_plan"/>
                                                 <Delay delay_msec="5000">
                                                     <AlwaysFailure/>
                                                 </Delay>
                                             </Fallback>
                                         </RetryUntilSuccessful>
                                         <Sequence>
-                                            <Action ID="LeafNodeExcavator" model_name="zx200" name="leaf_node_zx200" record_name="target_excavate_pose" subtask_name="subtask_excavator_excavate_simple"/>
+                                            <Action ID="LeafNodeExcavator" model_name="zx200" record_name="target_excavate_pose" subtask_name="subtask_excavator_excavate_simple"/>
                                         </Sequence>
                                         <Sequence>
-                                            <Action ID="LeafNodeExcavator" model_name="zx200" name="leaf_node_zx200" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_excavator_change_pose"/>
+                                            <Action ID="LeafNodeExcavator" model_name="zx200" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_excavator_change_pose"/>
                                         </Sequence>
                                         <Sequence>
-                                            <Action ID="LeafNodeExcavator" model_name="zx200" name="leaf_node_zx200" record_name="hold_soil_while_turning_pose" subtask_name="subtask_excavator_change_pose"/>
+                                            <Action ID="LeafNodeExcavator" model_name="zx200" record_name="hold_soil_while_turning_pose" subtask_name="subtask_excavator_change_pose"/>
                                         </Sequence>
                                         <RetryUntilSuccessful num_attempts="-1">
                                             <Fallback>
-                                                <Action ID="LeafNodeExcavator" model_name="zx200" name="leaf_node_zx200" record_name="target_release_pose" subtask_name="subtask_excavator_change_pose_plan"/>
+                                                <Action ID="LeafNodeExcavator" model_name="zx200" record_name="target_release_pose" subtask_name="subtask_excavator_change_pose_plan"/>
                                                 <Delay delay_msec="5000">
                                                     <AlwaysFailure/>
                                                 </Delay>
                                             </Fallback>
                                         </RetryUntilSuccessful>
                                         <Sequence>
-                                            <Action ID="LeafNodeExcavator" model_name="zx200" name="leaf_node_zx200" record_name="target_release_pose" subtask_name="subtask_excavator_change_pose"/>
+                                            <Action ID="LeafNodeExcavator" model_name="zx200" record_name="target_release_pose" subtask_name="subtask_excavator_change_pose"/>
                                         </Sequence>
                                         <Sequence>
-                                            <Action ID="LeafNodeExcavator" model_name="zx200" name="leaf_node_zx200" record_name="release_angle" subtask_name="subtask_excavator_release_simple"/>
+                                            <Action ID="LeafNodeExcavator" model_name="zx200" record_name="release_angle" subtask_name="subtask_excavator_release_simple"/>
                                         </Sequence>
                                         <Sequence>
-                                            <Action ID="LeafNodeExcavator" model_name="zx200" name="leaf_node_zx200" record_name="after_release_soil_pose" subtask_name="subtask_excavator_change_pose"/>
+                                            <Action ID="LeafNodeExcavator" model_name="zx200" record_name="after_release_soil_pose" subtask_name="subtask_excavator_change_pose"/>
                                         </Sequence>
                                         <Delay delay_msec="3000">
                                             <AlwaysSuccess/>
