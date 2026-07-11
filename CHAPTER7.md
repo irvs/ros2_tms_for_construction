@@ -1,11 +1,12 @@
-### 7. Make motion parameters from "OperaSimVR"
-This chapter explains how to create parameters used for autonomous construction. 
-> Note :If you don't use "OperaSimVR" or this writing function,  you can skip this chapter.   
+### 7. Get the position and joint angle data from DB
+This chapter explains how to read the position and joint angles of a construction vehicle stored in mongoDB. 
+
+> Note :If you don't use "OperaSimVR" or read the position and joint angle data, you can skip this chapter.   
 
 
 #
 #### Vizualizing location of machine by Rviz2 or OperaSimVR
-To read the position and joint angles of a construction vehicle stored in mongoDB using the method in Chapter 1 and visualize them in OperaSimVR, run the following steps:
+To read the position and joint angles of a construction vehicle stored in mongoDB using the method in Chapter 6 and visualize them in OperaSimVR, run the following steps:
 
 Please rewrite "executable" and output topic neme, machine name to your system in "tms_ur_cv_odom_demo_launch.py".
 
@@ -62,7 +63,16 @@ ros2 launch tms_db_manager tms_db_manager.launch.py
 # Marker
 ros2 launch tms_ur_construction tms_ur_waypoint_vizlaunch.py
 ```
-#
+
+
+
+----
+
+### Make motion parameters from "OperaSimVR"
+This section explains how to create parameters used for autonomous construction. 
+> Note :If you don't use "OperaSimVR" or this writing function,  you can skip this chapter.   
+
+
 #### Create control command parameters by OperaSimVR
 
 When generating control command parameters such as position, orientation, and joint angles based on the posture of the construction machine model in "OperaSimVR", the model's position, orientation, and joint angles can be written to MongoDB and used as parameters for motion commands.

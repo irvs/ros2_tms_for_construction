@@ -58,7 +58,7 @@ cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch tms_ts_launch tms_ts_construction.launch.py task_id:=<task_id>
 ```
 
-#### Packages for operating OPOERA-compatible IC120 on the OperaSim-PhysX using Nav2! (task_id: 3, 4, 5) 
+#### Packages for operating OPERA-compatible IC120 on the OperaSim-PhysX using Nav2! (task_id: 3, 4, 5) 
 
 Please open terminals and execute the following commands separately.
 

@@ -1,7 +1,9 @@
 ### 6. Store and get data simultaneously in real-time
 
-This chapter explains how to store information from sensors on earthwork site such as location information and joint angles, terrain information. 
-> Note:If you don't store sensor information, you can skip this chapter.
+This chapter explains how to store information from sensors on earthwork site such as location information and joint angles, terrain information. The content described in this section can be used to construct the cyberspace environment for OperaSimVR, the cyber-side system of this CPS.
+> Note: If you don't store sensor information, you can skip this chapter.
+
+> Note: OperaSimVR enables users to visualize construction site operations, including the autonomous operation of construction machinery, and to remotely operate the machinery. You can install OperaSimVR from https://github.com/irvs/OperaSimVR.git.
 
 #
 Run the following commands to store data in MongoDB and get the data.
@@ -75,7 +77,7 @@ Point cloud data in .las format is converted and stored in MongoDB as a .png for
 
 | data  | file type | output |
 | -- | -- | -- |
-| static terrain | .las(point cloud data) | .png(heightmap) & .png(terrain coloc image) & terrain scale|
+| static terrain | .las(point cloud data) | .png(heightmap) & .png(terrain color image) & terrain scale|
 
 
 ```
