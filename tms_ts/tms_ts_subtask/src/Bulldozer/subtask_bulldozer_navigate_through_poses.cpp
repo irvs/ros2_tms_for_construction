@@ -19,10 +19,10 @@
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskBulldozerNavigateThroughPoses::SubtaskBulldozerNavigateThroughPoses() : SubtaskNodeBase("st_bulldozer_navigate_through_poses_node")
+SubtaskBulldozerNavigateThroughPoses::SubtaskBulldozerNavigateThroughPoses() : SubtaskNodeBase("subtask_bulldozer_navigate_through_poses_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_bulldozer_navigate_through_poses",
+        this, "subtask_bulldozer_navigate_through_poses",
         std::bind(&SubtaskBulldozerNavigateThroughPoses::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&SubtaskBulldozerNavigateThroughPoses::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskBulldozerNavigateThroughPoses::handle_accepted, this, std::placeholders::_1));
@@ -58,7 +58,7 @@ void SubtaskBulldozerNavigateThroughPoses::handle_accepted(const std::shared_ptr
 
 void SubtaskBulldozerNavigateThroughPoses::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_bulldozer_navigate_through_poses) is executing...");
+    RCLCPP_INFO(this->get_logger(), "subtask(subtask_bulldozer_navigate_through_poses) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())

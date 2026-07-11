@@ -2,7 +2,7 @@
 <root main_tree_to_execute="BehaviorTree">
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
-        <Action  model_name="d37pxi_24" ID="LeafNodeBulldozer" record_name="sample_goal" subtask_name="st_bulldozer_navigate_anywhere"/>
+        <Action  model_name="d37pxi_24" ID="LeafNodeBulldozer" record_name="sample_goal" subtask_name="subtask_bulldozer_navigate_anywhere"/>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>

@@ -117,30 +117,30 @@ def generate_launch_description():
             
             # sample ###
             #ic120用
-            # Node(
-            #       package='tms_ts_subtask',
-            #       executable='subtask_crawlerdump_follow_waypoints',
-            #       output='screen',
-            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-            #       namespace='ic120'),
-            # Node(
-            #       package='tms_ts_subtask',
-            #       executable='subtask_crawlerdump_navigate_anywhere',
-            #       output='screen',
-            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-            #       namespace='ic120'),
-            # Node(
-            #       package='tms_ts_subtask',
-            #       executable='subtask_crawlerdump_navigate_through_poses',
-            #       output='screen',
-            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-            #       namespace='ic120'),
-            # Node(
-            #       package='tms_ts_subtask',
-            #       executable='subtask_crawlerdump_release_soil',
-            #       output='screen',
-            #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-            #       namespace='ic120'),
+            Node(
+                  package='tms_ts_subtask',
+                  executable='subtask_crawlerdump_follow_waypoints',
+                  output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='ic120'),
+            Node(
+                  package='tms_ts_subtask',
+                  executable='subtask_crawlerdump_navigate_anywhere',
+                  output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='ic120'),
+            Node(
+                  package='tms_ts_subtask',
+                  executable='subtask_crawlerdump_navigate_through_poses',
+                  output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='ic120'),
+            Node(
+                  package='tms_ts_subtask',
+                  executable='subtask_crawlerdump_release_soil',
+                  output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace='ic120'),
             
 
             # mst2200用

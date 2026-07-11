@@ -18,10 +18,10 @@
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskExcavatorFollowWaypointys::SubtaskExcavatorFollowWaypointys() : SubtaskNodeBase("st_excavator_follow_waypoints_node")
+SubtaskExcavatorFollowWaypointys::SubtaskExcavatorFollowWaypointys() : SubtaskNodeBase("subtask_excavator_follow_waypoints_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_excavator_follow_waypoints",
+        this, "subtask_excavator_follow_waypoints",
         std::bind(&SubtaskExcavatorFollowWaypointys::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&SubtaskExcavatorFollowWaypointys::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskExcavatorFollowWaypointys::handle_accepted, this, std::placeholders::_1));
@@ -62,7 +62,7 @@ void SubtaskExcavatorFollowWaypointys::handle_accepted(const std::shared_ptr<Goa
 
 void SubtaskExcavatorFollowWaypointys::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_excavator_follow_waypoints_node) is executing...");
+    RCLCPP_INFO(this->get_logger(), "subtask(subtask_excavator_follow_waypoints_node) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())

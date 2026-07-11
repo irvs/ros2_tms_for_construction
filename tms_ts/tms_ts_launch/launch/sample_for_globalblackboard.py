@@ -59,19 +59,19 @@ def generate_launch_description():
             #ic120用
             # Node(
             #       package='tms_ts_subtask',
-            #       executable='subtask_ic120_follow_waypoints',
+            #       executable='subtask_crawlerdump_follow_waypoints',
             #       output='screen'),
             # Node(
             #       package='tms_ts_subtask',
-            #       executable='subtask_ic120_navigate_anywhere',
+            #       executable='subtask_crawlerdump_navigate_anywhere',
             #       output='screen'),
             # Node(
             #       package='tms_ts_subtask',
-            #       executable='subtask_ic120_navigate_through_poses',
+            #       executable='subtask_crawlerdump_navigate_through_poses',
             #       output='screen'),
             # Node(
             #       package='tms_ts_subtask',
-            #       executable='subtask_ic120_release_soil',
+            #       executable='subtask_crawlerdump_release_soil',
             #       output='screen'),
 
 

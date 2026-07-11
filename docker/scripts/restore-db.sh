@@ -37,7 +37,7 @@ mongorestore --drop --host "${MONGO_HOST}" --port "${MONGO_PORT}" "${DUMP_DIR}"
 
 # The shipped seed embeds a `description` (string) field in many `parameter`
 # records (initial_pose, target_excavate_pose, ...). The current
-# `subtask_zx200_*` implementations iterate over each key and only handle
+# `subtask_excavator_*` implementations iterate over each key and only handle
 # numeric types (int32 / int64 / double); the string `description` triggers a
 # TypeError and the BT call stalls before sending the goal.
 # Strip the field as a post-restore fix-up so task_id=4 etc. work out of the

@@ -18,10 +18,10 @@
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskCrawlerDumpFollowPath::SubtaskCrawlerDumpFollowPath() : SubtaskNodeBase("st_crawlerdump_follow_path_node")
+SubtaskCrawlerDumpFollowPath::SubtaskCrawlerDumpFollowPath() : SubtaskNodeBase("subtask_crawlerdump_follow_path_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_crawlerdump_follow_path",
+        this, "subtask_crawlerdump_follow_path",
         std::bind(&SubtaskCrawlerDumpFollowPath::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&SubtaskCrawlerDumpFollowPath::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskCrawlerDumpFollowPath::handle_accepted, this, std::placeholders::_1));
@@ -62,7 +62,7 @@ void SubtaskCrawlerDumpFollowPath::handle_accepted(const std::shared_ptr<GoalHan
 
 void SubtaskCrawlerDumpFollowPath::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_crawlerdump_follow_path_node) is executing...");
+    RCLCPP_INFO(this->get_logger(), "subtask(subtask_crawlerdump_follow_path_node) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
 
     auto handle_error = [&](const std::string& message) {

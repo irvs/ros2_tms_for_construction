@@ -195,75 +195,75 @@ def launch_setup(context, *args, **kwargs):
         #ic120用
       #   Node(
       #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_follow_waypoints_deg_server',
+      #         executable='subtask_crawlerdump_follow_waypoints_deg_server',
       #         output='screen',
       #         namespace='ic120_1'),
       #   Node(
       #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_follow_waypoints_server',
+      #         executable='subtask_crawlerdump_follow_waypoints_server',
       #         output='screen',
       #         namespace='ic120_1'),
       #   Node(
       #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_anywhere_deg_server',
+      #         executable='subtask_crawlerdump_navigate_anywhere_deg_server',
       #         output='screen',
       #         namespace='ic120_1'),
       #   Node(
       #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_anywhere_server',
-      #         output='screen',
-      #         namespace='ic120_1'),
-
-      #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_through_poses_deg_server',
-      #         output='screen',
-      #         namespace='ic120_1'),
-      #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_through_poses_server',
-      #         output='screen',
-      #         namespace='ic120_1'),
-      #   Node(
-      #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_release_soil_server',
+      #         executable='subtask_crawlerdump_navigate_anywhere_server',
       #         output='screen',
       #         namespace='ic120_1'),
 
       #   Node(
       #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_follow_waypoints_deg_server',
+      #         executable='subtask_crawlerdump_navigate_through_poses_deg_server',
+      #         output='screen',
+      #         namespace='ic120_1'),
+      #   Node(
+      #         package='tms_ts_subtask',
+      #         executable='subtask_crawlerdump_navigate_through_poses_server',
+      #         output='screen',
+      #         namespace='ic120_1'),
+      #   Node(
+      #         package='tms_ts_subtask',
+      #         executable='subtask_crawlerdump_release_soil_server',
+      #         output='screen',
+      #         namespace='ic120_1'),
+
+      #   Node(
+      #         package='tms_ts_subtask',
+      #         executable='subtask_crawlerdump_follow_waypoints_deg_server',
       #         output='screen',
       #         namespace='ic120_2'),
       #   Node(
       #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_follow_waypoints_server',
+      #         executable='subtask_crawlerdump_follow_waypoints_server',
       #         output='screen',
       #         namespace='ic120_2'),
       #   Node(
       #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_anywhere_deg_server',
+      #         executable='subtask_crawlerdump_navigate_anywhere_deg_server',
       #         output='screen',
       #         namespace='ic120_2'),
       #   Node(
       #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_anywhere_server',
+      #         executable='subtask_crawlerdump_navigate_anywhere_server',
       #         output='screen',
       #         namespace='ic120_2'),
 
       #   Node(
       #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_through_poses_deg_server',
+      #         executable='subtask_crawlerdump_navigate_through_poses_deg_server',
       #         output='screen',
       #         namespace='ic120_2'),
       #   Node(
       #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_navigate_through_poses_server',
+      #         executable='subtask_crawlerdump_navigate_through_poses_server',
       #         output='screen',
       #         namespace='ic120_2'),
       #   Node(
       #         package='tms_ts_subtask',
-      #         executable='subtask_ic120_release_soil_server',
+      #         executable='subtask_crawlerdump_release_soil_server',
       #         output='screen',
       #         namespace='ic120_2'),
         
@@ -306,31 +306,31 @@ def launch_setup(context, *args, **kwargs):
         # mst2200用
       #   Node(
       #         package='tms_ts_subtask', 
-      #         executable='subtask_mst2200_follow_waypoints_deg_server',
+      #         executable='subtask_crawlerdump_follow_waypoints_deg_server',
       #         output='screen'),
       #   Node(
       #         package='tms_ts_subtask', 
-      #         executable='subtask_mst2200_follow_waypoints_server',
+      #         executable='subtask_crawlerdump_follow_waypoints_server',
       #         output='screen'),
       #   Node(
       #         package='tms_ts_subtask', 
-      #         executable='subtask_mst2200_navigate_anywhere_deg_server',
+      #         executable='subtask_crawlerdump_navigate_anywhere_deg_server',
       #         output='screen'),
       #   Node(
       #         package='tms_ts_subtask', 
-      #         executable='subtask_mst2200_navigate_anywhere_server',
+      #         executable='subtask_crawlerdump_navigate_anywhere_server',
       #         output='screen'),
       #   Node(
       #         package='tms_ts_subtask', 
-      #         executable='subtask_mst2200_navigate_through_poses_deg_server',
+      #         executable='subtask_crawlerdump_navigate_through_poses_deg_server',
       #         output='screen'),
       #   Node(
       #         package='tms_ts_subtask', 
-      #         executable='subtask_mst2200_navigate_through_poses_server',
+      #         executable='subtask_crawlerdump_navigate_through_poses_server',
       #         output='screen'),
       #   Node(
       #         package='tms_ts_subtask', 
-      #         executable='subtask_mst2200_release_soil_server',
+      #         executable='subtask_crawlerdump_release_soil_server',
       #         output='screen'),
 
             # mst110cr用

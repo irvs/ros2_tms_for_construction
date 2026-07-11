@@ -19,10 +19,10 @@
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskCrawlerDumpSwing::SubtaskCrawlerDumpSwing() : SubtaskNodeBase("st_crawlerdump_swing_node")
+SubtaskCrawlerDumpSwing::SubtaskCrawlerDumpSwing() : SubtaskNodeBase("subtask_crawlerdump_swing_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_crawlerdump_swing",
+        this, "subtask_crawlerdump_swing",
         std::bind(&SubtaskCrawlerDumpSwing::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&SubtaskCrawlerDumpSwing::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskCrawlerDumpSwing::handle_accepted, this, std::placeholders::_1));
@@ -63,7 +63,7 @@ void SubtaskCrawlerDumpSwing::handle_accepted(const std::shared_ptr<GoalHandle> 
 
 void SubtaskCrawlerDumpSwing::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_crawlerdump_swing) is executing...");
+    RCLCPP_INFO(this->get_logger(), "subtask(subtask_crawlerdump_swing) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())

@@ -1,72 +1,112 @@
-### 3. Store and get data simultaneously in real-time
+### 1. Try running the task schedular
 
-Run the following commands to store data in MongoDB and get the data.
+In this chapter, we will explain how to use the task scheduler.
 
-
-
-#### Launch
-
-Run the following commands to store data in MongoDB.
+---
+#### 1.1 About "MongoDB"
+To successfully run the task scheduler, mongodb must be started by executing the following command.
 
 ```
-# MongoDB manager
-ros2 launch tms_db_manager tms_db_manager.launch.py
+sudo systemctl start mongod
+``` 
 
-# Odometry and JointStats
-ros2 launch tms_sp_machine tms_sp_machine_odom_and_joints_launch.py
-```
-The position and orientation data of the construction machine is stored in "rostmsdb/machine_pose" on MongoDB, while joint core information is stored in "rostmsdb/machine_joints" on MongoDB.
+ Before running the task scheduler, make sure that the task collection and the parameter collection are placed under rostmsdb database in MongoDB. Database verification can be done using mongodb compass. The confirmation procedure is as follows.
+1. Start MongoDB Compass. The following screen will appear.
+ ![](docs/procedure_setting_mongodb_1.png)
 
-#### Launch tms_ur_construction
+2. Confirm that the URI is entered as "mongodb://localhost:27017/" and press the "Connect" button. You will then see the following screen.
+![](docs/procedure_setting_mongodb_2.png)
 
-Run the following commands to get data from MongoDB.
+ 3. Click on the "rostmsdb" button in the above screen, and if the screen looks like the following, the database setup is complete.
+![](docs/procedure_setting_mongodb_3.png)
 
-```
-# MongoDB manager(if it is not running)
-ros2 launch tms_db_manager tms_db_manager.launch.py
-
-# Get odometry and jointstates
-ros2 launch tms_ur_construction tms_ur_cv_odom_demo_launch.py
-```
-
-<!--
-#### Play rosbag
-```
-ros2 bag play -l ./src/ros2_tms_for_construction/demo/demo2/rosbag2_2
-```
-
-
-GUI tool of MongoDB like a MongoDB Compass is easy to check them.
-
-Here is an example. It may be a little different than yours, but as long as it is roughly the same, you should be fine.
-
-![](demo/demo2/demo_mongodb_compass.png)
--->
-
-### about terrain data
-
-Since static terrain data does not need to be acquired in real time, it can be pre-generated in cyberspace.
-
-**store static terrain data in MongoDB**
-
-Point cloud data in .las format is converted and stored in MongoDB as a .png format heightmap and RGB image (terrain color image).
-
-| data  | file type | output |
-| -- | -- | -- |
-| static terrain | .las(point cloud data) | .png(heightmap) & .png(terrain coloc image) & terrain scale|
-
+ If the database or collections does not exist, please execute the following command to add the database
 
 ```
-# Static terrain
-cd ros2-tms-for-construction_ws/src/ros2-tms-for-construction/tms_ss/tms_ss_terrain_static/tms_ss_terrain_static/las_to_heightmap
-
-python save_image_to_mongodb.py <inputFile>.las --output <outputImage>.png
+sudo systemctl start mongod
+cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction/demo
+unzip rostmsdb_collections.zip
+mongorestore dump
 ```
 
-**road static terrain data from MongoDB**
+---
+#### 1.2 About launching task sceduler
 
-Read the .png format heightmap and RGB image (terrain color image) stored in MongoDB and send them to "OperaSimVR" using ROS 2 service communication.
+Once you have verified that MongoDB looks like the image above, execute the following command.
+
 ```
-# Static terrain data
-ros2 launch tms_ur_construction tms_ur_construction_terrain_mesh_launch.py filename_mesh:=<filename>
+cd ~/ros2-tms-for-construction_ws
+source install/setup.bash
+ros2 launch tms_ts_launch tms_ts_construction.launch.py
 ```
+
+If you want to run a different task and specify it from the command line, you can specify it like this:
+```
+ros2 launch tms_ts_launch tms_ts_construction.launch.py task_id:=<task_id>
+```
+
+
+The following GUI button will then be activated.
+
+![](docs/gui_button.png)
+
+When this green button is pressed, the corresponding task is read from the mongodb and the Behavior Tree executes subtasks based on the corresponding task sequence.
+The task to be executed at this time is the task data in the task collection of rostmsdb in mongodb. The number displayed to the right of the "task_id:" button is the task_id of the task data to be executed by task schedular. The summary of current task data stored in the DB is as presented in chapter 2.
+
+**Also, the red button is for emergency stop. Press this button if you want to stop the Task Scheduler in an emergency when it is executing a task.**
+
+
+---
+#### 1.3 About "Groot" 
+
+Before you start executing tasks by pressing the GUI button described above, please execute the following command to launch Groot. Groot is a tool that functions both as an editor for creating sequences of tasks and as a monitor for observing the execution state of the task sequences being run by the Behavior Tree. In this section, we will introduce the monitoring functionality of Groot.
+
+```
+cd ~/ros2-tms-for-construction_ws
+./build/groot/Groot
+```
+After executing the above command, if Groot can be successfully started, the following screen will be appeared.
+
+![](docs/groot_2.png)
+
+In the above image, "Editor" is used to generate task sequence. On the other hand, "Monitor" is used to visualize the status of running tasks.
+
+In this section, we will show you how to visualize the status of running tasks using the "monitor" function.
+
+First, click on the "monitor" button of the previous screen to output the following screen.
+
+After opening the screen, check that the parameter settings on this screen are as follows
+
+
+> The settings for use should be as follows.
+> 
+> ・ Sensing IP : localhost
+> 
+> ・ Publisher Port : 1666 
+> 
+> ・ Sever Port : 1667
+
+After setting each parameter, click the "connect" button to see how the task is running in the behavior tree, as shown in the image below.
+
+![](docs/groot.png)
+
+> **Note**
+> 
+> The ability to visualize tasks being executed by Groot cannot be performed unless the task is being executed by the behavior tree. 
+>　So, if you want to visualize the  task sequence on Groot, you have to follow  the step below.
+>
+>  ![](docs/groot_7.png)
+>
+>  If you click the above button in Groot without the behavior tree running, the following error will occur.
+>  
+>  ![](docs/groot_8.png)
+
+If you want to change the task to be executed, update the following parameter in ros2_tms_for_construction/tms_ts/tms_ts_launch/launch/tms_ts_construction.launch.py to the task_id value of the task you want to execute, and then execute the following.
+
+```
+cd ~/ros2-tms-for-construction_ws
+colcon build --packages-select tms_ts_launch && source install/setup.bash
+```
+
+![](docs/tms_ts_launch_1.png)
+

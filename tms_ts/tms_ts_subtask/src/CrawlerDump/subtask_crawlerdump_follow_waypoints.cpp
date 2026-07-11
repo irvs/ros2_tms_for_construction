@@ -18,10 +18,10 @@
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-SubtaskCrawlerDumpFollowWaypointys::SubtaskCrawlerDumpFollowWaypointys() : SubtaskNodeBase("st_crawlerdump_follow_waypoints_node")
+SubtaskCrawlerDumpFollowWaypointys::SubtaskCrawlerDumpFollowWaypointys() : SubtaskNodeBase("subtask_crawlerdump_follow_waypoints_node")
 {
     this->action_server_ = rclcpp_action::create_server<tms_msg_ts::action::LeafNodeBase>(
-        this, "st_crawlerdump_follow_waypoints",
+        this, "subtask_crawlerdump_follow_waypoints",
         std::bind(&SubtaskCrawlerDumpFollowWaypointys::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&SubtaskCrawlerDumpFollowWaypointys::handle_cancel, this, std::placeholders::_1),
         std::bind(&SubtaskCrawlerDumpFollowWaypointys::handle_accepted, this, std::placeholders::_1));
@@ -62,7 +62,7 @@ void SubtaskCrawlerDumpFollowWaypointys::handle_accepted(const std::shared_ptr<G
 
 void SubtaskCrawlerDumpFollowWaypointys::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-    RCLCPP_INFO(this->get_logger(), "subtask(st_crawlerdump_follow_waypoints_node) is executing...");
+    RCLCPP_INFO(this->get_logger(), "subtask(subtask_crawlerdump_follow_waypoints_node) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())

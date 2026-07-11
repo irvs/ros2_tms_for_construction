@@ -4,7 +4,7 @@
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
             <Action ID="WaitForClick" button_info="wait" window_title="wait"/>
-            <Action  model_name="d37pxi_24" ID="LeafNodeBulldozer" record_name="blade_pose" subtask_name="st_bulldozer_blade_control"/>
+            <Action  model_name="d37pxi_24" ID="LeafNodeBulldozer" record_name="blade_pose" subtask_name="subtask_bulldozer_blade_control"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
