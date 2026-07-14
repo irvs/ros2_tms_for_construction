@@ -45,6 +45,12 @@ ROS2-TMS-FOR-CONSTRUCTION consists of the following packages. The details of eac
 
    ROS2-TMS database manager. This package has tms_db_reader(_gridfs) and tms_db_writer(_gridfs) nodes.
 
+### tms_msg
+
+-  [tms_msg](tms_msg)
+
+   sensing_msgs is a package that contains .msg files for sensing process.
+
 ### tms_sd
 
 - [tms_sd_ground](tms_sd/tms_sd_ground)
@@ -118,6 +124,11 @@ ROS2-TMS-FOR-CONSTRUCTION consists of the following packages. The details of eac
 
   tms_ur_button_input is a package that searches data in mongodb for the corresponding task when the GUI button is pressed, and passes the corresponding task sequence to the task scheduler.
 
+- [tms_ur_construction](tms_ur/tms_ur_construction)
+
+  tms_ur_construction is a package that retrieves environmental data stored in tms_db, such as construction machinery positions, orientations, and terrain information, and visualizes them in cyberspace.
+
+
 ## Demo
 
 Here are some demonstrations. Before starting the demonstrations, each terminal must be set up with the following commands.
@@ -127,13 +138,13 @@ cd ~/ros2-tms-for-construction_ws
 source install/setup.bash
 ```
 
-1. [Store data](CHAPTER1.md)
-2. [Get stored data](CHAPTER2.md)
-3. [Store and get data simultaneously in real-time](CHAPTER3.md)
-4. [Try running the task schedular](CHAPTER4.md)
-5. [Try running the task schedular with OperaSim-PhysX](CHAPTER5.md)
-6. [Insert new task data to tms_db](CHAPTER6.md)
-7. [How to update parameters in mongodb based on topics from sensing pc](CHAPTER7.md)
+1. [Try running the task schedular](CHAPTER1.md)
+2. [Try running the task schedular with OperaSim-PhysX](CHAPTER2.md)
+3. [Insert new task data to tms_db](CHAPTER3.md)
+4. [How to update parameters in mongodb based on topics from sensing pc](CHAPTER4.md)
+5. [How to Use the Global Blackboard](CHAPTER5.md)
+6. [Store and get data simultaneously in real-time](CHAPTER6.md)
+7. [Get the position and joint angle data from DB](CHAPTER7.md)
 <!-- 8. [Try running the actual OPERA-compatible construction machinery](#8-Try-running-the-actual-opera-compatible-construction-machinery) -->
 
 
