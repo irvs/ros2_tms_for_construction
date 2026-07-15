@@ -19,7 +19,7 @@ Project page: [https://moonshot-cafe-project.org/en/](https://moonshot-cafe-proj
 
 ### Architecture
 
-![](docs/ros2_tms_for_construction_architecture.png)
+![](docs/ros2_tms_for_construction_architecture_2.png)
 
 ## Setup
 There are two ways to set up ROS2-TMS for Construction: by entering individual commands directly or by using scripts.
