@@ -1,7 +1,13 @@
+
+
 # ROS2-TMS-FOR-CONSTRUCTION
 ROS2-TMS-FOR-CONSTRUCTION is an IoRT (Internet of Robots and Things) library for construction applications developed based on ROS2-TMS.
 
-https://github.com/irvs/ros2_tms_for_construction/assets/63947554/d7fb02dd-37d9-4d72-aa2c-a2c2d6f7824a
+<!-- https://github.com/irvs/ros2_tms_for_construction/assets/63947554/d7fb02dd-37d9-4d72-aa2c-a2c2d6f7824a -->
+
+
+https://github.com/user-attachments/assets/e012bd0a-70f3-4610-8db2-69d5f41116a7
+
 
 ## ROS2-TMS
 
@@ -13,13 +19,17 @@ ROS2-TMS was developed as a part of "**MyIoT Store**" in "**MyIoT Project**" sup
 
 ## ROS2-TMS-FOR-CONSTRUCTION
 
-ROS2-TMS-FOR-CONSTRUCTION is newly developed as an IoRT library for construction applications based on ROS2-TMS with the support of JST Moonshot R&D, Grant Number JPMJPS2032 entitled “Collaborative AI robots for adaptation of diverse environments and innovation of infrastructure construction” in “Moonshot Goal 3: Realization of Artificial Intelligence (AI) robots that autonomously learn, adapt to their environment, evolve itself in intelligence, and act alongside human beings, by 2050.”
+ROS2-TMS-FOR-CONSTRUCTION is supported by Council for Science, Technology and Innovation(CSTI), Cross-ministerial Strategic Innovation Promotion Program(SIP), the 3rd period of SIP
+“Smart Infrastructure Management System” Grant Number JPJ012187 (Funding agency: Public Works Research
+Institute).
 
-Project page: [https://moonshot-cafe-project.org/en/](https://moonshot-cafe-project.org/en/)
+<!-- Project page: [https://moonshot-cafe-project.org/en/](https://moonshot-cafe-project.org/en/) -->
+
+Project page: [https://sip-icas-project.org/](https://sip-icas-project.org/)
 
 ### Architecture
 
-![](docs/ros2_tms_for_construction_architecture.png)
+![](docs/ros2_tms_for_construction_architecture_2.png)
 
 ## Setup
 There are two ways to set up ROS2-TMS for Construction: by entering individual commands directly or by using scripts.  
@@ -45,6 +55,12 @@ ROS2-TMS-FOR-CONSTRUCTION consists of the following packages. The details of eac
 -  [tms_db_manager](tms_db/tms_db_manager)
 
    ROS2-TMS database manager. This package has tms_db_reader(_gridfs) and tms_db_writer(_gridfs) nodes.
+
+### tms_msg
+
+-  [tms_msg](tms_msg)
+
+   sensing_msgs is a package that contains .msg files for sensing process.
 
 ### tms_sd
 
@@ -119,6 +135,11 @@ ROS2-TMS-FOR-CONSTRUCTION consists of the following packages. The details of eac
 
   tms_ur_button_input is a package that searches data in mongodb for the corresponding task when the GUI button is pressed, and passes the corresponding task sequence to the task scheduler.
 
+- [tms_ur_construction](tms_ur/tms_ur_construction)
+
+  tms_ur_construction is a package that retrieves environmental data stored in tms_db, such as construction machinery positions, orientations, and terrain information, and visualizes them in cyberspace.
+
+
 ## Demo
 
 Here are some demonstrations. Before starting the demonstrations, each terminal must be set up with the following commands.
@@ -128,13 +149,13 @@ cd ~/ros2-tms-for-construction_ws
 source install/setup.bash
 ```
 
-1. [Store data](CHAPTER1.md)
-2. [Get stored data](CHAPTER2.md)
-3. [Store and get data simultaneously in real-time](CHAPTER3.md)
-4. [Try running the task schedular](CHAPTER4.md)
-5. [Try running the task schedular with OperaSim-PhysX](CHAPTER5.md)
-6. [Insert new task data to tms_db](CHAPTER6.md)
-7. [How to update parameters in mongodb based on topics from sensing pc](CHAPTER7.md)
+1. [Try running the task schedular](CHAPTER1.md)
+2. [Try running the task schedular with OperaSim-PhysX](CHAPTER2.md)
+3. [Insert new task data to tms_db](CHAPTER3.md)
+4. [How to update parameters in mongodb based on topics from sensing pc](CHAPTER4.md)
+5. [How to Use the Global Blackboard](CHAPTER5.md)
+6. [Store and get data simultaneously in real-time](CHAPTER6.md)
+7. [Get the position and joint angle data from DB](CHAPTER7.md)
 <!-- 8. [Try running the actual OPERA-compatible construction machinery](#8-Try-running-the-actual-opera-compatible-construction-machinery) -->
 
 

@@ -29,9 +29,9 @@
                                         <Sequence>
                                             <Action ID="MongoValueWriter" input_value="true" mongo_param_name="LOADAREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="IS_RM1_RS1" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
-                                            <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="R1_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
-                                            <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="LOAD_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
-                                            <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="SWING_ANGLE_LEFT" subtask_name="st_mst110cr_swing"/>
+                                            <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="R1_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                            <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="LOAD_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                            <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="SWING_ANGLE_LEFT" subtask_name="subtask_crawlerdump_swing"/>
                                             <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                             <Action ID="MongoValueWriter" input_value="1" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                         </Sequence>
@@ -52,8 +52,8 @@
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="LOADAREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="SWING_ANGLE_FRONT" subtask_name="st_mst110cr_swing"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="R1_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="SWING_ANGLE_FRONT" subtask_name="subtask_crawlerdump_swing"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="R1_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="2" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                 </Sequence>
@@ -72,7 +72,7 @@
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RM1n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RM1UP" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RM1_R1_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RM1_R1_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADAREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="IS_RM1_RS1" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                     <Action ID="MongoValueWriter" input_value="3" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
@@ -85,9 +85,9 @@
                                                 <Action ID="ConditionalExpression" conditional_expression="CURRENT_LOCATION==2 and RS1n==false"/>
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RS1n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RS1_R1_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RS1_R1_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADAREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RS1_R2_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RS1_R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="IS_RM1_RS1" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                     <Action ID="MongoValueWriter" input_value="3" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                 </Sequence>
@@ -104,8 +104,8 @@
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="R2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="R2UP" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="R2_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="R2_GOAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="R2_GOAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="BlackboardValueReaderMongo" mongo_param_name="IS_RM1_RS1" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2" output_port="IS_RM1_RS1"/>
                                                     <IfThenElse>
                                                         <Action ID="ConditionalExpression" conditional_expression="IS_RM1_RS1==true"/>
@@ -134,7 +134,7 @@
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RM2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RM2UP" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RM2_R2_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RM2_R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="R2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="IS_RM2_RS2" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                     <Action ID="MongoValueWriter" input_value="5" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
@@ -149,9 +149,9 @@
                                                 <Action ID="ConditionalExpression" conditional_expression="CURRENT_LOCATION==4 and RS2n==false and RM2n==true and RM2UP==false"/>
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RS2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RS2_R2_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RS2_R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="R2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RS2_R3_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RS2_R3_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="IS_RM2_RS2" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                     <Action ID="MongoValueWriter" input_value="5" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                 </Sequence>
@@ -165,8 +165,8 @@
                                                 <Action ID="ConditionalExpression" conditional_expression="CURRENT_LOCATION==5 and RELEASE_AREA==false"/>
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RELEASE_AREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="R3_WAY_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="R3_RELEASE_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="R3_WAY_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="R3_RELEASE_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="BlackboardValueReaderMongo" mongo_param_name="IS_RM2_RS2" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2" output_port="IS_RM2_RS2"/>
                                                     <IfThenElse>
                                                         <Action ID="ConditionalExpression" conditional_expression="IS_RM2_RS2==true"/>
@@ -191,10 +191,10 @@
                                             <IfThenElse>
                                                 <Action ID="ConditionalExpression" conditional_expression="CURRENT_LOCATION==6 and RELEASE_FLG==true"/>
                                                 <Sequence>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RELEASE_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RELEASE_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="MongoValueWriter" input_value="1" mongo_param_name="Release_Count" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RELEASE_ANGLE_UP" subtask_name="st_mst110cr_release_soil"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RELEASE_ANGLE_DOWN" subtask_name="st_mst110cr_release_soil"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RELEASE_ANGLE_UP" subtask_name="subtask_crawlerdump_release_soil"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RELEASE_ANGLE_DOWN" subtask_name="subtask_crawlerdump_release_soil"/>
                                                     <Action ID="MongoValueWriter" input_value="2" mongo_param_name="Release_Count" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                     <Action ID="MongoValueWriter" input_value="10" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
@@ -217,8 +217,8 @@
                                                 <Action ID="ConditionalExpression" conditional_expression="CURRENT_LOCATION==10 and &#10;(RS2n==false or RM2n==false)&#10;"/>
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RELEASE_AREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="R3_RELEASE_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="R3_WAY_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="R3_RELEASE_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="R3_WAY_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="MongoValueWriter" input_value="11" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                 </Sequence>
                                                 <AlwaysSuccess/>
@@ -236,7 +236,7 @@
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RM2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="RM2UP" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RM2_R2_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RM2_R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="RELEASE_AREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="IS_RM2_RS2" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                     <Action ID="MongoValueWriter" input_value="12" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
@@ -249,8 +249,8 @@
                                                 <Action ID="ConditionalExpression" conditional_expression="CURRENT_LOCATION==11 and RS2n==false"/>
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RS2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RS2_R3_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RS2_R2_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RS2_R3_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RS2_R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="RELEASE_AREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="IS_RM2_RS2" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                     <Action ID="MongoValueWriter" input_value="12" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
@@ -268,7 +268,7 @@
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="R2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="R2UP" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="R2_GOAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="R2_GOAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="BlackboardValueReaderMongo" mongo_param_name="IS_RM2_RS2" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2" output_port="IS_RM2_RS2"/>
                                                     <IfThenElse>
                                                         <Action ID="ConditionalExpression" conditional_expression="IS_RM2_RS2==true"/>
@@ -284,7 +284,7 @@
                                                         </Sequence>
                                                         <AlwaysSuccess/>
                                                     </IfThenElse>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="R2_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="MongoValueWriter" input_value="13" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                 </Sequence>
                                                 <AlwaysSuccess/>
@@ -298,7 +298,7 @@
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RM1n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="RM1UP" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RM1_R1_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RM1_R1_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="R2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="IS_RM1_RS1" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                     <Action ID="MongoValueWriter" input_value="14" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
@@ -313,8 +313,8 @@
                                                 <Action ID="ConditionalExpression" conditional_expression="CURRENT_LOCATION==13 and RS1n==false and RM1n==true and RM1UP==true"/>
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RS1n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RS1_R2_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="RS1_R1_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RS1_R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="RS1_R1_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="R2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="IS_RM1_RS1" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                     <Action ID="MongoValueWriter" input_value="14" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
@@ -330,7 +330,7 @@
                                                 <Action ID="ConditionalExpression" conditional_expression="CURRENT_LOCATION==14 and LOADAREA==false and SENSING_NEXTPOINT_FLG==false"/>
                                                 <Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="LOADAREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="R1_SIGNAL_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="R1_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
                                                     <Action ID="BlackboardValueReaderMongo" mongo_param_name="IS_RM1_RS1" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2" output_port="IS_RM1_RS1"/>
                                                     <IfThenElse>
                                                         <Action ID="ConditionalExpression" conditional_expression="IS_RM1_RS1==true"/>
@@ -346,8 +346,8 @@
                                                         </Sequence>
                                                         <AlwaysSuccess/>
                                                     </IfThenElse>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="LOAD_POINT" subtask_name="st_mst110cr_follow_waypoints"/>
-                                                    <Action ID="LeafNodeMst110cr" model_name="mst110cr_2" record_name="SWING_ANGLE_LEFT" subtask_name="st_mst110cr_swing"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="LOAD_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" record_name="SWING_ANGLE_LEFT" subtask_name="subtask_crawlerdump_swing"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                                                     <Action ID="MongoValueWriter" input_value="1" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
@@ -389,27 +389,19 @@
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key" type="std::string"/>
         </Decorator>
-        <Action ID="LeafNodeIc120">
+        <Action ID="LeafNodeCrawlerDump">
             <input_port name="model_name" type="float"/>
             <input_port name="record_name" type="float"/>
             <input_port name="subtask_name" type="float"/>
         </Action>
-        <Action ID="LeafNodeMst110cr">
+        <Action ID="LeafNodeCrawlerDump">
             <inout_port name="model_name"/>
             <inout_port name="record_name"/>
             <inout_port name="subtask_name"/>
         </Action>
-        <Action ID="LeafNodeSampleZx120">
-            <input_port default="zx120" name=" model_name"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeSampleZx200">
-            <input_port default="zx200" name=" model_name"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeZx200">
+
+
+        <Action ID="LeafNodeExcavator">
             <input_port name="model_name" type="float"/>
             <input_port name="record_name" type="float"/>
             <input_port name="subtask_name" type="float"/>

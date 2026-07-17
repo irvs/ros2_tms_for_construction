@@ -2,7 +2,7 @@
 <root main_tree_to_execute="BehaviorTree">
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
-        <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="SIM_LOAD_POINT" subtask_name="st_excavator_follow_waypoints"/>
+        <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="SIM_LOAD_POINT" subtask_name="subtask_excavator_follow_waypoints"/>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>

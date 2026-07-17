@@ -177,79 +177,79 @@ def generate_launch_description():
             # # mst2200用
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_mst2200_follow_waypoints_deg',
+            #       executable='subtask_crawlerdump_follow_waypoints_deg',
             #       output='screen',
             #       namespace='mst2200'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_mst2200_follow_waypoints',
+            #       executable='subtask_crawlerdump_follow_waypoints',
             #       output='screen',
             #       namespace='mst2200'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_mst2200_navigate_anywhere_deg',
+            #       executable='subtask_crawlerdump_navigate_anywhere_deg',
             #       output='screen',
             #       namespace='mst2200'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_mst2200_navigate_anywhere',
+            #       executable='subtask_crawlerdump_navigate_anywhere',
             #       output='screen',
             #       namespace='mst2200'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_mst2200_navigate_through_poses_deg',
+            #       executable='subtask_crawlerdump_navigate_through_poses_deg',
             #       output='screen',
             #       namespace='mst2200'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_mst2200_navigate_through_poses',
+            #       executable='subtask_crawlerdump_navigate_through_poses',
             #       output='screen',
             #       namespace='mst2200'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_mst2200_release_soil',
+            #       executable='subtask_crawlerdump_release_soil',
             #       output='screen',
             #       namespace='mst2200'),
 
             # #MST110CR
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_mst110cr_follow_waypoints_deg',
+            #       executable='subtask_crawlerdump_follow_waypoints_deg',
             #       output='screen',
             #       namespace='mst110cr_2'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_mst110cr_follow_waypoints',
+            #       executable='subtask_crawlerdump_follow_waypoints',
             #       output='screen',
             #       namespace='mst110cr_2'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_mst110cr_navigate_anywhere_deg',
+            #       executable='subtask_crawlerdump_navigate_anywhere_deg',
             #       output='screen',
             #       namespace='mst110cr_2'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_mst110cr_navigate_anywhere',
+            #       executable='subtask_crawlerdump_navigate_anywhere',
             #       output='screen',
             #       namespace='mst110cr_2'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_mst110cr_navigate_through_poses_deg',
+            #       executable='subtask_crawlerdump_navigate_through_poses_deg',
             #       output='screen',
             #       namespace='mst110cr_2'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_mst110cr_navigate_through_poses',
+            #       executable='subtask_crawlerdump_navigate_through_poses',
             #       output='screen',
             #       namespace='mst110cr_2'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_mst110cr_release_soil',
+            #       executable='subtask_crawlerdump_release_soil',
             #       output='screen',
             #       namespace='mst110cr_2'),      
             # Node(
             #       package = 'tms_ts_subtask',
-            #       executable='subtask_mst110cr_swing',
+            #       executable='subtask_crawlerdump_swing',
             #       output='screen',
             #       namespace='mst110cr_2'), 
 
@@ -257,32 +257,32 @@ def generate_launch_description():
             # #D37PXI
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_d37pxi_follow_waypoints_deg',
+            #       executable='subtask_bulldozer_follow_waypoints_deg',
             #       output='screen',
             #       namespace='d37pxi_24'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_d37pxi_follow_waypoints',
+            #       executable='subtask_bulldozer_follow_waypoints',
             #       output='screen',
             #       namespace='d37pxi_24'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_d37pxi_navigate_anywhere_deg',
+            #       executable='subtask_bulldozer_navigate_anywhere_deg',
             #       output='screen',
             #       namespace='d37pxi_24'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_d37pxi_navigate_anywhere',
+            #       executable='subtask_bulldozer_navigate_anywhere',
             #       output='screen',
             #       namespace='d37pxi_24'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_d37pxi_navigate_through_poses_deg',
+            #       executable='subtask_bulldozer_navigate_through_poses_deg',
             #       output='screen',
             #       namespace='d37pxi_24'),
             # Node(
             #       package='tms_ts_subtask', 
-            #       executable='subtask_d37pxi_navigate_through_poses',
+            #       executable='subtask_bulldozer_navigate_through_poses',
             #       output='screen',
             #       namespace='d37pxi_24'),     
 
