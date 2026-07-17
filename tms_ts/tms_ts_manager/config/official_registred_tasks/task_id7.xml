@@ -3,7 +3,7 @@
     <!-- ////////// -->
     <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-            <Action  model_name="d37pxi" ID="LeafNodeBulldozer" record_name="SIM_SAMPLE_WAYPOINTS_2" subtask_name="subtask_bulldozer_follow_waypoints"/>
+            <Action  model_name="d37pxi" ID="LeafNodeBulldozer" record_name="SIM_SAMPLE_WAYPOINTS_2" primitive_name="primitive_bulldozer_follow_waypoints"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
@@ -22,17 +22,17 @@
         <Action ID="LeafNodeBulldozer">
             <input_port default="d37pxi" name="model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
         <Action ID="LeafNodeCrawlerDump">
             <input_port default="ic120" name="model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
         <Action ID="LeafNodeExcavator">
             <input_port default="zx200" name="model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
         <Action ID="MongoValueWriter">
             <input_port name="input_value"/>

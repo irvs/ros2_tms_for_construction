@@ -4,12 +4,12 @@
     <BehaviorTree ID="BehaviorTree">
         <Repeat num_cycles="1">
             <Sequence>
-                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="initial_pose" subtask_name="subtask_excavator_change_pose"/>
-                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="target_excavate_pose" subtask_name="subtask_excavator_excavate_simple"/>
-                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="hold_soil_while_elevating_pose" subtask_name="subtask_excavator_change_pose"/>
-                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="hold_soil_while_turning_pose" subtask_name="subtask_excavator_change_pose"/>
-                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="target_release_pose" subtask_name="subtask_excavator_change_pose"/>
-                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="release_angle" subtask_name="subtask_excavator_release_simple"/>
+                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="initial_pose" primitive_name="primitive_excavator_change_pose"/>
+                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="target_excavate_pose" primitive_name="primitive_excavator_excavate_simple"/>
+                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="hold_soil_while_elevating_pose" primitive_name="primitive_excavator_change_pose"/>
+                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="hold_soil_while_turning_pose" primitive_name="primitive_excavator_change_pose"/>
+                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="target_release_pose" primitive_name="primitive_excavator_change_pose"/>
+                <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="release_angle" primitive_name="primitive_excavator_release_simple"/>
             </Sequence>
         </Repeat>
     </BehaviorTree>
@@ -18,7 +18,7 @@
         <Action ID="LeafNodeExcavator">
             <input_port name="model_name" default="zx200"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
     </TreeNodesModel>
     <!-- ////////// -->

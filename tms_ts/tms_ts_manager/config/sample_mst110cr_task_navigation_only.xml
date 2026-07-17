@@ -3,9 +3,9 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="SAMPLE_GOAL" subtask_name="subtask_crawlerdump_navigate_anywhere"/>
-            <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="SAMPLE_PATH1" subtask_name="subtask_crawlerdump_follow_waypoints"/>
-            <Action  model_name="mst110cr_2" ID="LeafNodeCrawlerDump" record_name="SAMPLE_PATH2" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+            <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="SAMPLE_GOAL" primitive_name="primitive_crawlerdump_navigate_anywhere"/>
+            <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="SAMPLE_PATH1" primitive_name="primitive_crawlerdump_follow_waypoints"/>
+            <Action  model_name="mst110cr_2" ID="LeafNodeCrawlerDump" record_name="SAMPLE_PATH2" primitive_name="primitive_crawlerdump_follow_waypoints"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
@@ -24,12 +24,12 @@
         <Action ID="LeafNodeCrawlerDump">
             <input_port name="model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
         <Action ID="LeafNodeExcavator">
             <input_port default="zx200" name=" model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
         <Action ID="MongoValueWriter">
             <input_port name="input_value"/>

@@ -3,10 +3,10 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="LeafNodeCrawlerDump" model_name="ic120_2" record_name="SIM_LOAD_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
-            <Action ID="LeafNodeCrawlerDump" model_name="ic120_2" record_name="SIM_RELEASE_PATH" subtask_name="subtask_crawlerdump_follow_waypoints"/>
-            <Action ID="LeafNodeCrawlerDump" model_name="ic120_2" record_name="SIM_LOAD_PATH" subtask_name="subtask_crawlerdump_follow_waypoints"/>
-            <Action ID="LeafNodeCrawlerDump" model_name="ic120_2" record_name="SIM_LOAD_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="ic120_2" record_name="SIM_LOAD_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="ic120_2" record_name="SIM_RELEASE_PATH" primitive_name="primitive_crawlerdump_follow_waypoints"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="ic120_2" record_name="SIM_LOAD_PATH" primitive_name="primitive_crawlerdump_follow_waypoints"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="ic120_2" record_name="SIM_LOAD_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
@@ -36,12 +36,12 @@
         <Action ID="LeafNodeCrawlerDump">
             <input_port name="model_name" type="float"/>
             <input_port name="record_name" type="float"/>
-            <input_port name="subtask_name" type="float"/>
+            <input_port name="primitive_name" type="float"/>
         </Action>
         <Action ID="LeafNodeExcavator">
             <input_port default="zx200" name=" model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
         <Action ID="MongoValueWriter">
             <input_port name="input_value" type="std::string"/>

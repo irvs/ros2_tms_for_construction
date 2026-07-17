@@ -3,7 +3,7 @@
     <!-- ////////// -->
     <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-            <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="position_and_pose" subtask_name="subtask_crawlerdump_navigate_anywhere"/>
+            <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="position_and_pose" primitive_name="primitive_crawlerdump_navigate_anywhere"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
@@ -11,7 +11,7 @@
         <Action ID="LeafNodeCrawlerDump">
             <input_port name="model_name" default="ic120"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
     </TreeNodesModel>
     <!-- ////////// -->

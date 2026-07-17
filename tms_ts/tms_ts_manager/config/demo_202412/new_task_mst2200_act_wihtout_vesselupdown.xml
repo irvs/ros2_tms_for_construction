@@ -31,7 +31,7 @@
                                     <Action ID="ConditionalExpression" conditional_expression="INITIAL_POS_FLG == true and STANDBY_FLG == true"/>
                                     <Sequence>
                                         <Action ID="SetLocalBlackboard" output_key="STANDBY_FLG" value="false"/>
-                                        <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="LOAD_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                        <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="LOAD_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                         <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
                                     </Sequence>
                                     <AlwaysSuccess/>
@@ -40,20 +40,20 @@
                                     <Action ID="ConditionalExpressionBool" conditional_expression_bool="ARRIVAL_FLG == true and SENSING_ARRIVAL_FLG == true and MOVING_FLG == true and (SENSING_LOADED_FLG == true or SENSING_CHECK_MOUND_FLG ==true)"/>
                                     <Sequence>
                                         <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
-                                        <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="RELEASE_PATH_1" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                        <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="RELEASE_PATH_1" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                         <Decorator ID="KeepRunningUntilFlgup" key="TRIGER_1">
                                             <Action ID="BlackboardValueReaderMongo" mongo_param_name="TRIGER_1" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="TRIGER_1"/>
                                         </Decorator>
-                                        <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="RELEASE_PATH_2" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                        <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="RELEASE_PATH_2" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                         <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
                                         <Decorator ID="KeepRunningUntilFlgup" key="TRIGER_2">
                                             <Action ID="BlackboardValueReaderMongo" mongo_param_name="TRIGER_2" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="TRIGER_2"/>
                                         </Decorator>
-                                        <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="LOAD_PATH_1" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                        <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="LOAD_PATH_1" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                         <Decorator ID="KeepRunningUntilFlgup" key="TRIGER_3">
                                             <Action ID="BlackboardValueReaderMongo" mongo_param_name="TRIGER_3" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU" output_port="TRIGER_3"/>
                                         </Decorator>
-                                        <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="LOAD_PATH_2" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                        <Action  model_name="mst2200" ID="LeafNodeCrawlerDump" record_name="LOAD_PATH_2" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                         <Action ID="SetLocalBlackboard" output_key="STANDBY_FLG" value="true"/>
                                         <IfThenElse>
                                             <Action ID="ConditionalExpression" conditional_expression="SENSING_CHECK_MOUND_FLG  == true"/>
@@ -101,19 +101,19 @@
         <Action ID="LeafNodeCrawlerDump">
             <input_port default="ic120" name=" model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
         <Action ID="LeafNodeCrawlerDump">
             <input_port default="mst2200" name=" model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
 
 
         <Action ID="LeafNodeExcavator">
             <input_port default="zx200" name=" model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
         <Action ID="MongoValueWriter">
             <input_port name="input_value"/>

@@ -3,8 +3,8 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="release_angle_1" subtask_name="subtask_crawlerdump_release_soil"/>
-            <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="release_angle_2" subtask_name="subtask_crawlerdump_release_soil"/>
+            <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="release_angle_1" primitive_name="primitive_crawlerdump_release_soil"/>
+            <Action  model_name="mst110cr" ID="LeafNodeCrawlerDump" record_name="release_angle_2" primitive_name="primitive_crawlerdump_release_soil"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
@@ -12,12 +12,12 @@
         <Action ID="LeafNodeCrawlerDump">
             <input_port name="model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
         <Action ID="LeafNodeExcavator">
             <input_port default="zx200" name="model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
     </TreeNodesModel>
     <!-- ////////// -->

@@ -23,15 +23,15 @@
                                             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="IS_RM1_RS1" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
                                             <Sequence>
                                                 <Action ID="WaitForClick" button_info="R1_SIGNAL_POINT_待機" window_title="R1_SIGNAL_POINT_待機mst2200"/>
-                                                <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R1_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R1_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                             </Sequence>
                                             <Sequence>
                                                 <Action ID="WaitForClick" button_info="LOAD_POINT_待機" window_title="LOAD_POINT_待機mst2200"/>
-                                                <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="LOAD_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="LOAD_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                             </Sequence>
                                             <Sequence>
                                                 <Action ID="WaitForClick" button_info="SWING_ANGLE_LEFT_待機" window_title="SWING_ANGLE_LEFT_待機mst2200dv"/>
-                                                <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="SWING_ANGLE_LEFT" subtask_name="subtask_crawlerdump_swing"/>
+                                                <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="SWING_ANGLE_LEFT" primitive_name="primitive_crawlerdump_swing"/>
                                             </Sequence>
                                             <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                             <Action ID="MongoValueWriter" input_value="1" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
@@ -55,11 +55,11 @@
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="SWING_ANGLE_FRONT_待機" window_title="SWING_ANGLE_FRONT_待機mst2200dv"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="SWING_ANGLE_FRONT" subtask_name="subtask_crawlerdump_swing"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="SWING_ANGLE_FRONT" primitive_name="primitive_crawlerdump_swing"/>
                                                     </Sequence>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="R1_SIGNAL_POINT_待機" window_title="R1_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R1_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R1_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="2" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
@@ -81,7 +81,7 @@
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RM1UP" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RM1_R1_SIGNAL_POINT_待機" window_title="RM1_R1_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RM1_R1_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RM1_R1_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADAREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="IS_RM1_RS1" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
@@ -97,12 +97,12 @@
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RS1n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RS1_R1_SIGNAL_POINT_待機" window_title="RS1_R1_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS1_R1_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS1_R1_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADAREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RS1_R2_SIGNAL_POINT_待機" window_title="RS1_R2_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS1_R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS1_R2_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="IS_RM1_RS1" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
                                                     <Action ID="MongoValueWriter" input_value="3" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
@@ -122,11 +122,11 @@
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="R2UP" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="R2_SIGNAL_POINT_待機" window_title="R2_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R2_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="R2_GOAL_POINT_待機" window_title="R2_GOAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R2_GOAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R2_GOAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="BlackboardValueReaderMongo" mongo_param_name="IS_RM1_RS1" mongo_record_name="SAMPLE_BLACKBOARD_mst2200" output_port="IS_RM1_RS1"/>
                                                     <IfThenElse>
@@ -158,7 +158,7 @@
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RM2UP" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RM2_R2_SIGNAL_POINT_待機" window_title="RM2_R2_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RM2_R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RM2_R2_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="R2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="IS_RM2_RS2" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
@@ -176,12 +176,12 @@
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RS2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RS2_R2_SIGNAL_POINT_待機" window_title="RS2_R2_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS2_R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS2_R2_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="R2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RS2_R3_SIGNAL_POINT_待機" window_title="RS2_R3_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS2_R3_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS2_R3_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="IS_RM2_RS2" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
                                                     <Action ID="MongoValueWriter" input_value="5" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
@@ -198,11 +198,11 @@
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RELEASE_AREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="R3_WAY_SIGNAL_POINT_待機" window_title="R3_WAY_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R3_WAY_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R3_WAY_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="R3_RELEASE_SIGNAL_POINT_待機" window_title="R3_RELEASE_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R3_RELEASE_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R3_RELEASE_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="BlackboardValueReaderMongo" mongo_param_name="IS_RM2_RS2" mongo_record_name="SAMPLE_BLACKBOARD_mst2200" output_port="IS_RM2_RS2"/>
                                                     <IfThenElse>
@@ -230,15 +230,15 @@
                                                 <Sequence>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RELEASE_POINT_待機" window_title="RELEASE_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RELEASE_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RELEASE_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RELEASE_ANGLE_UP_待機" window_title="RELEASE_ANGLE_UP_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RELEASE_ANGLE_UP" subtask_name="subtask_crawlerdump_release_soil"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RELEASE_ANGLE_UP" primitive_name="primitive_crawlerdump_release_soil"/>
                                                     </Sequence>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RELEASE_ANGLE_DOWN_待機" window_title="RELEASE_ANGLE_DOWN_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RELEASE_ANGLE_DOWN" subtask_name="subtask_crawlerdump_release_soil"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RELEASE_ANGLE_DOWN" primitive_name="primitive_crawlerdump_release_soil"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
                                                     <Action ID="MongoValueWriter" input_value="10" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
@@ -263,11 +263,11 @@
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RELEASE_AREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="R3_RELEASE_SIGNAL_POINT_待機" window_title="R3_RELEASE_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R3_RELEASE_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R3_RELEASE_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="R3_WAY_SIGNAL_POINT_待機" window_title="R3_WAY_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R3_WAY_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R3_WAY_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="11" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
                                                 </Sequence>
@@ -288,7 +288,7 @@
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="RM2UP" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RM2_R2_SIGNAL_POINT_待機" window_title="RM2_R2_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RM2_R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RM2_R2_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="RELEASE_AREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="IS_RM2_RS2" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
@@ -304,11 +304,11 @@
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RS2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RS2_R3_SIGNAL_POINT_待機" window_title="RS2_R3_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS2_R3_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS2_R3_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RS2_R2_SIGNAL_POINT_待機" window_title="RS2_R2_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS2_R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS2_R2_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="RELEASE_AREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="IS_RM2_RS2" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
@@ -329,7 +329,7 @@
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="R2UP" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="R2_GOAL_POINT_待機" window_title="R2_GOAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R2_GOAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R2_GOAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="BlackboardValueReaderMongo" mongo_param_name="IS_RM2_RS2" mongo_record_name="SAMPLE_BLACKBOARD_mst2200" output_port="IS_RM2_RS2"/>
                                                     <IfThenElse>
@@ -348,7 +348,7 @@
                                                     </IfThenElse>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="R2_SIGNAL_POINT_待機" window_title="R2_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R2_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="13" mongo_param_name="CURRENT_LOCATION" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
                                                 </Sequence>
@@ -365,7 +365,7 @@
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="RM1UP" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RM1_R1_SIGNAL_POINT_待機" window_title="RM1_R1_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RM1_R1_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RM1_R1_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="R2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="IS_RM1_RS1" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
@@ -383,11 +383,11 @@
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="RS1n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RS1_R2_SIGNAL_POINT_待機" window_title="RS1_R2_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS1_R2_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS1_R2_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="RS1_R1_SIGNAL_POINT_待機" window_title="RS1_R1_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS1_R1_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="RS1_R1_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="R2n" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="IS_RM1_RS1" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
@@ -406,7 +406,7 @@
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="LOADAREA" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="R1_SIGNAL_POINT_待機" window_title="R1_SIGNAL_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R1_SIGNAL_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="R1_SIGNAL_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Action ID="BlackboardValueReaderMongo" mongo_param_name="IS_RM1_RS1" mongo_record_name="SAMPLE_BLACKBOARD_mst2200" output_port="IS_RM1_RS1"/>
                                                     <IfThenElse>
@@ -425,11 +425,11 @@
                                                     </IfThenElse>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="LOAD_POINT_待機" window_title="LOAD_POINT_待機mst2200"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="LOAD_POINT" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="LOAD_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                                     </Sequence>
                                                     <Sequence>
                                                         <Action ID="WaitForClick" button_info="SWING_ANGLE_LEFT_待機" window_title="SWING_ANGLE_LEFT_待機mst2200dv"/>
-                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="SWING_ANGLE_LEFT" subtask_name="subtask_crawlerdump_swing"/>
+                                                        <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" record_name="SWING_ANGLE_LEFT" primitive_name="primitive_crawlerdump_swing"/>
                                                     </Sequence>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SIPDEMO202508"/>
                                                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst2200"/>
@@ -475,19 +475,19 @@
         <Action ID="LeafNodeCrawlerDump">
             <input_port name="model_name" type="float"/>
             <input_port name="record_name" type="float"/>
-            <input_port name="subtask_name" type="float"/>
+            <input_port name="primitive_name" type="float"/>
         </Action>
         <Action ID="LeafNodeCrawlerDump">
             <inout_port name="model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
 
 
         <Action ID="LeafNodeExcavator">
             <input_port name="model_name" type="float"/>
             <input_port name="record_name" type="float"/>
-            <input_port name="subtask_name" type="float"/>
+            <input_port name="primitive_name" type="float"/>
         </Action>
         <Action ID="MongoValueWriter">
             <input_port name="input_value" type="std::string"/>

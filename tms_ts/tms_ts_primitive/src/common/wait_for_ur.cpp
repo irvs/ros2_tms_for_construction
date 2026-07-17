@@ -1,8 +1,4 @@
-#include <thread>
-#include <map>
-#include <string>
-#include <memory>
-#include <chrono>
+// Copyright 2023, IRVS Laboratory, Kyushu University, Japan.
 
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -55,16 +51,10 @@ rclcpp_action::CancelResponse WaitForUr::handle_cancel(const std::shared_ptr<Goa
     if (client_future_goal_handle_.valid() &&
         client_future_goal_handle_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
-      auto client_goal_handle = client_future_goal_handle_.get();
-      if (client_goal_handle) {
-        action_client_->async_cancel_goal(client_goal_handle);
-      }
+        auto goal_handle = client_future_goal_handle_.get();
+        action_client_->async_cancel_goal(goal_handle);
     }
-  } catch (const std::exception & e) {
-    RCLCPP_ERROR(this->get_logger(), "Exception in cancel relay: %s", e.what());
-  }
-
-  return rclcpp_action::CancelResponse::ACCEPT;
+    return rclcpp_action::CancelResponse::ACCEPT;
 }
 
 void WaitForUr::handle_accepted(const std::shared_ptr<GoalHandle> goal_handle)
@@ -90,7 +80,7 @@ void WaitForUr::execute(const std::shared_ptr<GoalHandle> goal_handle)
         }
     };
 
-  auto leaf_result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
+    RCLCPP_INFO(this->get_logger(), "Get pose from DB.");
 
     //auto goal_msg = TmsRpCrawlerDumpSwingAngle::Goal();
     //goal_msg.target_angle = parameters["target_angle"];
@@ -126,43 +116,9 @@ void WaitForUr::goal_response_callback(const GoalHandleWaitForUr::SharedPtr& goa
   {
     RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
   }
-
-  // --- DB -> Goal（キーが無いなら 0）---
-  TmsRpCrawlerDumpDumpAngle::Goal goal_msg{};
-  goal_msg.target_angle = get_or0(parameters, "target_angle");
-  goal_msg.control_type = static_cast<uint8_t>(get_or0(parameters, "control_type"));
-  goal_msg.velocity     = get_or0(parameters, "velocity");
-  goal_msg.effort       = get_or0(parameters, "effort");
-
-  rclcpp_action::Client<TmsRpCrawlerDumpDumpAngle>::SendGoalOptions opt;
-  opt.goal_response_callback =
-    [this](const GoalHandleCrawlerDumpReleaseSoil::SharedPtr & gh) { this->goal_response_callback(gh); };
-
-  // Feedback 型は ClientGoalHandle の内側じゃなく Action::Feedback
-  opt.feedback_callback =
-    [this](GoalHandleCrawlerDumpReleaseSoil::SharedPtr gh,
-           const std::shared_ptr<const TmsRpCrawlerDumpDumpAngle::Feedback> fb)
-    {
-      this->feedback_callback(gh, fb);
-    };
-
-  opt.result_callback =
-    [this, server_goal_handle](const rclcpp_action::Client<TmsRpCrawlerDumpDumpAngle>::WrappedResult & res)
-    {
-      this->result_callback(server_goal_handle, res);
-    };
-
-  RCLCPP_INFO(this->get_logger(), "Sending goal to tms_rp_set_dump_angle");
-  client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, opt);
-}
-
-void SubtaskCrawlerDumpReleaseSoil::goal_response_callback(
-  const GoalHandleCrawlerDumpReleaseSoil::SharedPtr & goal_handle)
-{
-  if (!goal_handle) {
-    RCLCPP_ERROR(this->get_logger(), "Goal was rejected by downstream server");
-  } else {
-    RCLCPP_INFO(this->get_logger(), "Goal accepted by downstream server, waiting for result");
+  else
+  {
+    RCLCPP_INFO(this->get_logger(), "Goal accepted by server, waiting for result");
   }
 }
 
@@ -171,7 +127,8 @@ void WaitForUr::feedback_callback(
     const GoalHandleWaitForUr::SharedPtr,
     const std::shared_ptr<const GoalHandleWaitForUr::Feedback> feedback)
 {
-  // 今は何もしない（必要なら LeafNodeBase の feedback へ変換して publish）
+  // TODO: Fix to feedback to leaf node
+  // RCLCPP_INFO(get_logger(), "Distance remaininf = %f", feedback->distance_remaining);
 }
 
 
@@ -179,41 +136,39 @@ void WaitForUr::feedback_callback(
 void WaitForUr::result_callback(const std::shared_ptr<GoalHandle> goal_handle,
                                              const GoalHandleWaitForUr::WrappedResult& result)
 {
-  if (!server_goal_handle->is_active()) {
-    RCLCPP_WARN(this->get_logger(), "Attempted to finish an inactive server goal");
+  if (!goal_handle->is_active())
+  {
+    RCLCPP_WARN(this->get_logger(), "Attempted to succeed an already succeeded goal");
     return;
   }
 
   auto result_to_leaf = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
-
-  switch (result.code) {
+  switch (result.code)
+  {
     case rclcpp_action::ResultCode::SUCCEEDED:
       result_to_leaf->result = true;
       goal_handle->succeed(result_to_leaf);
       RCLCPP_INFO(this->get_logger(), "Primitive execution is succeeded");
       break;
-
     case rclcpp_action::ResultCode::ABORTED:
       result_to_leaf->result = false;
       goal_handle->abort(result_to_leaf);
       RCLCPP_INFO(this->get_logger(), "Primitive execution is aborted");
       break;
-
     case rclcpp_action::ResultCode::CANCELED:
       result_to_leaf->result = false;
       goal_handle->canceled(result_to_leaf);
       RCLCPP_INFO(this->get_logger(), "Primitive execution is canceled");
       break;
-
     default:
       result_to_leaf->result = false;
-      server_goal_handle->abort(result_to_leaf);
+      goal_handle->abort(result_to_leaf);
       RCLCPP_INFO(this->get_logger(), "Unknown result code");
       break;
   }
 }
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
     // Initialize Google's logging library.
     //   google::InitGoogleLogging(argv[0]);

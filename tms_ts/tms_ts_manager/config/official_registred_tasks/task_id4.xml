@@ -4,9 +4,9 @@
     <BehaviorTree ID="MainTree">
         <Repeat num_cycles="2">
             <Sequence name="root_sequence">
-                <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="LOAD_PATH" subtask_name="subtask_crawlerdump_follow_waypoints"/>
-                <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="RELEASE_PATH" subtask_name="subtask_crawlerdump_follow_waypoints"/>
-                <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="LOAD_PATH_L" subtask_name="subtask_crawlerdump_follow_waypoints"/>
+                <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="LOAD_PATH" primitive_name="primitive_crawlerdump_follow_waypoints"/>
+                <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="RELEASE_PATH" primitive_name="primitive_crawlerdump_follow_waypoints"/>
+                <Action  model_name="ic120" ID="LeafNodeCrawlerDump" record_name="LOAD_PATH_L" primitive_name="primitive_crawlerdump_follow_waypoints"/>
             </Sequence>
         </Repeat>
     </BehaviorTree>
@@ -15,7 +15,7 @@
         <Action ID="LeafNodeCrawlerDump">
             <input_port name="model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
     </TreeNodesModel>
     <!-- ////////// -->
