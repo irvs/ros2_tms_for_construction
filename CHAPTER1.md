@@ -50,7 +50,7 @@ The following GUI button will then be activated.
 
 ![](docs/gui_button.png)
 
-When this green button is pressed, the corresponding task is read from the mongodb and the Behavior Tree executes subtasks based on the corresponding task sequence.
+When this green button is pressed, the corresponding task is read from the mongodb and the Behavior Tree executes primitives based on the corresponding task sequence.
 The task to be executed at this time is the task data in the task collection of rostmsdb in mongodb. The number displayed to the right of the "task_id:" button is the task_id of the task data to be executed by task schedular. The summary of current task data stored in the DB is as presented in chapter 2.
 
 **Also, the red button is for emergency stop. Press this button if you want to stop the Task Scheduler in an emergency when it is executing a task.**

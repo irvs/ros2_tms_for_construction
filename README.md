@@ -115,11 +115,11 @@ ROS2-TMS-FOR-CONSTRUCTION consists of the following packages. The details of eac
   tms_ts_launch_ts is a  package for specifying and executing tasks to run the actual construction machinery.
   
 
-- [tms_ts_subtask](tms_ts/tms_ts_subtask/)
+- [tms_ts_primitive](tms_ts/tms_ts_primitive/)
 
-  tms_ts_subtask is a package included in subtasks.
+  tms_ts_primitive is a package included in primitives.
   
-  If you want to implement new subtasks, please refer programs in the tms_ts_subtask directory.
+  If you want to implement new primitives, please refer programs in the tms_ts_primitive directory.
 
 - [tms_ts_manager](tms_ts/tms_ts_manager/)
 

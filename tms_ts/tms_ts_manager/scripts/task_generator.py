@@ -36,11 +36,11 @@ class TaskGenerator(Node):
         db = client['rostmsdb']
         self.collection = db['task']
 
-        tms_ts_subtask_package_directory = get_package_share_directory(package_name)
+        tms_ts_manager_package_directory = get_package_share_directory(package_name)
         self.task_info = {"task_id": None, "type": None, "model_name": None, "description": None, "task_sequence": None}
 
         self.declare_parameter('bt_tree_xml_file_name', 'sample_construction_tree')
-        self.declare_parameter("output_text_file_directory_path", tms_ts_subtask_package_directory + '/config')
+        self.declare_parameter("output_text_file_directory_path", tms_ts_manager_package_directory + '/config')
         self.declare_parameter("output_file_name", 'task_sequence')
         self.declare_parameter("output_txt_file", False)
 
@@ -56,7 +56,7 @@ class TaskGenerator(Node):
         self.unique_task_sequence = True
 
         self.output_file_path = output_text_file_directory + "/" + output_file_name + '.txt'
-        self.xml_file_path = tms_ts_subtask_package_directory + '/config/' + self.xml_file_name + '.xml'
+        self.xml_file_path = tms_ts_manager_package_directory + '/config/' + self.xml_file_name + '.xml'
         self.get_logger().info(f"xml_file_path: {self.xml_file_path}")
 
         self.format_task_sequnece()

@@ -2,9 +2,9 @@
 
 This chapter describes how to add new tasks to the database.
 
-1. First, generate a new task sequence using Groot. When using Groot to generate a task sequence, it is necessary to register subtasks. Load the following file to make each subtask configurable.
+1. First, generate a new task sequence using Groot. When using Groot to generate a task sequence, it is necessary to register primitives. Load the following file to make each primitive configurable.
 ![](docs/procedure_setting_groot_1.png)
-Then the subtasks will appear in the node list section of Groot as shown in the following image.
+Then the primitives will appear in the node list section of Groot as shown in the following image.
 ![](docs/groot_4.png)
 Combining these nodes, we can create a task tree as shown below.
 ![](docs/groot_5.png)
