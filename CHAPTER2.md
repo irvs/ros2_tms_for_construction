@@ -32,59 +32,116 @@ The summary of the task data currently stored in the database is as follows:
 Additionally, to successfully execute the tasks in the table above, it is necessary to pre-launch the ROS2 packages for zx200 and ic120 prepared on the OPERA. Because the packages to launch differ for cases involving the operation of zx200 and ic120, the procedures are explained separately below.
 
 
-#### Packages for operating OPERA-compatible ZX200 on the OperaSim-PhysX using MoveIt! (task_id: 1, 2, 5)
+#### Packages for operating OPERA-compatible IC120 on the OperaSim-PhysX using Nav2! and MoveIt! (task_id: )
 
-Please open terminals and execute the following commands separately.
 
+#### Step1 
+Launch the ROS-TCP-Endpoint and start communication between Unity and ROS 2.
 ```
 # Open the 1st terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch ros_tcp_endpoint endpoint.py
 ```
+***
+***
+
+#### Step2
+Select and start the appropriate planner for the construction equipment's autonomous operation, as required. Enter it into another terminal.
+
+***
+**related for excavator(zx200)**
+
+**zx200(MoveIt!)** - Perform manipulation of the zx200, swing boom, arm and bucket.
 ```
-# Open the 2nd terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch zx200_bringup vehicle.launch.py command_interface_name:=velocity use_rviz:=true
 ```
+**zx200(Nav2)** - Execute navigation for the zx200
 ```
-# Open the 3rd terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
-ros2 launch tms_if_for_opera tms_if_for_opera.launch.py
+ros2 launch zx200_bringup remote_navigation.launch.py
 ```
 
-```
-# Open the 4th terminal
-cd ~/ros2-tms-for-construction_ws && source install/setup.bash
-ros2 launch tms_ts_launch tms_ts_construction.launch.py task_id:=<task_id>
-```
+***
+**related for crawler dump truck(ic120)**
 
-#### Packages for operating OPERA-compatible IC120 on the OperaSim-PhysX using Nav2! (task_id: 3, 4, 5) 
-
-Please open terminals and execute the following commands separately.
-
+**ic120(Nav2)** - Execute navigation for the ic120
 ```
-# Open the 1st terminal
-cd ~/ros2-tms-for-construction_ws && source install/setup.bash
-ros2 launch ros_tcp_endpoint endpoint.py
-```
-
-```
-# Open the 2nd terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch ic120_unity ic120_standby_ekf.launch.py
 ```
 
+***
+**related for crawler dump truck(mst110cr)**
+
+**mst110cr(Nav2)** - Execute navigation for the mst110cr
+```
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch mst110cr_unity mst110cr_standby_ekf.launch.py robot_name:=<machine name> 
+```
+
+
+**mst110cr(swing and vessel angle for OperaSim)** - Perform manipulation of the mst110cr, swing and vessel. **Not for real machine.**
+
+```
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch opera_tools opera_tools_crawlerdump.launch.py robot_name:=<machine name> 
+```
+***
+**related for blldozer(d37pxi)**
+
+**d37pxi(Nav2)** - Execute navigation for the d37pxi
+```
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch d37pxi_unity d37pxi_standby_ekf.launch.py robot_name:=<machine name>
+```
+
+**d37pxi(blade angle for OperaSim)** - Perform manipulation of the d37pxi blade. **Not for real machine.**
+```
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch opera_tools opera_tools_bulldozer.launch.py 
+robot_name:=<machine name> 
+```
+
+***
+***
+
+#### Step3
+Establish a connection between ROS2-TMS for Construction and OPERA
 ```
 # Open the 3rd terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch tms_if_for_opera tms_if_for_opera.launch.py
 ```
+***
+To start a node for each construction machine, run the following command on each machine.
+```
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch tms_if_for_opera tms_if_for_opera_excavator.launch.py robot_name:=<machine name>
+```
+```
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch tms_if_for_opera tms_if_for_opera_crawlerdump.launch.py robot_name:=<machine name>
+```
+```
+cd ~/ros2-tms-for-construction_ws && source install/setup.bash
+ros2 launch tms_if_for_opera tms_if_for_opera_bulldozer.launch.py robot_name:=<machine name>
+```
 
+***
+***
+
+#### Step4
+Launch the construction equipment operation task and start autonomous operation.
 ```
 # Open the 4th terminal
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
 ros2 launch tms_ts_launch tms_ts_construction.launch.py task_id:=<task_id>
 ```
+----
+----
+
+
 
 
 Of course, you can also use Groot to monitor the tasks being performed by the Behavior Tree while the Task Scheduler is running, as shown in the following video.
