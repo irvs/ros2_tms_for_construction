@@ -124,7 +124,9 @@ mkdir -p \
   "$WS_SRC/opera/common" \
   "$WS_SRC/opera/simulator" \
   "$WS_SRC/opera/zx200" \
-  "$WS_SRC/opera/ic120"
+  "$WS_SRC/opera/ic120" \
+  "$WS_SRC/opera/mst110cr" \
+  "$WS_SRC/opera/opera_tools"
 
 # Install tms_if_for_opera
 git clone https://github.com/pwri-opera/com3_ros.git "$WS_SRC/opera/common/com3_ros"
@@ -140,6 +142,12 @@ git clone https://github.com/pwri-opera/zx200_ros2.git \
 # Install packages for OPERA-compatible crawler dump IC120
 git clone https://github.com/pwri-opera/ic120_ros2.git "$WS_SRC/opera/ic120/ic120_ros2"
 git clone https://github.com/pwri-opera/gnss_localizer_ros2.git "$WS_SRC/opera/common/gnss_localizer_ros2"
+
+# Install packages for OPERA-compatible crawler dump MST110CR
+git clone https://github.com/pwri-opera/mst110cr_ros2.git "$WS_SRC/opera/mst110cr/mst110cr_ros2"
+
+# Install packages for opera_tools
+git clone https://github.com/pwri-opera/opera_tools.git "$WS_SRC/opera/opera_tools"
 
 # Setup Moveit! and Nav2
 # install MoveIt!
