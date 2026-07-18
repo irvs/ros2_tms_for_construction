@@ -1,7 +1,7 @@
 launch:
   - arg:
       name: task_id
-      default: "4"
+      default: "1"
       description: "Task ID executed by tms_ur_button when the green button is pressed"
   - arg:
       name: command_interface_name
