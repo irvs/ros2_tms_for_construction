@@ -5,7 +5,7 @@
         <KeepRunningUntilFailure>
             <ForceSuccess>
                 <Sequence>
-                    <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="target_level_pose" subtask_name="subtask_excavator_level"/>
+                    <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="target_level_pose" primitive_name="primitive_excavator_level"/>
                 </Sequence>
             </ForceSuccess>
         </KeepRunningUntilFailure>
@@ -29,17 +29,17 @@
         <Action ID="LeafNodeBulldozer">
             <input_port default="d37pxi" name=" model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
         <Action ID="LeafNodeCrawlerdump">
             <input_port name=" model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
         <Action ID="LeafNodeExcavator">
             <input_port default="zx200" name=" model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
         <Action ID="MongoValueWriter">
             <input_port name="input_value"/>

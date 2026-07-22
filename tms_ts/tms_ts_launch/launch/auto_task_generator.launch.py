@@ -18,7 +18,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
-    tms_ts_subtask_package_dir = get_package_share_directory('tms_ts_subtask')
+    tms_ts_primitive_package_dir = get_package_share_directory('tms_ts_primitive')
 
     return LaunchDescription([
 
@@ -28,8 +28,8 @@ def generate_launch_description():
             name="task_generator_from_task_sequence",
             output='screen',
             parameters=[{
-                'bt_tree_xml_file_name':'sample_construction_tree_zx120_zx200', # You must put the source xml file in tms_ts/tms_ts_subtask/config.
-                "output_text_file_directory_path": tms_ts_subtask_package_dir + '/config',
+                'bt_tree_xml_file_name':'sample_construction_tree_zx120_zx200', # You must put the source xml file in tms_ts/tms_ts_primitive/config.
+                "output_text_file_directory_path": tms_ts_primitive_package_dir + '/config',
                 "output_file_name":'task_sequence',
                 'output_txt_file':False,
                 'model_name':'zx120, zx200', # You must define construction machinery model name(zx120, zx200, ic120).

@@ -28,7 +28,7 @@
                                     <Action ID="ConditionalExpression" conditional_expression="INITIAL_POS_FLG == true and STANDBY_FLG == true"/>
                                     <Sequence>
                                         <Action ID="SetLocalBlackboard" output_key="STANDBY_FLG" value="false"/>
-                                        <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="SIM_LOAD_POINT" subtask_name="st_ic120_follow_waypoints"/>
+                                        <Action ID="LeafNodeCrawlerDump" model_name="ic120" record_name="SIM_LOAD_POINT" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                         <Action ID="MongoValueWriter" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
                                     </Sequence>
                                     <AlwaysSuccess/>
@@ -37,9 +37,9 @@
                                     <Action ID="ConditionalExpressionBool" conditional_expression_bool="ARRIVAL_FLG == true and SENSING_ARRIVAL_FLG == true and MOVING_FLG == true and (SENSING_LOADED_FLG == true or SENSING_CHECK_MOUND_FLG ==true)"/>
                                     <Sequence>
                                         <Action ID="MongoValueWriter" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
-                                        <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="SIM_RELEASE_PATH" subtask_name="st_ic120_follow_waypoints"/>
+                                        <Action ID="LeafNodeCrawlerDump" model_name="ic120" record_name="SIM_RELEASE_PATH" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                         <Action ID="MongoValueWriter" input_value="false" mongo_param_name="SENSING_LOADED_FLG" mongo_record_name="SAMPLE_BLACKBOARD_SHIMIZU"/>
-                                        <Action ID="LeafNodeIc120" model_name="ic120" name="leaf_node_ic120" record_name="SIM_LOAD_PATH" subtask_name="st_ic120_follow_waypoints"/>
+                                        <Action ID="LeafNodeCrawlerDump" model_name="ic120" record_name="SIM_LOAD_PATH" primitive_name="primitive_crawlerdump_follow_waypoints"/>
                                         <Action ID="SetLocalBlackboard" output_key="STANDBY_FLG" value="true"/>
                                         <IfThenElse>
                                             <Action ID="ConditionalExpression" conditional_expression="SENSING_CHECK_MOUND_FLG  == true"/>
@@ -84,25 +84,17 @@
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>
         </Decorator>
-        <Action ID="LeafNodeIc120">
+        <Action ID="LeafNodeCrawlerDump">
             <input_port default="ic120" name=" model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
-        <Action ID="LeafNodeSampleZx120">
-            <input_port default="zx120" name=" model_name"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeSampleZx200">
-            <input_port default="zx200" name=" model_name"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeZx200">
+
+
+        <Action ID="LeafNodeExcavator">
             <input_port name="model_name" type="float"/>
             <input_port name="record_name" type="float"/>
-            <input_port name="subtask_name" type="float"/>
+            <input_port name="primitive_name" type="float"/>
         </Action>
         <Action ID="MongoValueWriter">
             <input_port name="input_value" type="std::string"/>

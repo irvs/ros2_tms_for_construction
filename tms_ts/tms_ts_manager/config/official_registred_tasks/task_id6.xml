@@ -3,30 +3,15 @@
     <!-- ////////// -->
     <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-            <Action  model_name="ic120" ID="LeafNodeIc120" record_name="position_and_pose" subtask_name="st_ic120_navigate_anywhere"/>
+            <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="SIM_SAMPLE_WAYPOINTS_1" primitive_name="primitive_excavator_follow_waypoints"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="LeafNodeSampleZx120">
-            <input_port name=" model_name" default="zx120"/>
+        <Action ID="LeafNodeExcavator">
+            <input_port default="zx200" name="model_name"/>
             <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeSampleZx200">
-            <input_port name=" model_name" default="zx200"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeIc120">
-            <input_port name=" model_name" default="ic120"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
-        </Action>
-        <Action ID="LeafNodeZx200">
-            <input_port name=" model_name" default="zx200"/>
-            <inout_port name="record_name"/>
-            <inout_port name="subtask_name"/>
+            <inout_port name="primitive_name"/>
         </Action>
     </TreeNodesModel>
     <!-- ////////// -->

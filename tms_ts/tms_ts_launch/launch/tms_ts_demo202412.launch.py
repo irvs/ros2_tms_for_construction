@@ -41,18 +41,18 @@ def generate_launch_description():
                   output='screen'),
             
             
-            # subtasks
+            # primitives
             Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_excavator_change_pose',
+                  package='tms_ts_primitive', 
+                  executable='primitive_excavator_change_pose',
                   output='screen'),
             Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_excavator_excavate_simple',
+                  package='tms_ts_primitive', 
+                  executable='primitive_excavator_excavate_simple',
                   output='screen'),
             Node(
-                  package='tms_ts_subtask', 
-                  executable='subtask_excavator_release_simple',
+                  package='tms_ts_primitive', 
+                  executable='primitive_excavator_release_simple',
                   output='screen'),
             
             

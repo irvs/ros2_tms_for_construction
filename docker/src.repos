@@ -1,0 +1,33 @@
+# External ROS 2 packages fetched by vcstool inside the Docker image.
+# Pinned to full 40-character commit SHAs for reproducibility. Comments record
+# the branch name and date at the time of pinning so the intent is recoverable
+# when refreshing these pins later.
+repositories:
+  Groot:
+    type: git
+    url: https://github.com/BehaviorTree/Groot.git
+    version: 70973d004365f16d47a8c7bd9c5d84fa0bb9d05d  # master @ 2025-02-28
+  tms_if_for_opera:
+    type: git
+    url: https://github.com/irvs/tms_if_for_opera.git
+    version: 45bb2ff559eaca6d1e2fcc45f8f9200593451193  # main @ 2026-04-28 (merge of #14: package.xml <depend> fix)
+  opera/common/com3_ros:
+    type: git
+    url: https://github.com/pwri-opera/com3_ros.git
+    version: 2b78c3016649f9b1aea902d6d6a82eeec941eb91  # main @ 2025-07-09
+  opera/common/gnss_localizer_ros2:
+    type: git
+    url: https://github.com/pwri-opera/gnss_localizer_ros2.git
+    version: 7ea044d7254d85c936cbb64b2e73a71330fea6d9  # main @ 2025-07-25
+  opera/simulator/ROS-TCP-Endpoint:
+    type: git
+    url: https://github.com/Unity-Technologies/ROS-TCP-Endpoint.git
+    version: 54c1a64b6d5ef6ffa0a0431570bb74329b79b15b  # main-ros2 @ 2022-02-01 (Release 0.7.0 ROS2)
+  opera/zx200/zx200_ros2:
+    type: git
+    url: https://github.com/pwri-opera/zx200_ros2.git
+    version: d8c8453850708327d99fccf81c0c16bb4ae90c2e  # main @ 2026-04-17
+  opera/ic120/ic120_ros2:
+    type: git
+    url: https://github.com/pwri-opera/ic120_ros2.git
+    version: e58663ec8b7121358a0fd76d0c8a80180e193eb6  # main @ 2025-05-09

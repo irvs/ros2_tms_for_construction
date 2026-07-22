@@ -1,104 +1,27 @@
-### 4. Try running the task schedular
-
-In this chapter, we will explain how to use the task scheduler.
-To successfully run the task scheduler, mongodb must be started by executing the following command.
-
-```
-sudo systemctl start mongod
-``` 
-
- Before running the task scheduler, make sure that the task collection and the parameter collection are placed under rostmsdb database in MongoDB. Database verification can be done using mongodb compass. The confirmation procedure is as follows.
-1. Start MongoDB Compass. The following screen will appear.
- ![](docs/procedure_setting_mongodb_1.png)
-
-2. Confirm that the URI is entered as "mongodb://localhost:27017/" and press the "Connect" button. You will then see the following screen.
-![](docs/procedure_setting_mongodb_2.png)
-
- 3. Click on the "rostmsdb" button in the above screen, and if the screen looks like the following, the database setup is complete.
-![](docs/procedure_setting_mongodb_3.png)
-
- If the database or collections does not exist, please execute the following command to add the database
-
-```
-sudo systemctl start mongod
-cd ~/ros2-tms-for-construction_ws/src/ros2_tms_for_construction/demo
-unzip rostmsdb_collections.zip
-mongorestore dump
-```
-
-
-Once you have verified that MongoDB looks like the image above, execute the following command.
-
-```
-cd ~/ros2-tms-for-construction_ws
-source install/setup.bash
-ros2 launch tms_ts_launch tms_ts_construction.launch.py
-```
-
-If you want to run a different task and specify it from the command line, you can specify it like this:
-```
-ros2 launch tms_ts_launch tms_ts_construction.launch.py task_id:=<task_id>
-```
-
-
-The following GUI button will then be activated.
-
-![](docs/gui_button.png)
-
-When this green button is pressed, the corresponding task is read from the mongodb and the Behavior Tree executes subtasks based on the corresponding task sequence.
-The task to be executed at this time is the task data in the task collection of rostmsdb in mongodb. The number displayed to the right of the "task_id:" button is the task_id of the task data to be executed by task schedular. The summary of current task data stored in the DB is as presented in section 5.
-
-**Also, the red button is for emergency stop. Press this button if you want to stop the Task Scheduler in an emergency when it is executing a task.**
-
-
-Before you start executing tasks by pressing the GUI button described above, please execute the following command to launch Groot. Groot is a tool that functions both as an editor for creating sequences of tasks and as a monitor for observing the execution state of the task sequences being run by the Behavior Tree. In this section, we will introduce the monitoring functionality of Groot.
-
-```
-cd ~/ros2-tms-for-construction_ws
-./build/groot/Groot
-```
-After executing the above command, if Groot can be successfully started, the following screen will be appeared.
-
-![](docs/groot_2.png)
-
-In the above image, "Editor" is used to generate task sequence. On the other hand, "Monitor" is used to visualize the status of running tasks.
-
-In this section, we will show you how to visualize the status of running tasks using the "monitor" function.
-
-First, click on the "monitor" button of the previous screen to output the following screen.
-
-After opening the screen, check that the parameter settings on this screen are as follows
-
-
-> The settings for use should be as follows.
-> 
-> ・ Sensing IP : localhost
-> 
-> ・ Publisher Port : 1666 
-> 
-> ・ Sever Port : 1667
-
-After setting each parameter, click the "connect" button to see how the task is running in the behavior tree, as shown in the image below.
-
-![](docs/groot.png)
+### 4. How to update parameters in mongodb based on topics from sensing pc
 
 > **Note**
-> 
-> The ability to visualize tasks being executed by Groot cannot be performed unless the task is being executed by the behavior tree. 
->　So, if you want to visualize the  task sequence on Groot, you have to follow  the step below.
->
->  ![](docs/groot_7.png)
->
->  If you click the above button in Groot without the behavior tree running, the following error will occur.
->  
->  ![](docs/groot_8.png)
+> The pc running cps and the sensing pc must be on the same network and they must be aligned if ROS_DOMAIN_ID is set.
+> For more information for ROS_DOMAIN_ID, please refer to the official ROS documentation ( https://docs.ros.org/en/humble/Concepts/Intermediate/About-Domain-ID.html ).
 
-If you want to change the task to be executed, update the following parameter in ros2_tms_for_construction/tms_ts/tms_ts_launch/launch/tms_ts_construction.launch.py to the task_id value of the task you want to execute, and then execute the following.
+1. Place the .msg file directly under the ros2-tms-for-construction_ws/tms_ts/sensing_msgs/msg directory. This .msg file represents the type of data to be stored from the sensing pc to the parameter collection in mongodb via ros2 topic.
+2. After storing the .msg file in place, execute the following command.
+  ```
+  cd ~/ros2-tms-for-construction_ws
+  colcon build --packages-select sensing_msgs tms_sp_sensing && source install/setup.bash
+  ros2 run tms_sp_sensing sample
+  ```
+3. From then on, processing will be performed on a different ubuntu pc for sensing processing than the pc running ros2-tms-for-construction. These personal computers must be located on the same network. In this description, the sensing pc is assumed to be running Ubuntu 22.04 lts with ROS2 Humble on it.
+4. Once the sensing pc is ready, open a terminal and execute the following command.
+  ```
+  cd 
+  mkdir -p sensing_ws/src
+  cd sensing_ws/src
+  git clone -b master https://github.com/kasahara-san/sensing_sample_cps.git
+  cd ..
+  colcon build --packages-select sample_sensing_nodes sensing_msgs && source install/setup.bash
+  ros2 run sample_sensing_nodes sample_publisher
+  ```
+5. Then you can see that the following parameter on parameter collection in mongodb change dynamically using mongodb compass. Note that when using mongodb compass to check parameter values, you must press the refresh button shown in the following image each time to reflect the latest values of the parameters on mongodb.
 
-```
-cd ~/ros2-tms-for-construction_ws
-colcon build --packages-select tms_ts_launch && source install/setup.bash
-```
-
-![](docs/tms_ts_launch_1.png)
-
+![](docs/dynamic_parameter.png)

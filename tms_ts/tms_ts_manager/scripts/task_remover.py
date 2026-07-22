@@ -17,11 +17,9 @@
 import rclpy
 from rclpy.node import Node
 import pymongo
-from ament_index_python.packages import get_package_share_directory
 import xml.etree.ElementTree as ET
 import re
 
-package_name = 'tms_ts_subtask'
 
 MONGODB_IPADDRESS = '127.0.0.1'
 MONGODB_PORTNUMBER = 27017
