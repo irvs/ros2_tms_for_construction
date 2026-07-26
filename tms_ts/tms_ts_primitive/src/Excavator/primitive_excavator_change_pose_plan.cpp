@@ -997,8 +997,60 @@ bool PrimitiveExcavatorChangePosePlan::parse_constraints(TmsRpExcavator::Goal& g
 
         if (jc_doc["joint_name"])
           joint_constraint.joint_name = jc_doc["joint_name"].get_string().value.to_string();
-        if (jc_doc["position"])
-          joint_constraint.position = get_numeric_value(jc_doc["position"]);
+        if (jc_doc["position"]) {
+          // positionが999.0の場合はprevious_poseまたはcurrent_joint_states_を基準に制約を設定する
+          double pos_val = get_numeric_value(jc_doc["position"]);
+          if (std::abs(pos_val - 999.0) < 1e-6) {
+
+            if (!goal_msg.previous_pose.empty()) {
+              // Try previous_pose
+              const auto& traj = goal_msg.previous_pose.back().joint_trajectory;
+              if (!traj.joint_names.empty() && !traj.points.empty()) {
+                const auto& last_pt = traj.points.back();
+                auto it = std::find(traj.joint_names.begin(), traj.joint_names.end(), joint_constraint.joint_name);
+                if (it != traj.joint_names.end()) {
+                  size_t index = std::distance(traj.joint_names.begin(), it);
+                  if (index < last_pt.positions.size()) {
+                    joint_constraint.position = last_pt.positions[index];
+                    RCLCPP_INFO(this->get_logger(), "Set joint '%s' position to previous_pose value: %f",
+                                joint_constraint.joint_name.c_str(), joint_constraint.position);
+                  } else {
+                    RCLCPP_WARN(this->get_logger(), "Joint '%s' found in previous_pose but positions size mismatch",
+                                joint_constraint.joint_name.c_str());
+                    return true;
+                  }
+                } else {
+                  RCLCPP_WARN(this->get_logger(), "Joint '%s' not found in previous_pose",
+                              joint_constraint.joint_name.c_str());
+                  return true;
+                }
+              } else {
+                RCLCPP_WARN(this->get_logger(), "previous_pose exists but is empty");
+                return true;
+              }
+            } else {
+              // Try current_joint_states
+              auto it = std::find(current_joint_states_.name.begin(), current_joint_states_.name.end(), joint_constraint.joint_name);
+              if (it != current_joint_states_.name.end()) {
+                size_t index = std::distance(current_joint_states_.name.begin(), it);
+                if (index < current_joint_states_.position.size()) {
+                  joint_constraint.position = current_joint_states_.position[index];
+                  RCLCPP_INFO(this->get_logger(), "Set joint '%s' position to current value: %f",
+                              joint_constraint.joint_name.c_str(), joint_constraint.position);
+                } else {
+                  RCLCPP_WARN(this->get_logger(), "Joint '%s' found in current_joint_states_ but positions size mismatch",
+                              joint_constraint.joint_name.c_str());
+                }
+              } else {
+                RCLCPP_WARN(this->get_logger(), "Joint '%s' not found in current_joint_states_",
+                            joint_constraint.joint_name.c_str());
+              }
+            }
+          } else {
+            RCLCPP_INFO(this->get_logger(), "Retrieved joint position from DB: %f", pos_val);
+            joint_constraint.position = pos_val;
+          }
+        }
         if (jc_doc["tolerance_above"])
           joint_constraint.tolerance_above = get_numeric_value(jc_doc["tolerance_above"]);
         if (jc_doc["tolerance_below"])
