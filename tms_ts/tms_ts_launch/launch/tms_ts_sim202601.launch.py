@@ -291,41 +291,6 @@ def launch_setup(context, *args, **kwargs):
       #         output='screen',
       #         namespace='ic120_2'),
         
-        # zx120用
-      #   Node(
-      #         package='tms_ts_primitive', 
-      #         executable='zx120_sample_boom_primitive',
-      #         output='screen'),
-      #   Node(
-      #         package='tms_ts_primitive', 
-      #         executable='zx120_sample_swing_primitive',
-      #         output='screen'),
-      #   Node(
-      #         package='tms_ts_primitive', 
-      #         executable='zx120_sample_arm_primitive',
-      #         output='screen'),
-      #   Node(
-      #         package='tms_ts_primitive', 
-      #         executable='zx120_sample_bucket_primitive',
-      #         output='screen'),
-        
-        # zx200用
-        # Node(
-        #       package='tms_ts_primitive', 
-        #       executable='zx200_sample_boom_primitive',
-        #       output='screen'),
-        # Node(
-        #       package='tms_ts_primitive', 
-        #       executable='zx200_sample_swing_primitive',
-        #       output='screen'),
-        # Node(
-        #       package='tms_ts_primitive', 
-        #       executable='zx200_sample_arm_primitive',
-        #       output='screen'),
-        # Node(
-        #       package='tms_ts_primitive', 
-        #       executable='zx200_sample_bucket_primitive',
-        #       output='screen'),
 
         # mst2200用
       #   Node(
@@ -424,32 +389,32 @@ def launch_setup(context, *args, **kwargs):
               package='tms_ts_primitive', 
               executable='primitive_crawlerdump_follow_waypoints',
               output='screen',
-              namespace='mst2200vd'),
+              namespace='mst2200vdr'),
         Node(
               package='tms_ts_primitive', 
               executable='primitive_crawlerdump_navigate_anywhere',
               output='screen',
-              namespace='mst2200vd'),
+              namespace='mst2200vdr'),
         Node(
               package='tms_ts_primitive', 
               executable='primitive_crawlerdump_navigate_through_poses',
               output='screen',
-              namespace='mst2200vd'),
+              namespace='mst2200vdr'),
         Node(
               package='tms_ts_primitive', 
               executable='primitive_crawlerdump_release_soil',
               output='screen',
-              namespace='mst2200vd'),
+              namespace='mst2200vdr'),
         Node(
               package='tms_ts_primitive', 
               executable='primitive_crawlerdump_swing_align_to_heading',
               output='screen',
-              namespace='mst2200vd'),   
+              namespace='mst2200vdr'),   
         Node(
               package='tms_ts_primitive', 
               executable='primitive_crawlerdump_swing',
               output='screen',
-              namespace='mst2200vd'),
+              namespace='mst2200vdr'),
       #D37PXI
         Node(
               package='tms_ts_primitive', 
