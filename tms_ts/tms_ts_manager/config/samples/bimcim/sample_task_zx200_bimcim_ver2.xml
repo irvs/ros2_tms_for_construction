@@ -10,7 +10,7 @@
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="LOADED_FLG" mongo_record_name="global_blackboard"/>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="DUMP_LAUNCHED_FLG" mongo_record_name="global_blackboard"/>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="FINISH_FLG" mongo_record_name="global_blackboard"/>
-            <Action ID="BlackboardValueReaderMongo" mongo_param_name="num" mongo_record_name="total_num_of_dig_location" output_port="num"/>
+            <Action ID="MongoValueReader" mongo_param_name="num" mongo_record_name="total_num_of_dig_location" output_port="num"/>
             <Action ID="SetLocalBlackboard" output_key="number_of_dig_cycle_n" value="number_of_dig_cycle_1"/>
             <Action ID="SetLocalBlackboard" output_key="initial_position_n" value="initial_position_1"/>
             <Action ID="SetLocalBlackboard" output_key="initial_pose_n" value="initial_pose_1"/>
@@ -30,7 +30,7 @@
                     <Action ID="SetLocalBlackboardWithCounter" counter_key="N" key="number_of_dig_cycle_n"/>
                     <Action ID="SetLocalBlackboardWithCounter" counter_key="N" key="initial_position_n"/>
                     <Action ID="SetLocalBlackboardWithCounter" counter_key="N" key="initial_pose_n"/>
-                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="dig_cycle" mongo_record_name="{number_of_dig_cycle_n}" output_port="dig_cycle"/>
+                    <Action ID="MongoValueReader" mongo_param_name="dig_cycle" mongo_record_name="{number_of_dig_cycle_n}" output_port="dig_cycle"/>
                     <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="{initial_position_n}" primitive_name="primitive_excavator_follow_waypoints"/>
                     <Action  model_name="zx200" ID="LeafNodeExcavator" record_name="{initial_pose_n}" primitive_name="primitive_excavator_change_pose"/>
                     <Action ID="MongoValueWriter" input_value="true" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="global_blackboard"/>
@@ -39,12 +39,12 @@
                     <Action ID="MongoValueWriter" input_value="false" mongo_param_name="MOVING_FLG" mongo_record_name="global_blackboard"/>
                     <Decorator ID="KeepRunningUntilFlgup" key="counter_flg_2">
                         <Sequence>
-                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="TURN_FINISHED_FLG" mongo_record_name="global_blackboard" output_port="TURN_FINISHED_FLG"/>
-                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="global_blackboard" output_port="INITIAL_POS_FLG"/>
-                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="ARRIVAL_FLG" mongo_record_name="global_blackboard" output_port="ARRIVAL_FLG"/>
-                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="LOADED_FLG" mongo_record_name="global_blackboard" output_port="LOADED_FLG"/>
-                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="DUMP_LAUNCHED_FLG" mongo_record_name="global_blackboard" output_port="DUMP_LAUNCHED_FLG"/>
-                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="FINISH_FLG" mongo_record_name="global_blackboard" output_port="FINISH_FLG"/>
+                            <Action ID="MongoValueReader" mongo_param_name="TURN_FINISHED_FLG" mongo_record_name="global_blackboard" output_port="TURN_FINISHED_FLG"/>
+                            <Action ID="MongoValueReader" mongo_param_name="INITIAL_POS_FLG" mongo_record_name="global_blackboard" output_port="INITIAL_POS_FLG"/>
+                            <Action ID="MongoValueReader" mongo_param_name="ARRIVAL_FLG" mongo_record_name="global_blackboard" output_port="ARRIVAL_FLG"/>
+                            <Action ID="MongoValueReader" mongo_param_name="LOADED_FLG" mongo_record_name="global_blackboard" output_port="LOADED_FLG"/>
+                            <Action ID="MongoValueReader" mongo_param_name="DUMP_LAUNCHED_FLG" mongo_record_name="global_blackboard" output_port="DUMP_LAUNCHED_FLG"/>
+                            <Action ID="MongoValueReader" mongo_param_name="FINISH_FLG" mongo_record_name="global_blackboard" output_port="FINISH_FLG"/>
                             <IfThenElse>
                                 <Action ID="ConditionalExpression" conditional_expression="ARRIVAL_FLG == true and LOADED_FLG != true and INITIAL_POS_FLG == true and TURN_FINISHED_FLG != true"/>
                                 <Sequence>
@@ -93,12 +93,12 @@
                                                 </Sequence>
                                                 <AlwaysSuccess/>
                                             </IfThenElse>
-                                            <Action ID="BlackboardValueReaderMongo" mongo_param_name="DUMP_LAUNCHED_FLG" mongo_record_name="global_blackboard" output_port="DUMP_LAUNCHED_FLG"/>
+                                            <Action ID="MongoValueReader" mongo_param_name="DUMP_LAUNCHED_FLG" mongo_record_name="global_blackboard" output_port="DUMP_LAUNCHED_FLG"/>
                                             <IfThenElse>
                                                 <Action ID="ConditionalExpression" conditional_expression="DUMP_LAUNCHED_FLG == false "/>
                                                 <Action ID="MongoValueWriter" input_value="true" mongo_param_name="MOVING_FLG" mongo_record_name="global_blackboard"/>
                                                 <Sequence>
-                                                    <Action ID="BlackboardValueReaderMongo" mongo_param_name="ARRIVAL_NEXT_FLG" mongo_record_name="global_blackboard" output_port="ARRIVAL_NEXT_FLG"/>
+                                                    <Action ID="MongoValueReader" mongo_param_name="ARRIVAL_NEXT_FLG" mongo_record_name="global_blackboard" output_port="ARRIVAL_NEXT_FLG"/>
                                                     <WhileDoElse>
                                                         <Action ID="ConditionalExpression" conditional_expression="ARRIVAL_NEXT_FLG == false"/>
                                                         <AlwaysSuccess/>
@@ -143,7 +143,7 @@
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="BlackboardValueReaderMongo">
+        <Action ID="MongoValueReader">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
             <input_port name="output_port"/>
