@@ -8,6 +8,10 @@
 #include <shape_msgs/msg/solid_primitive.hpp>
 #include <shape_msgs/msg/mesh.hpp>
 #include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/point.hpp>
+#include <std_msgs/msg/header.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 #include <geometric_shapes/shape_operations.h>
 #include <bsoncxx/json.hpp>
@@ -30,15 +34,20 @@ public:
     this->declare_parameter<std::string>("model_name", "zx200");
     this->declare_parameter<std::string>("root_record_name", "");
     this->declare_parameter<std::string>("planning_frame", "base_link");
+    this->declare_parameter<std::string>("visualization_record_name", "");
 
     model_name_ = this->get_parameter("model_name").as_string();
     root_record_name_ = this->get_parameter("root_record_name").as_string();
     planning_frame_ = this->get_parameter("planning_frame").as_string();
+    visualization_record_name_ = this->get_parameter("visualization_record_name").as_string();
 
     if (model_name_.empty() || root_record_name_.empty()) {
       RCLCPP_ERROR(this->get_logger(), "model_name or root_record_name is empty.");
       return;
     }
+
+    visualization_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
+      "excavatable_markers", 10);
 
     apply_client_ = this->create_client<moveit_msgs::srv::ApplyPlanningScene>(
       "tms_rp_excavator_apply_planning_scene");
@@ -60,6 +69,7 @@ public:
         try {
           auto scene = buildPlanningSceneFromDb(model_name_, root_record_name_);
           applyPlanningSceneAsync(scene);
+          publishVisualizationMarkers();
         } catch (const std::exception& e) {
           in_flight_ = false;
           RCLCPP_ERROR(this->get_logger(), "Update failed: %s", e.what());
@@ -265,6 +275,162 @@ private:
     scene.world.collision_objects.push_back(co);
   }
 
+  visualization_msgs::msg::MarkerArray buildVisualizationMarkersFromDb()
+  {
+    visualization_msgs::msg::MarkerArray markers;
+    if (visualization_record_name_.empty()) {
+      return markers;
+    }
+
+    const auto viz_record = this->GetParamFromDBAsJson(model_name_, visualization_record_name_);
+    if (viz_record.empty()) {
+      return markers;
+    }
+
+    auto makeMarkerHeader = [this]() {
+      std_msgs::msg::Header header;
+      header.frame_id = planning_frame_;
+      header.stamp = this->now();
+      return header;
+    };
+
+    auto makeAreaMarker = [&](const bsoncxx::document::view& area_data) {
+      auto x = area_data["x"];
+      auto y = area_data["y"];
+      auto z = area_data["z"];
+      auto size_x = area_data["size_x"];
+      auto size_y = area_data["size_y"];
+      auto size_z = area_data["size_z"];
+      if (!x || !y || !z || !size_x || !size_y || !size_z) {
+        return;
+      }
+
+      geometry_msgs::msg::Pose pose;
+      pose.position.x = readNumberAsDouble(x) + readNumberAsDouble(size_x) * 0.5;
+      pose.position.y = readNumberAsDouble(y) + readNumberAsDouble(size_y) * 0.5;
+      pose.position.z = readNumberAsDouble(z) + readNumberAsDouble(size_z) * 0.5;
+      // double theta_w = 0.0;
+      // auto theta_elem = area_data["theta_w"];
+      // if (theta_elem && (theta_elem.type() == bsoncxx::type::k_double || theta_elem.type() == bsoncxx::type::k_int32 || theta_elem.type() == bsoncxx::type::k_int64)) {
+      //   theta_w = readNumberAsDouble(theta_elem);
+      // }
+      pose.orientation.x = 0.0;
+      pose.orientation.y = 0.0;
+      // pose.orientation.z = std::sin(theta_w * 0.5);
+      // pose.orientation.w = std::cos(theta_w * 0.5);
+      pose.orientation.z = 0.0;
+      pose.orientation.w = 1.0;
+
+      visualization_msgs::msg::Marker marker;
+      marker.header = makeMarkerHeader();
+      marker.ns = "excavation_area";
+      marker.id = static_cast<int>(markers.markers.size());
+      marker.type = visualization_msgs::msg::Marker::CUBE;
+      marker.action = visualization_msgs::msg::Marker::ADD;
+      marker.pose = pose;
+      marker.scale.x = readNumberAsDouble(size_x);
+      marker.scale.y = readNumberAsDouble(size_y);
+      marker.scale.z = readNumberAsDouble(size_z);
+      marker.color.r = 0.0f;
+      marker.color.g = 0.0f;
+      marker.color.b = 1.0f;
+      marker.color.a = 0.5f;
+      marker.lifetime = rclcpp::Duration::from_seconds(1.2);
+      marker.frame_locked = false;
+      markers.markers.push_back(marker);
+    };
+
+    auto addPointsMarker = [&](const bsoncxx::array::view& points_array) {
+      visualization_msgs::msg::Marker marker;
+      marker.header = makeMarkerHeader();
+      marker.ns = "reachable_points";
+      marker.id = static_cast<int>(markers.markers.size());
+      marker.type = visualization_msgs::msg::Marker::POINTS;
+      marker.action = visualization_msgs::msg::Marker::ADD;
+      marker.scale.x = 0.1;
+      marker.scale.y = 0.1;
+      marker.color.r = 1.0f;
+      marker.color.g = 0.0f;
+      marker.color.b = 0.0f;
+      marker.color.a = 1.0f;
+      marker.lifetime = rclcpp::Duration::from_seconds(1.2);
+      marker.frame_locked = false;
+
+      for (auto&& point_elem : points_array) {
+        if (point_elem.type() != bsoncxx::type::k_document) {
+          continue;
+        }
+        auto point_doc = point_elem.get_document().value;
+        if (!point_doc["x"] || !point_doc["y"] || !point_doc["z"]) {
+          continue;
+        }
+        geometry_msgs::msg::Point point;
+        point.x = readNumberAsDouble(point_doc["x"]);
+        point.y = readNumberAsDouble(point_doc["y"]);
+        point.z = readNumberAsDouble(point_doc["z"]);
+        marker.points.push_back(point);
+      }
+
+      if (!marker.points.empty()) {
+        markers.markers.push_back(marker);
+      }
+    };
+
+    auto waypoints_it = viz_record.find("waypoints");
+    if (waypoints_it != viz_record.end()) {
+      auto doc_opt = tryParseJsonDoc(waypoints_it->second);
+      if (doc_opt) {
+        auto waypoints_elem = doc_opt->view()["waypoints"];
+        if (waypoints_elem && waypoints_elem.type() == bsoncxx::type::k_array) {
+          for (auto&& waypoint : waypoints_elem.get_array().value) {
+            if (waypoint.type() != bsoncxx::type::k_document) {
+              continue;
+            }
+            auto waypoint_doc = waypoint.get_document().value;
+            auto type_elem = waypoint_doc["type"];
+            if (!type_elem || type_elem.type() != bsoncxx::type::k_utf8) {
+              continue;
+            }
+            if (type_elem.get_utf8().value.to_string() != "area") {
+              continue;
+            }
+            auto data_elem = waypoint_doc["data"];
+            if (!data_elem || data_elem.type() != bsoncxx::type::k_document) {
+              continue;
+            }
+            makeAreaMarker(data_elem.get_document().value);
+            break;
+          }
+        }
+      }
+    }
+
+    auto points_it = viz_record.find("excavatable_points");
+    if (points_it != viz_record.end()) {
+      auto doc_opt = tryParseJsonDoc(points_it->second);
+      if (doc_opt) {
+        auto points_elem = doc_opt->view()["excavatable_points"];
+        if (points_elem && points_elem.type() == bsoncxx::type::k_array) {
+          addPointsMarker(points_elem.get_array().value);
+        }
+      }
+    }
+
+    return markers;
+  }
+
+  void publishVisualizationMarkers()
+  {
+    if (visualization_record_name_.empty()) {
+      return;
+    }
+
+    auto markers = buildVisualizationMarkersFromDb();
+    if (!markers.markers.empty()) {
+      visualization_pub_->publish(markers);
+    }
+  }
+
   void applyPlanningSceneAsync(const moveit_msgs::msg::PlanningScene& scene)
   {
     auto req = std::make_shared<moveit_msgs::srv::ApplyPlanningScene::Request>();
@@ -288,7 +454,9 @@ private:
   std::string model_name_;
   std::string root_record_name_;
   std::string planning_frame_;
+  std::string visualization_record_name_;
 
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr visualization_pub_;
   rclcpp::Client<moveit_msgs::srv::ApplyPlanningScene>::SharedPtr apply_client_;
   rclcpp::TimerBase::SharedPtr timer_;
 

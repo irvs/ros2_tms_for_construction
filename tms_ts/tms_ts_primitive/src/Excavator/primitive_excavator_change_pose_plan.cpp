@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0
 
 #include "tms_ts_primitive/Excavator/primitive_excavator_change_pose_plan.hpp"
+#include <algorithm>
+#include <mongocxx/client.hpp>
+#include <mongocxx/uri.hpp>
+#include <mongocxx/options/update.hpp>
 
 using namespace std::chrono_literals;
 
@@ -31,6 +35,125 @@ namespace {
         return static_cast<double>(element.get_int64().value);
       default:
         throw std::runtime_error("Array element is not a numeric type");
+    }
+  }
+
+  struct AreaSearchParams {
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    double theta_w = 0.0;
+    double size_x = 0.0;
+    double size_y = 0.0;
+    double size_z = 0.0;
+    double resolution = 0.0;
+  };
+
+  bool parse_area_search_params(
+      const bsoncxx::document::view& waypoint_doc,
+      AreaSearchParams& params,
+      std::string& error_message)
+  {
+    if (!waypoint_doc["data"] || waypoint_doc["data"].type() != bsoncxx::type::k_document) {
+      error_message = "Area waypoint missing 'data' field";
+      return false;
+    }
+
+    auto data_doc = waypoint_doc["data"].get_document().value;
+
+    auto ensure_field = [&](const char* field_name) {
+      if (!data_doc[field_name]) {
+        error_message = std::string("Area waypoint missing '") + field_name + "' field";
+        return false;
+      }
+      return true;
+    };
+
+    if (!ensure_field("x") || !ensure_field("y") || !ensure_field("z") || !ensure_field("theta_w") ||
+        !ensure_field("size_x") || !ensure_field("size_y") || !ensure_field("size_z") ||
+        !ensure_field("resolution")) {
+      return false;
+    }
+
+    try {
+      params.x = get_numeric_value(data_doc["x"]);
+      params.y = get_numeric_value(data_doc["y"]);
+      params.z = get_numeric_value(data_doc["z"]);
+      params.theta_w = get_numeric_value(data_doc["theta_w"]);
+      params.size_x = get_numeric_value(data_doc["size_x"]);
+      params.size_y = get_numeric_value(data_doc["size_y"]);
+      params.size_z = get_numeric_value(data_doc["size_z"]);
+      params.resolution = get_numeric_value(data_doc["resolution"]);
+    } catch (const std::exception& e) {
+      error_message = std::string("Failed to parse area waypoint numeric values: ") + e.what();
+      return false;
+    }
+
+    if (params.resolution <= 0.0) {
+      error_message = "Area waypoint resolution must be positive";
+      return false;
+    }
+    if (params.size_x < 0.0 || params.size_y < 0.0 || params.size_z < 0.0) {
+      error_message = "Area waypoint size values must be non-negative";
+      return false;
+    }
+
+    return true;
+  }
+
+  void generate_axis_candidate_values(
+      double start,
+      double size,
+      double resolution,
+      std::vector<double>& values)
+  {
+    values.clear();
+    double end = start + size;
+
+    for (double coord = start; coord <= end + 1e-9; coord += resolution) {
+      values.push_back(std::min(coord, end));
+    }
+
+    if (values.empty() || std::abs(values.back() - end) > 1e-6) {
+      values.push_back(end);
+    }
+
+    std::sort(values.begin(), values.end());
+    values.erase(std::unique(values.begin(), values.end(), [](double a, double b) {
+      return std::abs(a - b) < 1e-6;
+    }), values.end());
+  }
+
+  bool save_excavatable_points_to_db(
+      const std::string& model_name,
+      const std::string& record_name,
+      const bsoncxx::builder::basic::array& points_array)
+  {
+    try {
+      mongocxx::client client{mongocxx::uri{"mongodb://localhost:27017"}};
+      mongocxx::database db = client["rostmsdb"];
+      mongocxx::collection collection = db["parameter"];
+
+      bsoncxx::builder::stream::document filter_builder;
+      filter_builder << "model_name" << model_name << "record_name" << record_name;
+      auto filter = filter_builder.view();
+
+      bsoncxx::builder::stream::document update_builder;
+      update_builder << "$set" << bsoncxx::builder::stream::open_document
+                     << "excavatable_points" << points_array.view()
+                     << bsoncxx::builder::stream::close_document;
+
+      mongocxx::options::update options;
+      options.upsert(true);
+
+      auto result = collection.update_one(filter, update_builder.view(), options);
+      if (result && (result->modified_count() > 0 || result->matched_count() > 0 || result->upserted_id())) {
+        return true;
+      }
+      return false;
+    } catch (const std::exception& e) {
+      RCLCPP_ERROR(rclcpp::get_logger("PrimitiveExcavatorChangePosePlan"), "Exception saving excavatable_points to DB: %s", e.what());
+      return false;
     }
   }
 }
@@ -479,7 +602,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         goal_msg.pose = target_pose;
         RCLCPP_INFO(this->get_logger(), "  Target pose: (%.2f, %.2f, %.2f)", x, y, z);
             
-        } else if (type == "cartesian_path") {
+      } else if (type == "cartesian_path") {
         goal_msg.command = TmsRpExcavator::Goal::CMD_PLAN_CARTESIAN_PATH;
         RCLCPP_INFO(this->get_logger(), "===================================================");
         RCLCPP_INFO(this->get_logger(), "  Waypoints: 1 (Single waypoint)");
@@ -519,10 +642,116 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         goal_msg.pose = target_pose;
         RCLCPP_INFO(this->get_logger(), "  Target pose: (%.2f, %.2f, %.2f)", x, y, z);
             
-        } else {
-            handle_error("Unknown waypoint type: " + type);
-            return;
+      } else if (type == "area") {
+        // 掘削エリアを読み込み、解ける開始点を探索
+        AreaSearchParams params;
+        std::string error_message;
+        if (!parse_area_search_params(waypoint_doc, params, error_message)) {
+          handle_error(error_message);
+          return;
         }
+
+        if (!parse_constraints(goal_msg)) {
+          handle_error("Failed to parse constraints for area search");
+          return;
+        }
+
+        RCLCPP_INFO(this->get_logger(), "===================================================");
+        RCLCPP_INFO(this->get_logger(), "  Waypoints: 1 (Area search)");
+        RCLCPP_INFO(this->get_logger(), "  Type: area");
+        RCLCPP_INFO(this->get_logger(), "  Command: CMD_PLAN_TO_POSE (searching candidates)");
+        RCLCPP_INFO(this->get_logger(), "===================================================");
+
+        std::vector<double> xs, ys, zs;
+        generate_axis_candidate_values(params.x, params.size_x, params.resolution, xs);
+        generate_axis_candidate_values(params.y, params.size_y, params.resolution, ys);
+        generate_axis_candidate_values(params.z, params.size_z, params.resolution, zs);
+
+        int candidate_count = 0;
+        int ik_pass_count = 0;
+        int plan_pass_count = 0;
+        bsoncxx::builder::basic::array points_array;
+        const int total_candidates = static_cast<int>(xs.size() * ys.size() * zs.size());
+
+        for (double x : xs) {
+          for (double y : ys) {
+            for (double z : zs) {
+              candidate_count++;
+              double theta_w = params.theta_w;
+
+              Pose converted_pose;
+              pose_converter.convertToXYZQuaternion(x, y, z, theta_w, converted_pose);
+
+              TmsRpExcavator::Goal check_goal = goal_msg;
+              check_goal.command = TmsRpExcavator::Goal::CMD_CHECK_POSE_COLLISION;
+              check_goal.pose.position.x = converted_pose.x;
+              check_goal.pose.position.y = converted_pose.y;
+              check_goal.pose.position.z = converted_pose.z;
+              check_goal.pose.orientation.x = converted_pose.qx;
+              check_goal.pose.orientation.y = converted_pose.qy;
+              check_goal.pose.orientation.z = converted_pose.qz;
+              check_goal.pose.orientation.w = converted_pose.qw;
+
+              RCLCPP_INFO(this->get_logger(), "IK candidate %d/%d: (%.3f, %.3f, %.3f)",
+                          candidate_count, total_candidates, x, y, z);
+
+              TmsRpExcavator::Result::SharedPtr result;
+              const bool ik_ok = call_excavator_collision_check_sync(check_goal, result);
+              if (!ik_ok) {
+                RCLCPP_INFO(this->get_logger(), "  IK rejected candidate %d/%d: (%.3f, %.3f, %.3f)",
+                             candidate_count, total_candidates, x, y, z);
+                continue;
+              }
+
+              ik_pass_count++;
+              RCLCPP_INFO(this->get_logger(), "  IK passed %d/%d: (%.3f, %.3f, %.3f)",
+                          ik_pass_count, total_candidates, x, y, z);
+
+              TmsRpExcavator::Goal plan_goal = check_goal;
+              plan_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_POSE;
+
+              RCLCPP_INFO(this->get_logger(), "  Planning candidate %d/%d from IK-passed points", ik_pass_count, ik_pass_count);
+
+              const bool plan_ok = call_excavator_plan_sync(plan_goal, result);
+              if (!plan_ok) {
+                RCLCPP_WARN(this->get_logger(), "  Plan failed for IK-passed point %d: (%.3f, %.3f, %.3f)",
+                            ik_pass_count, x, y, z);
+                continue;
+              }
+
+              plan_pass_count++;
+              bsoncxx::builder::basic::document point_doc;
+              point_doc.append(bsoncxx::builder::basic::kvp("x", x));
+              point_doc.append(bsoncxx::builder::basic::kvp("y", y));
+              point_doc.append(bsoncxx::builder::basic::kvp("z", z));
+              point_doc.append(bsoncxx::builder::basic::kvp("theta_w", theta_w));
+              points_array.append(point_doc.view());
+              RCLCPP_INFO(this->get_logger(), "  Plan succeeded %d/%d for IK-passed point: (%.3f, %.3f, %.3f)",
+                          plan_pass_count, ik_pass_count, x, y, z);
+            }
+          }
+        }
+
+        RCLCPP_INFO(this->get_logger(), "Evaluated %d total candidates, IK passed %d, plan passed %d",
+                    candidate_count, ik_pass_count, plan_pass_count);
+
+        if (save_excavatable_points_to_db(used_model_name_, used_record_name_, points_array)) {
+          RCLCPP_INFO(this->get_logger(), "Saved excavatable_points to database");
+        } else {
+          RCLCPP_WARN(this->get_logger(), "Failed to save excavatable_points to database");
+        }
+
+        // Exploration is complete. 成功/失敗問わずここで処理を終える。
+        auto result_to_leaf = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
+        result_to_leaf->result = true;
+        if (goal_handle->is_active()) {
+          goal_handle->succeed(result_to_leaf);
+        }
+        return;
+      } else {
+        handle_error("Unknown waypoint type: " + type);
+        return;
+      }
       
     } else {
       // 2個の場合はない。今後消す。
@@ -1487,7 +1716,7 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value(
     excavator_goal.previous_pose = goal_msg.previous_pose;
 
     TmsRpExcavator::Result::SharedPtr result;
-    const bool success = call_excavator_action_sync(excavator_goal, result);
+    const bool success = call_excavator_plan_sync(excavator_goal, result);
 
     if (success) {
       best_joint_values = test_joint_values;
@@ -1519,7 +1748,7 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value(
   return true;
 }
 
-bool PrimitiveExcavatorChangePosePlan::call_excavator_action_sync(
+bool PrimitiveExcavatorChangePosePlan::call_excavator_plan_sync(
   const TmsRpExcavator::Goal& goal,
   TmsRpExcavator::Result::SharedPtr& result)
 {
@@ -1553,6 +1782,42 @@ auto wrapped_result = result_future.get();
 result = wrapped_result.result;
 
 return wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED && result->success;
+}
+
+bool PrimitiveExcavatorChangePosePlan::call_excavator_collision_check_sync(
+  const TmsRpExcavator::Goal& goal,
+  TmsRpExcavator::Result::SharedPtr& result)
+{
+  auto send_goal_future = action_client_->async_send_goal(goal);
+
+  // Wait for the future to complete without spinning the node
+  auto status = send_goal_future.wait_for(std::chrono::seconds(30));
+  if (status != std::future_status::ready)
+  {
+    RCLCPP_ERROR(this->get_logger(), "Failed to send collision check goal (timeout)");
+    return false;
+  }
+
+  auto goal_handle = send_goal_future.get();
+  if (!goal_handle) {
+    RCLCPP_ERROR(this->get_logger(), "Collision check goal was rejected by server");
+    return false;
+  }
+
+  auto result_future = action_client_->async_get_result(goal_handle);
+
+  // Wait for the result future to complete without spinning the node
+  status = result_future.wait_for(std::chrono::seconds(60));
+  if (status != std::future_status::ready)
+  {
+    RCLCPP_ERROR(this->get_logger(), "Failed to get collision check result (timeout)");
+    return false;
+  }
+
+  auto wrapped_result = result_future.get();
+  result = wrapped_result.result;
+
+  return wrapped_result.code == rclcpp_action::ResultCode::SUCCEEDED && result->success;
 }
 
 void PrimitiveExcavatorChangePosePlan::level_bucket_if_trigger(

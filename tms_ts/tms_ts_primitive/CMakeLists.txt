@@ -40,6 +40,7 @@ find_package(diagnostic_msgs REQUIRED)
 find_package(geometric_shapes REQUIRED)
 find_package(srdfdom REQUIRED)
 find_package(moveit_core REQUIRED)
+find_package(visualization_msgs REQUIRED)
 # find_package(moveit_robot_model_loader REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
 
@@ -146,6 +147,7 @@ set(dependencies_cpp
   rclcpp
   rclcpp_action
   std_msgs
+  visualization_msgs
   ament_cmake
   behaviortree_cpp_v3
   nlohmann_json

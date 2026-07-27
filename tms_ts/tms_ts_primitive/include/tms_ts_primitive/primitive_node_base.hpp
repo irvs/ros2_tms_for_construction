@@ -372,7 +372,7 @@ inline bool PrimitiveNodeBase::UpdateParamInDBFromJson(std::string model_name, s
 
     auto result = collection.update_one(filter, update_builder.view(), update_options);
 
-    if (result && result->modified_count() > 0) {
+    if (result && (result->modified_count() > 0 || result->matched_count() > 0 || result->upserted_id())) {
       RCLCPP_INFO(this->get_logger(), "Successfully updated \"%s\" field from JSON.", target_key.c_str());
       return true;
     } else {

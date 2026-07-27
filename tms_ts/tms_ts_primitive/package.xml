@@ -22,6 +22,7 @@
   <depend>com3_msgs</depend>
   <depend>tms_msg_ur</depend>
   <depend>diagnostic_msgs</depend>
+  <depend>visualization_msgs</depend>
   <!-- <depend>geometric_shapes</depend> -->
 
   <test_depend>ament_copyright</test_depend>
