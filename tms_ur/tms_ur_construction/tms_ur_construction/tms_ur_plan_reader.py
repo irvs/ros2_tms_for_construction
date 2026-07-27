@@ -84,7 +84,6 @@ class TmsUrPlanReader(Node):
         self.req.type = DATA_TYPE
         self.req.id = DATA_ID
         self.req.latest_only = self.latest
-        #self.req.param_type = "plan"
         self.req.param_type = self.record_name[0]
         self.req.name = self.machine_name
         self.req.recordnames = self.record_name
