@@ -124,9 +124,10 @@ namespace {
     }), values.end());
   }
 
-  bool save_excavatable_points_to_db(
+  bool save_points_to_db(
       const std::string& model_name,
       const std::string& record_name,
+      const std::string& field_name,
       const bsoncxx::builder::basic::array& points_array)
   {
     try {
@@ -140,7 +141,7 @@ namespace {
 
       bsoncxx::builder::stream::document update_builder;
       update_builder << "$set" << bsoncxx::builder::stream::open_document
-                     << "excavatable_points" << points_array.view()
+                     << field_name << points_array.view()
                      << bsoncxx::builder::stream::close_document;
 
       mongocxx::options::update options;
@@ -152,9 +153,25 @@ namespace {
       }
       return false;
     } catch (const std::exception& e) {
-      RCLCPP_ERROR(rclcpp::get_logger("PrimitiveExcavatorChangePosePlan"), "Exception saving excavatable_points to DB: %s", e.what());
+      RCLCPP_ERROR(rclcpp::get_logger("PrimitiveExcavatorChangePosePlan"), "Exception saving %s to DB: %s", field_name.c_str(), e.what());
       return false;
     }
+  }
+
+  bool save_excavatable_points_to_db(
+      const std::string& model_name,
+      const std::string& record_name,
+      const bsoncxx::builder::basic::array& points_array)
+  {
+    return save_points_to_db(model_name, record_name, "excavatable_points", points_array);
+  }
+
+  bool save_ik_pass_points_to_db(
+      const std::string& model_name,
+      const std::string& record_name,
+      const bsoncxx::builder::basic::array& points_array)
+  {
+    return save_points_to_db(model_name, record_name, "ik_pass_points", points_array);
   }
 }
 
@@ -671,6 +688,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         int ik_pass_count = 0;
         int plan_pass_count = 0;
         bsoncxx::builder::basic::array points_array;
+        bsoncxx::builder::basic::array ik_pass_points_array;
         const int total_candidates = static_cast<int>(xs.size() * ys.size() * zs.size());
 
         for (double x : xs) {
@@ -704,6 +722,12 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
               }
 
               ik_pass_count++;
+              bsoncxx::builder::basic::document ik_pass_point_doc;
+              ik_pass_point_doc.append(bsoncxx::builder::basic::kvp("x", x));
+              ik_pass_point_doc.append(bsoncxx::builder::basic::kvp("y", y));
+              ik_pass_point_doc.append(bsoncxx::builder::basic::kvp("z", z));
+              ik_pass_point_doc.append(bsoncxx::builder::basic::kvp("theta_w", theta_w));
+              ik_pass_points_array.append(ik_pass_point_doc.view());
               RCLCPP_INFO(this->get_logger(), "  IK passed %d/%d: (%.3f, %.3f, %.3f)",
                           ik_pass_count, total_candidates, x, y, z);
 
@@ -712,12 +736,12 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
 
               RCLCPP_INFO(this->get_logger(), "  Planning candidate %d/%d from IK-passed points", ik_pass_count, ik_pass_count);
 
-              const bool plan_ok = call_excavator_plan_sync(plan_goal, result);
-              if (!plan_ok) {
-                RCLCPP_WARN(this->get_logger(), "  Plan failed for IK-passed point %d: (%.3f, %.3f, %.3f)",
-                            ik_pass_count, x, y, z);
-                continue;
-              }
+              // const bool plan_ok = call_excavator_plan_sync(plan_goal, result);
+              // if (!plan_ok) {
+              //   RCLCPP_WARN(this->get_logger(), "  Plan failed for IK-passed point %d: (%.3f, %.3f, %.3f)",
+              //               ik_pass_count, x, y, z);
+              //   continue;
+              // }
 
               plan_pass_count++;
               bsoncxx::builder::basic::document point_doc;
@@ -735,6 +759,14 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         RCLCPP_INFO(this->get_logger(), "Evaluated %d total candidates, IK passed %d, plan passed %d",
                     candidate_count, ik_pass_count, plan_pass_count);
 
+        // Comment out the following block to disable saving ik_pass_points to DB.
+        if (save_ik_pass_points_to_db(used_model_name_, used_record_name_, ik_pass_points_array)) {
+          RCLCPP_INFO(this->get_logger(), "Saved ik_pass_points to database");
+        } else {
+          RCLCPP_WARN(this->get_logger(), "Failed to save ik_pass_points to database");
+        }
+
+        // Comment out the following block to disable saving excavatable_points to DB.
         if (save_excavatable_points_to_db(used_model_name_, used_record_name_, points_array)) {
           RCLCPP_INFO(this->get_logger(), "Saved excavatable_points to database");
         } else {

@@ -22,6 +22,7 @@
 #include <optional>
 #include <string>
 #include <atomic>
+#include <cmath>
 
 #include "tms_ts_primitive/primitive_node_base.hpp"
 
@@ -340,19 +341,24 @@ private:
       markers.markers.push_back(marker);
     };
 
-    auto addPointsMarker = [&](const bsoncxx::array::view& points_array) {
+    auto addPointsMarker = [&](const bsoncxx::array::view& points_array,
+                                const std::string& marker_ns,
+                                float r,
+                                float g,
+                                float b,
+                                float a) {
       visualization_msgs::msg::Marker marker;
       marker.header = makeMarkerHeader();
-      marker.ns = "reachable_points";
+      marker.ns = marker_ns;
       marker.id = static_cast<int>(markers.markers.size());
       marker.type = visualization_msgs::msg::Marker::POINTS;
       marker.action = visualization_msgs::msg::Marker::ADD;
       marker.scale.x = 0.1;
       marker.scale.y = 0.1;
-      marker.color.r = 1.0f;
-      marker.color.g = 0.0f;
-      marker.color.b = 0.0f;
-      marker.color.a = 1.0f;
+      marker.color.r = r;
+      marker.color.g = g;
+      marker.color.b = b;
+      marker.color.a = a;
       marker.lifetime = rclcpp::Duration::from_seconds(1.2);
       marker.frame_locked = false;
 
@@ -411,10 +417,22 @@ private:
       if (doc_opt) {
         auto points_elem = doc_opt->view()["excavatable_points"];
         if (points_elem && points_elem.type() == bsoncxx::type::k_array) {
-          addPointsMarker(points_elem.get_array().value);
+          addPointsMarker(points_elem.get_array().value, "reachable_points", 1.0f, 0.0f, 0.0f, 1.0f);
         }
       }
     }
+
+    // Comment out the following block to disable ik_pass_points visualization.
+    // auto ik_points_it = viz_record.find("ik_pass_points");
+    // if (ik_points_it != viz_record.end()) {
+    //   auto doc_opt = tryParseJsonDoc(ik_points_it->second);
+    //   if (doc_opt) {
+    //     auto points_elem = doc_opt->view()["ik_pass_points"];
+    //     if (points_elem && points_elem.type() == bsoncxx::type::k_array) {
+    //       addPointsMarker(points_elem.get_array().value, "ik_pass_points", 0.0f, 0.0f, 1.0f, 1.0f);
+    //     }
+    //   }
+    // }
 
     return markers;
   }
