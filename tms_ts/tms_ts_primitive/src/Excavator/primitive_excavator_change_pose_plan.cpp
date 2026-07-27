@@ -479,6 +479,46 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         goal_msg.pose = target_pose;
         RCLCPP_INFO(this->get_logger(), "  Target pose: (%.2f, %.2f, %.2f)", x, y, z);
             
+        } else if (type == "cartesian_path") {
+        goal_msg.command = TmsRpExcavator::Goal::CMD_PLAN_CARTESIAN_PATH;
+        RCLCPP_INFO(this->get_logger(), "===================================================");
+        RCLCPP_INFO(this->get_logger(), "  Waypoints: 1 (Single waypoint)");
+        RCLCPP_INFO(this->get_logger(), "  Type: cartesian_path");
+        RCLCPP_INFO(this->get_logger(), "  Command: CMD_PLAN_CARTESIAN_PATH");
+        RCLCPP_INFO(this->get_logger(), "===================================================");
+        
+        if (!waypoint_doc["data"]) {
+          handle_error("Waypoint missing 'data' field");
+          return;
+        }
+        
+        auto data_doc = waypoint_doc["data"].get_document().value;
+        
+        if (!data_doc["x"] || !data_doc["y"] || !data_doc["z"] || !data_doc["theta_w"]) {
+          handle_error("Pose waypoint missing required fields (x, y, z, theta_w)");
+          return;
+        }
+        
+        double x = get_numeric_value(data_doc["x"]);
+        double y = get_numeric_value(data_doc["y"]);
+        double z = get_numeric_value(data_doc["z"]);
+        double theta_w = get_numeric_value(data_doc["theta_w"]);
+        
+        Pose converted_pose;
+        pose_converter.convertToXYZQuaternion(x, y, z, theta_w, converted_pose);
+        
+        geometry_msgs::msg::Pose target_pose;
+        target_pose.position.x = converted_pose.x;
+        target_pose.position.y = converted_pose.y;
+        target_pose.position.z = converted_pose.z;
+        target_pose.orientation.x = converted_pose.qx;
+        target_pose.orientation.y = converted_pose.qy;
+        target_pose.orientation.z = converted_pose.qz;
+        target_pose.orientation.w = converted_pose.qw;
+        
+        goal_msg.pose = target_pose;
+        RCLCPP_INFO(this->get_logger(), "  Target pose: (%.2f, %.2f, %.2f)", x, y, z);
+            
         } else {
             handle_error("Unknown waypoint type: " + type);
             return;
