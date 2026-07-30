@@ -32,13 +32,14 @@
 #include "tms_ts_primitive/common/mongo_value_reader.hpp"
 #include "tms_ts_primitive/common/blackboard_value_searcher_mongo.hpp"
 #include "tms_ts_primitive/common/mongo_value_writer.hpp"
+#include "tms_ts_primitive/common/mongo_array_writer.hpp"
 #include "tms_ts_primitive/common/conditional_expression.hpp"
 #include "tms_ts_primitive/common/KeepRunningUntilFlgup.hpp"
 #include "tms_ts_primitive/common/SetLocalBlackboard.hpp"
 #include "tms_ts_primitive/common/SetLocalBlackboardWithCounter.hpp"
 #include "tms_ts_primitive/common/Counter.hpp"
 #include "tms_ts_primitive/common/wait_for_click.hpp"
-//#include "tms_ts_primitive/common/wait_for_topic.hpp"
+#include "tms_ts_primitive/common/wait_timer.hpp"
 #include "tms_ts_primitive/common/leaf_node.hpp"
 #include "tms_ts_primitive/common/wait_for_ur.hpp"
 
@@ -166,13 +167,14 @@ public:
     factory.registerNodeType<MongoValueReader>("MongoValueReader");
     factory.registerNodeType<BlackboardValueSearcherMongo>("BlackboardValueSearcherMongo");
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
+    factory.registerNodeType<MongoArrayWriter>("MongoArrayWriter");
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
     factory.registerNodeType<SetLocalBlackboardWithCounter>("SetLocalBlackboardWithCounter");
     factory.registerNodeType<Counter>("Counter");
     factory.registerNodeType<WaitForClick>("WaitForClick");
-    //factory.registerNodeType<WaitForTopic>("WaitForTopic");
+    factory.registerNodeType<WaitTimer>("WaitTimer");
     factory.registerNodeType<LeafNodeCommon>("LeafNodeCommon");
 
     // loadBlackboardFromMongoDB("global_blackboard");

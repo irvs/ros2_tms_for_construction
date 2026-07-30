@@ -46,6 +46,13 @@
             <input_port name="input_value"/>
         </Action>
 
+        <Action ID="MongoArrayWriter">
+            <input_port name="mongo_record_name"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="input_value"/>
+            <input_port name="operation"/>  
+        </Action>  
+
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
         </Action>        
