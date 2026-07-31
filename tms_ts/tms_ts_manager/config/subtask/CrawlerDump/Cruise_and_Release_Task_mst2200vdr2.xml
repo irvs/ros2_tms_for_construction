@@ -9,14 +9,14 @@
                 <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst2200vdr" model_name="mst2200vdr" subtask_name="Cruise_Subtask_1" subtask_parameters="start_status:3725960300000" terminate_condition="3725960300004"/>
                 <Action ID="ExecuteSubtask" machine_record_name="" model_name="mst2200vdr" subtask_name="Vessel_Release_Subtask" subtask_parameters="dump_up_angle:RELEASE_ANGLE_UP,dump_down_angle:RELEASE_ANGLE_DOWN,time:5000" terminate_condition=""/>
                 <Action ID="MongoValueWriter" input_value="down" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst2200vdr"/>
-                <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst2200vdr" model_name="mst2200vdr" subtask_name="Cruise_Subtask_1" subtask_parameters="start_status:2725960300007" terminate_condition="3725960300000"/>
+                <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst2200vdr" model_name="mst2200vdr" subtask_name="Cruise_Subtask_1" subtask_parameters="start_status:3725960300004" terminate_condition="3725960300000"/>
                 <Action ID="MongoValueWriter" input_value="up" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst2200vdr"/>
             </Sequence>
         </Decorator>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="BlackboardValueSearcherMongo">
+        <Action ID="MongoValueSearcher">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_value"/>
             <input_port name="output_port"/>

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BLACKBOARD_VALUE_SEARCHER_MONGO_NODE_HPP
-#define BLACKBOARD_VALUE_SEARCHER_MONGO_NODE_HPP
+#ifndef MONGO_VALUE_SEARCHER_NODE_HPP
+#define MONGO_VALUE_SEARCHER_NODE_HPP
 
 #include "rclcpp/rclcpp.hpp"
 #include <thread>
@@ -30,17 +30,17 @@
 
 using namespace BT;
 
-class BlackboardValueSearcherMongo : public SyncActionNode
+class MongoValueSearcher : public SyncActionNode
 {
 public:
-    BlackboardValueSearcherMongo(const std::string& name, const NodeConfiguration& config)
+    MongoValueSearcher(const std::string& name, const NodeConfiguration& config)
         : SyncActionNode(name, config), pool_(mongocxx::uri{})
     {
-        node_ = rclcpp::Node::make_shared("blackboard_value_searcher_mongo");
+        node_ = rclcpp::Node::make_shared("mongo_value_searcher");
         spin_thread_ = std::thread([this]() { rclcpp::spin(node_); });
     }
 
-    ~BlackboardValueSearcherMongo()
+    ~MongoValueSearcher()
     {
         rclcpp::shutdown();
         if (spin_thread_.joinable()) spin_thread_.join();
