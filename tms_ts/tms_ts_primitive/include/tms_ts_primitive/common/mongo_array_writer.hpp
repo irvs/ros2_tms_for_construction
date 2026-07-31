@@ -9,6 +9,7 @@
 
 #include <bsoncxx/types.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/builder/basic/array.hpp>
 
 #include <mongocxx/client.hpp>
 #include <mongocxx/pool.hpp>
@@ -47,7 +48,7 @@ public:
             InputPort<std::string>("mongo_record_name"),
             InputPort<std::string>("mongo_param_name"),
             InputPort<std::string>("input_value"),
-            InputPort<std::string>("operation")     // add(Duplicates are not included) / push (Duplicates included)/ remove
+            InputPort<std::string>("operation")     // add(Duplicates are not included) / push (Duplicates included)/ remove (delete designated one) / reset (delete all in array)
         };
     }
 
@@ -177,6 +178,17 @@ public:
                    << open_document
                    << param.value()
                    << bson_value
+                   << close_document;
+        }
+        else if(op.value()=="reset")
+        {
+            // 空の配列 []
+            bsoncxx::builder::basic::array empty_array;
+
+            update << "$set"
+                   << open_document
+                   << param.value()
+                   << bsoncxx::types::b_array{empty_array.extract()}
                    << close_document;
         }
         else
