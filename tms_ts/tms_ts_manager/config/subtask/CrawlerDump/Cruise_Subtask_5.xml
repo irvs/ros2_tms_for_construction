@@ -1,0 +1,381 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Decorator ID="KeepRunningUntilFlgup" key="SUBTASK_TERMINAL_FLG" while_or_dowhile="While">
+                <Sequence>
+                    <Action ID="MongoValueReader" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$" output_port="CURRENT_SECTION"/>
+                    <Action ID="MongoValueReader" mongo_param_name="UP_DOWN" mongo_record_name="$machine_record_name$" output_port="UP_DOWN"/>
+                    <Decorator ID="KeepRunningUntilFlgup" key="SUBTASK_INITIAL_FLG" while_or_dowhile="While">
+                        <Sequence>
+                            <IfThenElse>
+                                <Action ID="ConditionalExpression" conditional_expression="&quot;$start_status$&quot;!=&quot;none&quot;"/>
+                                <Sequence>
+                                    <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="$start_status$"/>
+                                </Sequence>
+                                <AlwaysSuccess/>
+                            </IfThenElse>
+                            <Action ID="SetLocalBlackboard" output_key="SUBTASK_INITIAL_FLG" value="true"/>
+                        </Sequence>
+                    </Decorator>
+                    <Action ID="SetLocalBlackboard" output_key="execute_success" value="false"/>
+                    <Sequence>
+                        <Action ID="SetLocalBlackboard" output_key="sub_flg" value="false"/>
+                        <Action ID="SetLocalBlackboard" output_key="sub_up" value="true"/>
+                        <Action ID="SetLocalBlackboard" output_key="sub_label" value="no"/>
+                        <IfThenElse>
+                            <Action ID="ConditionalExpression" conditional_expression="UP_DOWN == &quot;up&quot;"/>
+                            <Sequence>
+                                <Action ID="MongoValueReader" mongo_param_name="related_point_up_main" mongo_record_name="{CURRENT_SECTION}" output_port="related_point_main"/>
+                                <Action ID="MongoValueReader" mongo_param_name="related_point_up_sub" mongo_record_name="{CURRENT_SECTION}" output_port="related_point_sub"/>
+                                <IfThenElse>
+                                    <Action ID="ConditionalExpression" conditional_expression="related_point_main != &quot;&quot;"/>
+                                    <Sequence>
+                                        <Action ID="MongoValueReader" mongo_param_name="related_point_up_main" mongo_record_name="{related_point_main}" output_port="next_point_main"/>
+                                        <Action ID="MongoValueReader" mongo_param_name="related_point_up_sub" mongo_record_name="{related_point_main}" output_port="next_point_sub"/>
+                                        <IfThenElse>
+                                            <Action ID="ConditionalExpression" conditional_expression="next_point_main != &quot;&quot;"/>
+                                            <Sequence>
+                                                <Action ID="MongoValueReader" mongo_param_name="related_point_up_main" mongo_record_name="{next_point_main}" output_port="next_next_point_main"/>
+                                                <Action ID="MongoValueReader" mongo_param_name="related_point_up_sub" mongo_record_name="{next_point_main}" output_port="next_next_point_sub"/>
+                                            </Sequence>
+                                            <AlwaysSuccess/>
+                                        </IfThenElse>
+                                    </Sequence>
+                                    <AlwaysSuccess/>
+                                </IfThenElse>
+                            </Sequence>
+                            <AlwaysSuccess/>
+                        </IfThenElse>
+                        <IfThenElse>
+                            <Action ID="ConditionalExpression" conditional_expression="UP_DOWN == &quot;down&quot;"/>
+                            <Sequence>
+                                <Action ID="MongoValueReader" mongo_param_name="related_point_down_main" mongo_record_name="{CURRENT_SECTION}" output_port="related_point_main"/>
+                                <Action ID="MongoValueReader" mongo_param_name="related_point_down_sub" mongo_record_name="{CURRENT_SECTION}" output_port="related_point_sub"/>
+                                <IfThenElse>
+                                    <Action ID="ConditionalExpression" conditional_expression="related_point_main != &quot;&quot;"/>
+                                    <Sequence>
+                                        <Action ID="MongoValueReader" mongo_param_name="related_point_down_main" mongo_record_name="{related_point_main}" output_port="next_point_main"/>
+                                        <Action ID="MongoValueReader" mongo_param_name="related_point_down_sub" mongo_record_name="{related_point_main}" output_port="next_point_sub"/>
+                                        <IfThenElse>
+                                            <Action ID="ConditionalExpression" conditional_expression="next_point_main != &quot;&quot;"/>
+                                            <Sequence>
+                                                <Action ID="MongoValueReader" mongo_param_name="related_point_down_main" mongo_record_name="{next_point_main}" output_port="next_next_point_main"/>
+                                                <Action ID="MongoValueReader" mongo_param_name="related_point_down_sub" mongo_record_name="{next_point_main}" output_port="next_next_point_sub"/>
+                                            </Sequence>
+                                            <AlwaysSuccess/>
+                                        </IfThenElse>
+                                    </Sequence>
+                                    <AlwaysSuccess/>
+                                </IfThenElse>
+                            </Sequence>
+                            <AlwaysSuccess/>
+                        </IfThenElse>
+                    </Sequence>
+                    <Sequence>
+                        <IfThenElse>
+                            <Action ID="ConditionalExpression" conditional_expression="related_point_main == &quot;&quot;"/>
+                            <Sequence>
+                                <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION" mongo_value="\related_point_sub\" output_port="sub_flg"/>
+                                <IfThenElse>
+                                    <Action ID="ConditionalExpression" conditional_expression="sub_flg == false"/>
+                                    <Sequence>
+                                        <Action ID="MongoArrayWriter" input_value="\related_point_sub\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                        <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_sub}"/>
+                                        <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
+                                        <Action ID="MongoValueWriter" input_value="\related_point_sub\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                        <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
+                                    </Sequence>
+                                    <AlwaysSuccess/>
+                                </IfThenElse>
+                            </Sequence>
+                            <AlwaysSuccess/>
+                        </IfThenElse>
+                        <IfThenElse>
+                            <Action ID="ConditionalExpression" conditional_expression="related_point_main != &quot;&quot;"/>
+                            <Sequence>
+                                <Sequence>
+                                    <Action ID="MongoValueReader" mongo_param_name="label" mongo_record_name="{related_point_main}" output_port="main_label"/>
+                                    <IfThenElse>
+                                        <Action ID="ConditionalExpression" conditional_expression="related_point_sub != &quot;&quot;"/>
+                                        <Sequence>
+                                            <Action ID="MongoValueReader" mongo_param_name="label" mongo_record_name="{related_point_sub}" output_port="sub_label"/>
+                                        </Sequence>
+                                        <AlwaysSuccess/>
+                                    </IfThenElse>
+                                    <IfThenElse>
+                                        <Action ID="ConditionalExpression" conditional_expression="main_label == UP_DOWN"/>
+                                        <Sequence>
+                                            <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION" mongo_value="\related_point_main\" output_port="main_flg"/>
+                                            <IfThenElse>
+                                                <Action ID="ConditionalExpression" conditional_expression="main_flg == false"/>
+                                                <Sequence>
+                                                    <Action ID="MongoArrayWriter" input_value="\related_point_main\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
+                                                    <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
+                                                    <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                                    <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
+                                                </Sequence>
+                                                <AlwaysSuccess/>
+                                            </IfThenElse>
+                                        </Sequence>
+                                        <AlwaysSuccess/>
+                                    </IfThenElse>
+                                    <IfThenElse>
+                                        <Action ID="ConditionalExpression" conditional_expression="sub_label == UP_DOWN"/>
+                                        <Sequence>
+                                            <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION" mongo_value="\related_point_sub\" output_port="sub_flg"/>
+                                            <IfThenElse>
+                                                <Action ID="ConditionalExpression" conditional_expression="sub_flg == false"/>
+                                                <Sequence>
+                                                    <Action ID="MongoArrayWriter" input_value="\related_point_sub\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                                    <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_sub}"/>
+                                                    <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
+                                                    <Action ID="MongoValueWriter" input_value="\related_point_sub\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                                    <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
+                                                </Sequence>
+                                                <AlwaysSuccess/>
+                                            </IfThenElse>
+                                        </Sequence>
+                                        <AlwaysSuccess/>
+                                    </IfThenElse>
+                                    <IfThenElse>
+                                        <Action ID="ConditionalExpression" conditional_expression="main_label == &quot;main&quot; or sub_label == &quot;sub&quot;"/>
+                                        <Sequence>
+                                            <Action ID="MongoValueReader" mongo_param_name="preferred_direction" mongo_record_name="{CURRENT_SECTION}" output_port="preferred_direction"/>
+                                            <IfThenElse>
+                                                <Action ID="ConditionalExpression" conditional_expression="preferred_direction == UP_DOWN"/>
+                                                <Sequence>
+                                                    <IfThenElse>
+                                                        <Action ID="ConditionalExpression" conditional_expression="related_point_sub == &quot;&quot;"/>
+                                                        <Sequence>
+                                                            <Action ID="SetLocalBlackboard" output_key="next_main_flg" value="false"/>
+                                                            <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION" mongo_value="\related_point_main\" output_port="main_flg"/>
+                                                            <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION" mongo_value="\next_point_main\" output_port="next_main_flg"/>
+                                                            <IfThenElse>
+                                                                <Action ID="ConditionalExpression" conditional_expression="main_flg == false and next_main_flg == false"/>
+                                                                <Sequence>
+                                                                    <Action ID="MongoArrayWriter" input_value="\related_point_main\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                                                    <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
+                                                                    <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
+                                                                    <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                                                    <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
+                                                                </Sequence>
+                                                                <AlwaysSuccess/>
+                                                            </IfThenElse>
+                                                        </Sequence>
+                                                        <AlwaysSuccess/>
+                                                    </IfThenElse>
+                                                    <IfThenElse>
+                                                        <Action ID="ConditionalExpression" conditional_expression="related_point_sub != &quot;&quot;"/>
+                                                        <Sequence>
+                                                            <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION" mongo_value="\related_point_main\" output_port="main_flg"/>
+                                                            <IfThenElse>
+                                                                <Action ID="ConditionalExpression" conditional_expression="main_flg == false"/>
+                                                                <Sequence>
+                                                                    <Action ID="MongoArrayWriter" input_value="\related_point_main\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                                                    <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
+                                                                    <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
+                                                                    <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                                                    <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
+                                                                </Sequence>
+                                                                <AlwaysSuccess/>
+                                                            </IfThenElse>
+                                                        </Sequence>
+                                                        <AlwaysSuccess/>
+                                                    </IfThenElse>
+                                                </Sequence>
+                                                <AlwaysSuccess/>
+                                            </IfThenElse>
+                                            <IfThenElse>
+                                                <Action ID="ConditionalExpression" conditional_expression="preferred_direction != UP_DOWN"/>
+                                                <Sequence>
+                                                    <IfThenElse>
+                                                        <Action ID="ConditionalExpression" conditional_expression="related_point_sub == &quot;&quot;"/>
+                                                        <Sequence>
+                                                            <Action ID="SetLocalBlackboard" output_key="next_main_flg" value="false"/>
+                                                            <Action ID="SetLocalBlackboard" output_key="next_sub_flg" value="false"/>
+                                                            <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION" mongo_value="\related_point_main\" output_port="main_flg"/>
+                                                            <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION" mongo_value="\next_point_main\" output_port="next_main_flg"/>
+                                                            <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION" mongo_value="\next_point_sub\" output_port="next_sub_flg"/>
+                                                            <IfThenElse>
+                                                                <Action ID="ConditionalExpression" conditional_expression="main_flg == false and next_main_flg == false and next_sub_flg == false"/>
+                                                                <Sequence>
+                                                                    <Action ID="MongoArrayWriter" input_value="\related_point_main\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                                                    <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
+                                                                    <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
+                                                                    <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                                                    <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
+                                                                </Sequence>
+                                                                <AlwaysSuccess/>
+                                                            </IfThenElse>
+                                                        </Sequence>
+                                                        <AlwaysSuccess/>
+                                                    </IfThenElse>
+                                                    <IfThenElse>
+                                                        <Action ID="ConditionalExpression" conditional_expression="related_point_sub != &quot;&quot;"/>
+                                                        <Sequence>
+                                                            <Sequence>
+                                                                <Action ID="SetLocalBlackboard" output_key="next_main_flg" value="false"/>
+                                                                <Action ID="SetLocalBlackboard" output_key="next_sub_flg" value="false"/>
+                                                                <Action ID="SetLocalBlackboard" output_key="next_next_main_flg" value="false"/>
+                                                                <Action ID="SetLocalBlackboard" output_key="next_next_sub_flg" value="false"/>
+                                                                <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION" mongo_value="\related_point_main\" output_port="main_flg"/>
+                                                                <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION,UP_DOWN" mongo_value="=\related_point_sub\,\UP_DOWN\" output_port="sub_up"/>
+                                                                <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION" mongo_value="\next_point_main\" output_port="next_main_flg"/>
+                                                                <IfThenElse>
+                                                                    <Action ID="ConditionalExpression" conditional_expression="next_next_point_main != &quot;&quot; and next_next_point_sub != &quot;&quot;"/>
+                                                                    <Sequence>
+                                                                        <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION" mongo_value="\next_next_point_sub\" output_port="next_next_sub_flg"/>
+                                                                        <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION" mongo_value="\next_next_point_main\" output_port="next_next_main_flg"/>
+                                                                    </Sequence>
+                                                                    <AlwaysSuccess/>
+                                                                </IfThenElse>
+                                                                <IfThenElse>
+                                                                    <Action ID="ConditionalExpression" conditional_expression="main_flg == false and sub_up == false and next_main_flg == false and next_next_sub_flg == false and next_next_main_flg == false"/>
+                                                                    <Sequence>
+                                                                        <Action ID="MongoArrayWriter" input_value="\related_point_main\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                                                        <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
+                                                                        <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
+                                                                        <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                                                        <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
+                                                                    </Sequence>
+                                                                    <AlwaysSuccess/>
+                                                                </IfThenElse>
+                                                            </Sequence>
+                                                            <Sequence>
+                                                                <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION,UP_DOWN" mongo_value="=\related_point_main\,\UP_DOWN\" output_port="main_up"/>
+                                                                <Action ID="BlackboardValueSearcherMongo" mongo_param_name="ON_HOLD_SECTION" mongo_value="\related_point_sub\" output_port="sub_flg"/>
+                                                                <IfThenElse>
+                                                                    <Action ID="ConditionalExpression" conditional_expression="sub_flg==false and main_up == false"/>
+                                                                    <Sequence>
+                                                                        <Action ID="MongoArrayWriter" input_value="\related_point_sub\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                                                        <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_sub}"/>
+                                                                        <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
+                                                                        <Action ID="MongoValueWriter" input_value="\related_point_sub\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                                                        <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
+                                                                    </Sequence>
+                                                                    <AlwaysSuccess/>
+                                                                </IfThenElse>
+                                                            </Sequence>
+                                                        </Sequence>
+                                                        <AlwaysSuccess/>
+                                                    </IfThenElse>
+                                                </Sequence>
+                                                <AlwaysSuccess/>
+                                            </IfThenElse>
+                                        </Sequence>
+                                        <AlwaysSuccess/>
+                                    </IfThenElse>
+                                </Sequence>
+                            </Sequence>
+                            <AlwaysSuccess/>
+                        </IfThenElse>
+                    </Sequence>
+                    <Sequence>
+                        <IfThenElse>
+                            <Action ID="ConditionalExpression" conditional_expression="execute_success == false"/>
+                            <Action ID="WaitTimer" seconds="1"/>
+                            <AlwaysSuccess/>
+                        </IfThenElse>
+                    </Sequence>
+                    <Sequence>
+                        <Action ID="MongoValueReader" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$" output_port="CURRENT_SECTION"/>
+                        <IfThenElse>
+                            <Action ID="ConditionalExpression" conditional_expression="CURRENT_SECTION == &quot;$terminate_condition$&quot;"/>
+                            <Action ID="SetLocalBlackboard" output_key="SUBTASK_TERMINAL_FLG" value="true"/>
+                            <AlwaysSuccess/>
+                        </IfThenElse>
+                    </Sequence>
+                </Sequence>
+            </Decorator>
+            <Action ID="SetLocalBlackboard" output_key="SUBTASK_INITIAL_FLG" value="false"/>
+            <Action ID="SetLocalBlackboard" output_key="SUBTASK_TERMINAL_FLG" value="false"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="BlackboardValueSearcherMongo">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_value"/>
+            <input_port name="output_port"/>
+        </Action>
+        <Action ID="ConditionalExpression">
+            <input_port name="conditional_expression"/>
+        </Action>
+        <Action ID="Counter">
+            <input_port name="key"/>
+        </Action>
+        <Action ID="ExecuteSubtask">
+            <input_port name="machine_record_name"/>
+            <input_port name="model_name"/>
+            <input_port name="subtask_name"/>
+            <input_port name="subtask_parameters"/>
+            <input_port name="terminate_condition"/>
+        </Action>
+        <Decorator ID="KeepRunningUntilFlgup">
+            <input_port name="key"/>
+            <input_port name="while_or_dowhile"/>
+        </Decorator>
+        <Action ID="LeafNodeBulldozer">
+            <input_port default="d37pxi_24" name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="record_name"/>
+        </Action>
+        <Action ID="LeafNodeCommon">
+            <input_port name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="record_name"/>
+        </Action>
+        <Action ID="LeafNodeCrawlerDump">
+            <input_port name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="read_direction"/>
+            <inout_port name="record_name"/>
+        </Action>
+        <Action ID="LeafNodeExcavator">
+            <input_port default="zx200" name="model_name"/>
+            <inout_port name="previous_target_record_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="target_record_name"/>
+        </Action>
+        <Action ID="LeafNodeExcavatorAssist">
+            <input_port default="zx200" name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="record_name"/>
+        </Action>
+        <Action ID="MongoArrayWriter">
+            <input_port name="input_value"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="operation"/>
+        </Action>
+        <Action ID="MongoValueReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+        </Action>
+        <Action ID="MongoValueWriter">
+            <input_port name="input_value"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+        </Action>
+        <Action ID="SetLocalBlackboard">
+            <inout_port name="output_key"/>
+            <input_port name="value"/>
+        </Action>
+        <Action ID="SetLocalBlackboardWithCounter">
+            <inout_port name="counter_key"/>
+            <input_port name="key"/>
+        </Action>
+        <Action ID="WaitForClick">
+            <input_port name="button_info"/>
+            <input_port name="window_title"/>
+        </Action>
+        <Action ID="WaitTimer">
+            <input_port name="seconds"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>

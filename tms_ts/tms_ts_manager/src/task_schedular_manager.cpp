@@ -234,14 +234,16 @@ public:
     BT::PublisherZMQ publisher_zmq(tree_, 100, zmq_server_port, zmq_publisher_port);
     try
     {
+      rclcpp::Rate rate(100);////
       while (rclcpp::ok() && status_ == NodeStatus::RUNNING)
       {
-        status_ = tree_.tickRoot();
-        if (cancelRequested == true)
-        {
-          tree_.rootNode()->halt();
-          status_ = NodeStatus::FAILURE;
-        }
+          status_ = tree_.tickRoot();
+          if (cancelRequested)
+          {
+              tree_.rootNode()->halt();
+              status_ = NodeStatus::FAILURE;
+          }
+          rate.sleep();////
       }
     }
     catch (const std::exception& e)
