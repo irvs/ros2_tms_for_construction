@@ -175,11 +175,17 @@ def launch_setup(context, *args, **kwargs):
       #       parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
       #       namespace = 'zx200'),
         Node(
-            package='tms_ts_primitive',
-            executable='primitive_excavator_follow_waypoints',
-            output='screen',
-            parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-            namespace = 'zx200'),
+              package='tms_ts_primitive',
+              executable='primitive_excavator_follow_waypoints',
+              output='screen',
+              parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+              namespace = 'zx200'),
+        Node(
+              package='tms_ts_primitive',
+              executable='primitive_excavator_follow_straight',
+              output='screen',
+              parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+              namespace = 'zx200'),
         Node(
               package='tms_ts_primitive',
               executable='primitive_excavator_navigate_anywhere',
@@ -198,21 +204,6 @@ def launch_setup(context, *args, **kwargs):
               output='screen',
               namespace = 'zx200',
               parameters=[{"model_name": "zx200", "root_record_name": "collision_objects_shimiz", "planning_frame": "base_link"}]),      
-        Node(
-              package='tms_ts_primitive',
-              executable='primitive_excavator_follow_waypoints',
-              output='screen',
-              namespace = 'zx200'),
-        Node(
-              package='tms_ts_primitive',
-              executable='primitive_excavator_navigate_anywhere',
-              output='screen',
-              namespace = 'zx200'),
-        Node(
-              package='tms_ts_primitive',
-              executable='primitive_excavator_navigate_through_poses',
-              output='screen',
-              namespace = 'zx200'),
         
         
         # sample ###

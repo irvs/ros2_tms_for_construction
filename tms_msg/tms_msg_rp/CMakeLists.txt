@@ -39,6 +39,7 @@ set(action_files
   "action/TmsRpExcavator.action"
   "action/TmsRpCrawlerDumpDumpAngle.action"
   "action/TmsRpCrawlerDumpSwingAngle.action"
+  "action/TmsRpFollowStraight.action"
 )
 
 set(srv_files

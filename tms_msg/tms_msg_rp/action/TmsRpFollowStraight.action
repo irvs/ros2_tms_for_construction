@@ -1,0 +1,8 @@
+# Goal
+geometry_msgs/PoseStamped goal
+---
+# Result
+bool result
+---
+# Feedback
+bool running
