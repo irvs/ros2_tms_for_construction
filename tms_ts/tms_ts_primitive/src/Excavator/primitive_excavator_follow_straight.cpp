@@ -92,10 +92,10 @@ void PrimitiveExcavatorFollowStraight::execute(const std::shared_ptr<GoalHandle>
     pose.pose.orientation.z = parameters["qz"];
     pose.pose.orientation.w = parameters["qw"];
 
-    goal_msg.goal = pose;
+    goal_msg.pose = pose;
 
-    RCLCPP_INFO(this->get_logger(), "DB Pose: x=%.3f, y=%.3f", pose.pose.position.x, pose.pose.position.y);
-    RCLCPP_INFO(this->get_logger(), "FollowStraight Goal: x=%.3f, y=%.3f", goal_msg.goal.pose.position.x, goal_msg.goal.pose.position.y);
+    // RCLCPP_INFO(this->get_logger(), "DB Pose: x=%.3f, y=%.3f", pose.pose.position.x, pose.pose.position.y);
+    // RCLCPP_INFO(this->get_logger(), "FollowStraight Goal: x=%.3f, y=%.3f", goal_msg.pose.pose.position.x, goal_msg.pose.pose.position.y);
 
 
     auto send_goal_options = rclcpp_action::Client<FollowStraight>::SendGoalOptions();

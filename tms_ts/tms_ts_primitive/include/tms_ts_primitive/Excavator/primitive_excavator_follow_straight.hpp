@@ -31,17 +31,17 @@
 
 #include "nav_msgs/msg/path.hpp"
 #include "nav2_msgs/action/follow_path.hpp"
-#include "tms_msg_rp/action/tms_rp_follow_straight.hpp"
 
 #include "tms_msg_ts/action/leaf_node_base.hpp"
 #include "tms_ts_primitive/primitive_node_base.hpp"
 
+#include "nav2_msgs/action/navigate_to_pose.hpp"
 
 
 class PrimitiveExcavatorFollowStraight : public PrimitiveNodeBase
 {
 public:
-    using FollowStraight = tms_msg_rp::action::TmsRpFollowStraight;
+    using FollowStraight = nav2_msgs::action::NavigateToPose;
     using GoalHandle = rclcpp_action::ServerGoalHandle<tms_msg_ts::action::LeafNodeBase>;
     using GoalHandleFollowStraight = rclcpp_action::ClientGoalHandle<FollowStraight>;
 
