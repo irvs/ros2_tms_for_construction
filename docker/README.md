@@ -21,7 +21,7 @@ docker compose exec tms restore-db.sh                 # DB seed 投入（初回�
 
 前提・ワークスペース構造・各ステップの解説は [docs/setup.md](docs/setup.md) を参照。
 
-### 動作確認 (task_id=4)
+### 動作確認 (task_id=1)
 
 Unity ([pwri-opera/OperaSim-PhysX](https://github.com/pwri-opera/OperaSim-PhysX)) を別途起動した状態で 2 ターミナルで実行:
 
@@ -49,7 +49,7 @@ docker compose down         # コンテナ停止（named volume は保持）
 ## ドキュメント
 
 - [docs/setup.md](docs/setup.md) — 前提・ワークスペース構造・起動手順（詳細）・RMW(DDS)切替
-- [docs/usage.md](docs/usage.md) — `task_id=4` 完走手順（Terminal 1 / 2、Unity 設定、RViz 操作、緑ボタン）
+- [docs/usage.md](docs/usage.md) — `task_id=1` 完走手順（Terminal 1 / 2、Unity 設定、RViz 操作、緑ボタン）
 - [docs/known-issues.md](docs/known-issues.md) — 既知の制約・トラブルシュート
 
 ## `docker/` 配下ファイル

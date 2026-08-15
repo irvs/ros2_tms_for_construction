@@ -1,6 +1,6 @@
 # Usage
 
-Unity ([pwri-opera/OperaSim-PhysX](https://github.com/pwri-opera/OperaSim-PhysX)) を別途起動した状態で、Docker コンテナ内の ROS 2 ノードと連動させて `task_id=4`（zx200 掘削積込タスク）を完走させる手順。
+Unity ([pwri-opera/OperaSim-PhysX](https://github.com/pwri-opera/OperaSim-PhysX)) を別途起動した状態で、Docker コンテナ内の ROS 2 ノードと連動させて `task_id=1`（zx200 掘削積込タスク）を完走させる手順。
 
 ホストから container を叩く方法は 2 通り:
 
@@ -33,7 +33,7 @@ Terminal 2 で起動する `bringup.launch.yaml` は内部で 3 つの launch �
 
 1. **t = 0 s** — `zx200_bringup vehicle.launch.py`（`command_interface_name:=velocity`、`use_rviz:=true` がデフォルト）
 2. **t = `tms_if_delay` s（既定 5）** — `tms_if_for_opera tms_if_for_opera.launch.py`
-3. **t = `tms_ts_delay` s（既定 10）** — `tms_ts_launch tms_ts_construction.launch.py`（`task_id:=4` がデフォルト）
+3. **t = `tms_ts_delay` s（既定 10）** — `tms_ts_launch tms_ts_construction.launch.py`（`task_id:=1` がデフォルト）
 
 時間差を入れているのは `zx200_bringup` が `robot_description_semantic` (SRDF) を publish する前に `tms_if_for_opera` 側の MoveGroupInterface が subscribe すると 10 秒タイムアウトで FATAL 終了するため。低性能ホストで FATAL が出る場合は後述の `tms_if_delay` / `tms_ts_delay` を増やす。
 
@@ -43,7 +43,7 @@ Terminal 1 を先に起動する理由: Unity 側の `JointStatePublisher` が `
 
 | 引数 | デフォルト | 説明 |
 |---|---|---|
-| `task_id` | `4` | 緑ボタンで実行する BT の task_id |
+| `task_id` | `1` | 緑ボタンで実行する BT の task_id |
 | `command_interface_name` | `velocity` | ros2_control の command interface (`velocity` / `position` / `effort`) |
 | `use_rviz` | `true` | `zx200_bringup` の RViz を起動するか |
 | `tms_if_delay` | `5.0` | `tms_if_for_opera` 起動までの待ち時間（秒）。SRDF の subscribe timeout 回避用 |
@@ -87,9 +87,9 @@ Terminal 2 を起動するたびに必要（停止 → 再起動でこの状態�
 
 ## Step D. `tms_ur_button` GUI の緑ボタンで BT 実行
 
-Terminal 2 起動から `tms_ts_delay` 秒（既定 10）経過後、`tms_ts_construction` 側の `tms_ur_button` が Tkinter のウィンドウを表示する。緑ボタンを押すと `task_id`（デフォルト `4`）の Behavior Tree が `task_schedular_manager` に送られ、Unity 上のバックホウが掘削動作する。
+Terminal 2 起動から `tms_ts_delay` 秒（既定 10）経過後、`tms_ts_construction` 側の `tms_ur_button` が Tkinter のウィンドウを表示する。緑ボタンを押すと `task_id`（デフォルト `1`）の Behavior Tree が `task_schedular_manager` に送られ、Unity 上のバックホウが掘削動作する。
 
-1 回の実行で BT 全体が SUCCESS して終端する設計のため、**もう一度動かしたい場合は Terminal 2 を Ctrl-C → 再起動** してから Step C → 緑ボタンを押す（または BT 自体を `Repeat num_cycles=N` 構造で登録し直す。シードの `task_id=5` は task_id=4 を 4 回反復する版）。
+1 回の実行で BT 全体が SUCCESS して終端する設計のため、**もう一度動かしたい場合は Terminal 2 を Ctrl-C → 再起動** してから Step C → 緑ボタンを押す（または BT 自体を `Repeat num_cycles=N` 構造で登録し直す。シードの `task_id=2` は task_id=1 を 4 回反復する版）。
 
 ## 停止
 

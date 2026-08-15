@@ -40,7 +40,7 @@ mongorestore --drop --host "${MONGO_HOST}" --port "${MONGO_PORT}" "${DUMP_DIR}"
 # `subtask_excavator_*` implementations iterate over each key and only handle
 # numeric types (int32 / int64 / double); the string `description` triggers a
 # TypeError and the BT call stalls before sending the goal.
-# Strip the field as a post-restore fix-up so task_id=4 etc. work out of the
+# Strip the field as a post-restore fix-up so task_id=1 etc. work out of the
 # box without manual MongoDB editing. Drop this block once the seed (or the
 # subtask side) treats `description` properly.
 echo "[restore-db] Stripping 'description' from parameter records (workaround for subtask type-handling)"
