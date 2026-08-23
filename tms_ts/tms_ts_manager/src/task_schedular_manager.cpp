@@ -30,15 +30,16 @@
 #include "tms_ts_primitive/CrawlerDump/leaf_node.hpp"
 #include "tms_ts_primitive/Bulldozer/leaf_node.hpp"
 #include "tms_ts_primitive/common/mongo_value_reader.hpp"
-#include "tms_ts_primitive/common/blackboard_value_searcher_mongo.hpp"
+#include "tms_ts_primitive/common/mongo_value_searcher.hpp"
 #include "tms_ts_primitive/common/mongo_value_writer.hpp"
+#include "tms_ts_primitive/common/mongo_array_writer.hpp"
 #include "tms_ts_primitive/common/conditional_expression.hpp"
 #include "tms_ts_primitive/common/KeepRunningUntilFlgup.hpp"
 #include "tms_ts_primitive/common/SetLocalBlackboard.hpp"
 #include "tms_ts_primitive/common/SetLocalBlackboardWithCounter.hpp"
 #include "tms_ts_primitive/common/Counter.hpp"
 #include "tms_ts_primitive/common/wait_for_click.hpp"
-//#include "tms_ts_primitive/common/wait_for_topic.hpp"
+#include "tms_ts_primitive/common/wait_timer.hpp"
 #include "tms_ts_primitive/common/leaf_node.hpp"
 #include "tms_ts_primitive/common/wait_for_ur.hpp"
 
@@ -164,15 +165,16 @@ public:
     factory.registerNodeType<LeafNodeCrawlerDump>("LeafNodeCrawlerDump");
     factory.registerNodeType<LeafNodeBulldozer>("LeafNodeBulldozer");
     factory.registerNodeType<MongoValueReader>("MongoValueReader");
-    factory.registerNodeType<BlackboardValueSearcherMongo>("BlackboardValueSearcherMongo");
+    factory.registerNodeType<MongoValueSearcher>("MongoValueSearcher");
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
+    factory.registerNodeType<MongoArrayWriter>("MongoArrayWriter");
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
     factory.registerNodeType<SetLocalBlackboardWithCounter>("SetLocalBlackboardWithCounter");
     factory.registerNodeType<Counter>("Counter");
     factory.registerNodeType<WaitForClick>("WaitForClick");
-    //factory.registerNodeType<WaitForTopic>("WaitForTopic");
+    factory.registerNodeType<WaitTimer>("WaitTimer");
     factory.registerNodeType<LeafNodeCommon>("LeafNodeCommon");
 
     // loadBlackboardFromMongoDB("global_blackboard");
@@ -232,14 +234,16 @@ public:
     BT::PublisherZMQ publisher_zmq(tree_, 100, zmq_server_port, zmq_publisher_port);
     try
     {
+      rclcpp::Rate rate(1);////
       while (rclcpp::ok() && status_ == NodeStatus::RUNNING)
       {
-        status_ = tree_.tickRoot();
-        if (cancelRequested == true)
-        {
-          tree_.rootNode()->halt();
-          status_ = NodeStatus::FAILURE;
-        }
+          status_ = tree_.tickRoot();
+          if (cancelRequested)
+          {
+              tree_.rootNode()->halt();
+              status_ = NodeStatus::FAILURE;
+          }
+          rate.sleep();////
       }
     }
     catch (const std::exception& e)

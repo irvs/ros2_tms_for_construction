@@ -26,7 +26,6 @@ PrimitiveCrawlerDumpNavigateThroughPoses::PrimitiveCrawlerDumpNavigateThroughPos
         std::bind(&PrimitiveCrawlerDumpNavigateThroughPoses::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&PrimitiveCrawlerDumpNavigateThroughPoses::handle_cancel, this, std::placeholders::_1),
         std::bind(&PrimitiveCrawlerDumpNavigateThroughPoses::handle_accepted, this, std::placeholders::_1));
-
     
     action_client_ = rclcpp_action::create_client<NavigateThroughPoses>(this, "tms_rp_navigate_through_poses");
 }
@@ -65,6 +64,8 @@ void PrimitiveCrawlerDumpNavigateThroughPoses::execute(const std::shared_ptr<Goa
 {
     RCLCPP_INFO(this->get_logger(), "primitive(primitive_crawlerdump_navigate_through_poses) is executing...");
     auto result = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
+    auto goal = goal_handle->get_goal();
+    std::string read_direction = goal->read_direction;
     auto handle_error = [&](const std::string& message) {
         if (goal_handle->is_active())
         {
@@ -82,29 +83,46 @@ void PrimitiveCrawlerDumpNavigateThroughPoses::execute(const std::shared_ptr<Goa
 
     std::vector<geometry_msgs::msg::PoseStamped> poses;
     auto goal_msg = NavigateThroughPoses::Goal();
-
-
+    auto pose = geometry_msgs::msg::PoseStamped();
     int point_num = parameters.size() / 7;
     std::cout << "Total number of points: " << parameters.size() << std::endl;
     std::cout << "point_num: " << point_num << std::endl;
-    auto pose = geometry_msgs::msg::PoseStamped();
-    pose.header.frame_id = "map";
     pose.header.stamp = this->now();
+    pose.header.frame_id = "map";
 
-    for (int i=0; i < point_num; i++){
-      pose.pose.position.x = parameters[std::make_pair("x",std::to_string(i))];
-      pose.pose.position.y = parameters[std::make_pair("y",std::to_string(i))];
-      pose.pose.position.z = parameters[std::make_pair("z",std::to_string(i))];
-      pose.pose.orientation.x = parameters[std::make_pair("qx",std::to_string(i))];
-      pose.pose.orientation.y = parameters[std::make_pair("qy",std::to_string(i))];
-      pose.pose.orientation.z = parameters[std::make_pair("qz",std::to_string(i))];
-      pose.pose.orientation.w = parameters[std::make_pair("qw",std::to_string(i))];
-      poses.push_back(pose);
-      std::cout << "Point " << i << ": " << pose.pose.position.x << ", " << pose.pose.position.y << ", " << pose.pose.position.z << std::endl;
-      std::cout << "Pose " << i << ": " << pose.pose.orientation.x << ", " << pose.pose.orientation.y << ", " << pose.pose.orientation.z << ", " << pose.pose.orientation.w << std::endl;
+    std::cout << "Read direction : " << read_direction << std::endl;
+
+    if (read_direction == "down"){
+      for (int i=point_num-1; i >= 0; i--){
+        pose.pose.position.x = parameters[std::make_pair("x",std::to_string(i))];
+        pose.pose.position.y = parameters[std::make_pair("y",std::to_string(i))];
+        pose.pose.position.z = parameters[std::make_pair("z",std::to_string(i))];
+        pose.pose.orientation.x = parameters[std::make_pair("qx",std::to_string(i))];
+        pose.pose.orientation.y = parameters[std::make_pair("qy",std::to_string(i))];
+        pose.pose.orientation.z = parameters[std::make_pair("qz",std::to_string(i))];
+        pose.pose.orientation.w = parameters[std::make_pair("qw",std::to_string(i))];
+        poses.push_back(pose);
+        std::cout << "Point " << i << ": " << pose.pose.position.x << ", " << pose.pose.position.y << ", " << pose.pose.position.z << std::endl;
+        std::cout << "Pose " << i << ": " << pose.pose.orientation.x << ", " << pose.pose.orientation.y << ", " << pose.pose.orientation.z << ", " << pose.pose.orientation.w << std::endl;
+      }
+
+    }
+
+    else{
+      for (int i=0; i < point_num; i++){
+        pose.pose.position.x = parameters[std::make_pair("x",std::to_string(i))];
+        pose.pose.position.y = parameters[std::make_pair("y",std::to_string(i))];
+        pose.pose.position.z = parameters[std::make_pair("z",std::to_string(i))];
+        pose.pose.orientation.x = parameters[std::make_pair("qx",std::to_string(i))];
+        pose.pose.orientation.y = parameters[std::make_pair("qy",std::to_string(i))];
+        pose.pose.orientation.z = parameters[std::make_pair("qz",std::to_string(i))];
+        pose.pose.orientation.w = parameters[std::make_pair("qw",std::to_string(i))];
+        poses.push_back(pose);
+        std::cout << "Point " << i << ": " << pose.pose.position.x << ", " << pose.pose.position.y << ", " << pose.pose.position.z << std::endl;
+        std::cout << "Pose " << i << ": " << pose.pose.orientation.x << ", " << pose.pose.orientation.y << ", " << pose.pose.orientation.z << ", " << pose.pose.orientation.w << std::endl;
+      }
     }
     goal_msg.poses = poses;
-
 
     //進捗状況を表示するFeedbackコールバックを設�?
     auto send_goal_options = rclcpp_action::Client<NavigateThroughPoses>::SendGoalOptions();

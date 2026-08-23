@@ -3,22 +3,13 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="LeafNodeCrawlerDump" model_name="mst110cr" primitive_name="primitive_crawlerdump_follow_waypoin" read_direction="up" record_name="test_way_points"/>
-            <Action ID="LeafNodeCrawlerDump" model_name="mst110cr" primitive_name="primitive_crawlerdump_navigate_through_poses" read_direction="up" record_name="test_way_points"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" primitive_name="primitive_crawlerdump_navigate_anywhere" read_direction="up" record_name="rposition_and_pose"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="down" record_name="3725960300002"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" primitive_name="primitive_crawlerdump_navigate_through_poses" read_direction="up" record_name="circle"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="BlackboardValueReaderMongo">
-            <input_port name="mongo_param_name"/>
-            <input_port name="mongo_record_name"/>
-            <input_port name="output_port"/>
-        </Action>
-        <Action ID="BlackboardValueSearcherMongo">
-            <input_port name="mongo_param_name"/>
-            <input_port name="mongo_value"/>
-            <input_port name="output_port"/>
-        </Action>
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
         </Action>
@@ -29,10 +20,12 @@
             <input_port name="machine_record_name"/>
             <input_port name="model_name"/>
             <input_port name="subtask_name"/>
+            <input_port name="subtask_parameters"/>
             <input_port name="terminate_condition"/>
         </Action>
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>
+            <input_port name="while_or_dowhile"/>
         </Decorator>
         <Action ID="LeafNodeBulldozer">
             <input_port default="d37pxi_24" name="model_name"/>
@@ -52,8 +45,19 @@
         </Action>
         <Action ID="LeafNodeExcavator">
             <input_port default="zx200" name="model_name"/>
+            <inout_port name="previous_target_record_name"/>
             <inout_port name="primitive_name"/>
-            <inout_port name="record_name"/>
+            <inout_port name="target_record_name"/>
+        </Action>
+        <Action ID="MongoValueReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+        </Action>
+        <Action ID="MongoValueSearcher">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_value"/>
+            <input_port name="output_port"/>
         </Action>
         <Action ID="MongoValueWriter">
             <input_port name="input_value"/>

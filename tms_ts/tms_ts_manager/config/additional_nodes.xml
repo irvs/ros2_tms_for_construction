@@ -34,7 +34,7 @@
             <input_port name="output_port"/>
         </Action>
 
-        <Action ID="BlackboardValueSearcherMongo">
+        <Action ID="MongoValueSearcher">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_value"/>
             <input_port name="output_port"/>
@@ -45,6 +45,13 @@
             <input_port name="mongo_record_name"/>
             <input_port name="input_value"/>
         </Action>
+
+        <Action ID="MongoArrayWriter">
+            <input_port name="mongo_record_name"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="input_value"/>
+            <input_port name="operation"/>  
+        </Action>  
 
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
@@ -74,9 +81,9 @@
             <input_port name="button_info"/>
         </Action>  
 
-        <!-- <Action ID="WaitForTopic">
-            <input_port name="topic_name"/>
-        </Action>    -->
+        <Action ID="WaitTimer">
+            <input_port name="seconds"/>
+        </Action>   
 
         <Action ID="LeafNodeCommon">
             <input_port name="model_name"/>
