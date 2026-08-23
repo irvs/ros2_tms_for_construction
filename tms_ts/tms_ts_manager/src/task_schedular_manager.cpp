@@ -234,7 +234,7 @@ public:
     BT::PublisherZMQ publisher_zmq(tree_, 100, zmq_server_port, zmq_publisher_port);
     try
     {
-      rclcpp::Rate rate(100);////
+      rclcpp::Rate rate(1);////
       while (rclcpp::ok() && status_ == NodeStatus::RUNNING)
       {
           status_ = tree_.tickRoot();
