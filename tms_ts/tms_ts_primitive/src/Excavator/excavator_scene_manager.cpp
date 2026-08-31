@@ -3,6 +3,7 @@
 #include <moveit_msgs/msg/planning_scene.hpp>
 #include <moveit_msgs/msg/collision_object.hpp>
 #include <moveit_msgs/msg/link_padding.hpp>
+#include <moveit_msgs/msg/object_color.hpp>
 #include <moveit_msgs/srv/apply_planning_scene.hpp>
 
 #include <shape_msgs/msg/solid_primitive.hpp>
@@ -36,11 +37,17 @@ public:
     this->declare_parameter<std::string>("root_record_name", "");
     this->declare_parameter<std::string>("planning_frame", "base_link");
     this->declare_parameter<std::string>("visualization_record_name", "");
+    this->declare_parameter<std::vector<std::string>>("visualization_record_names", std::vector<std::string>{});
 
     model_name_ = this->get_parameter("model_name").as_string();
     root_record_name_ = this->get_parameter("root_record_name").as_string();
     planning_frame_ = this->get_parameter("planning_frame").as_string();
     visualization_record_name_ = this->get_parameter("visualization_record_name").as_string();
+    visualization_record_names_ = this->get_parameter("visualization_record_names").as_string_array();
+
+    if (visualization_record_names_.empty() && !visualization_record_name_.empty()) {
+      visualization_record_names_.push_back(visualization_record_name_);
+    }
 
     if (model_name_.empty() || root_record_name_.empty()) {
       RCLCPP_ERROR(this->get_logger(), "model_name or root_record_name is empty.");
@@ -222,6 +229,14 @@ private:
     co.operation = moveit_msgs::msg::CollisionObject::ADD;
 
     scene.world.collision_objects.push_back(co);
+
+    moveit_msgs::msg::ObjectColor oc;
+    oc.id = co.id;
+    oc.color.r = 0.0f;
+    oc.color.g = 1.0f;
+    oc.color.b = 0.0f;
+    oc.color.a = 1.0f;
+    scene.object_colors.push_back(oc);
   }
 
   void addMeshFromMap(moveit_msgs::msg::PlanningScene& scene,
@@ -274,17 +289,20 @@ private:
     co.operation = moveit_msgs::msg::CollisionObject::ADD;
 
     scene.world.collision_objects.push_back(co);
+
+    moveit_msgs::msg::ObjectColor oc;
+    oc.id = co.id;
+    oc.color.r = 0.0f;
+    oc.color.g = 1.0f;
+    oc.color.b = 0.0f;
+    oc.color.a = 1.0f;
+    scene.object_colors.push_back(oc);
   }
 
   visualization_msgs::msg::MarkerArray buildVisualizationMarkersFromDb()
   {
     visualization_msgs::msg::MarkerArray markers;
-    if (visualization_record_name_.empty()) {
-      return markers;
-    }
-
-    const auto viz_record = this->GetParamFromDBAsJson(model_name_, visualization_record_name_);
-    if (viz_record.empty()) {
+    if (visualization_record_names_.empty()) {
       return markers;
     }
 
@@ -310,15 +328,8 @@ private:
       pose.position.x = readNumberAsDouble(x) + readNumberAsDouble(size_x) * 0.5;
       pose.position.y = readNumberAsDouble(y) + readNumberAsDouble(size_y) * 0.5;
       pose.position.z = readNumberAsDouble(z) + readNumberAsDouble(size_z) * 0.5;
-      // double theta_w = 0.0;
-      // auto theta_elem = area_data["theta_w"];
-      // if (theta_elem && (theta_elem.type() == bsoncxx::type::k_double || theta_elem.type() == bsoncxx::type::k_int32 || theta_elem.type() == bsoncxx::type::k_int64)) {
-      //   theta_w = readNumberAsDouble(theta_elem);
-      // }
       pose.orientation.x = 0.0;
       pose.orientation.y = 0.0;
-      // pose.orientation.z = std::sin(theta_w * 0.5);
-      // pose.orientation.w = std::cos(theta_w * 0.5);
       pose.orientation.z = 0.0;
       pose.orientation.w = 1.0;
 
@@ -343,6 +354,7 @@ private:
 
     auto addPointsMarker = [&](const bsoncxx::array::view& points_array,
                                 const std::string& marker_ns,
+                                double scale_size,
                                 float r,
                                 float g,
                                 float b,
@@ -353,8 +365,8 @@ private:
       marker.id = static_cast<int>(markers.markers.size());
       marker.type = visualization_msgs::msg::Marker::POINTS;
       marker.action = visualization_msgs::msg::Marker::ADD;
-      marker.scale.x = 0.1;
-      marker.scale.y = 0.1;
+      marker.scale.x = scale_size;
+      marker.scale.y = scale_size;
       marker.color.r = r;
       marker.color.g = g;
       marker.color.b = b;
@@ -382,64 +394,95 @@ private:
       }
     };
 
-    auto waypoints_it = viz_record.find("waypoints");
-    if (waypoints_it != viz_record.end()) {
-      auto doc_opt = tryParseJsonDoc(waypoints_it->second);
-      if (doc_opt) {
-        auto waypoints_elem = doc_opt->view()["waypoints"];
-        if (waypoints_elem && waypoints_elem.type() == bsoncxx::type::k_array) {
-          for (auto&& waypoint : waypoints_elem.get_array().value) {
-            if (waypoint.type() != bsoncxx::type::k_document) {
-              continue;
+    for (size_t rank = 0; rank < visualization_record_names_.size(); ++rank) {
+      const auto& rec_name = visualization_record_names_[rank];
+      if (rec_name.empty()) continue;
+
+      const auto viz_record = this->GetParamFromDBAsJson(model_name_, rec_name);
+      if (viz_record.empty()) continue;
+
+      // 優先度が高い（先頭に近い）ほど points marker を大きく表示する
+      double point_scale = (rank == 0) ? 0.15 : (rank == 1 ? 0.08 : 0.05);
+
+      // points marker の色を record ごとに切り替え
+      float r_pt = 1.0f, g_pt = 0.0f, b_pt = 0.0f, a_pt = 1.0f;
+      if (rank == 1) {
+        // 2番目の優先度の色 (緑/シアン)
+        r_pt = 0.0f; g_pt = 0.9f; b_pt = 0.2f; a_pt = 0.9f;
+      } else if (rank >= 2) {
+        // 3番目以降の色 (黄色)
+        r_pt = 1.0f; g_pt = 1.0f; b_pt = 0.0f; a_pt = 0.8f;
+      }
+
+      std::string suffix = "_" + std::to_string(rank);
+
+      auto waypoints_it = viz_record.find("waypoints");
+      if (waypoints_it != viz_record.end()) {
+        auto doc_opt = tryParseJsonDoc(waypoints_it->second);
+        if (doc_opt) {
+          auto waypoints_elem = doc_opt->view()["waypoints"];
+          if (waypoints_elem && waypoints_elem.type() == bsoncxx::type::k_array) {
+            for (auto&& waypoint : waypoints_elem.get_array().value) {
+              if (waypoint.type() != bsoncxx::type::k_document) {
+                continue;
+              }
+              auto waypoint_doc = waypoint.get_document().value;
+              auto type_elem = waypoint_doc["type"];
+              if (!type_elem || type_elem.type() != bsoncxx::type::k_utf8) {
+                continue;
+              }
+              if (type_elem.get_utf8().value.to_string() != "area") {
+                continue;
+              }
+              auto data_elem = waypoint_doc["data"];
+              if (!data_elem || data_elem.type() != bsoncxx::type::k_document) {
+                continue;
+              }
+              makeAreaMarker(data_elem.get_document().value);
+              break;
             }
-            auto waypoint_doc = waypoint.get_document().value;
-            auto type_elem = waypoint_doc["type"];
-            if (!type_elem || type_elem.type() != bsoncxx::type::k_utf8) {
-              continue;
+          }
+        }
+      }
+
+      bool points_drawn = false;
+      // ik_pass_pointsがあれば描画
+      auto ik_points_it = viz_record.find("ik_pass_points");
+      if (ik_points_it != viz_record.end()) {
+        auto doc_opt = tryParseJsonDoc(ik_points_it->second);
+        if (doc_opt) {
+          auto points_elem = doc_opt->view()["ik_pass_points"];
+          if (points_elem && points_elem.type() == bsoncxx::type::k_array) {
+            auto arr = points_elem.get_array().value;
+            if (std::distance(arr.begin(), arr.end()) > 0) {
+              addPointsMarker(arr, "ik_pass_points" + suffix, point_scale, r_pt, g_pt, b_pt, a_pt);
+              points_drawn = true;
             }
-            if (type_elem.get_utf8().value.to_string() != "area") {
-              continue;
+          }
+        }
+      }
+
+      // ik_pass_pointsが無く、excavatable_pointsがあれば描画
+      if (!points_drawn) {
+        auto points_it = viz_record.find("excavatable_points");
+        if (points_it != viz_record.end()) {
+          auto doc_opt = tryParseJsonDoc(points_it->second);
+          if (doc_opt) {
+            auto points_elem = doc_opt->view()["excavatable_points"];
+            if (points_elem && points_elem.type() == bsoncxx::type::k_array) {
+              addPointsMarker(points_elem.get_array().value, "reachable_points" + suffix, point_scale, r_pt, g_pt, b_pt, a_pt);
             }
-            auto data_elem = waypoint_doc["data"];
-            if (!data_elem || data_elem.type() != bsoncxx::type::k_document) {
-              continue;
-            }
-            makeAreaMarker(data_elem.get_document().value);
-            break;
           }
         }
       }
     }
-
-    auto points_it = viz_record.find("excavatable_points");
-    if (points_it != viz_record.end()) {
-      auto doc_opt = tryParseJsonDoc(points_it->second);
-      if (doc_opt) {
-        auto points_elem = doc_opt->view()["excavatable_points"];
-        if (points_elem && points_elem.type() == bsoncxx::type::k_array) {
-          addPointsMarker(points_elem.get_array().value, "reachable_points", 1.0f, 0.0f, 0.0f, 1.0f);
-        }
-      }
-    }
-
-    // Comment out the following block to disable ik_pass_points visualization.
-    // auto ik_points_it = viz_record.find("ik_pass_points");
-    // if (ik_points_it != viz_record.end()) {
-    //   auto doc_opt = tryParseJsonDoc(ik_points_it->second);
-    //   if (doc_opt) {
-    //     auto points_elem = doc_opt->view()["ik_pass_points"];
-    //     if (points_elem && points_elem.type() == bsoncxx::type::k_array) {
-    //       addPointsMarker(points_elem.get_array().value, "ik_pass_points", 0.0f, 0.0f, 1.0f, 1.0f);
-    //     }
-    //   }
-    // }
 
     return markers;
   }
 
   void publishVisualizationMarkers()
   {
-    if (visualization_record_name_.empty()) {
+    if (visualization_record_names_.empty()) {
       return;
     }
 
@@ -473,6 +516,7 @@ private:
   std::string root_record_name_;
   std::string planning_frame_;
   std::string visualization_record_name_;
+  std::vector<std::string> visualization_record_names_;
 
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr visualization_pub_;
   rclcpp::Client<moveit_msgs::srv::ApplyPlanningScene>::SharedPtr apply_client_;

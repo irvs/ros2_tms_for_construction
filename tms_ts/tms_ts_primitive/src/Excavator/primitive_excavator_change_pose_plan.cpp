@@ -294,6 +294,46 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
     handle_error("Failed to parse previous plan");
     return;
   }
+
+  // previous_record の ik_pass_points から各点の joint_values を抽出
+  // (既存の goal_msg.previous_pose とは別変数で管理する)
+  std::vector<moveit_msgs::msg::RobotTrajectory> ik_pass_previous_poses;
+  if (!previous_param_from_db_.empty() && previous_param_from_db_.count("ik_pass_points")) {
+    try {
+      auto ik_doc  = bsoncxx::from_json(previous_param_from_db_["ik_pass_points"]);
+      auto ik_view = ik_doc.view();
+      auto ik_elem = ik_view["ik_pass_points"];
+      if (ik_elem && ik_elem.type() == bsoncxx::type::k_array) {
+        for (auto&& pt_elem : ik_elem.get_array().value) {
+          if (pt_elem.type() != bsoncxx::type::k_document) continue;
+          auto pt_doc = pt_elem.get_document().value;
+
+          // joint_values フィールドが存在する点のみ処理
+          auto jv_elem = pt_doc["joint_values"];
+          if (!jv_elem || jv_elem.type() != bsoncxx::type::k_document) continue;
+          auto jv_doc = jv_elem.get_document().value;
+
+          trajectory_msgs::msg::JointTrajectory jt;
+          trajectory_msgs::msg::JointTrajectoryPoint jt_point;
+          for (auto&& kv : jv_doc) {
+            jt.joint_names.push_back(std::string(kv.key()));
+            jt_point.positions.push_back(get_numeric_value(kv));
+          }
+          jt.points.push_back(jt_point);
+
+          moveit_msgs::msg::RobotTrajectory rt;
+          rt.joint_trajectory = jt;
+          ik_pass_previous_poses.push_back(rt);
+        }
+        RCLCPP_INFO(this->get_logger(),
+                    "Extracted %zu ik_pass_points with joint_values from previous record",
+                    ik_pass_previous_poses.size());
+      }
+    } catch (const std::exception& e) {
+      RCLCPP_WARN(this->get_logger(), "Failed to parse ik_pass_points from previous record: %s", e.what());
+    }
+  }
+
   if (!param_from_db_.count("waypoints")) { // waypoints形式のみサポート
     handle_error("waypoints field not found in DB. Please use waypoints format.");
     return;
@@ -479,9 +519,127 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
           return;
         }
         auto data_doc = waypoint_doc["data"].get_document().value;
+
+        // ---- ik_pass_previous_poses が存在する場合、全開始姿勢に対して個別に計算・Planを試みる ----
+        if (!ik_pass_previous_poses.empty()) {
+          RCLCPP_INFO(this->get_logger(), "=== Planning from %zu ik_pass starting poses ===",
+                      ik_pass_previous_poses.size());
+
+          // ik_pass_points の座標情報を再取得（excavatable_points 保存用）
+          std::vector<std::array<double,4>> ik_pass_coords; // {x, y, z, theta_w}
+          try {
+            auto ik_doc  = bsoncxx::from_json(previous_param_from_db_["ik_pass_points"]);
+            auto ik_elem = ik_doc.view()["ik_pass_points"];
+            if (ik_elem && ik_elem.type() == bsoncxx::type::k_array) {
+              for (auto&& pt_elem : ik_elem.get_array().value) {
+                if (pt_elem.type() != bsoncxx::type::k_document) continue;
+                auto pt_doc = pt_elem.get_document().value;
+                if (!pt_doc["joint_values"] || pt_doc["joint_values"].type() != bsoncxx::type::k_document) continue;
+                double cx = pt_doc["x"] ? get_numeric_value(pt_doc["x"]) : 0.0;
+                double cy = pt_doc["y"] ? get_numeric_value(pt_doc["y"]) : 0.0;
+                double cz = pt_doc["z"] ? get_numeric_value(pt_doc["z"]) : 0.0;
+                double cw = pt_doc["theta_w"] ? get_numeric_value(pt_doc["theta_w"]) : 0.0;
+                ik_pass_coords.push_back({cx, cy, cz, cw});
+              }
+            }
+          } catch (const std::exception& e) {
+            RCLCPP_WARN(this->get_logger(), "Failed to re-parse ik_pass_points coords: %s", e.what());
+          }
+
+          int plan_pass_count = 0;
+          bsoncxx::builder::basic::array excavatable_points_array;
+
+          for (size_t idx = 0; idx < ik_pass_previous_poses.size(); ++idx) {
+            TmsRpExcavator::Goal plan_goal = goal_msg;
+            plan_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_JOINTS;
+            plan_goal.previous_pose = {ik_pass_previous_poses[idx]};
+
+            tms_msg_rp::msg::TmsRpExcavatorJointValues target_joint_values;
+            const auto& last_traj = ik_pass_previous_poses[idx].joint_trajectory;
+            if (!last_traj.joint_names.empty() && !last_traj.points.empty()) {
+              target_joint_values.joint_names  = last_traj.joint_names;
+              target_joint_values.joint_values = last_traj.points.back().positions;
+            } else {
+              target_joint_values.joint_names  = current_joint_states_.name;
+              target_joint_values.joint_values = current_joint_states_.position;
+            }
+
+            for (auto&& field : data_doc) {
+              std::string joint_name = field.key().to_string();
+              double joint_value = get_numeric_value(field);
+              for (size_t i = 0; i < target_joint_values.joint_names.size(); ++i) {
+                if (target_joint_values.joint_names[i] == joint_name) {
+                  target_joint_values.joint_values[i] = joint_value;
+                  break;
+                }
+              }
+            }
+            // 最大3回までバイナリサーチ
+            bool bs_ok = false;
+            if (param_response) {
+              for (int retry = 0; retry < 3; ++retry) {
+                if (binary_search_extreme_joint_value(plan_goal, target_joint_values, *param_response)) {
+                  bs_ok = true;
+                  break;
+                }
+              }
+            } else {
+              bs_ok = true;
+            }
+
+            if (!bs_ok) {
+              RCLCPP_WARN(this->get_logger(), "  Failed binary search joint values for candidate %zu after 3 attempts", idx + 1);
+              continue;
+            }
+            level_bucket_if_trigger(target_joint_values);
+            plan_goal.joint_values = target_joint_values;
+
+            double cx = (idx < ik_pass_coords.size()) ? ik_pass_coords[idx][0] : 0.0;
+            double cy = (idx < ik_pass_coords.size()) ? ik_pass_coords[idx][1] : 0.0;
+            double cz = (idx < ik_pass_coords.size()) ? ik_pass_coords[idx][2] : 0.0;
+            double cw = (idx < ik_pass_coords.size()) ? ik_pass_coords[idx][3] : 0.0;
+
+            RCLCPP_INFO(this->get_logger(), "  Planning %zu/%zu: start=(%.3f, %.3f, %.3f)",
+                        idx + 1, ik_pass_previous_poses.size(), cx, cy, cz);
+
+            TmsRpExcavator::Result::SharedPtr plan_result;
+            const bool plan_ok = call_excavator_plan_sync(plan_goal, plan_result);
+            if (!plan_ok) {
+              RCLCPP_INFO(this->get_logger(), "    Plan failed for start (%.3f, %.3f, %.3f)", cx, cy, cz);
+              continue;
+            }
+
+            plan_pass_count++;
+            bsoncxx::builder::basic::document pt_doc;
+            pt_doc.append(bsoncxx::builder::basic::kvp("x", cx));
+            pt_doc.append(bsoncxx::builder::basic::kvp("y", cy));
+            pt_doc.append(bsoncxx::builder::basic::kvp("z", cz));
+            pt_doc.append(bsoncxx::builder::basic::kvp("theta_w", cw));
+            excavatable_points_array.append(pt_doc.view());
+            RCLCPP_INFO(this->get_logger(), "    Plan succeeded %d for start (%.3f, %.3f, %.3f)",
+                        plan_pass_count, cx, cy, cz);
+          }
+
+          RCLCPP_INFO(this->get_logger(),
+                      "ik_pass loop finished: %zu tried, %d plans succeeded",
+                      ik_pass_previous_poses.size(), plan_pass_count);
+
+          if (save_excavatable_points_to_db(used_model_name_, used_record_name_, excavatable_points_array)) {
+            RCLCPP_INFO(this->get_logger(), "Saved excavatable_points to database (%d points)", plan_pass_count);
+          } else {
+            RCLCPP_WARN(this->get_logger(), "Failed to save excavatable_points to database");
+          }
+
+          auto result_to_leaf = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
+          result_to_leaf->result = true;
+          if (goal_handle->is_active()) {
+            goal_handle->succeed(result_to_leaf);
+          }
+          return;
+        }
+
+        // ---- ik_pass_previous_poses が存在しない場合の通常の単一ゴールプランニング ----
         tms_msg_rp::msg::TmsRpExcavatorJointValues target_joint_values;
-        
-        // 初期値を決定：previous_poseがあればそこから、なければcurrent_joint_states_から
         if (!goal_msg.previous_pose.empty()) {
           const auto& last_traj = goal_msg.previous_pose.back().joint_trajectory;
           if (!last_traj.joint_names.empty() && !last_traj.points.empty()) {
@@ -523,6 +681,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
                       target_joint_values.joint_values[i],
                       target_joint_values.joint_values[i] * 180.0 / M_PI);
         }
+        // ik_pass_previous_poses が空の場合は通常の単一ゴール送信へ fall through
 
       } else if (type == "joint_values_relative") {
         // Joint valuesで1個（相対）
@@ -700,6 +859,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
               Pose converted_pose;
               pose_converter.convertToXYZQuaternion(x, y, z, theta_w, converted_pose);
 
+              // 最終姿勢のみIKを解いて障害物チェック
               TmsRpExcavator::Goal check_goal = goal_msg;
               check_goal.command = TmsRpExcavator::Goal::CMD_CHECK_POSE_COLLISION;
               check_goal.pose.position.x = converted_pose.x;
@@ -727,14 +887,35 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
               ik_pass_point_doc.append(bsoncxx::builder::basic::kvp("y", y));
               ik_pass_point_doc.append(bsoncxx::builder::basic::kvp("z", z));
               ik_pass_point_doc.append(bsoncxx::builder::basic::kvp("theta_w", theta_w));
+
+              // IK関節角をDBに保存
+              if (result &&
+                  !result->plan.joint_trajectory.joint_names.empty() &&
+                  !result->plan.joint_trajectory.points.empty()) {
+                const auto& jt = result->plan.joint_trajectory;
+                bsoncxx::builder::basic::document joint_values_doc;
+                for (size_t ji = 0; ji < jt.joint_names.size(); ++ji) {
+                  if (ji < jt.points[0].positions.size()) {
+                    joint_values_doc.append(bsoncxx::builder::basic::kvp(
+                      jt.joint_names[ji], jt.points[0].positions[ji]));
+                  }
+                }
+                ik_pass_point_doc.append(bsoncxx::builder::basic::kvp("joint_values", joint_values_doc.view()));
+                RCLCPP_INFO(this->get_logger(), "  Saved IK joint angles for point (%.3f, %.3f, %.3f)", x, y, z);
+              } else {
+                RCLCPP_WARN(this->get_logger(), "  No IK joint angles in result->plan for point (%.3f, %.3f, %.3f)", x, y, z);
+              }
+
               ik_pass_points_array.append(ik_pass_point_doc.view());
+
               RCLCPP_INFO(this->get_logger(), "  IK passed %d/%d: (%.3f, %.3f, %.3f)",
                           ik_pass_count, total_candidates, x, y, z);
 
-              TmsRpExcavator::Goal plan_goal = check_goal;
-              plan_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_POSE;
+              // Planで到達できるかチェック
+              // TmsRpExcavator::Goal plan_goal = check_goal;
+              // plan_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_POSE;
 
-              RCLCPP_INFO(this->get_logger(), "  Planning candidate %d/%d from IK-passed points", ik_pass_count, ik_pass_count);
+              // RCLCPP_INFO(this->get_logger(), "  Planning candidate %d/%d from IK-passed points", ik_pass_count, ik_pass_count);
 
               // const bool plan_ok = call_excavator_plan_sync(plan_goal, result);
               // if (!plan_ok) {
@@ -743,15 +924,15 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
               //   continue;
               // }
 
-              plan_pass_count++;
-              bsoncxx::builder::basic::document point_doc;
-              point_doc.append(bsoncxx::builder::basic::kvp("x", x));
-              point_doc.append(bsoncxx::builder::basic::kvp("y", y));
-              point_doc.append(bsoncxx::builder::basic::kvp("z", z));
-              point_doc.append(bsoncxx::builder::basic::kvp("theta_w", theta_w));
-              points_array.append(point_doc.view());
-              RCLCPP_INFO(this->get_logger(), "  Plan succeeded %d/%d for IK-passed point: (%.3f, %.3f, %.3f)",
-                          plan_pass_count, ik_pass_count, x, y, z);
+              // plan_pass_count++;
+              // bsoncxx::builder::basic::document point_doc;
+              // point_doc.append(bsoncxx::builder::basic::kvp("x", x));
+              // point_doc.append(bsoncxx::builder::basic::kvp("y", y));
+              // point_doc.append(bsoncxx::builder::basic::kvp("z", z));
+              // point_doc.append(bsoncxx::builder::basic::kvp("theta_w", theta_w));
+              // points_array.append(point_doc.view());
+              // RCLCPP_INFO(this->get_logger(), "  Plan succeeded %d/%d for IK-passed point: (%.3f, %.3f, %.3f)",
+              //             plan_pass_count, ik_pass_count, x, y, z);
             }
           }
         }
@@ -759,19 +940,19 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         RCLCPP_INFO(this->get_logger(), "Evaluated %d total candidates, IK passed %d, plan passed %d",
                     candidate_count, ik_pass_count, plan_pass_count);
 
-        // Comment out the following block to disable saving ik_pass_points to DB.
+        // IKが通った点をDBに保存
         if (save_ik_pass_points_to_db(used_model_name_, used_record_name_, ik_pass_points_array)) {
           RCLCPP_INFO(this->get_logger(), "Saved ik_pass_points to database");
         } else {
           RCLCPP_WARN(this->get_logger(), "Failed to save ik_pass_points to database");
         }
 
-        // Comment out the following block to disable saving excavatable_points to DB.
-        if (save_excavatable_points_to_db(used_model_name_, used_record_name_, points_array)) {
-          RCLCPP_INFO(this->get_logger(), "Saved excavatable_points to database");
-        } else {
-          RCLCPP_WARN(this->get_logger(), "Failed to save excavatable_points to database");
-        }
+        // プランが通った点をDBに保存
+        // if (save_excavatable_points_to_db(used_model_name_, used_record_name_, points_array)) {
+        //   RCLCPP_INFO(this->get_logger(), "Saved excavatable_points to database");
+        // } else {
+        //   RCLCPP_WARN(this->get_logger(), "Failed to save excavatable_points to database");
+        // }
 
         // Exploration is complete. 成功/失敗問わずここで処理を終える。
         auto result_to_leaf = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();
@@ -1741,14 +1922,14 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value(
     level_bucket_if_trigger(test_joint_values);
 
     auto excavator_goal = TmsRpExcavator::Goal();
-    excavator_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_JOINTS;
+    excavator_goal.command = TmsRpExcavator::Goal::CMD_CHECK_POSE_COLLISION;
     excavator_goal.planning_group = planning_group_;
     excavator_goal.joint_values = test_joint_values;
     excavator_goal.constraints = goal_msg.constraints;
     excavator_goal.previous_pose = goal_msg.previous_pose;
 
     TmsRpExcavator::Result::SharedPtr result;
-    const bool success = call_excavator_plan_sync(excavator_goal, result);
+    const bool success = call_excavator_collision_check_sync(excavator_goal, result);
 
     if (success) {
       best_joint_values = test_joint_values;

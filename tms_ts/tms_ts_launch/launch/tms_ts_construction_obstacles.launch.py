@@ -118,7 +118,7 @@ def generate_launch_description():
                   executable='excavator_scene_manager',
                   output='screen',
                   namespace = 'zx200',
-                  parameters=[{"model_name": "zx200", "root_record_name": "collision_objects_shimiz", "planning_frame": "base_link", "visualization_record_name": "target_excavate_area"}]),
+                  parameters=[{"model_name": "zx200", "root_record_name": "collision_objects_shimiz", "planning_frame": "base_link", "visualization_record_names": ["target_excavate_pose_2","target_excavate_area"]}]),
             
             # sample ###
             #ic120用
