@@ -36,6 +36,7 @@
 #include "tms_ts_primitive/common/conditional_expression.hpp"
 #include "tms_ts_primitive/common/KeepRunningUntilFlgup.hpp"
 #include "tms_ts_primitive/common/SetLocalBlackboard.hpp"
+#include "tms_ts_primitive/common/LocalBlackboardCaluculator.hpp"
 #include "tms_ts_primitive/common/SetLocalBlackboardWithCounter.hpp"
 #include "tms_ts_primitive/common/Counter.hpp"
 #include "tms_ts_primitive/common/wait_for_click.hpp"
@@ -171,6 +172,7 @@ public:
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
+    factory.registerNodeType<LocalBlackboardCaluculator>("LocalBlackboardCaluculator");
     factory.registerNodeType<SetLocalBlackboardWithCounter>("SetLocalBlackboardWithCounter");
     factory.registerNodeType<Counter>("Counter");
     factory.registerNodeType<WaitForClick>("WaitForClick");
