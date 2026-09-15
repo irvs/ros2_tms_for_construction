@@ -5,34 +5,40 @@
         <Sequence>
             <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="blade_up_height"/>
             <Sequence>
-                <RetryUntilSuccessful num_attempts="3">
-                    <Sequence>
-                        <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="origin"/>
-                        <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="set_height"/>
-                        <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="push_1"/>
-                        <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="blade_up_height"/>
-                    </Sequence>
-                </RetryUntilSuccessful>
+                <ForceSuccess>
+                    <RetryUntilSuccessful num_attempts="2">
+                        <Sequence>
+                            <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="origin"/>
+                            <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="set_height"/>
+                            <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="push_1"/>
+                            <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="blade_up_height"/>
+                        </Sequence>
+                    </RetryUntilSuccessful>
+                </ForceSuccess>
             </Sequence>
             <Sequence>
-                <RetryUntilSuccessful num_attempts="3">
-                    <Sequence>
-                        <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="origin"/>
-                        <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="set_height"/>
-                        <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="push_2"/>
-                        <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="blade_up_height"/>
-                    </Sequence>
-                </RetryUntilSuccessful>
+                <ForceSuccess>
+                    <RetryUntilSuccessful num_attempts="2">
+                        <Sequence>
+                            <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="origin"/>
+                            <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="set_height"/>
+                            <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="push_2"/>
+                            <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="blade_up_height"/>
+                        </Sequence>
+                    </RetryUntilSuccessful>
+                </ForceSuccess>
             </Sequence>
             <Sequence>
-                <RetryUntilSuccessful num_attempts="3">
-                    <Sequence>
-                        <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="origin"/>
-                        <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="set_height"/>
-                        <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="push_3"/>
-                        <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="blade_up_height"/>
-                    </Sequence>
-                </RetryUntilSuccessful>
+                <ForceSuccess>
+                    <RetryUntilSuccessful num_attempts="2">
+                        <Sequence>
+                            <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="origin"/>
+                            <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="set_height"/>
+                            <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="push_3"/>
+                            <Action ID="LeafNodeBulldozer" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="blade_up_height"/>
+                        </Sequence>
+                    </RetryUntilSuccessful>
+                </ForceSuccess>
             </Sequence>
         </Sequence>
     </BehaviorTree>
