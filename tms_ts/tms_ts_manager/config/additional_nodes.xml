@@ -44,6 +44,7 @@
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
             <input_port name="input_value"/>
+            <input_port name="input_type"/>
         </Action>
 
         <Action ID="MongoArrayWriter">
@@ -64,6 +65,11 @@
 
         <Action ID="SetLocalBlackboard">
             <input_port name="value"/>
+            <inout_port name="output_key"/>
+        </Action> 
+
+        <Action ID="LocalBlackboardCaluculator">
+            <input_port name="calculation_formula"/>
             <inout_port name="output_key"/>
         </Action>          
 
