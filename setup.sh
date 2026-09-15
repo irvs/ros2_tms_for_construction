@@ -126,6 +126,7 @@ mkdir -p \
   "$WS_SRC/opera/zx200" \
   "$WS_SRC/opera/ic120" \
   "$WS_SRC/opera/mst110cr" \
+  "$WS_SRC/opera/d37pxi" \
   "$WS_SRC/opera/opera_tools"
 
 # Install tms_if_for_opera
@@ -145,6 +146,9 @@ git clone https://github.com/pwri-opera/gnss_localizer_ros2.git "$WS_SRC/opera/c
 
 # Install packages for OPERA-compatible crawler dump MST110CR
 git clone https://github.com/pwri-opera/mst110cr_ros2.git "$WS_SRC/opera/mst110cr/mst110cr_ros2"
+
+# Install packages for OPERA-compatible bulldozer D37PXI-24
+git clone https://github.com/pwri-opera/d37pxi_ros2.git "$WS_SRC/opera/d37pxi/d37pxi_ros2"
 
 # Install packages for opera_tools
 git clone https://github.com/pwri-opera/opera_tools.git "$WS_SRC/opera/opera_tools"
