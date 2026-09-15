@@ -484,6 +484,20 @@ def launch_setup(context, *args, **kwargs):
       #         output='screen',
       #         parameters=[{"robot_name": "mst110cr"}]
       #   ),
+
+      #for preview
+        Node(
+              package="tms_ur_construction",
+              executable="tms_ur_plan_reader",
+              output="screen",
+              remappings=[("planwritten", "/planwritten"), ("~/output/plan", "/output/mst110cr_plan"), ("~/output/joint_plan", "/output/zx200_joint_plan"),],
+              ),
+        Node(
+              package="tms_db_manager", 
+              executable="tms_db_reader",
+              output='screen'
+              ),
+
     ])
     
     return nodes
