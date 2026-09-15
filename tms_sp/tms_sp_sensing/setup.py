@@ -44,9 +44,9 @@ setup(
             "tms_sp_dig_cycle = tms_sp_sensing.tms_sp_dig_cycle:main",
             "tms_sp_dig_locations = tms_sp_sensing.tms_sp_dig_locations:main",
             "tms_sp_release_angle = tms_sp_sensing.tms_sp_release_angle:main",
-            "tms_sp_release_locations = tms_sp_sensing.tms_sp_release_locations:main"
-            "tms_sp_flgs_202508 = tms_sp_sensing.tms_sp_flgs_202508:main",
+            "tms_sp_release_locations = tms_sp_sensing.tms_sp_release_locations:main",
             "tms_sp_dump_swing_angle = tms_sp_sensing.tms_sp_dump_swing_angle:main",
+            "tms_sp_excavatable_points_manager = tms_sp_sensing.tms_sp_excavatable_points_manager:main",
         ],
     },
 )

@@ -36,6 +36,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/DigLocations.msg"
   "msg/ReleaseAngle.msg"
   "msg/ReleaseLocations.msg"
+  "msg/TargetPoint.msg"
+  "msg/TargetPointArray.msg"
   DEPENDENCIES builtin_interfaces
 )
 
