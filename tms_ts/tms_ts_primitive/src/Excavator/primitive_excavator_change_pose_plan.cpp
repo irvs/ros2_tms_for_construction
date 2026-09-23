@@ -173,6 +173,14 @@ namespace {
   {
     return save_points_to_db(model_name, record_name, "ik_pass_points", points_array);
   }
+
+  bool save_approachable_points_to_db(
+      const std::string& model_name,
+      const std::string& record_name,
+      const bsoncxx::builder::basic::array& points_array)
+  {
+    return save_points_to_db(model_name, record_name, "approachable_points", points_array);
+  }
 }
 
 PrimitiveExcavatorChangePosePlan::PrimitiveExcavatorChangePosePlan() 
@@ -295,16 +303,16 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
     return;
   }
 
-  // previous_record の ik_pass_points から各点の joint_values を抽出
+  // previous_record の approachable_points から各点の joint_values を抽出
   // (既存の goal_msg.previous_pose とは別変数で管理する)
-  std::vector<moveit_msgs::msg::RobotTrajectory> ik_pass_previous_poses;
-  if (!previous_param_from_db_.empty() && previous_param_from_db_.count("ik_pass_points")) {
+  std::vector<moveit_msgs::msg::RobotTrajectory> approachable_previous_poses;
+  if (!previous_param_from_db_.empty() && previous_param_from_db_.count("approachable_points")) {
     try {
-      auto ik_doc  = bsoncxx::from_json(previous_param_from_db_["ik_pass_points"]);
-      auto ik_view = ik_doc.view();
-      auto ik_elem = ik_view["ik_pass_points"];
-      if (ik_elem && ik_elem.type() == bsoncxx::type::k_array) {
-        for (auto&& pt_elem : ik_elem.get_array().value) {
+      auto app_doc  = bsoncxx::from_json(previous_param_from_db_["approachable_points"]);
+      auto app_view = app_doc.view();
+      auto app_elem = app_view["approachable_points"];
+      if (app_elem && app_elem.type() == bsoncxx::type::k_array) {
+        for (auto&& pt_elem : app_elem.get_array().value) {
           if (pt_elem.type() != bsoncxx::type::k_document) continue;
           auto pt_doc = pt_elem.get_document().value;
 
@@ -323,14 +331,14 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
 
           moveit_msgs::msg::RobotTrajectory rt;
           rt.joint_trajectory = jt;
-          ik_pass_previous_poses.push_back(rt);
+          approachable_previous_poses.push_back(rt);
         }
         RCLCPP_INFO(this->get_logger(),
-                    "Extracted %zu ik_pass_points with joint_values from previous record",
-                    ik_pass_previous_poses.size());
+                    "Extracted %zu approachable_points with joint_values from previous record",
+                    approachable_previous_poses.size());
       }
     } catch (const std::exception& e) {
-      RCLCPP_WARN(this->get_logger(), "Failed to parse ik_pass_points from previous record: %s", e.what());
+      RCLCPP_WARN(this->get_logger(), "Failed to parse approachable_points from previous record: %s", e.what());
     }
   }
 
@@ -520,18 +528,18 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         }
         auto data_doc = waypoint_doc["data"].get_document().value;
 
-        // ---- ik_pass_previous_poses が存在する場合、全開始姿勢に対して個別に計算・Planを試みる ----
-        if (!ik_pass_previous_poses.empty()) {
-          RCLCPP_INFO(this->get_logger(), "=== Planning from %zu ik_pass starting poses ===",
-                      ik_pass_previous_poses.size());
+        // ---- [エリア探索] approachable_previous_poses が存在する場合、全開始姿勢に対して個別に計算・Planを試みる ----
+        if (!approachable_previous_poses.empty()) {
+          RCLCPP_INFO(this->get_logger(), "=== Planning from %zu approachable starting poses ===",
+                      approachable_previous_poses.size());
 
-          // ik_pass_points の座標情報を再取得（excavatable_points 保存用）
-          std::vector<std::array<double,4>> ik_pass_coords; // {x, y, z, theta_w}
+          // approachable_points の座標情報を再取得（excavatable_points 保存用）
+          std::vector<std::array<double,4>> approachable_coords; // {x, y, z, theta_w}
           try {
-            auto ik_doc  = bsoncxx::from_json(previous_param_from_db_["ik_pass_points"]);
-            auto ik_elem = ik_doc.view()["ik_pass_points"];
-            if (ik_elem && ik_elem.type() == bsoncxx::type::k_array) {
-              for (auto&& pt_elem : ik_elem.get_array().value) {
+            auto app_doc  = bsoncxx::from_json(previous_param_from_db_["approachable_points"]);
+            auto app_elem = app_doc.view()["approachable_points"];
+            if (app_elem && app_elem.type() == bsoncxx::type::k_array) {
+              for (auto&& pt_elem : app_elem.get_array().value) {
                 if (pt_elem.type() != bsoncxx::type::k_document) continue;
                 auto pt_doc = pt_elem.get_document().value;
                 if (!pt_doc["joint_values"] || pt_doc["joint_values"].type() != bsoncxx::type::k_document) continue;
@@ -539,23 +547,23 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
                 double cy = pt_doc["y"] ? get_numeric_value(pt_doc["y"]) : 0.0;
                 double cz = pt_doc["z"] ? get_numeric_value(pt_doc["z"]) : 0.0;
                 double cw = pt_doc["theta_w"] ? get_numeric_value(pt_doc["theta_w"]) : 0.0;
-                ik_pass_coords.push_back({cx, cy, cz, cw});
+                approachable_coords.push_back({cx, cy, cz, cw});
               }
             }
           } catch (const std::exception& e) {
-            RCLCPP_WARN(this->get_logger(), "Failed to re-parse ik_pass_points coords: %s", e.what());
+            RCLCPP_WARN(this->get_logger(), "Failed to re-parse approachable_points coords: %s", e.what());
           }
 
           int plan_pass_count = 0;
           bsoncxx::builder::basic::array excavatable_points_array;
 
-          for (size_t idx = 0; idx < ik_pass_previous_poses.size(); ++idx) {
+          for (size_t idx = 0; idx < approachable_previous_poses.size(); ++idx) {
             TmsRpExcavator::Goal plan_goal = goal_msg;
             plan_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_JOINTS;
-            plan_goal.previous_pose = {ik_pass_previous_poses[idx]};
+            plan_goal.previous_pose = {approachable_previous_poses[idx]};
 
             tms_msg_rp::msg::TmsRpExcavatorJointValues target_joint_values;
-            const auto& last_traj = ik_pass_previous_poses[idx].joint_trajectory;
+            const auto& last_traj = approachable_previous_poses[idx].joint_trajectory;
             if (!last_traj.joint_names.empty() && !last_traj.points.empty()) {
               target_joint_values.joint_names  = last_traj.joint_names;
               target_joint_values.joint_values = last_traj.points.back().positions;
@@ -574,7 +582,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
                 }
               }
             }
-            // 最大3回までバイナリサーチ
+            // 最大1回までバイナリサーチ
             bool bs_ok = false;
             if (param_response) {
               for (int retry = 0; retry < 3; ++retry) {
@@ -594,13 +602,13 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
             level_bucket_if_trigger(target_joint_values);
             plan_goal.joint_values = target_joint_values;
 
-            double cx = (idx < ik_pass_coords.size()) ? ik_pass_coords[idx][0] : 0.0;
-            double cy = (idx < ik_pass_coords.size()) ? ik_pass_coords[idx][1] : 0.0;
-            double cz = (idx < ik_pass_coords.size()) ? ik_pass_coords[idx][2] : 0.0;
-            double cw = (idx < ik_pass_coords.size()) ? ik_pass_coords[idx][3] : 0.0;
+            double cx = (idx < approachable_coords.size()) ? approachable_coords[idx][0] : 0.0;
+            double cy = (idx < approachable_coords.size()) ? approachable_coords[idx][1] : 0.0;
+            double cz = (idx < approachable_coords.size()) ? approachable_coords[idx][2] : 0.0;
+            double cw = (idx < approachable_coords.size()) ? approachable_coords[idx][3] : 0.0;
 
             RCLCPP_INFO(this->get_logger(), "  Planning %zu/%zu: start=(%.3f, %.3f, %.3f)",
-                        idx + 1, ik_pass_previous_poses.size(), cx, cy, cz);
+                        idx + 1, approachable_previous_poses.size(), cx, cy, cz);
 
             TmsRpExcavator::Result::SharedPtr plan_result;
             const bool plan_ok = call_excavator_plan_sync(plan_goal, plan_result);
@@ -621,8 +629,8 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
           }
 
           RCLCPP_INFO(this->get_logger(),
-                      "ik_pass loop finished: %zu tried, %d plans succeeded",
-                      ik_pass_previous_poses.size(), plan_pass_count);
+                      "approachable_points loop finished: %zu tried, %d plans succeeded",
+                      approachable_previous_poses.size(), plan_pass_count);
 
           if (save_excavatable_points_to_db(used_model_name_, used_record_name_, excavatable_points_array)) {
             RCLCPP_INFO(this->get_logger(), "Saved excavatable_points to database (%d points)", plan_pass_count);
@@ -638,7 +646,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
           return;
         }
 
-        // ---- ik_pass_previous_poses が存在しない場合の通常の単一ゴールプランニング ----
+        // ---- [通常Plan] approachable_previous_poses が存在しない場合の通常の単一ゴールプランニング ----
         tms_msg_rp::msg::TmsRpExcavatorJointValues target_joint_values;
         if (!goal_msg.previous_pose.empty()) {
           const auto& last_traj = goal_msg.previous_pose.back().joint_trajectory;
@@ -681,7 +689,6 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
                       target_joint_values.joint_values[i],
                       target_joint_values.joint_values[i] * 180.0 / M_PI);
         }
-        // ik_pass_previous_poses が空の場合は通常の単一ゴール送信へ fall through
 
       } else if (type == "joint_values_relative") {
         // Joint valuesで1個（相対）
@@ -846,10 +853,11 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
         int candidate_count = 0;
         int ik_pass_count = 0;
         int plan_pass_count = 0;
-        bsoncxx::builder::basic::array points_array;
         bsoncxx::builder::basic::array ik_pass_points_array;
+        bsoncxx::builder::basic::array approachable_points_array;
         const int total_candidates = static_cast<int>(xs.size() * ys.size() * zs.size());
 
+        // 探索範囲内のすべての候補点についてループ
         for (double x : xs) {
           for (double y : ys) {
             for (double z : zs) {
@@ -859,7 +867,7 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
               Pose converted_pose;
               pose_converter.convertToXYZQuaternion(x, y, z, theta_w, converted_pose);
 
-              // 最終姿勢のみIKを解いて障害物チェック
+              // 最終姿勢のみIKを解いて障害物チェック（最大3回リトライ）
               TmsRpExcavator::Goal check_goal = goal_msg;
               check_goal.command = TmsRpExcavator::Goal::CMD_CHECK_POSE_COLLISION;
               check_goal.pose.position.x = converted_pose.x;
@@ -873,10 +881,18 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
               RCLCPP_INFO(this->get_logger(), "IK candidate %d/%d: (%.3f, %.3f, %.3f)",
                           candidate_count, total_candidates, x, y, z);
 
-              TmsRpExcavator::Result::SharedPtr result;
-              const bool ik_ok = call_excavator_collision_check_sync(check_goal, result);
+              // IKを最大3回リトライ
+              bool ik_ok = false;
+              TmsRpExcavator::Result::SharedPtr ik_result;
+              for (int retry = 0; retry < 3; ++retry) {
+                if (call_excavator_collision_check_sync(check_goal, ik_result)) {
+                  ik_ok = true;
+                  break;
+                }
+              }
+
               if (!ik_ok) {
-                RCLCPP_INFO(this->get_logger(), "  IK rejected candidate %d/%d: (%.3f, %.3f, %.3f)",
+                RCLCPP_INFO(this->get_logger(), "  IK rejected candidate %d/%d: (%.3f, %.3f, %.3f) after 3 retries",
                              candidate_count, total_candidates, x, y, z);
                 continue;
               }
@@ -888,11 +904,19 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
               ik_pass_point_doc.append(bsoncxx::builder::basic::kvp("z", z));
               ik_pass_point_doc.append(bsoncxx::builder::basic::kvp("theta_w", theta_w));
 
-              // IK関節角をDBに保存
-              if (result &&
-                  !result->plan.joint_trajectory.joint_names.empty() &&
-                  !result->plan.joint_trajectory.points.empty()) {
-                const auto& jt = result->plan.joint_trajectory;
+              tms_msg_rp::msg::TmsRpExcavatorJointValues solved_joint_values;
+              bool has_joint_values = false;
+
+              // IK関節角をDBに保存用ドキュメントへ格納
+              if (ik_result &&
+                  !ik_result->plan.joint_trajectory.joint_names.empty() &&
+                  !ik_result->plan.joint_trajectory.points.empty()) {
+                const auto& jt = ik_result->plan.joint_trajectory;
+                solved_joint_values.joint_names = jt.joint_names;
+                if (!jt.points.empty()) {
+                  solved_joint_values.joint_values = jt.points[0].positions;
+                  has_joint_values = true;
+                }
                 bsoncxx::builder::basic::document joint_values_doc;
                 for (size_t ji = 0; ji < jt.joint_names.size(); ++ji) {
                   if (ji < jt.points[0].positions.size()) {
@@ -906,53 +930,78 @@ void PrimitiveExcavatorChangePosePlan::execute(const std::shared_ptr<GoalHandle>
                 RCLCPP_WARN(this->get_logger(), "  No IK joint angles in result->plan for point (%.3f, %.3f, %.3f)", x, y, z);
               }
 
-              ik_pass_points_array.append(ik_pass_point_doc.view());
+              // IKを通過した点をapproachable_pointsに登録
+              approachable_points_array.append(ik_pass_point_doc.view());
 
               RCLCPP_INFO(this->get_logger(), "  IK passed %d/%d: (%.3f, %.3f, %.3f)",
                           ik_pass_count, total_candidates, x, y, z);
 
-              // Planで到達できるかチェック
-              // TmsRpExcavator::Goal plan_goal = check_goal;
-              // plan_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_POSE;
+              /*
+              // IKを通過した点に対して、Planで到達できるかチェック
+              bool plan_ok = false;
+              TmsRpExcavator::Result::SharedPtr plan_result;
 
-              // RCLCPP_INFO(this->get_logger(), "  Planning candidate %d/%d from IK-passed points", ik_pass_count, ik_pass_count);
+              TmsRpExcavator::Goal plan_goal = goal_msg;
+              if (has_joint_values) {
+                plan_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_JOINTS;
+                plan_goal.joint_values = solved_joint_values;
+              } else {
+                plan_goal.command = TmsRpExcavator::Goal::CMD_PLAN_TO_POSE;
+                plan_goal.pose.position.x = converted_pose.x;
+                plan_goal.pose.position.y = converted_pose.y;
+                plan_goal.pose.position.z = converted_pose.z;
+                plan_goal.pose.orientation.x = converted_pose.qx;
+                plan_goal.pose.orientation.y = converted_pose.qy;
+                plan_goal.pose.orientation.z = converted_pose.qz;
+                plan_goal.pose.orientation.w = converted_pose.qw;
+              }
 
-              // const bool plan_ok = call_excavator_plan_sync(plan_goal, result);
-              // if (!plan_ok) {
-              //   RCLCPP_WARN(this->get_logger(), "  Plan failed for IK-passed point %d: (%.3f, %.3f, %.3f)",
-              //               ik_pass_count, x, y, z);
-              //   continue;
-              // }
+              RCLCPP_INFO(this->get_logger(), "  Planning candidate %d/%d from IK-passed points", ik_pass_count, ik_pass_count);
 
-              // plan_pass_count++;
-              // bsoncxx::builder::basic::document point_doc;
-              // point_doc.append(bsoncxx::builder::basic::kvp("x", x));
-              // point_doc.append(bsoncxx::builder::basic::kvp("y", y));
-              // point_doc.append(bsoncxx::builder::basic::kvp("z", z));
-              // point_doc.append(bsoncxx::builder::basic::kvp("theta_w", theta_w));
-              // points_array.append(point_doc.view());
-              // RCLCPP_INFO(this->get_logger(), "  Plan succeeded %d/%d for IK-passed point: (%.3f, %.3f, %.3f)",
-              //             plan_pass_count, ik_pass_count, x, y, z);
+              // Planを最大5回リトライ
+              for (int plan_retry = 0; plan_retry < 1; ++plan_retry) {
+                if (call_excavator_plan_sync(plan_goal, plan_result)) {
+                  plan_ok = true;
+                  break;
+                }
+              }
+
+              if (plan_ok) {
+                plan_pass_count++;
+                bsoncxx::builder::basic::document point_doc;
+                point_doc.append(bsoncxx::builder::basic::kvp("x", x));
+                point_doc.append(bsoncxx::builder::basic::kvp("y", y));
+                point_doc.append(bsoncxx::builder::basic::kvp("z", z));
+                point_doc.append(bsoncxx::builder::basic::kvp("theta_w", theta_w));
+                if (has_joint_values) {
+                  bsoncxx::builder::basic::document jv_doc;
+                  for (size_t ji = 0; ji < solved_joint_values.joint_names.size(); ++ji) {
+                    jv_doc.append(bsoncxx::builder::basic::kvp(
+                      solved_joint_values.joint_names[ji], solved_joint_values.joint_values[ji]));
+                  }
+                  point_doc.append(bsoncxx::builder::basic::kvp("joint_values", jv_doc.view()));
+                }
+                approachable_points_array.append(point_doc.view());
+                RCLCPP_INFO(this->get_logger(), "  Plan succeeded %d/%d for IK-passed point: (%.3f, %.3f, %.3f)",
+                            plan_pass_count, ik_pass_count, x, y, z);
+              } else {
+                RCLCPP_WARN(this->get_logger(), "  Plan failed across 3 retries for IK-passed point %d: (%.3f, %.3f, %.3f)",
+                            ik_pass_count, x, y, z);
+              }
+              */
             }
           }
         }
 
-        RCLCPP_INFO(this->get_logger(), "Evaluated %d total candidates, IK passed %d, plan passed %d",
-                    candidate_count, ik_pass_count, plan_pass_count);
+        RCLCPP_INFO(this->get_logger(), "Evaluated %d total candidates, IK passed %d",
+                    candidate_count, ik_pass_count);
 
-        // IKが通った点をDBに保存
-        if (save_ik_pass_points_to_db(used_model_name_, used_record_name_, ik_pass_points_array)) {
-          RCLCPP_INFO(this->get_logger(), "Saved ik_pass_points to database");
+        // IK通過点（approachable_points）をDBに保存
+        if (save_approachable_points_to_db(used_model_name_, used_record_name_, approachable_points_array)) {
+          RCLCPP_INFO(this->get_logger(), "Saved approachable_points to database");
         } else {
-          RCLCPP_WARN(this->get_logger(), "Failed to save ik_pass_points to database");
+          RCLCPP_WARN(this->get_logger(), "Failed to save approachable_points to database");
         }
-
-        // プランが通った点をDBに保存
-        // if (save_excavatable_points_to_db(used_model_name_, used_record_name_, points_array)) {
-        //   RCLCPP_INFO(this->get_logger(), "Saved excavatable_points to database");
-        // } else {
-        //   RCLCPP_WARN(this->get_logger(), "Failed to save excavatable_points to database");
-        // }
 
         // Exploration is complete. 成功/失敗問わずここで処理を終える。
         auto result_to_leaf = std::make_shared<tms_msg_ts::action::LeafNodeBase::Result>();

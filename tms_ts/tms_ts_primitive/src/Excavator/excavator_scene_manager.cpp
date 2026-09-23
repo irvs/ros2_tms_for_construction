@@ -54,9 +54,6 @@ public:
       return;
     }
 
-    visualization_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
-      "excavatable_markers", 10);
-
     apply_client_ = this->create_client<moveit_msgs::srv::ApplyPlanningScene>(
       "tms_rp_excavator_apply_planning_scene");
 
@@ -299,11 +296,34 @@ private:
     scene.object_colors.push_back(oc);
   }
 
-  visualization_msgs::msg::MarkerArray buildVisualizationMarkersFromDb()
+  static std::string sanitizeTopicName(const std::string& name)
   {
-    visualization_msgs::msg::MarkerArray markers;
+    std::string clean = name;
+    for (char& c : clean) {
+      if (!isalnum(c) && c != '_') {
+        c = '_';
+      }
+    }
+    return clean;
+  }
+
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr getOrCreatePublisher(
+    const std::string& record_name, const std::string& point_type)
+  {
+    const std::string topic_name = sanitizeTopicName(record_name) + "/" + point_type;
+    auto it = point_publishers_.find(topic_name);
+    if (it != point_publishers_.end()) {
+      return it->second;
+    }
+    auto pub = this->create_publisher<visualization_msgs::msg::MarkerArray>(topic_name, 10);
+    point_publishers_[topic_name] = pub;
+    return pub;
+  }
+
+  void publishVisualizationMarkers()
+  {
     if (visualization_record_names_.empty()) {
-      return markers;
+      return;
     }
 
     auto makeMarkerHeader = [this]() {
@@ -313,7 +333,7 @@ private:
       return header;
     };
 
-    auto makeAreaMarker = [&](const bsoncxx::document::view& area_data) {
+    auto makeAreaMarker = [&](const bsoncxx::document::view& area_data) -> std::optional<visualization_msgs::msg::Marker> {
       auto x = area_data["x"];
       auto y = area_data["y"];
       auto z = area_data["z"];
@@ -321,7 +341,7 @@ private:
       auto size_y = area_data["size_y"];
       auto size_z = area_data["size_z"];
       if (!x || !y || !z || !size_x || !size_y || !size_z) {
-        return;
+        return std::nullopt;
       }
 
       geometry_msgs::msg::Pose pose;
@@ -336,7 +356,7 @@ private:
       visualization_msgs::msg::Marker marker;
       marker.header = makeMarkerHeader();
       marker.ns = "excavation_area";
-      marker.id = static_cast<int>(markers.markers.size());
+      marker.id = 0;
       marker.type = visualization_msgs::msg::Marker::CUBE;
       marker.action = visualization_msgs::msg::Marker::ADD;
       marker.pose = pose;
@@ -349,20 +369,20 @@ private:
       marker.color.a = 0.5f;
       marker.lifetime = rclcpp::Duration::from_seconds(1.2);
       marker.frame_locked = false;
-      markers.markers.push_back(marker);
+      return marker;
     };
 
-    auto addPointsMarker = [&](const bsoncxx::array::view& points_array,
-                                const std::string& marker_ns,
-                                double scale_size,
-                                float r,
-                                float g,
-                                float b,
-                                float a) {
+    auto createPointsMarker = [&](const bsoncxx::array::view& points_array,
+                                   const std::string& marker_ns,
+                                   double scale_size,
+                                   float r,
+                                   float g,
+                                   float b,
+                                   float a) -> std::optional<visualization_msgs::msg::Marker> {
       visualization_msgs::msg::Marker marker;
       marker.header = makeMarkerHeader();
       marker.ns = marker_ns;
-      marker.id = static_cast<int>(markers.markers.size());
+      marker.id = 1;
       marker.type = visualization_msgs::msg::Marker::POINTS;
       marker.action = visualization_msgs::msg::Marker::ADD;
       marker.scale.x = scale_size;
@@ -389,9 +409,10 @@ private:
         marker.points.push_back(point);
       }
 
-      if (!marker.points.empty()) {
-        markers.markers.push_back(marker);
+      if (marker.points.empty()) {
+        return std::nullopt;
       }
+      return marker;
     };
 
     for (size_t rank = 0; rank < visualization_record_names_.size(); ++rank) {
@@ -416,6 +437,7 @@ private:
 
       std::string suffix = "_" + std::to_string(rank);
 
+      std::optional<visualization_msgs::msg::Marker> area_marker;
       auto waypoints_it = viz_record.find("waypoints");
       if (waypoints_it != viz_record.end()) {
         auto doc_opt = tryParseJsonDoc(waypoints_it->second);
@@ -438,57 +460,70 @@ private:
               if (!data_elem || data_elem.type() != bsoncxx::type::k_document) {
                 continue;
               }
-              makeAreaMarker(data_elem.get_document().value);
+              area_marker = makeAreaMarker(data_elem.get_document().value);
               break;
             }
           }
         }
       }
 
-      bool points_drawn = false;
-      // ik_pass_pointsがあれば描画
+      // 1. approachable_points のパブリッシュ（探索範囲の青ボックスを含める）
+      auto app_points_it = viz_record.find("approachable_points");
+      if (app_points_it != viz_record.end() || area_marker.has_value()) {
+        visualization_msgs::msg::MarkerArray app_markers;
+        if (area_marker.has_value()) {
+          app_markers.markers.push_back(area_marker.value());
+        }
+        if (app_points_it != viz_record.end()) {
+          auto doc_opt = tryParseJsonDoc(app_points_it->second);
+          if (doc_opt) {
+            auto points_elem = doc_opt->view()["approachable_points"];
+            if (points_elem && points_elem.type() == bsoncxx::type::k_array) {
+              auto pt_m = createPointsMarker(points_elem.get_array().value, "approachable_points" + suffix, point_scale, r_pt, g_pt, b_pt, a_pt);
+              if (pt_m.has_value()) {
+                app_markers.markers.push_back(pt_m.value());
+              }
+            }
+          }
+        }
+        if (!app_markers.markers.empty()) {
+          getOrCreatePublisher(rec_name, "approachable_markers")->publish(app_markers);
+        }
+      }
+
+      // 2. excavatable_points のパブリッシュ
+      auto exc_points_it = viz_record.find("excavatable_points");
+      if (exc_points_it != viz_record.end()) {
+        auto doc_opt = tryParseJsonDoc(exc_points_it->second);
+        if (doc_opt) {
+          auto points_elem = doc_opt->view()["excavatable_points"];
+          if (points_elem && points_elem.type() == bsoncxx::type::k_array) {
+            auto pt_m = createPointsMarker(points_elem.get_array().value, "excavatable_points" + suffix, point_scale, r_pt, g_pt, b_pt, a_pt);
+            if (pt_m.has_value()) {
+              visualization_msgs::msg::MarkerArray exc_markers;
+              exc_markers.markers.push_back(pt_m.value());
+              getOrCreatePublisher(rec_name, "excavatable_markers")->publish(exc_markers);
+            }
+          }
+        }
+      }
+
+      // 3. ik_pass_points のパブリッシュ
       auto ik_points_it = viz_record.find("ik_pass_points");
       if (ik_points_it != viz_record.end()) {
         auto doc_opt = tryParseJsonDoc(ik_points_it->second);
         if (doc_opt) {
           auto points_elem = doc_opt->view()["ik_pass_points"];
           if (points_elem && points_elem.type() == bsoncxx::type::k_array) {
-            auto arr = points_elem.get_array().value;
-            if (std::distance(arr.begin(), arr.end()) > 0) {
-              addPointsMarker(arr, "ik_pass_points" + suffix, point_scale, r_pt, g_pt, b_pt, a_pt);
-              points_drawn = true;
+            auto pt_m = createPointsMarker(points_elem.get_array().value, "ik_pass_points" + suffix, point_scale, r_pt, g_pt, b_pt, a_pt);
+            if (pt_m.has_value()) {
+              visualization_msgs::msg::MarkerArray ik_markers;
+              ik_markers.markers.push_back(pt_m.value());
+              getOrCreatePublisher(rec_name, "ik_pass_markers")->publish(ik_markers);
             }
           }
         }
       }
-
-      // ik_pass_pointsが無く、excavatable_pointsがあれば描画
-      if (!points_drawn) {
-        auto points_it = viz_record.find("excavatable_points");
-        if (points_it != viz_record.end()) {
-          auto doc_opt = tryParseJsonDoc(points_it->second);
-          if (doc_opt) {
-            auto points_elem = doc_opt->view()["excavatable_points"];
-            if (points_elem && points_elem.type() == bsoncxx::type::k_array) {
-              addPointsMarker(points_elem.get_array().value, "reachable_points" + suffix, point_scale, r_pt, g_pt, b_pt, a_pt);
-            }
-          }
-        }
-      }
-    }
-
-    return markers;
-  }
-
-  void publishVisualizationMarkers()
-  {
-    if (visualization_record_names_.empty()) {
-      return;
-    }
-
-    auto markers = buildVisualizationMarkersFromDb();
-    if (!markers.markers.empty()) {
-      visualization_pub_->publish(markers);
     }
   }
 
@@ -518,7 +553,7 @@ private:
   std::string visualization_record_name_;
   std::vector<std::string> visualization_record_names_;
 
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr visualization_pub_;
+  std::map<std::string, rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr> point_publishers_;
   rclcpp::Client<moveit_msgs::srv::ApplyPlanningScene>::SharedPtr apply_client_;
   rclcpp::TimerBase::SharedPtr timer_;
 
