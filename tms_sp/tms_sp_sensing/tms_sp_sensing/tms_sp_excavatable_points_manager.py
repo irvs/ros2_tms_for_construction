@@ -29,7 +29,8 @@ Source document shape (rostmsdb.parameter):
 }
 
 Target document shape (rostmsdb.parameter) that gets overwritten when a
-point is chosen:
+point is chosen (model_name/record_name come from the Zx200EndEffector
+message itself):
 {
   "model_name": "zx200",
   "record_name": "target_excavate_pose_1",
@@ -47,15 +48,12 @@ from rclpy.node import Node
 
 from pymongo import MongoClient
 from std_srvs.srv import Trigger
-from sensing_msgs.msg import TargetPoint, TargetPointArray
+from sensing_msgs.msg import TargetPoint, TargetPointArray, Zx200EndEffector
 
 MONGODB_IPADDRESS = '127.0.0.1'
 MONGODB_PORTNUMBER = 27017
 
 SOURCE_RECORD_NAME = 'target_excavate_pose_2'
-
-TARGET_RECORD_NAME = 'target_excavate_pose_1'
-TARGET_MODEL_NAME = 'zx200'
 
 
 class ExcavatablePointsManager(Node):
@@ -73,8 +71,8 @@ class ExcavatablePointsManager(Node):
             self.get_excavatable_points_callback)
 
         self.subscription = self.create_subscription(
-            TargetPoint,
-            'excavate_point',
+            Zx200EndEffector,
+            'zx200/end_effector',
             self.update_excavate_target,
             10)
         
@@ -115,22 +113,25 @@ class ExcavatablePointsManager(Node):
         self.get_logger().info(response.message)
         return response
 
-    def update_excavate_target(self, point: TargetPoint) -> None:
+    def update_excavate_target(self, msg: Zx200EndEffector) -> None:
 
-        self.get_logger().info(f"Received excavate point: x={point.x}, y={point.y}, z={point.z}, theta_w={point.theta_w}")
+        self.get_logger().info(
+            f"Received excavate point: model_name={msg.model_name}, record_name={msg.record_name}, "
+            f"x={msg.x}, y={msg.y}, z={msg.z}, theta_w={msg.theta_w}")
 
         client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client['rostmsdb']
         collection = db['parameter']
 
-        query = {"record_name": TARGET_RECORD_NAME, "model_name": TARGET_MODEL_NAME}
+        # query = {"record_name": msg.record_name, "model_name": msg.model_name}
+        query = {"record_name": "target_excavate_pose_1", "model_name": "zx200"}
         update_query = {
             "$set": {
                 "waypoints.0.data": {
-                    "x": point.x,
-                    "y": point.y,
-                    "z": point.z,
-                    "theta_w": point.theta_w,
+                    "x": float(msg.x),
+                    "y": float(msg.y),
+                    "z": float(msg.z),
+                    "theta_w": float(msg.theta_w),
                 }
             }
         }
@@ -138,13 +139,13 @@ class ExcavatablePointsManager(Node):
 
         if result.matched_count > 0:
             self.get_logger().info(
-                f"Updated waypoints[0].data for record_name='{TARGET_RECORD_NAME}', "
-                f"model_name='{TARGET_MODEL_NAME}': "
-                f"x={point.x}, y={point.y}, z={point.z}, theta_w={point.theta_w}")
+                f"Updated waypoints[0].data for record_name='{msg.record_name}', "
+                f"model_name='{msg.model_name}': "
+                f"x={msg.x}, y={msg.y}, z={msg.z}, theta_w={msg.theta_w}")
         else:
             self.get_logger().warn(
-                f"No matching record found for record_name='{TARGET_RECORD_NAME}', "
-                f"model_name='{TARGET_MODEL_NAME}'")
+                f"No matching record found for record_name='{msg.record_name}', "
+                f"model_name='{msg.model_name}'")
 
 
 def main(args=None):
