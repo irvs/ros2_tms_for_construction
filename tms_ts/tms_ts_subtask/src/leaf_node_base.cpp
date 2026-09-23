@@ -129,11 +129,8 @@ void LeafNodeBase::halt_bef()
     RCLCPP_WARN(node_->get_logger(), "Attempting to cancel all goals..."); 
 
     bool cancel_response_received = false;
-    // action_client_ は automatically_add_to_executor_with_node=false で作った callback_group_ に属する。
-    // free 関数の rclcpp::spin_until_future_complete(node_->get_node_base_interface(), ...) は
-    // 一時 executor に node を add するだけでこの callback group を載せないため、cancel 応答が
-    // 永久に処理されず TIMEOUT を返し続ける。halt() と同じく callback_group_executor_ で待つ。
-    // 併せて試行回数を有限にし、応答が無ければ上位 (油圧ロック施錠) に委ねて抜ける。
+    // free 関数版の spin_until_future_complete はこの callback_group_ を登録せず cancel 応答が
+    // 永久 TIMEOUT になるため、halt() と同じく callback_group_executor_ で待つ。試行回数も有限にする。
     const int max_cancel_attempts = 5;
     int attempt = 0;
 
@@ -143,9 +140,7 @@ void LeafNodeBase::halt_bef()
         auto cancel_result = callback_group_executor_.spin_until_future_complete(future_cancel, std::chrono::seconds(1));
 
         if (cancel_result == rclcpp::FutureReturnCode::SUCCESS) {
-            // 応答が届いただけでは機体停止の保証は無い。return_code と goals_canceling を読んで報告する
-            // (goal が未 accept・既に終端なら goals_canceling は空で返る。その goal が後から accept され
-            // 動き出す可能性は残る)。どちらの場合も油圧ロック施錠と目視確認は上位 (人) の責任。
+            // 応答到達は機体停止の保証にならない (goal 未 accept なら後から動き出す余地が残る)。
             auto resp = future_cancel.get();
             const int return_code = resp ? static_cast<int>(resp->return_code) : -1;
             const std::size_t num_canceling = resp ? resp->goals_canceling.size() : 0;
