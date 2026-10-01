@@ -55,6 +55,7 @@ private:
   std::map<std::string, std::string> previous_param_from_db_;
   std::string planning_group_;
   double search_precision_ = 0.01;
+  double search_margin_ = 0.05;  // [rad] binary_searchで見つけた限界角度から元の角度側へ戻す余裕
   sensor_msgs::msg::JointState current_joint_states_;
   ExcavatorPoseConverter pose_converter;
   double velocity_scaling_ = 0.5;

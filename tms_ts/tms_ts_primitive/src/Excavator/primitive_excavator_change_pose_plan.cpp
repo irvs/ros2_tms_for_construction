@@ -2002,7 +2002,10 @@ bool PrimitiveExcavatorChangePosePlan::binary_search_extreme_joint_value(
     RCLCPP_WARN(this->get_logger(), "Binary search failed to find any valid joint value for joint '%s'", serch_joint_name_.c_str());
     return false;
   }
-  target_joint_values.joint_values[joint_idx] = best_joint_values.joint_values[joint_idx];
+  // 限界ギリギリを避けるため、元の角度側へ余裕分だけ戻す（元の角度は超えない）
+  const double extreme_value = best_joint_values.joint_values[joint_idx];
+  const double margin = std::min(search_margin_, std::abs(extreme_value - original));
+  target_joint_values.joint_values[joint_idx] = extreme_value - direction * margin;
   RCLCPP_INFO(this->get_logger(),
               "Binary search for joint '%s' completed in %d iterations. Final value: %f (original: %f, direction: %s)",
               serch_joint_name_.c_str(), iteration, target_joint_values.joint_values[joint_idx], original, (direction > 0) ? "upper" : "lower");  
