@@ -38,12 +38,14 @@ public:
     this->declare_parameter<std::string>("planning_frame", "base_link");
     this->declare_parameter<std::string>("visualization_record_name", "");
     this->declare_parameter<std::vector<std::string>>("visualization_record_names", std::vector<std::string>{});
+    this->declare_parameter<bool>("publish_obstacles_once", false);
 
     model_name_ = this->get_parameter("model_name").as_string();
     root_record_name_ = this->get_parameter("root_record_name").as_string();
     planning_frame_ = this->get_parameter("planning_frame").as_string();
     visualization_record_name_ = this->get_parameter("visualization_record_name").as_string();
     visualization_record_names_ = this->get_parameter("visualization_record_names").as_string_array();
+    publish_obstacles_once_ = this->get_parameter("publish_obstacles_once").as_bool();
 
     if (visualization_record_names_.empty() && !visualization_record_name_.empty()) {
       visualization_record_names_.push_back(visualization_record_name_);
@@ -62,27 +64,33 @@ public:
       return;
     }
 
-    timer_ = this->create_wall_timer(
-      std::chrono::seconds(1),
-      [this]()
-      {
-        if (in_flight_.exchange(true)) {
-          RCLCPP_WARN(this->get_logger(), "Previous ApplyPlanningScene still running; skip this tick.");
-          return;
-        }
-
-        try {
-          auto scene = buildPlanningSceneFromDb(model_name_, root_record_name_);
-          applyPlanningSceneAsync(scene);
-          publishVisualizationMarkers();
-        } catch (const std::exception& e) {
-          in_flight_ = false;
-          RCLCPP_ERROR(this->get_logger(), "Update failed: %s", e.what());
-        }
-      });
+    if (publish_obstacles_once_) {
+      updateScene();
+    } else {
+      timer_ = this->create_wall_timer(
+        std::chrono::seconds(1),
+        [this]() { updateScene(); });
+    }
   }
 
 private:
+  void updateScene()
+  {
+    if (in_flight_.exchange(true)) {
+      RCLCPP_WARN(this->get_logger(), "Previous ApplyPlanningScene still running; skip this tick.");
+      return;
+    }
+
+    try {
+      auto scene = buildPlanningSceneFromDb(model_name_, root_record_name_);
+      applyPlanningSceneAsync(scene);
+      publishVisualizationMarkers();
+    } catch (const std::exception& e) {
+      in_flight_ = false;
+      RCLCPP_ERROR(this->get_logger(), "Update failed: %s", e.what());
+    }
+  }
+
   static std::optional<bsoncxx::document::value> tryParseJsonDoc(const std::string& json)
   {
     try {
@@ -552,6 +560,7 @@ private:
   std::string planning_frame_;
   std::string visualization_record_name_;
   std::vector<std::string> visualization_record_names_;
+  bool publish_obstacles_once_ = false;
 
   std::map<std::string, rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr> point_publishers_;
   rclcpp::Client<moveit_msgs::srv::ApplyPlanningScene>::SharedPtr apply_client_;
