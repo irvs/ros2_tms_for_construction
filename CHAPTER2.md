@@ -99,8 +99,7 @@ ros2 launch d37pxi_unity d37pxi_standby_ekf.launch.py robot_name:=<machine name>
 **d37pxi(blade angle for OperaSim)** - Perform manipulation of the d37pxi blade. **Not for real machine.**
 ```
 cd ~/ros2-tms-for-construction_ws && source install/setup.bash
-ros2 launch opera_tools opera_tools_bulldozer.launch.py 
-robot_name:=<machine name> 
+ros2 launch opera_tools opera_tools_bulldozer.launch.py robot_name:=<machine name> 
 ```
 
 ***
