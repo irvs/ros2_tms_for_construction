@@ -22,20 +22,6 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
 
-      tms_if_for_opera_dir = get_package_share_directory("tms_if_for_opera")
-
-      tms_if_for_opera_excavator_path = os.path.join(
-        tms_if_for_opera_dir, "launch", "tms_if_for_opera_excavator.launch.py"
-      )
-
-      tms_if_for_opera_crawlerdump_path = os.path.join(
-        tms_if_for_opera_dir, "launch", "tms_if_for_opera_crawlerdump.launch.py"
-      )
-
-      tms_if_for_opera_bulldozer_path = os.path.join(
-        tms_if_for_opera_dir, "launch", "tms_if_for_opera_bulldozer.launch.py"
-      )
-
       declare_use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
         default_value='false',
@@ -234,15 +220,6 @@ def generate_launch_description():
                   remappings=[('planwritten', '/planwritten')]
                   ), 
             
-            # IncludeLaunchDescription(
-            #     PythonLaunchDescriptionSource(tms_if_for_opera_crawlerdump_path),
-            #     launch_arguments={
-            #         'robot_name': 'mst110cr',
-            #         'use_sim_time': LaunchConfiguration('use_sim_time')
-            #     }.items(),
-            # ),
-
-            
             #D37PXI
             Node(
                   package='tms_ts_primitive', 
@@ -267,15 +244,7 @@ def generate_launch_description():
                   executable='primitive_bulldozer_navigate_through_poses',
                   output='screen',
                   parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-                  namespace='d37pxi_24'),     
-
-            # IncludeLaunchDescription(
-            #     PythonLaunchDescriptionSource(tms_if_for_opera_bulldozer_path),
-            #     launch_arguments={
-            #         'robot_name': 'd37pxi_24',
-            #         'use_sim_time': LaunchConfiguration('use_sim_time')
-            #     }.items(),
-            # ),            
+                  namespace='d37pxi_24'),               
 
             # Node(
             #       package='tms_sp_sensing', 
