@@ -36,6 +36,8 @@
 #include <mutex>
 #include <condition_variable>
 
+#include "diagnostic_msgs/msg/key_value.hpp"
+
 #include "tms_msg_ts/action/analyze_trajectory.hpp"
 
 class PrimitiveExcavatorChangePoseExecuteFromPlan : public PrimitiveNodeBase
@@ -52,6 +54,10 @@ private:
   std::string used_model_name_;
   std::string used_record_name_;
   std::vector<std::map<std::string, std::string>> params_from_db_;
+
+  ///
+  rclcpp::Publisher<diagnostic_msgs::msg::KeyValue>::SharedPtr publisher_;
+  ///
 
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID& uuid,
                                           std::shared_ptr<const tms_msg_ts::action::LeafNodeBase::Goal> goal);

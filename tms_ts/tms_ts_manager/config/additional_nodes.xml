@@ -4,7 +4,8 @@
         <Action ID="LeafNodeBulldozer">
             <input_port name="model_name" default="d37pxi_24"/>
             <inout_port name="record_name"/>
-            <inout_port name="primitive_name"/> 
+            <inout_port name="primitive_name"/>
+            <inout_port name="blade_hold"/> 
         </Action>
         
         
@@ -34,7 +35,7 @@
             <input_port name="output_port"/>
         </Action>
 
-        <Action ID="BlackboardValueSearcherMongo">
+        <Action ID="MongoValueSearcher">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_value"/>
             <input_port name="output_port"/>
@@ -44,7 +45,15 @@
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
             <input_port name="input_value"/>
+            <input_port name="input_type"/>
         </Action>
+
+        <Action ID="MongoArrayWriter">
+            <input_port name="mongo_record_name"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="input_value"/>
+            <input_port name="operation"/>  
+        </Action>  
 
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
@@ -57,6 +66,11 @@
 
         <Action ID="SetLocalBlackboard">
             <input_port name="value"/>
+            <inout_port name="output_key"/>
+        </Action> 
+
+        <Action ID="LocalBlackboardCaluculator">
+            <input_port name="calculation_formula"/>
             <inout_port name="output_key"/>
         </Action>          
 
@@ -74,9 +88,9 @@
             <input_port name="button_info"/>
         </Action>  
 
-        <!-- <Action ID="WaitForTopic">
-            <input_port name="topic_name"/>
-        </Action>    -->
+        <Action ID="WaitTimer">
+            <input_port name="seconds"/>
+        </Action>   
 
         <Action ID="LeafNodeCommon">
             <input_port name="model_name"/>

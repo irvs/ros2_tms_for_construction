@@ -54,7 +54,7 @@ For parameters, the following types are provided, and users can freely configure
 
 ②　Construct your task.Refer to [CHAPTER 3](./CHAPTER3.md) for the overall procedure. Below are the three node types provided for operating the Global Blackboard:
 
-<!-- ②　次にタスクを構築する。大まかな手順についてはCHAPTER3を参照願いたい。ここではGlobal Blackboardの操作のために用意したノード群として、MonogValueWriter, BlackboardValueReaderMongo, ConditionalExpressionという3種類のノードについて紹介する。 -->
+<!-- ②　次にタスクを構築する。大まかな手順についてはCHAPTER3を参照願いたい。ここではGlobal Blackboardの操作のために用意したノード群として、MonogValueWriter, MongoValueReader, ConditionalExpressionという3種類のノードについて紹介する。 -->
 
 
 ・　MongoValueWriter
@@ -65,13 +65,13 @@ Overwrites a value on the Global Blackboard. Ports: input_value, mongo_param_nam
 
 ![](docs/MongoValueWriter.png)
 
-・　BlackboardValuereaderMongo
+・　MongoValueReader
 
 Reads a value from the Global Blackboard. Ports: output_port, mongo_param_name, mongo_record_name. Using mongo_param_name and mongo_record_name, it finds the matching entry, then stores the read value in the Local Blackboard parameter named by output_port. For example, with the ports set as shown, executing this node reads sample_flg and updates the corresponding Local Blackboard parameter.
 
 <!-- 前述の通り、タスクがGlobal Blackboard上の値を読み出してくる際に用いるノードである。BlackboardReaderMongoはoutput_port, mongo_param_name, mongo_record_nameの3つのポートを持ち、mongo_param_name, mongo_record_nameの2種類のキーを元にGlobal Blackboard上の該当するデータを検索する。Global Blackboardから読み出してきた値は、output_portで指定された値と対応するLocal Blackboard上のパラメータに格納する。例えば以下のようにポートを指定した場合にはBehavior Treeがタスクの実装に則り当該ノードを実行した時点で上記画像のサンプルパラメータデータ上のsample_flgの値を読み出して、Local Blackboard上からoutput_portに対応するパラメータを検索し、当該の値を読み出してきた値で更新する。 -->
 
-![](docs/BlackboardValuereaderMongo.png)
+![](docs/MongoValueReader.png)
 
 ・　ConditionalExpression
 

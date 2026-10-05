@@ -11,7 +11,7 @@
         <Action ID="BlackboardValueChecker">
             <inout_port name="key"/>
         </Action>
-        <Action ID="BlackboardValueReaderMongo">
+        <Action ID="MongoValueReader">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
             <input_port name="output_port"/>

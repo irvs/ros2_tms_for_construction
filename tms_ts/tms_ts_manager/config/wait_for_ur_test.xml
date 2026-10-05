@@ -9,12 +9,12 @@
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="BlackboardValueReaderMongo">
+        <Action ID="MongoValueReader">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
             <input_port name="output_port"/>
         </Action>
-        <Action ID="BlackboardValueSearcherMongo">
+        <Action ID="MongoValueSearcher">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_value"/>
             <input_port name="output_port"/>
