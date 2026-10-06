@@ -1,0 +1,140 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="MongoValueReader" mongo_param_name="LATEST_LEVELED_BLOCK" mongo_record_name="$release_area_data$" output_port="LATEST_LEVELED_BLOCK"/>
+            <Sequence>
+                <IfThenElse>
+                    <Action ID="ConditionalExpression" conditional_expression="LATEST_LEVELED_BLOCK == &quot;null&quot;"/>
+                    <Sequence>
+                        <Action ID="SetLocalBlackboard" output_key="LATEST_LEVELED_BLOCK" value="$block_point$"/>
+                        <Action ID="SetLocalBlackboard" output_key="bull_waypoint" value="$stop_point$"/>
+                        <Action ID="SetLocalBlackboard" output_key="leveled_block_num" value="&quot;0&quot;"/>
+                        <Action ID="SetLocalBlackboard" output_key="waiting_block_num" value="&quot;1&quot;"/>
+                        <Action ID="SetLocalBlackboardWithCounter" counter_key="leveled_block_num" key="LATEST_LEVELED_BLOCK"/>
+                        <Action ID="SetLocalBlackboardWithCounter" counter_key="waiting_block_num" key="bull_waypoint"/>
+                        <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_follow_waypoints" record_name="{bull_waypoint}"/>
+                        <Action ID="MongoValueWriter" input_type="string" input_value="{leveling_block}" mongo_param_name="LATEST_LEVELED_BLOCK" mongo_record_name="$release_area_data$"/>
+                    </Sequence>
+                    <AlwaysSuccess/>
+                </IfThenElse>
+            </Sequence>
+            <Sequence>
+                <Action ID="MongoArrayReader" mongo_param_name="RELEACED_BLOCK" mongo_record_name="$release_area_data$" output_port="releaced_length" output_type="len"/>
+                <IfThenElse>
+                    <Action ID="ConditionalExpression" conditional_expression="releaced_length != 0"/>
+                    <Sequence>
+                        <Sequence>
+                            <Action ID="Counter" key="waiting_block_num"/>
+                            <Action ID="Counter" key="leveled_block_num"/>
+                            <Action ID="SetLocalBlackboardWithCounter" counter_key="leveled_block_num" key="LATEST_LEVELED_BLOCK"/>
+                            <Action ID="SetLocalBlackboardWithCounter" counter_key="waiting_block_num" key="bull_waypoint"/>
+                        </Sequence>
+                        <Action ID="MongoArrayReader" mongo_param_name="RELEACED_BLOCK" mongo_record_name="$release_area_data$" output_port="leveling_block" output_type="[0]"/>
+                        <Action ID="MongoValueWriter" input_type="string" input_value="{leveling_block}" mongo_param_name="LATEST_LEVELED_BLOCK" mongo_record_name="$release_area_data$"/>
+                        <Action ID="MongoArrayWriter" input_value="{leveling_block}" mongo_param_name="LEVELED_BLOCK" mongo_record_name="$release_area_data$" operation="add"/>
+                        <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_follow_waypoints" record_name="{bull_waypoint}"/>
+                    </Sequence>
+                    <AlwaysSuccess/>
+                </IfThenElse>
+            </Sequence>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="ConditionalExpression">
+            <input_port name="conditional_expression"/>
+        </Action>
+        <Action ID="Counter">
+            <input_port name="key"/>
+        </Action>
+        <Action ID="ExecuteSubtask">
+            <input_port name="machine_record_name"/>
+            <input_port name="model_name"/>
+            <input_port name="subtask_name"/>
+            <input_port name="subtask_parameters"/>
+            <input_port name="terminate_condition"/>
+        </Action>
+        <Decorator ID="KeepRunningUntilFlgup">
+            <input_port name="key"/>
+            <input_port name="while_or_dowhile"/>
+        </Decorator>
+        <Action ID="LeafNodeBulldozer">
+            <inout_port name="blade_hold"/>
+            <input_port default="d37pxi_24" name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="record_name"/>
+        </Action>
+        <Action ID="LeafNodeCommon">
+            <input_port name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="record_name"/>
+        </Action>
+        <Action ID="LeafNodeCrawlerDump">
+            <input_port name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="read_direction"/>
+            <inout_port name="record_name"/>
+        </Action>
+        <Action ID="LeafNodeExcavator">
+            <input_port default="zx200" name="model_name"/>
+            <inout_port name="previous_target_record_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="target_record_name"/>
+        </Action>
+        <Action ID="LeafNodeExcavatorAssist">
+            <input_port default="zx200" name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="record_name"/>
+        </Action>
+        <Action ID="LocalBlackboardCaluculator">
+            <input_port name="calculation_formula"/>
+            <inout_port name="output_key"/>
+        </Action>
+        <Action ID="MongoArrayReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+            <inout_port name="output_type"/>
+        </Action>
+        <Action ID="MongoArrayWriter">
+            <input_port name="input_value"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="operation"/>
+        </Action>
+        <Action ID="MongoValueReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+        </Action>
+        <Action ID="MongoValueSearcher">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_value"/>
+            <input_port name="output_port"/>
+        </Action>
+        <Action ID="MongoValueWriter">
+            <input_port name="input_type"/>
+            <input_port name="input_value"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+        </Action>
+        <Action ID="SetLocalBlackboard">
+            <inout_port name="output_key"/>
+            <input_port name="value"/>
+        </Action>
+        <Action ID="SetLocalBlackboardWithCounter">
+            <inout_port name="counter_key"/>
+            <input_port name="key"/>
+        </Action>
+        <Action ID="WaitForClick">
+            <input_port name="button_info"/>
+            <input_port name="window_title"/>
+        </Action>
+        <Action ID="WaitTimer">
+            <input_port name="seconds"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>

@@ -35,6 +35,13 @@
             <input_port name="output_port"/>
         </Action>
 
+        <Action ID="MongoArrayReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+            <inout_port name="output_type"/>
+        </Action>
+
         <Action ID="MongoValueSearcher">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_value"/>
