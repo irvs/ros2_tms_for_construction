@@ -98,8 +98,7 @@ bool LeafNodeBase::is_future_goal_handle_complete(std::chrono::milliseconds& ela
   auto remaining = server_timeout_ - elapsed;
   if (remaining <= std::chrono::milliseconds(0)) // 1: Faied to send goal becaseuse of timeout defined by user on Action Client.
   {
-    future_goal_handle_.reset(); 
-    this -> halt_bef();
+    future_goal_handle_.reset();
     return false;
   }
   auto timeout = remaining > bt_loop_duration_ ? bt_loop_duration_ : remaining;
@@ -129,23 +128,51 @@ void LeafNodeBase::halt_bef()
 {
     RCLCPP_WARN(node_->get_logger(), "Attempting to cancel all goals..."); 
 
-    bool cancel_success = false;
+    bool cancel_response_received = false;
+    // free 関数版の spin_until_future_complete はこの callback_group_ を登録せず cancel 応答が
+    // 永久 TIMEOUT になるため、halt() と同じく callback_group_executor_ で待つ。試行回数も有限にする。
+    const int max_cancel_attempts = 5;
+    int attempt = 0;
 
-    while (true) {
+    while (rclcpp::ok() && attempt < max_cancel_attempts) {
+        ++attempt;
         auto future_cancel = action_client_->async_cancel_all_goals();
-        auto cancel_result = rclcpp::spin_until_future_complete(node_->get_node_base_interface(), future_cancel, std::chrono::seconds(1));
+        auto cancel_result = callback_group_executor_.spin_until_future_complete(future_cancel, std::chrono::seconds(1));
 
         if (cancel_result == rclcpp::FutureReturnCode::SUCCESS) {
-            RCLCPP_INFO(node_->get_logger(), "All goals have been successfully cancelled on attempt.");
-            cancel_success = true;
+            // 応答到達は機体停止の保証にならない (goal 未 accept なら後から動き出す余地が残る)。
+            auto resp = future_cancel.get();
+            const int return_code = resp ? static_cast<int>(resp->return_code) : -1;
+            const std::size_t num_canceling = resp ? resp->goals_canceling.size() : 0;
+            if (resp && resp->return_code == action_msgs::srv::CancelGoal::Response::ERROR_NONE && num_canceling > 0) {
+                RCLCPP_INFO(node_->get_logger(),
+                            "Cancel request acknowledged by server on attempt %d: return_code=%d, %zu goal(s) canceling. "
+                            "The machine may still be moving: engage the hydraulic lock (physical remote control) "
+                            "and visually confirm the machine has stopped.",
+                            attempt, return_code, num_canceling);
+            } else {
+                RCLCPP_WARN(node_->get_logger(),
+                            "Cancel response received on attempt %d but no goal was cancelled on the server "
+                            "(return_code=%d, %zu goal(s) canceling; an in-flight goal may still be accepted later). "
+                            "Engage the hydraulic lock (physical remote control) and visually confirm the machine has stopped.",
+                            attempt, return_code, num_canceling);
+            }
+            cancel_response_received = true;
             break;
         } else if (cancel_result == rclcpp::FutureReturnCode::TIMEOUT) {
-            RCLCPP_WARN(node_->get_logger(), "Timeout while cancelling all goals. Retrying... ");
+            RCLCPP_WARN(node_->get_logger(), "Timeout while cancelling all goals (attempt %d/%d). Retrying... ", attempt, max_cancel_attempts);
         } else if (cancel_result == rclcpp::FutureReturnCode::INTERRUPTED) {
-            RCLCPP_WARN(node_->get_logger(), "Cancellation interrupted. Retrying... ");
+            RCLCPP_WARN(node_->get_logger(), "Cancellation interrupted (attempt %d/%d). Retrying... ", attempt, max_cancel_attempts);
         } else {
-            RCLCPP_WARN(node_->get_logger(), "Failed to cancel all goals. Retrying... ");
+            RCLCPP_WARN(node_->get_logger(), "Failed to cancel all goals (attempt %d/%d). Retrying... ", attempt, max_cancel_attempts);
         }
+    }
+    if (!cancel_response_received) {
+        RCLCPP_ERROR(node_->get_logger(),
+                     "[EMERGENCY] No cancel response after %d attempt(s) (or rclcpp is shutting down). Giving up on cancel. "
+                     "Engage the hydraulic lock (physical remote control) and visually confirm the machine has stopped, then Ctrl+C. "
+                     "(キャンセル応答なし: リモコンで油圧ロックをかけ、機体の停止を目視で確認してから Ctrl+C で終了してください)",
+                     attempt);
     }
     setStatus(BT::NodeStatus::IDLE);
 }
@@ -157,60 +184,63 @@ void LeafNodeBase::halt()
     {
         RCLCPP_INFO(node_->get_logger(), "Attempting to cancel goal for %s", subtask_name_.c_str());
         auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
-        auto cancel_result = rclcpp::FutureReturnCode::TIMEOUT;
+        const int max_attempts = cancel_process_count_ > 0 ? cancel_process_count_ : 1;
+        bool terminal_status_seen = false;
 
-        while (true) 
+        for (int attempt = 1; rclcpp::ok() && attempt <= max_attempts; ++attempt)
         {
-            cancel_result = callback_group_executor_.spin_until_future_complete(future_cancel, std::chrono::milliseconds(1000));
+            const auto cancel_result = callback_group_executor_.spin_until_future_complete(
+                future_cancel, std::chrono::milliseconds(1000));
 
             if (cancel_result == rclcpp::FutureReturnCode::SUCCESS)
             {
-                RCLCPP_INFO(node_->get_logger(), "Action server implemented on %s is received the cancel request.", subtask_name_.c_str());
-                
-                callback_group_executor_.spin_some(); 
-                auto status = goal_handle_->get_status();
-
-                // STATUS: 0 = STATUS_UNKNOWN, 1 = STATUS_ACCEPTED, 2 = STATUS_EXECUTING, 3 = STATUS_CANCELING,
-                //         4 = STATUS_SUCCEEDED, 5 = STATUS_ABORTED, 6 = STATUS_CANCELED, 7 = STATUS_LOST
-
-                if (status == 6 )
+                callback_group_executor_.spin_some();
+                const auto status = goal_handle_->get_status();
+                if (status == action_msgs::msg::GoalStatus::STATUS_CANCELED)
                 {
                     RCLCPP_INFO(node_->get_logger(), "Server confirmed goal cancellation for %s", subtask_name_.c_str());
-                    break; 
-                }
-                else if (status == 5)
-                {
-                    RCLCPP_WARN(node_->get_logger(), "Server aborted the goal for %s", subtask_name_.c_str());
+                    terminal_status_seen = true;
                     break;
                 }
-                else if (status == 3)
+                if (status == action_msgs::msg::GoalStatus::STATUS_ABORTED)
                 {
-                    RCLCPP_WARN(node_->get_logger(), "Server is processing the goal cancellation for %s...", subtask_name_.c_str());
+                    RCLCPP_WARN(node_->get_logger(), "Server aborted the goal for %s", subtask_name_.c_str());
+                    terminal_status_seen = true;
+                    break;
                 }
-                else
+                if (status == action_msgs::msg::GoalStatus::STATUS_SUCCEEDED)
                 {
-                    RCLCPP_WARN(node_->get_logger(), "The status of %s is lost. Serching...", subtask_name_.c_str());
-                    RCLCPP_INFO(node_->get_logger(), "Node status: %d", status);
-                    cancel_process_count_= cancel_process_count_ - 1;
+                    RCLCPP_WARN(node_->get_logger(), "Server finished the goal for %s as SUCCEEDED before the cancel took effect.", subtask_name_.c_str());
+                    terminal_status_seen = true;
+                    break;
                 }
+                RCLCPP_WARN(node_->get_logger(),
+                            "Cancel response received for %s, but goal status is still %d "
+                            "(attempt %d/%d). This does not prove that the machine stopped.",
+                            subtask_name_.c_str(), status, attempt, max_attempts);
             }
             else if (cancel_result == rclcpp::FutureReturnCode::INTERRUPTED)
             {
-                RCLCPP_WARN(node_->get_logger(), "Cancellation interrupted for %s. After %d trial, all nodes will be forcibly shutdown. ", subtask_name_.c_str(),cancel_process_count_);
-                future_cancel = action_client_->async_cancel_goal(goal_handle_); 
-                cancel_process_count_= cancel_process_count_ - 1;
+                RCLCPP_WARN(node_->get_logger(), "Cancellation interrupted for %s (attempt %d/%d).",
+                            subtask_name_.c_str(), attempt, max_attempts);
+                future_cancel = action_client_->async_cancel_goal(goal_handle_);
             }
             else
             {
-                RCLCPP_WARN(node_->get_logger(), "Waiting for goal cancellation to complete for %s...", subtask_name_.c_str());
-                cancel_process_count_= cancel_process_count_ - 1;
+                RCLCPP_WARN(node_->get_logger(),
+                            "Waiting for goal cancellation response for %s (attempt %d/%d).",
+                            subtask_name_.c_str(), attempt, max_attempts);
             }
-
-            if (cancel_process_count_ == 0)
-            {
-                RCLCPP_ERROR(node_->get_logger(), "[EMERGENCY] Failed to cancel all goals after %d attempts. Please try to kill all nodes in another way.");
-                // system(script_command);
-            }
+            callback_group_executor_.spin_some();
+            std::this_thread::sleep_for(bt_loop_duration_);
+        }
+        if (!terminal_status_seen)
+        {
+            RCLCPP_ERROR(node_->get_logger(),
+                         "[EMERGENCY] No terminal goal status for %s after %d bounded attempt(s). "
+                         "A cancel response is not proof that the machine stopped. Engage the hydraulic lock "
+                         "(physical remote control), visually confirm the machine has stopped, then Ctrl+C.",
+                         subtask_name_.c_str(), max_attempts);
         }
     }
     setStatus(BT::NodeStatus::IDLE);
