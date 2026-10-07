@@ -113,6 +113,11 @@
             <input_port name="subtask_parameters"/>
         </Action>
 
+        <Action ID="BulldozerPathCreater">
+            <input_port name="data1"/>
+            <inout_port name="data2"/>
+        </Action>
+
 
     </TreeNodesModel>
 </root>

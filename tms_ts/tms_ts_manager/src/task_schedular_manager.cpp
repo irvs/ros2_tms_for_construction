@@ -45,6 +45,8 @@
 #include "tms_ts_primitive/common/leaf_node.hpp"
 #include "tms_ts_primitive/common/wait_for_ur.hpp"
 
+#include "tms_ts_primitive/Bulldozer/bulldozer_path_creater.hpp"
+
 
 using namespace BT;
 using namespace std::chrono_literals;
@@ -180,6 +182,9 @@ public:
     factory.registerNodeType<WaitForClick>("WaitForClick");
     factory.registerNodeType<WaitTimer>("WaitTimer");
     factory.registerNodeType<LeafNodeCommon>("LeafNodeCommon");
+
+    factory.registerNodeType<BulldozerPathCreater>("BulldozerPathCreater");
+    
 
     // loadBlackboardFromMongoDB("global_blackboard");
   }
