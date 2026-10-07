@@ -6,7 +6,8 @@
 
 - ROS 2 humble の Tier 1 サポートは Ubuntu 22.04 のみ。他 OS は未サポート。
 - GPU アクセラレーションは未設定（必要なら `compose.yaml` に `deploy.resources.reservations.devices` を追加）。
-- `*moveit*` / `*nav2*` / `*tf*` をワイルドカードで apt install しているため image サイズが大きい（約 12 GB）。必要パッケージに絞るには Dockerfile を調整する。
+- ROS の apt パッケージは Dockerfile で列挙している（image は約 8.7 GB）。`src.repos` の pin を更新して依存が増えたら、列挙に足す。
+- Nav2 本体と Gazebo は入れていない。`zx200_navigation` や ic120 系の launch はこの image では動かない（ビルドは通る）。
 
 ## ポート衝突 (`network_mode: host`)
 

@@ -40,8 +40,8 @@ docker compose exec tms restore-db.sh                 # DB seed 投入（初回�
 
 - **`UID` / `GID` を build args で渡す**: コンテナ内 `ros` ユーザーの UID/GID をホストと揃え、bind mount の権限不一致を防ぐ。初回は BehaviorTree.CPP / mongo-c-driver / mongo-cxx-driver などの source build が走るため 20〜30 分かかる想定。
 - **`xhost +local:`**: GUI（RViz など）を表示するための X 許可。セッションごと 1 回。作業終了後は `xhost -local:` で閉じる（[known-issues.md](known-issues.md) 参照）。
-- **`docker compose up -d`**: 初回起動時にコンテナ内で `colcon build --symlink-install` が自動実行される（37 packages、10 分前後）。`/workspace/install/.colcon_build_succeeded` sentinel でガードしており、2 回目以降は skip。
-- **`restore-db.sh`**: `demo/rostmsdb_collections.zip` を展開して `mongorestore`、続いて `parameter` collection から `description` (string) フィールドを除去（subtask 側の型不整合 workaround）。完了すると `rostmsdb` に task 11 件・parameter 40 件ほどが投入される。動作確認に使う `task_id=1`（zx200 掘削積込タスク）はシードに含まれているため別途登録不要。
+- **`docker compose up -d`**: 初回起動時にコンテナ内で `colcon build --symlink-install` が自動実行される（38 packages、10 分前後）。`/workspace/install/.colcon_build_succeeded` sentinel でガードしており、2 回目以降は skip。
+- **`restore-db.sh`**: `demo/rostmsdb_collections.zip` を毎回上書き展開して `mongorestore`、続いて `parameter` collection から `description` (string) フィールドを除去（subtask 側の型不整合 workaround）。完了すると `rostmsdb` に task 5 件（task_id 1〜5）・parameter 20 件が投入される。動作確認に使う `task_id=1`（zx200 掘削積込タスク）はシードに含まれているため別途登録不要。
 
 ## 2 回目以降の起動
 

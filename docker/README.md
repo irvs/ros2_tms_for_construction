@@ -56,7 +56,7 @@ docker compose down         # コンテナ停止（named volume は保持）
 
 | ファイル | 役割 |
 |---|---|
-| `Dockerfile` | ベース image + ROS 2 依存 + source build (BehaviorTree.CPP / mongocxx / mongo-c-driver) + `vcs import` |
+| `Dockerfile` | ベース image + ROS 2 依存 (MoveIt 2 / ros2_control / nav2_msgs などを列挙) + source build (BehaviorTree.CPP / mongocxx / mongo-c-driver) + `vcs import` |
 | `Dockerfile.dockerignore` | このビルド専用の ignore ファイル（BuildKit の per-Dockerfile ignore）。allowlist 形式でビルドコンテキストを絞る |
 | `compose.yaml` | `mongodb`（`mongo:6.0`）と `tms` の 2 サービス、named volume、X11 forward、`network_mode: host`、`tms` には Fast DDS 使用時の SHM lock 用に `shm_size: 1g` を割当。`RMW_IMPLEMENTATION` で Cyclone DDS(既定)/Fast DDS、`CYCLONEDDS_URI` で discovery profile を切替 |
 | `cyclonedds.xml` | Cyclone DDS の discovery profile（loopback-only + `DontRoute`）。compose の `CYCLONEDDS_URI` 既定がこれを指す。詳細は [docs/setup.md](docs/setup.md) |
