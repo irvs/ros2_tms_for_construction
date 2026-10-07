@@ -3,14 +3,14 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="BulldozerPathCreater" data1="block_1" data2="SAMPLE_BLACKBOARD_d37pxi"/>
+            <Action ID="BulldozerPathCreater" block_data="block_1" bull_data="SAMPLE_BLACKBOARD_d37pxi"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
         <Action ID="BulldozerPathCreater">
-            <input_port name="data1"/>
-            <inout_port name="data2"/>
+            <input_port name="block_data"/>
+            <inout_port name="bull_data"/>
         </Action>
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>

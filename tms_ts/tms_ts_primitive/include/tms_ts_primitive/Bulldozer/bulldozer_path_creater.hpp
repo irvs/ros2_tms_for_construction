@@ -103,10 +103,10 @@ public:
     // ========================================================
     // Ports
     //
-    // data1:
+    // block_data:
     //   現在のブロックのrecord_name
     //
-    // data2:
+    // bull_data:
     //   dynamic dataのrecord_name
     // ========================================================
 
@@ -114,8 +114,8 @@ public:
     {
         return
         {
-            InputPort<std::string>("data1"),
-            InputPort<std::string>("data2")
+            InputPort<std::string>("block_data"),
+            InputPort<std::string>("bull_data")
         };
     }
 
@@ -130,40 +130,40 @@ public:
         // Input
         // ====================================================
 
-        auto data1_name =
-            getInput<std::string>("data1");
+        auto block_data_name =
+            getInput<std::string>("block_data");
 
-        auto data2_name =
-            getInput<std::string>("data2");
+        auto bull_data_name =
+            getInput<std::string>("bull_data");
 
 
-        if (!data1_name)
+        if (!block_data_name)
         {
             std::cout
                 << "[BulldozerPathCreater] "
-                << "data1 is missing."
+                << "block_data is missing."
                 << std::endl;
 
             return NodeStatus::FAILURE;
         }
 
 
-        if (!data2_name)
+        if (!bull_data_name)
         {
             std::cout
                 << "[BulldozerPathCreater] "
-                << "data2 is missing."
+                << "bull_data is missing."
                 << std::endl;
 
             return NodeStatus::FAILURE;
         }
 
 
-        const std::string data1_record =
-            data1_name.value();
+        const std::string block_data_record =
+            block_data_name.value();
 
-        const std::string data2_record =
-            data2_name.value();
+        const std::string bull_data_record =
+            bull_data_name.value();
 
 
         // ====================================================
@@ -181,21 +181,21 @@ public:
 
 
         // ====================================================
-        // Read data1
+        // Read block_data
         // ====================================================
 
-        auto data1_doc =
+        auto block_data_doc =
             findRecord(
                 collection,
-                data1_record);
+                block_data_record);
 
 
-        if (!data1_doc)
+        if (!block_data_doc)
         {
             std::cout
                 << "[BulldozerPathCreater] "
-                << "Could not find data1 record: "
-                << data1_record
+                << "Could not find block_data record: "
+                << block_data_record
                 << std::endl;
 
             return NodeStatus::FAILURE;
@@ -203,21 +203,21 @@ public:
 
 
         // ====================================================
-        // Read data2
+        // Read bull_data
         // ====================================================
 
-        auto data2_doc =
+        auto bull_data_doc =
             findRecord(
                 collection,
-                data2_record);
+                bull_data_record);
 
 
-        if (!data2_doc)
+        if (!bull_data_doc)
         {
             std::cout
                 << "[BulldozerPathCreater] "
-                << "Could not find data2 record: "
-                << data2_record
+                << "Could not find bull_data record: "
+                << bull_data_record
                 << std::endl;
 
             return NodeStatus::FAILURE;
@@ -226,19 +226,19 @@ public:
 
         try
         {
-            auto data1_view =
-                data1_doc->view();
+            auto block_data_view =
+                block_data_doc->view();
 
-            auto data2_view =
-                data2_doc->view();
+            auto bull_data_view =
+                bull_data_doc->view();
 
 
             // =================================================
-            // 1. data1.block_size
+            // 1. block_data.block_size
             // =================================================
 
             auto block_size_element =
-                data1_view["block_size"];
+                block_data_view["block_size"];
 
 
             if (!block_size_element ||
@@ -247,7 +247,7 @@ public:
             {
                 std::cout
                     << "[BulldozerPathCreater] "
-                    << "data1.block_size is missing."
+                    << "block_data.block_size is missing."
                     << std::endl;
 
                 return NodeStatus::FAILURE;
@@ -273,11 +273,11 @@ public:
 
 
             // =================================================
-            // 2. data1.vector = L
+            // 2. block_data.vector = L
             // =================================================
 
             auto vector_element =
-                data1_view["vector"];
+                block_data_view["vector"];
 
 
             if (!vector_element ||
@@ -286,7 +286,7 @@ public:
             {
                 std::cout
                     << "[BulldozerPathCreater] "
-                    << "data1.vector is missing."
+                    << "block_data.vector is missing."
                     << std::endl;
 
                 return NodeStatus::FAILURE;
@@ -326,7 +326,7 @@ public:
             {
                 std::cout
                     << "[BulldozerPathCreater] "
-                    << "data1.vector has zero length."
+                    << "block_data.vector has zero length."
                     << std::endl;
 
                 return NodeStatus::FAILURE;
@@ -338,27 +338,27 @@ public:
 
 
             // =================================================
-            // 3. data2.w_blade
+            // 3. bull_data.w_blade
             // =================================================
 
             const double w_blade =
                 getNumber(
-                    data2_view,
+                    bull_data_view,
                     "w_blade");
 
 
             // =================================================
-            // 4. data2.offset
+            // 4. bull_data.offset
             // =================================================
 
             const double back_offset =
                 getNumber(
-                    data2_view,
+                    bull_data_view,
                     "back_offset");
                 
             const double blade_offset =
                 getNumber(
-                    data2_view,
+                    bull_data_view,
                     "blade_offset");
 
 
@@ -367,7 +367,7 @@ public:
             // =================================================
 
             auto current_block_element =
-                data2_view[
+                bull_data_view[
                     "LATEST_LEVELED_BLOCK"];
 
 
@@ -392,15 +392,15 @@ public:
 
 
             // =================================================
-            // data1と現在ブロックの一致確認
+            // block_dataと現在ブロックの一致確認
             // =================================================
 
-            if (data1_record != current_block)
+            if (block_data_record != current_block)
             {
                 std::cout
                     << "[BulldozerPathCreater] "
-                    << "data1 record ["
-                    << data1_record
+                    << "block_data record ["
+                    << block_data_record
                     << "] does not match "
                     << "LATEST_LEVELED_BLOCK ["
                     << current_block
@@ -418,7 +418,7 @@ public:
             // =================================================
 
             auto released_element =
-                data2_view[
+                bull_data_view[
                     "RELEACED_BLOCK"];
 
 
@@ -543,7 +543,7 @@ public:
             // =================================================
 
             auto current_center_element =
-                data1_view[
+                block_data_view[
                     "block_center"];
 
 
@@ -553,7 +553,7 @@ public:
             {
                 std::cout
                     << "[BulldozerPathCreater] "
-                    << "data1.block_center is missing."
+                    << "block_data.block_center is missing."
                     << std::endl;
 
                 return NodeStatus::FAILURE;
@@ -625,27 +625,35 @@ public:
                     "y");
 
 
+
             // =================================================
             // 10. D
             //
             // block_n -> block_n+1
+            //
+            // 次のブロックが L とほぼ同じ方向の場合は、
+            // Blackboardに保存している前回のDを使用する。
             // =================================================
 
-            BulldozerPoint2D D;
+            // -------------------------------------------------
+            // candidate_Dを計算
+            // -------------------------------------------------
 
-            D.x =
+            BulldozerPoint2D candidate_D;
+
+            candidate_D.x =
                 next_point.x -
                 current_point.x;
 
-            D.y =
+            candidate_D.y =
                 next_point.y -
                 current_point.y;
 
 
             const double d_norm =
                 std::sqrt(
-                    D.x * D.x +
-                    D.y * D.y);
+                    candidate_D.x * candidate_D.x +
+                    candidate_D.y * candidate_D.y);
 
 
             if (d_norm < 1.0e-9)
@@ -663,10 +671,101 @@ public:
             }
 
 
-            // normalize D
+            // -------------------------------------------------
+            // normalize candidate_D
+            // -------------------------------------------------
 
-            D.x /= d_norm;
-            D.y /= d_norm;
+            candidate_D.x /= d_norm;
+            candidate_D.y /= d_norm;
+
+
+            // -------------------------------------------------
+            // Blackboardから前回のDを取得
+            // -------------------------------------------------
+
+            BulldozerPoint2D previous_D;
+
+            bool has_previous_D = false;
+
+            if (config().blackboard)
+            {
+                config().blackboard->get(
+                    "bulldozer_previous_D_x",
+                    previous_D.x);
+
+                config().blackboard->get(
+                    "bulldozer_previous_D_y",
+                    previous_D.y);
+
+                config().blackboard->get(
+                    "bulldozer_has_previous_D",
+                    has_previous_D);
+            }
+
+
+            // -------------------------------------------------
+            // candidate_DとLの方向を比較
+            //
+            // Lとcandidate_Dは正規化済みなので
+            //
+            //     candidate_D・L = cos(theta)
+            //
+            // となる。
+            //
+            // 0.9以上なら約25.8度以内。
+            // -------------------------------------------------
+
+            constexpr double D_L_THRESHOLD = 0.9;
+
+            const double candidate_dot_L =
+                candidate_D.x * L.x +
+                candidate_D.y * L.y;
+
+
+            // -------------------------------------------------
+            // 使用するDを決定
+            // -------------------------------------------------
+
+            BulldozerPoint2D D;
+
+            if (has_previous_D &&
+                candidate_dot_L > D_L_THRESHOLD)
+            {
+                // 次のブロックがL方向にほぼ一致しているため
+                // 前回のDを使用する
+                D = previous_D;
+
+                std::cout
+                    << "[BulldozerPathCreater] "
+                    << "Next block direction is almost parallel "
+                    << "to L. Use previous D."
+                    << std::endl;
+            }
+            else
+            {
+                // 通常通りcandidate_Dを使用
+                D = candidate_D;
+            }
+
+
+            // -------------------------------------------------
+            // 今回実際に使用したDをBlackboardへ保存
+            // -------------------------------------------------
+
+            if (config().blackboard)
+            {
+                config().blackboard->set(
+                    "bulldozer_previous_D_x",
+                    D.x);
+
+                config().blackboard->set(
+                    "bulldozer_previous_D_y",
+                    D.y);
+
+                config().blackboard->set(
+                    "bulldozer_has_previous_D",
+                    true);
+            }
 
 
             // =================================================
@@ -1048,7 +1147,7 @@ public:
 
 
             // =================================================
-            // 21. data2.waypoints_record_nameを更新
+            // 21. bull_data.waypoints_record_nameを更新
             //
             // "waypoints_record_name": [
             //     "bull_leveling_waypoint_1",
@@ -1087,14 +1186,14 @@ public:
 
 
             // ========================================================
-            // data2の検索条件
+            // bull_dataの検索条件
             // ========================================================
 
             bsoncxx::builder::stream::document filter_builder;
 
             filter_builder
                 << "record_name"
-                << data2_record;
+                << bull_data_record;
 
 
             auto filter =
@@ -1144,11 +1243,11 @@ public:
                 << std::endl
                 << "[BulldozerPathCreater]"
                 << std::endl
-                << "data1          : "
-                << data1_record
+                << "block_data          : "
+                << block_data_record
                 << std::endl
-                << "data2          : "
-                << data2_record
+                << "bull_data          : "
+                << bull_data_record
                 << std::endl
                 << "current block  : "
                 << current_block
@@ -1289,7 +1388,7 @@ private:
     // ========================================================
 
     // static bsoncxx::document::view
-    // data2_filter(
+    // bull_data_filter(
     //     const std::string& record_name)
     // {
     //     // この関数はviewの寿命の問題を避けるため
@@ -1298,7 +1397,7 @@ private:
     //     // tick()内では下記のようにfilterを作成する。
     //     //
     //     // bsoncxx::builder::stream::document filter_builder;
-    //     // filter_builder << "record_name" << data2_record;
+    //     // filter_builder << "record_name" << bull_data_record;
 
     //     static bsoncxx::document::value dummy =
     //         bsoncxx::builder::stream::document{}
