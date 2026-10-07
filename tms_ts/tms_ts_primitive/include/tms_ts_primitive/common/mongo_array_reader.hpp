@@ -21,7 +21,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <regex>
 
 #include <bsoncxx/types.hpp>
 #include <bsoncxx/json.hpp>
@@ -79,7 +78,9 @@ public:
             // "array" : array全体
             // "len"   : arrayの長さ
             // "[n]"   : n番目の要素
+            // "n"     : n番目の要素
             // "[-n]"  : 後ろからn番目の要素
+            // "-n"     : 後ろからn番目の要素
             InputPort<std::string>("output_type")
         };
     }
@@ -304,8 +305,34 @@ public:
             // output_type
             //---------------------------------------------
 
-            const std::string type =
+            std::string type =
                 output_type.value();
+
+
+            //---------------------------------------------
+            // Remove surrounding double quotes
+            //---------------------------------------------
+            //
+            // 例:
+            //   "0"    -> 0
+            //   "1"    -> 1
+            //   "-1"   -> -1
+            //   "[0]"  -> [0]
+            //   "[-1]" -> [-1]
+            //
+            // BT Blackboard上でstd::stringとして保存された
+            // "0" や "[0]" も通常のoutput_typeと同じように扱う。
+            //---------------------------------------------
+
+            if (type.size() >= 2 &&
+                type.front() == '"' &&
+                type.back() == '"')
+            {
+                type =
+                    type.substr(
+                        1,
+                        type.size() - 2);
+            }
 
 
             //---------------------------------------------
@@ -377,6 +404,15 @@ public:
 
 
             //---------------------------------------------
+            // [n] / [-n] / n / -n
+            //---------------------------------------------
+
+            std::string index_string;
+
+            bool is_index = false;
+
+
+            //---------------------------------------------
             // [n] / [-n]
             //---------------------------------------------
 
@@ -384,12 +420,56 @@ public:
                 type.front() == '[' &&
                 type.back() == ']')
             {
-                std::string index_string =
+                index_string =
                     type.substr(
                         1,
                         type.size() - 2);
 
+                is_index = true;
+            }
 
+
+            //---------------------------------------------
+            // n / -n
+            //---------------------------------------------
+
+            else
+            {
+                // 数字だけの場合もindexとして扱う
+                //
+                // 例:
+                // "0"
+                // "1"
+                // "-1"
+                // "-2"
+
+                try
+                {
+                    size_t pos = 0;
+
+                    std::stoi(
+                        type,
+                        &pos);
+
+                    if (pos == type.size())
+                    {
+                        index_string = type;
+                        is_index = true;
+                    }
+                }
+                catch (...)
+                {
+                    is_index = false;
+                }
+            }
+
+
+            //---------------------------------------------
+            // Index
+            //---------------------------------------------
+
+            if (is_index)
+            {
                 int index;
 
 
@@ -416,7 +496,7 @@ public:
                 {
                     std::cout
                         << "[MongoArrayReader] "
-                        << "Invalid output_type: "
+                        << "Invalid array index: "
                         << type
                         << std::endl;
 
@@ -518,7 +598,8 @@ public:
             std::cout
                 << "[MongoArrayReader] "
                 << "Supported output_type: "
-                << "\"array\", \"len\", \"[n]\", \"[-n]\""
+                << "\"array\", \"len\", \"[n]\", "
+                << "\"[-n]\", \"n\", \"-n\""
                 << std::endl;
 
             return NodeStatus::FAILURE;
