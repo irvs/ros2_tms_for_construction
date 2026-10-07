@@ -10,7 +10,7 @@ repositories:
   tms_if_for_opera:
     type: git
     url: https://github.com/irvs/tms_if_for_opera.git
-    version: 45bb2ff559eaca6d1e2fcc45f8f9200593451193  # main @ 2026-04-28 (merge of #14: package.xml <depend> fix)
+    version: 60a5af3f132dcc7b71fcf4eaf15a62b2be8b1f81  # main @ 2026-10-02 (60a5af3: tms_if_for_opera を分離。action 名・型が TmsRpExcavator* に揃った版)
   opera/common/com3_ros:
     type: git
     url: https://github.com/pwri-opera/com3_ros.git
