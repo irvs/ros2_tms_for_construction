@@ -171,7 +171,7 @@ void LeafNodeBase::halt_bef()
         RCLCPP_ERROR(node_->get_logger(),
                      "[EMERGENCY] No cancel response after %d attempt(s) (or rclcpp is shutting down). Giving up on cancel. "
                      "Engage the hydraulic lock (physical remote control) and visually confirm the machine has stopped, then Ctrl+C. "
-                     "(cancel 応答なし: 上位で油圧ロック (物理リモコン) を施錠し、機体停止を目視確認してから Ctrl+C)",
+                     "(キャンセル応答なし: リモコンで油圧ロックをかけ、機体の停止を目視で確認してから Ctrl+C で終了してください)",
                      attempt);
     }
     setStatus(BT::NodeStatus::IDLE);
