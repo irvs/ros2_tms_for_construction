@@ -4,11 +4,12 @@
 # into the running `mongodb` service. Run this once after `docker compose up -d`.
 #
 # Usage (from host):
-#   docker compose -f docker/compose.yaml exec tms /workspace/src/ros2_tms_for_construction/docker/restore-db.sh
+#   docker compose exec tms restore-db.sh
 #
 # Writes to the bind-mounted demo/ directory (extracts rostmsdb_collections.zip
-# into demo/dump/), so we drop to the `ros` user if invoked as root. Otherwise
-# demo/dump would end up root-owned on the host.
+# into demo/dump/ on every run, overwriting a dump left by an older commit), so
+# we drop to the `ros` user if invoked as root. Otherwise demo/dump would end
+# up root-owned on the host.
 
 set -euo pipefail
 
@@ -23,14 +24,15 @@ DUMP_DIR="${DEMO_DIR}/dump"
 MONGO_HOST="${MONGO_HOST:-localhost}"
 MONGO_PORT="${MONGO_PORT:-27017}"
 
-if [ ! -d "${DUMP_DIR}" ]; then
-    if [ ! -f "${ZIP_PATH}" ]; then
-        echo "[restore-db] ERROR: ${ZIP_PATH} not found" >&2
-        exit 1
-    fi
-    echo "[restore-db] Extracting ${ZIP_PATH}"
-    (cd "${DEMO_DIR}" && unzip -o "$(basename "${ZIP_PATH}")")
+if [ ! -f "${ZIP_PATH}" ]; then
+    echo "[restore-db] ERROR: ${ZIP_PATH} not found" >&2
+    exit 1
 fi
+# Always re-extract: every version of the zip unpacks to the same file names
+# under dump/rostmsdb/, so skipping when dump/ exists would silently restore
+# an older seed after the zip is updated.
+echo "[restore-db] Extracting ${ZIP_PATH}"
+(cd "${DEMO_DIR}" && unzip -o -q "$(basename "${ZIP_PATH}")")
 
 echo "[restore-db] mongorestore --drop --host ${MONGO_HOST} --port ${MONGO_PORT} ${DUMP_DIR}"
 mongorestore --drop --host "${MONGO_HOST}" --port "${MONGO_PORT}" "${DUMP_DIR}"
