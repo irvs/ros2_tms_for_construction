@@ -273,11 +273,11 @@ public:
 
 
             // =================================================
-            // 2. block_data.vector = L
+            // 2. block_data.block_vector = L
             // =================================================
 
             auto vector_element =
-                block_data_view["vector"];
+                block_data_view["block_vector"];
 
 
             if (!vector_element ||
