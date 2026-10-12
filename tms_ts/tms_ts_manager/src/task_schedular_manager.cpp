@@ -39,6 +39,7 @@
 #include "tms_ts_primitive/common/SetLocalBlackboard.hpp"
 #include "tms_ts_primitive/common/LocalBlackboardCaluculator.hpp"
 #include "tms_ts_primitive/common/SetLocalBlackboardWithCounter.hpp"
+#include "tms_ts_primitive/common/ExtractTrailingNumberToBlackboard.hpp"
 #include "tms_ts_primitive/common/Counter.hpp"
 #include "tms_ts_primitive/common/wait_for_click.hpp"
 #include "tms_ts_primitive/common/wait_timer.hpp"
@@ -178,6 +179,7 @@ public:
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
     factory.registerNodeType<LocalBlackboardCaluculator>("LocalBlackboardCaluculator");
     factory.registerNodeType<SetLocalBlackboardWithCounter>("SetLocalBlackboardWithCounter");
+    factory.registerNodeType<ExtractTrailingNumberToBlackboard>("ExtractTrailingNumberToBlackboard");
     factory.registerNodeType<Counter>("Counter");
     factory.registerNodeType<WaitForClick>("WaitForClick");
     factory.registerNodeType<WaitTimer>("WaitTimer");

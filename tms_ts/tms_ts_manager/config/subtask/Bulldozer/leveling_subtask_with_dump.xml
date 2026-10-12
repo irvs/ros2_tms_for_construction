@@ -58,7 +58,7 @@
     <TreeNodesModel>
         <Action ID="BulldozerPathCreater">
             <input_port name="block_data"/>
-            <inout_port name="data2"/>
+            <inout_port name="bull_data"/>
         </Action>
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>

@@ -86,6 +86,11 @@
             <inout_port name="counter_key"/>
         </Action>      
 
+        <Action ID="ExtractTrailingNumberToBlackboard">
+            <inout_port name="source_key"/>
+            <inout_port name="stored_key"/>
+        </Action>
+
         <Action ID="Counter">
             <input_port name="key"/>
         </Action>     
