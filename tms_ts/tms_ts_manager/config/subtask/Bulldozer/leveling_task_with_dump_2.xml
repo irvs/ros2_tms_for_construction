@@ -2,11 +2,9 @@
 <root main_tree_to_execute="BehaviorTree">
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
-        <Decorator ID="KeepRunningUntilFlgup" key="flg" while_or_dowhile="while">
-            <Sequence>
-                <Action ID="ExecuteSubtask" machine_record_name="" model_name="d37pxi" subtask_name="leveling_subtask_with_dump" subtask_parameters="release_area_data:SAMPLE_BLACKBOARD_d37pxi,block_point:block_0,stop_point:bulldozer_node_0" terminate_condition="block_9"/>
-            </Sequence>
-        </Decorator>
+        <Sequence>
+            <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_d37pxi" model_name="d37pxi" subtask_name="leveling_subtask_with_dump" subtask_parameters="block_point:block_0,stop_point:bulldozer_node_0" terminate_condition="block_9"/>
+        </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>

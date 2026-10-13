@@ -4,12 +4,16 @@
     <BehaviorTree ID="BehaviorTree">
         <Decorator ID="KeepRunningUntilFlgup" key="flg" while_or_dowhile="while">
             <Sequence>
-                <Action ID="ExecuteSubtask" machine_record_name="" model_name="mst110cr" subtask_name="Release_Subtask_With_Bull" subtask_parameters="dump_up_angle:RELEASE_ANGLE_UP,dump_down_angle:RELEASE_ANGLE_DOWN,time:5000,release_area_data:SAMPLE_BLACKBOARD_d37pxi,block_point:block_0,stop_point:dump_node_0" terminate_condition=""/>
+                <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_d37pxi" model_name="mst110cr" subtask_name="Release_Subtask_With_Bull" subtask_parameters="dump_up_angle:RELEASE_ANGLE_UP,dump_down_angle:RELEASE_ANGLE_DOWN,time:5000,stop_point:dump_node_0" terminate_condition=""/>
             </Sequence>
         </Decorator>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
+        <Action ID="BulldozerPathCreater">
+            <input_port name="block_data"/>
+            <inout_port name="bull_data"/>
+        </Action>
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
         </Action>
@@ -23,11 +27,16 @@
             <input_port name="subtask_parameters"/>
             <input_port name="terminate_condition"/>
         </Action>
+        <Action ID="ExtractTrailingNumberToBlackboard">
+            <inout_port name="source_key"/>
+            <inout_port name="stored_key"/>
+        </Action>
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>
             <input_port name="while_or_dowhile"/>
         </Decorator>
         <Action ID="LeafNodeBulldozer">
+            <inout_port name="blade_hold"/>
             <input_port default="d37pxi_24" name="model_name"/>
             <inout_port name="primitive_name"/>
             <inout_port name="record_name"/>
@@ -58,6 +67,12 @@
             <input_port name="calculation_formula"/>
             <inout_port name="output_key"/>
         </Action>
+        <Action ID="MongoArrayReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+            <inout_port name="output_type"/>
+        </Action>
         <Action ID="MongoArrayWriter">
             <input_port name="input_value"/>
             <input_port name="mongo_param_name"/>
@@ -75,6 +90,7 @@
             <input_port name="output_port"/>
         </Action>
         <Action ID="MongoValueWriter">
+            <input_port name="input_type"/>
             <input_port name="input_value"/>
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
