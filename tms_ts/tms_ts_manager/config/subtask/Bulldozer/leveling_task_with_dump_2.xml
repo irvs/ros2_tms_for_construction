@@ -2,39 +2,14 @@
 <root main_tree_to_execute="BehaviorTree">
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
-        <Sequence>
+        <Decorator ID="KeepRunningUntilFlgup" key="flg" while_or_dowhile="while">
             <Sequence>
-                <Action ID="MongoValueReader" mongo_param_name="LATEST_RELEACED_BLOCK" mongo_record_name="$release_area_data$" output_port="LATEST_RELEACED_BLOCK"/>
-                <Sequence>
-                    <Action ID="SetLocalBlackboard" output_key="dump_waypoint" value="$stop_point$"/>
-                    <Action ID="ExtractTrailingNumberToBlackboard" source_key="LATEST_RELEACED_BLOCK" stored_key="releace_block_num"/>
-                </Sequence>
-                <Sequence>
-                    <Action ID="Counter" key="releace_block_num"/>
-                    <Action ID="SetLocalBlackboardWithCounter" counter_key="releace_block_num" key="LATEST_RELEACED_BLOCK"/>
-                    <Action ID="SetLocalBlackboardWithCounter" counter_key="releace_block_num" key="dump_waypoint"/>
-                </Sequence>
+                <Action ID="ExecuteSubtask" machine_record_name="" model_name="d37pxi" subtask_name="leveling_subtask_with_dump" subtask_parameters="release_area_data:SAMPLE_BLACKBOARD_d37pxi,block_point:block_0,stop_point:bulldozer_node_0" terminate_condition="block_9"/>
             </Sequence>
-            <Sequence>
-                <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="up" record_name="{dump_waypoint}"/>
-                <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_release_soil" read_direction="" record_name="$dump_up_angle$"/>
-                <Delay delay_msec="$time$">
-                    <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_release_soil" read_direction="" record_name="$dump_down_angle$"/>
-                </Delay>
-                <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="down" record_name="{dump_waypoint}"/>
-            </Sequence>
-            <Sequence>
-                <Action ID="MongoArrayWriter" input_value="{LATEST_RELEACED_BLOCK}" mongo_param_name="RELEACED_BLOCK" mongo_record_name="$release_area_data$" operation="add"/>
-                <Action ID="MongoValueWriter" input_type="string" input_value="{LATEST_RELEACED_BLOCK}" mongo_param_name="LATEST_RELEACED_BLOCK" mongo_record_name="$release_area_data$"/>
-            </Sequence>
-        </Sequence>
+        </Decorator>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="BulldozerPathCreater">
-            <input_port name="block_data"/>
-            <inout_port name="bull_data"/>
-        </Action>
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
         </Action>
@@ -47,10 +22,6 @@
             <input_port name="subtask_name"/>
             <input_port name="subtask_parameters"/>
             <input_port name="terminate_condition"/>
-        </Action>
-        <Action ID="ExtractTrailingNumberToBlackboard">
-            <inout_port name="source_key"/>
-            <inout_port name="stored_key"/>
         </Action>
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>
@@ -87,12 +58,6 @@
         <Action ID="LocalBlackboardCaluculator">
             <input_port name="calculation_formula"/>
             <inout_port name="output_key"/>
-        </Action>
-        <Action ID="MongoArrayReader">
-            <input_port name="mongo_param_name"/>
-            <input_port name="mongo_record_name"/>
-            <input_port name="output_port"/>
-            <inout_port name="output_type"/>
         </Action>
         <Action ID="MongoArrayWriter">
             <input_port name="input_value"/>

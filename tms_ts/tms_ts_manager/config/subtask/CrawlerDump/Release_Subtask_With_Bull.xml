@@ -6,15 +6,8 @@
             <Sequence>
                 <Action ID="MongoValueReader" mongo_param_name="LATEST_RELEACED_BLOCK" mongo_record_name="$release_area_data$" output_port="LATEST_RELEACED_BLOCK"/>
                 <Sequence>
-                    <IfThenElse>
-                        <Action ID="ConditionalExpression" conditional_expression="LATEST_RELEACED_BLOCK == &quot;null&quot;"/>
-                        <Sequence>
-                            <Action ID="SetLocalBlackboard" output_key="LATEST_RELEACED_BLOCK" value="$block_point$"/>
-                            <Action ID="SetLocalBlackboard" output_key="dump_waypoint" value="$stop_point$"/>
-                            <Action ID="SetLocalBlackboard" output_key="releace_block_num" value="&quot;0&quot;"/>
-                        </Sequence>
-                        <AlwaysSuccess/>
-                    </IfThenElse>
+                    <Action ID="SetLocalBlackboard" output_key="dump_waypoint" value="$stop_point$"/>
+                    <Action ID="ExtractTrailingNumberToBlackboard" source_key="LATEST_RELEACED_BLOCK" stored_key="releace_block_num"/>
                 </Sequence>
                 <Sequence>
                     <Action ID="Counter" key="releace_block_num"/>
@@ -38,6 +31,10 @@
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
+        <Action ID="BulldozerPathCreater">
+            <input_port name="block_data"/>
+            <inout_port name="bull_data"/>
+        </Action>
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
         </Action>
@@ -50,6 +47,10 @@
             <input_port name="subtask_name"/>
             <input_port name="subtask_parameters"/>
             <input_port name="terminate_condition"/>
+        </Action>
+        <Action ID="ExtractTrailingNumberToBlackboard">
+            <inout_port name="source_key"/>
+            <inout_port name="stored_key"/>
         </Action>
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>
@@ -86,6 +87,12 @@
         <Action ID="LocalBlackboardCaluculator">
             <input_port name="calculation_formula"/>
             <inout_port name="output_key"/>
+        </Action>
+        <Action ID="MongoArrayReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+            <inout_port name="output_type"/>
         </Action>
         <Action ID="MongoArrayWriter">
             <input_port name="input_value"/>
