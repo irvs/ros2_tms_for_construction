@@ -8,7 +8,6 @@
                 <Sequence>
                     <Action ID="MongoValueReader" mongo_param_name="LATEST_LEVELED_BLOCK" mongo_record_name="$machine_record_name$" output_port="leveling_block"/>
                     <Sequence>
-                        <Action ID="SetLocalBlackboard" output_key="leveling_block" value="$block_point$"/>
                         <Action ID="SetLocalBlackboard" output_key="bull_waypoint" value="$stop_point$"/>
                         <Action ID="ExtractTrailingNumberToBlackboard" source_key="leveling_block" stored_key="leveled_block_num"/>
                         <Action ID="ExtractTrailingNumberToBlackboard" source_key="leveling_block" stored_key="waiting_block_num"/>
@@ -18,7 +17,7 @@
                         <IfThenElse>
                             <Action ID="ConditionalExpression" conditional_expression="moved_flg == false"/>
                             <Sequence>
-                                <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_follow_waypoints" record_name="{bull_waypoint}"/>
+                                <Action ID="LeafNodeBulldozer" blade_hold="" model_name="$model_name$" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="{bull_waypoint}"/>
                                 <Action ID="SetLocalBlackboard" output_key="moved_flg" value="true"/>
                             </Sequence>
                             <AlwaysSuccess/>
@@ -44,13 +43,12 @@
                                     <Repeat num_cycles="{bull_leveling_path_length}">
                                         <Sequence>
                                             <Action ID="MongoArrayReader" mongo_param_name="waypoints_record_name" mongo_record_name="$machine_record_name$" output_port="bull_leveling_path" output_type="{patn_num}"/>
-                                            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_follow_waypoints" record_name="{bull_leveling_path}"/>
+                                            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="$model_name$" primitive_name="primitive_bulldozer_follow_waypoints" record_name="{bull_leveling_path}"/>
                                             <Action ID="Counter" key="patn_num"/>
                                         </Sequence>
                                     </Repeat>
                                 </Sequence>
                                 <Action ID="MongoArrayWriter" input_value="{leveling_block}" mongo_param_name="LEVELED_BLOCK" mongo_record_name="$machine_record_name$" operation="add"/>
-                                <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_follow_waypoints" record_name="{bull_waypoint}"/>
                                 <Action ID="MongoArrayWriter" input_value="{leveling_block}" mongo_param_name="RELEACED_BLOCK" mongo_record_name="$machine_record_name$" operation="remove"/>
                                 <Action ID="SetLocalBlackboard" output_key="moved_flg" value="false"/>
                             </Sequence>
