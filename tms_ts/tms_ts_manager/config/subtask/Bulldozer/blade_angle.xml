@@ -3,18 +3,16 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_follow_waypoints" record_name="push_1"/>
-            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_follow_waypoints" record_name="push_2"/>
-            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_follow_waypoints" record_name="push_3"/>
-            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_follow_waypoints" record_name="push_4"/>
-            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_follow_waypoints" record_name="push_5"/>
-            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_follow_waypoints" record_name="push_6"/>
-            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_follow_waypoints" record_name="push_7"/>
-            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_follow_waypoints" record_name="push_8"/>
+            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="blade_left"/>
+            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="blade_right"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
+        <Action ID="BulldozerPathCreater">
+            <input_port name="block_data"/>
+            <inout_port name="bull_data"/>
+        </Action>
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
         </Action>
@@ -27,6 +25,10 @@
             <input_port name="subtask_name"/>
             <input_port name="subtask_parameters"/>
             <input_port name="terminate_condition"/>
+        </Action>
+        <Action ID="ExtractTrailingNumberToBlackboard">
+            <inout_port name="source_key"/>
+            <inout_port name="stored_key"/>
         </Action>
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>
@@ -63,6 +65,12 @@
         <Action ID="LocalBlackboardCaluculator">
             <input_port name="calculation_formula"/>
             <inout_port name="output_key"/>
+        </Action>
+        <Action ID="MongoArrayReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+            <inout_port name="output_type"/>
         </Action>
         <Action ID="MongoArrayWriter">
             <input_port name="input_value"/>
