@@ -3,25 +3,41 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Sequence>
-                <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="$swing_angle_for_loading$"/>
-                <Action ID="MongoValueWriter" input_value="true" mongo_param_name="arrival_flg" mongo_record_name="$arrival_flg_record_name$"/>
-            </Sequence>
-            <Sequence>
-                <Action ID="MongoValueReader" mongo_param_name="$loaded_flg_record_name$" mongo_record_name="loaded_flg" output_port="loaded_flg"/>
-                <Action ID="ConditionalExpression" conditional_expression="loaded_flg == true"/>
-                <IfThenElse>
-                    <Sequence>
-                        <Action ID="MongoValueWriter" input_value="false" mongo_param_name="arrival_flg" mongo_record_name="$arrival_flg_record_name$"/>
-                        <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="$swing_angle_for_runing$"/>
-                    </Sequence>
-                    <AlwaysSuccess/>
-                </IfThenElse>
-            </Sequence>
+            <Action ID="SetLocalBlackboard" output_key="SUBTASK_TERMINAL_FLG" value="false"/>
+            <Action ID="SetLocalBlackboard" output_key="arrival_flg" value="false"/>
+            <Decorator ID="KeepRunningUntilFlgup" key="SUBTASK_TERMINAL_FLG" while_or_dowhile="while">
+                <Sequence>
+                    <IfThenElse>
+                        <Action ID="ConditionalExpression" conditional_expression="arrival_flg == false"/>
+                        <Sequence>
+                            <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="$swing_angle_for_loading$"/>
+                            <Action ID="MongoValueWriter" input_type="" input_value="true" mongo_param_name="arrival_flg" mongo_record_name="$arrival_flg_record_name$"/>
+                            <Action ID="SetLocalBlackboard" output_key="arrival_flg" value="true"/>
+                        </Sequence>
+                        <AlwaysSuccess/>
+                    </IfThenElse>
+                    <Action ID="MongoValueReader" mongo_param_name="$loaded_flg_record_name$" mongo_record_name="loaded_flg" output_port="loaded_flg"/>
+                    <IfThenElse>
+                        <Action ID="ConditionalExpression" conditional_expression="loaded_flg == true"/>
+                        <Sequence>
+                            <Action ID="MongoValueWriter" input_type="" input_value="false" mongo_param_name="arrival_flg" mongo_record_name="$arrival_flg_record_name$"/>
+                            <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="$swing_angle_for_runing$"/>
+                            <Action ID="SetLocalBlackboard" output_key="SUBTASK_TERMINAL_FLG" value="true"/>
+                        </Sequence>
+                        <AlwaysSuccess/>
+                    </IfThenElse>
+                    <Action ID="WaitTimer" seconds="1"/>
+                </Sequence>
+            </Decorator>
+            <Action ID="SetLocalBlackboard" output_key="SUBTASK_TERMINAL_FLG" value="false"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
+        <Action ID="BulldozerPathCreater">
+            <input_port name="block_data"/>
+            <inout_port name="bull_data"/>
+        </Action>
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
         </Action>
@@ -34,6 +50,10 @@
             <input_port name="subtask_name"/>
             <input_port name="subtask_parameters"/>
             <input_port name="terminate_condition"/>
+        </Action>
+        <Action ID="ExtractTrailingNumberToBlackboard">
+            <inout_port name="source_key"/>
+            <inout_port name="stored_key"/>
         </Action>
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>
@@ -65,6 +85,16 @@
             <input_port default="zx200" name="model_name"/>
             <inout_port name="primitive_name"/>
             <inout_port name="record_name"/>
+        </Action>
+        <Action ID="LocalBlackboardCaluculator">
+            <input_port name="calculation_formula"/>
+            <inout_port name="output_key"/>
+        </Action>
+        <Action ID="MongoArrayReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+            <inout_port name="output_type"/>
         </Action>
         <Action ID="MongoArrayWriter">
             <input_port name="input_value"/>
