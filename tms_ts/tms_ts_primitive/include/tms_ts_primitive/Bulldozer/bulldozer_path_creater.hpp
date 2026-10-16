@@ -145,7 +145,7 @@ public:
                << std::endl;
 
            return NodeStatus::FAILURE;
-       }
+        }
 
 
        if (!bull_data_name)
@@ -180,7 +180,7 @@ public:
            db["parameter"];
 
 
-       // ====================================================
+           // ====================================================
        // Read block_data
        // ====================================================
 
@@ -328,7 +328,7 @@ public:
                    << "[BulldozerPathCreater] "
                    << "block_data.vector has zero length."
                    << std::endl;
-                   
+
                return NodeStatus::FAILURE;
            }
 
@@ -488,11 +488,11 @@ public:
 
            const int next_number =
                current_number + 1;
-               
+
            next_block =
                block_prefix +
                std::to_string(next_number);
-               
+
            // -------------------------------------------------
            // MongoDBからblock_n+1を検索
            // -------------------------------------------------
@@ -562,7 +562,7 @@ public:
                    getNumber(
                        next_center,
                        "x");
-                       
+
                next_point.y =
                    getNumber(
                        next_center,
@@ -671,7 +671,7 @@ public:
                    candidate_D.x * L.x +
                    candidate_D.y * L.y;
 
-                   
+
                // -------------------------------------------------
                // Dを決定
                // -------------------------------------------------
@@ -761,17 +761,38 @@ public:
                D.x * L_minus.x +
                D.y * L_minus.y;
 
+           // =================================================
+           // 13. S と blade_record_name
+           //
+           // DがL-に近い場合:
+           //   1回目: angle_right
+           //   同じブロック内の残り: angle_left
+           //
+           // DがL+に近い場合:
+           //   1回目: angle_left
+           //   同じブロック内の残り: angle_right
+           // =================================================
 
            BulldozerPoint2D S;
-
+           std::string blade_record1;
+           std::string blade_record2;
+           std::string blade_record3;
 
            if (dot_plus > dot_minus)
            {
+               // DはL+に近い
                S = L_plus;
+               blade_record1 = "angle_right";
+               blade_record2 = "angle_left";
+               blade_record3 = "angle_left";
            }
            else
            {
+               // DはL-に近い（同値の場合もこちら）
                S = L_minus;
+               blade_record1 = "angle_left";
+               blade_record2 = "angle_right";
+               blade_record3 = "angle_right";
            }
 
 
@@ -784,7 +805,7 @@ public:
            const double lateral_offset =
                (wy - w_blade) / 2.0;
 
-               
+
            BulldozerPoint2D orig_first;
 
 
@@ -814,7 +835,7 @@ public:
                current_point.y +
                S.y * lateral_offset;
 
-               
+
            // =================================================
            // 16. waypoint
            //
@@ -1095,13 +1116,18 @@ public:
 
 
            // =================================================
-           // 21. bull_data.waypoints_record_nameを更新
+           // 21. bull_dataのwaypoints_record_nameと
+           //     blade_record_nameを更新
            //
-           // "waypoints_record_name": [
-           //     "bull_leveling_waypoint_1",
-           //     "bull_leveling_waypoint_2",
-           //     "bull_leveling_waypoint_3"
-           // ]
+           // waypoints_record_name:
+           //   [waypoint1, waypoint2, waypoint3]
+           //
+           // blade_record_name:
+           //   DがL-に近い:
+           //     [angle_right, angle_left, angle_left]
+           //   DがL+に近い:
+           //     [angle_left, angle_right, angle_right]
+           // waypointと同じ3要素。最初だけ残りと異なる。
            // =================================================
 
            bsoncxx::builder::stream::document update_builder;
@@ -1112,11 +1138,16 @@ public:
 
                << "waypoints_record_name"
                << open_array
-
                << record1
                << record2
                << record3
+               << close_array
 
+               << "blade_record_name"
+               << open_array
+               << blade_record1
+               << blade_record2
+               << blade_record3
                << close_array
 
                << close_document
@@ -1127,11 +1158,11 @@ public:
                << true
                << close_document;
 
-               
+
            mongocxx::options::update update_options;
 
            update_options.upsert(false);
-
+           
 
            // ========================================================
            // bull_dataの検索条件
@@ -1154,7 +1185,7 @@ public:
                    update_builder.view(),
                    update_options);
 
-                   
+
            if (!update_result ||
                update_result->matched_count() == 0)
            {
@@ -1167,7 +1198,7 @@ public:
                return NodeStatus::FAILURE;
            }
 
-           
+
            // =================================================
            // Debug
            // =================================================
@@ -1505,7 +1536,7 @@ private:
            // -----------------------------------------------
            // qx
            // -----------------------------------------------
-           
+
            << "qx"
            << open_array
            << waypoint.qx[0]
