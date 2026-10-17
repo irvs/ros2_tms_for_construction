@@ -3,8 +3,8 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="blade_left"/>
-            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="blade_right"/>
+            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="angle_left"/>
+            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi_24" primitive_name="primitive_bulldozer_blade_control" record_name="angle_right"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->

@@ -69,7 +69,11 @@
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>        
             <input_port name="while_or_dowhile"/>
-        </Decorator>     
+        </Decorator>
+
+        <Action ID="SetCurrentTimeToLocalBlackboard">
+            <input_port name="output_key"/>
+        </Action> 
 
         <Action ID="SetLocalBlackboard">
             <input_port name="value"/>

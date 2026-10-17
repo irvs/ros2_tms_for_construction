@@ -37,6 +37,7 @@
 #include "tms_ts_primitive/common/conditional_expression.hpp"
 #include "tms_ts_primitive/common/KeepRunningUntilFlgup.hpp"
 #include "tms_ts_primitive/common/SetLocalBlackboard.hpp"
+#include "tms_ts_primitive/common/SetCurrentTimeToLocalBlackboard.hpp"
 #include "tms_ts_primitive/common/LocalBlackboardCaluculator.hpp"
 #include "tms_ts_primitive/common/SetLocalBlackboardWithCounter.hpp"
 #include "tms_ts_primitive/common/ExtractTrailingNumberToBlackboard.hpp"
@@ -177,6 +178,7 @@ public:
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
+    factory.registerNodeType<SetCurrentTimeToLocalBlackboard>("SetCurrentTimeToLocalBlackboard");
     factory.registerNodeType<LocalBlackboardCaluculator>("LocalBlackboardCaluculator");
     factory.registerNodeType<SetLocalBlackboardWithCounter>("SetLocalBlackboardWithCounter");
     factory.registerNodeType<ExtractTrailingNumberToBlackboard>("ExtractTrailingNumberToBlackboard");
