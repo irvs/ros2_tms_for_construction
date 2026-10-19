@@ -40,26 +40,35 @@ class UpdateDbParameter(Node):
             '/zx200/end_effector',
             self.update_db_parameter,
             10) 
+
+        self.get_logger().info("UpdateDbParameter node has been started.")
     
     def update_db_parameter(self, msg: Zx200EndEffector) -> None:
         client = MongoClient(MONGODB_IPADDRESS, MONGODB_PORTNUMBER)
         db = client['rostmsdb']
         collection = db['parameter']
-        query = {"model_name": msg.model_name, "type" : "dynamic", "record_name": msg.record_name}
-        update_parameter_info= {"x": None, "y": None, "z": None, "theta_w": None}
-        parameter_info = collection.find_one(query)        
-        LOCK_FLG = bool(parameter_info["LOCK_FLG"]) 
-        self.get_logger().info(f"LOCK_FLG is {LOCK_FLG}")
+        query = {"model_name": msg.model_name, "record_name": msg.record_name}
+        parameter_info = collection.find_one(query)
+        if parameter_info is None:
+            self.get_logger().warn(f"No parameter document found for query: {query}")
+            return
 
-        if LOCK_FLG == False:
-            for update_val in update_parameter_info:
-                if update_parameter_info[update_val] == None:
-                    update_parameter_info[update_val] = eval(f"msg.{update_val}")
-            update_query = {"$set": update_parameter_info}
-            collection.update_one(query, update_query)
-        else :
-            self.get_logger().info("LOCK_FLG parameter is true. So, update process is cancelled.")
-        
+        # waypoints内の最初のpose型waypointのdataを更新する
+        waypoints = parameter_info.get("waypoints") or []
+        pose_index = next(
+            (i for i, wp in enumerate(waypoints) if isinstance(wp, dict) and wp.get("type") == "pose"),
+            None)
+        if pose_index is None:
+            self.get_logger().warn(f"No pose waypoint found in record: {msg.record_name}")
+            return
+
+        update_parameter_info = {
+            f"waypoints.{pose_index}.data.{key}": float(getattr(msg, key))
+            for key in ("x", "y", "z", "theta_w")
+        }
+        update_query = {"$set": update_parameter_info}
+        collection.update_one(query, update_query)
+
 
 
 def main(args=None):
