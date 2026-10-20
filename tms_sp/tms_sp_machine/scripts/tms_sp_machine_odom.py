@@ -43,6 +43,7 @@ class TmsSpMachineOdom(Node):
         # Declare parameters
         self.declare_parameter("machine_name", "machine_name")
         self.declare_parameter("to_frame", "world")
+        self.declare_parameter("publish_period", 1.0)  # DBへの書き込み周期 [秒]
 
         # Get parameters
         self.machine_name: str = (
@@ -51,6 +52,13 @@ class TmsSpMachineOdom(Node):
         self.to_frame: str = (
             self.get_parameter("to_frame").get_parameter_value().string_value
         )
+        self.publish_period = (
+            self.get_parameter("publish_period").get_parameter_value().double_value
+        )
+
+
+        # 最後にDBへ書き込んだ時刻
+        self.last_publish_time = self.get_clock().now()
 
         self.publisher_ = self.create_publisher(Tmsdb, "tms_db_data", 10)
         self.subscription = self.create_subscription(
@@ -70,23 +78,32 @@ class TmsSpMachineOdom(Node):
 
     def send_odom_to_db_writer(self, msg: Odometry) -> None:
         """
-        Send topics to tms_db_writer (Write the received Odometry data to DB).
-
-        parameters
-        ----------
-        msg : Odometry
-            Target Object's Odometry.
+        Send Odometry data to tms_db_writer at the specified period.
         """
+
         # Log
         if not self.is_received:
-            self.get_logger().info(f"Received {self.machine_name}'s Odometry msg")
+            self.get_logger().info(
+                f"Received {self.machine_name}'s Odometry msg"
+            )
             self.is_received = True
 
-       # self.get_logger().info(msg.pose.pose.position)
+        # Check the elapsed time since the last publication
+        current_time = self.get_clock().now()
+        elapsed_time = (
+            current_time - self.last_publish_time
+        ).nanoseconds / 1e9
 
-        # Transform
-       # msg = self.transform(msg)
+        if elapsed_time < self.publish_period:
+            return
 
+        # Update the last publication time
+        self.last_publish_time = current_time
+
+        # Transform (必要に応じて有効化)
+        # msg = self.transform(msg)
+
+        # Create and publish Tmsdb message
         db_msg = self.create_db_msg(msg)
         self.publisher_.publish(db_msg)
 

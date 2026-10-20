@@ -12,6 +12,7 @@
                             <IfThenElse>
                                 <Action ID="ConditionalExpression" conditional_expression="&quot;$start_status$&quot;!=&quot;none&quot;"/>
                                 <Sequence>
+                                    <Action ID="MongoRouteOrientationUpdater" model_name="$model_name$" read_direction="{UP_DOWN}" record_name="$start_status$"/>
                                     <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="$start_status$"/>
                                 </Sequence>
                                 <AlwaysSuccess/>
@@ -82,6 +83,7 @@
                                     <Action ID="ConditionalExpression" conditional_expression="sub_flg == false"/>
                                     <Sequence>
                                         <Action ID="MongoArrayWriter" input_value="\related_point_sub\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                        <Action ID="MongoRouteOrientationUpdater" model_name="$model_name$" read_direction="{UP_DOWN}" record_name="{related_point_sub}"/>
                                         <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_sub}"/>
                                         <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                         <Action ID="MongoValueWriter" input_value="\related_point_sub\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
@@ -112,6 +114,7 @@
                                                 <Action ID="ConditionalExpression" conditional_expression="main_flg == false"/>
                                                 <Sequence>
                                                     <Action ID="MongoArrayWriter" input_value="\related_point_main\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                                    <Action ID="MongoRouteOrientationUpdater" model_name="$model_name$" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                     <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                     <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                                     <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
@@ -130,6 +133,7 @@
                                                 <Action ID="ConditionalExpression" conditional_expression="sub_flg == false"/>
                                                 <Sequence>
                                                     <Action ID="MongoArrayWriter" input_value="\related_point_sub\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                                    <Action ID="MongoRouteOrientationUpdater" model_name="$model_name$" read_direction="{UP_DOWN}" record_name="{related_point_sub}"/>
                                                     <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_sub}"/>
                                                     <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                                     <Action ID="MongoValueWriter" input_value="\related_point_sub\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
@@ -157,6 +161,7 @@
                                                                 <Action ID="ConditionalExpression" conditional_expression="main_flg == false and next_main_flg == false"/>
                                                                 <Sequence>
                                                                     <Action ID="MongoArrayWriter" input_value="\related_point_main\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                                                    <Action ID="MongoRouteOrientationUpdater" model_name="$model_name$" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                                     <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                                     <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                                                     <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
@@ -175,6 +180,7 @@
                                                                 <Action ID="ConditionalExpression" conditional_expression="main_flg == false"/>
                                                                 <Sequence>
                                                                     <Action ID="MongoArrayWriter" input_value="\related_point_main\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                                                    <Action ID="MongoRouteOrientationUpdater" model_name="$model_name$" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                                     <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                                     <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                                                     <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
@@ -203,6 +209,7 @@
                                                                 <Action ID="ConditionalExpression" conditional_expression="main_flg == false and (next_main_flg == false or next_sub_flg == false)"/>
                                                                 <Sequence>
                                                                     <Action ID="MongoArrayWriter" input_value="\related_point_main\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                                                    <Action ID="MongoRouteOrientationUpdater" model_name="$model_name$" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                                     <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                                     <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                                                     <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
@@ -236,6 +243,7 @@
                                                                     <Action ID="ConditionalExpression" conditional_expression="main_flg == false and sub_up == false and next_main_flg == false and next_next_sub_flg == false and next_next_main_flg == false"/>
                                                                     <Sequence>
                                                                         <Action ID="MongoArrayWriter" input_value="\related_point_main\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                                                        <Action ID="MongoRouteOrientationUpdater" model_name="$model_name$" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                                         <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                                         <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                                                         <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
@@ -251,6 +259,7 @@
                                                                     <Action ID="ConditionalExpression" conditional_expression="sub_flg==false and main_up == false"/>
                                                                     <Sequence>
                                                                         <Action ID="MongoArrayWriter" input_value="\related_point_sub\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
+                                                                        <Action ID="MongoRouteOrientationUpdater" model_name="$model_name$" read_direction="{UP_DOWN}" record_name="{related_point_sub}"/>
                                                                         <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_sub}"/>
                                                                         <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                                                         <Action ID="MongoValueWriter" input_value="\related_point_sub\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
@@ -296,6 +305,10 @@
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
+        <Action ID="BulldozerPathCreater">
+            <input_port name="block_data"/>
+            <inout_port name="bull_data"/>
+        </Action>
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
         </Action>
@@ -309,11 +322,16 @@
             <input_port name="subtask_parameters"/>
             <input_port name="terminate_condition"/>
         </Action>
+        <Action ID="ExtractTrailingNumberToBlackboard">
+            <inout_port name="source_key"/>
+            <inout_port name="stored_key"/>
+        </Action>
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>
             <input_port name="while_or_dowhile"/>
         </Decorator>
         <Action ID="LeafNodeBulldozer">
+            <inout_port name="blade_hold"/>
             <input_port default="d37pxi_24" name="model_name"/>
             <inout_port name="primitive_name"/>
             <inout_port name="record_name"/>
@@ -340,11 +358,26 @@
             <inout_port name="primitive_name"/>
             <inout_port name="record_name"/>
         </Action>
+        <Action ID="LocalBlackboardCaluculator">
+            <input_port name="calculation_formula"/>
+            <inout_port name="output_key"/>
+        </Action>
+        <Action ID="MongoArrayReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+            <inout_port name="output_type"/>
+        </Action>
         <Action ID="MongoArrayWriter">
             <input_port name="input_value"/>
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
             <input_port name="operation"/>
+        </Action>
+        <Action ID="MongoRouteOrientationUpdater">
+            <input_port name="model_name"/>
+            <inout_port name="read_direction"/>
+            <input_port name="record_name"/>
         </Action>
         <Action ID="MongoValueReader">
             <input_port name="mongo_param_name"/>
@@ -357,9 +390,13 @@
             <input_port name="output_port"/>
         </Action>
         <Action ID="MongoValueWriter">
+            <input_port name="input_type"/>
             <input_port name="input_value"/>
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
+        </Action>
+        <Action ID="SetCurrentTimeToLocalBlackboard">
+            <input_port name="output_key"/>
         </Action>
         <Action ID="SetLocalBlackboard">
             <inout_port name="output_key"/>

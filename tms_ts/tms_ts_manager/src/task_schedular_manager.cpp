@@ -34,6 +34,7 @@
 #include "tms_ts_primitive/common/mongo_value_writer.hpp"
 #include "tms_ts_primitive/common/mongo_array_writer.hpp"
 #include "tms_ts_primitive/common/mongo_array_reader.hpp"
+#include "tms_ts_primitive/common/mongo_route_orientation_updater.hpp"
 #include "tms_ts_primitive/common/conditional_expression.hpp"
 #include "tms_ts_primitive/common/KeepRunningUntilFlgup.hpp"
 #include "tms_ts_primitive/common/SetLocalBlackboard.hpp"
@@ -175,6 +176,7 @@ public:
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
     factory.registerNodeType<MongoArrayWriter>("MongoArrayWriter");
     factory.registerNodeType<MongoArrayReader>("MongoArrayReader");
+    factory.registerNodeType<MongoRouteOrientationUpdater>("MongoRouteOrientationUpdater");
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");

@@ -62,6 +62,12 @@
             <input_port name="operation"/>  
         </Action>  
 
+        <Action ID="MongoRouteOrientationUpdater">
+            <input_port name="model_name"/>
+            <input_port name="record_name"/>
+            <inout_port name="read_direction"/> 
+        </Action>  
+
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
         </Action>        
