@@ -31,11 +31,11 @@ def generate_launch_description():
         executable="tms_sp_machine_odom.py",
         output="screen",
         remappings=[
-            ("~/input/odom", "/mst110cr_2/odometry/global"),
+            ("~/input/odom", "/mst110cr/odometry/global"),
         ],
         parameters=[
             {
-                "machine_name": "mst110cr_2",
+                "machine_name": "mst110cr",
             },
             {
                 "to_frame": LaunchConfiguration("to_frame"),
@@ -51,11 +51,11 @@ def generate_launch_description():
         executable="tms_sp_machine_odom.py",
         output="screen",
         remappings=[
-            ("~/input/odom", "/mst2200vdr_2/odometry/global"),
+            ("~/input/odom", "/mst2200vdr/odometry/global"),
         ],
         parameters=[
             {
-                "machine_name": "mst2200vdr_2",
+                "machine_name": "mst2200vdr",
             },
             {
                 "to_frame": LaunchConfiguration("to_frame"),
