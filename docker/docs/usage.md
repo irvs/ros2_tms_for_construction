@@ -49,11 +49,13 @@ Terminal 1 を先に起動する理由: Unity 側の `JointStatePublisher` が `
 | `tms_if_delay` | `5.0` | `tms_if_for_opera` 起動までの待ち時間（秒）。SRDF の subscribe timeout 回避用 |
 | `tms_ts_delay` | `10.0` | `tms_ts_construction` 起動までの待ち時間（秒）。`tms_if_delay` より大きく |
 
-別の task を試す場合:
+別の task を試す場合（`task_id=2` は `task_id=1` の掘削積込を 4 サイクル繰り返す）:
 
 ```bash
-./scripts/exec.sh ros2 launch /workspace/src/ros2_tms_for_construction/docker/launch/bringup.launch.yaml task_id:=5
+./scripts/exec.sh ros2 launch /workspace/src/ros2_tms_for_construction/docker/launch/bringup.launch.yaml task_id:=2
 ```
+
+シードの `task_id=3`〜`5` は ic120 を使う task で、この bringup は ic120 を起動しない。
 
 低性能ホストで SRDF subscribe timeout が出る場合:
 

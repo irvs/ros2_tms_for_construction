@@ -20,6 +20,14 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # ---------------------------------------------------------------------------
 # 1. APT dependencies
+#
+# ROS packages are listed explicitly instead of `ros-humble-*moveit*` /
+# `*nav2*` / `*tf*` wildcards. The wildcards pull in package pairs that ship
+# the same file (e.g. moveit-task-constructor-core / moveit-py), so dpkg
+# aborts on a fresh build. The list covers what this repo and the src.repos
+# packages need (package.xml / CMakeLists.txt), plus the ros2_control stack
+# used by zx200_ros2 vehicle.launch.py. If colcon build complains about a
+# missing ROS package, add it here (with a comment explaining who needs it).
 # ---------------------------------------------------------------------------
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential cmake git curl wget gnupg ca-certificates pkg-config \
@@ -28,12 +36,42 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libzmq3-dev libboost-dev libncurses5-dev libncursesw5-dev libssl-dev \
         nlohmann-json3-dev rapidjson-dev \
         qtbase5-dev libqt5svg5-dev libdw-dev \
+        # tms_ts_subtask: find_package(glog REQUIRED)
+        libgoogle-glog-dev \
         ros-humble-robot-localization \
         ros-humble-rmw-cyclonedds-cpp \
     && apt-get install -y --no-install-recommends \
-        'ros-humble-*moveit*' \
-        'ros-humble-*nav2*' \
-        'ros-humble-*tf*' \
+        # moveit (tms_if_for_opera MoveGroupInterface, zx200_ros2 move_group / RViz / IKFast plugin)
+        ros-humble-moveit-common \
+        ros-humble-moveit-core \
+        ros-humble-moveit-msgs \
+        ros-humble-moveit-configs-utils \
+        ros-humble-moveit-kinematics \
+        ros-humble-moveit-planners-ompl \
+        ros-humble-moveit-ros-move-group \
+        ros-humble-moveit-ros-planning-interface \
+        ros-humble-moveit-ros-visualization \
+        ros-humble-moveit-simple-controller-manager \
+        # nav2 (only nav2_msgs is referenced in CMakeLists of tms_ts_subtask /
+        # tms_if_for_opera; Nav2 itself is not installed, see docs/known-issues.md)
+        ros-humble-nav2-msgs \
+        # tf2
+        ros-humble-tf2 \
+        ros-humble-tf2-ros \
+        ros-humble-tf2-geometry-msgs \
+        ros-humble-tf2-eigen \
+        ros-humble-tf2-kdl \
+        ros-humble-tf-transformations \
+        # ros2_control (zx200_ros2 vehicle.launch.py, zx200_control)
+        ros-humble-controller-manager \
+        ros-humble-joint-state-broadcaster \
+        ros-humble-joint-state-publisher \
+        ros-humble-joint-trajectory-controller \
+        ros-humble-velocity-controllers \
+        ros-humble-effort-controllers \
+        ros-humble-ros2controlcli \
+        # misc
+        ros-humble-xacro \
     && rm -rf /var/lib/apt/lists/*
 
 # ---------------------------------------------------------------------------
