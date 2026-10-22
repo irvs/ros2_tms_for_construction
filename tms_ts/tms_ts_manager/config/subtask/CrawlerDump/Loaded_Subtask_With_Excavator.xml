@@ -12,14 +12,13 @@
                         <Sequence>
                             <Action ID="SetLocalBlackboard" output_key="loaded_excavator_record" value="$EXCAVATOR_RECORD$"/>
                             <Sequence>
-                                <Action ID="MongoValueReader" mongo_param_name="load_point" mongo_record_name="loaded_excavator_record" output_port="load_point_num"/>
-                                <Action ID="SetLocalBlackboard" output_key="loaded_point" value="$LOADED_POINT$"/>
-                                <Action ID="SetLocalBlackboardWithCounter" counter_key="load_point_num" key="loaded_point"/>
+                                <Action ID="MongoValueReader" mongo_param_name="load_point" mongo_record_name="loaded_excavator_record" output_port="load_point"/>
+                                <Action ID="ExtractTrailingNumberToBlackboard" source_key="load_point" stored_key="load_point_num"/>
                             </Sequence>
                             <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_navigate_anywhere" read_direction="" record_name="{loaded_point}"/>
                             <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name=""/>
                             <SetBlackboard output_key="arrival_flg" value="true"/>
-                            <Action ID="MongoValueWriter" input_type="" input_value="arrival_flg" mongo_param_name="arrival_flg" mongo_record_name="loaded_excavator_record"/>
+                            <Action ID="MongoValueWriter" input_type="" input_value="true" mongo_param_name="arrival_flg" mongo_record_name="loaded_excavator_record"/>
                         </Sequence>
                         <AlwaysSuccess/>
                     </IfThenElse>
@@ -27,9 +26,8 @@
                     <IfThenElse>
                         <Action ID="ConditionalExpression" conditional_expression="arrival_flg == true and loaded_flg == true"/>
                         <Sequence>
+                            <Action ID="MongoValueWriter" input_type="" input_value="false" mongo_param_name="arrival_flg" mongo_record_name="loaded_excavator_record"/>
                             <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name=""/>
-                            <Action ID="MongoRouteOrientationUpdater" model_name="$model_name$" read_direction="up" record_name=""/>
-                            <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="up" record_name=""/>
                             <Action ID="SetLocalBlackboard" output_key="SUBTASK_TERMINAL_FLG" value="true"/>
                         </Sequence>
                         <AlwaysSuccess/>

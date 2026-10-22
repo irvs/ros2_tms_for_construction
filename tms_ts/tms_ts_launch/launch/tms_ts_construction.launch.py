@@ -308,7 +308,10 @@ def generate_launch_description():
                   package="tms_ur_construction",
                   executable="tms_ur_plan_reader",
                   output="screen",
-                  remappings=[("planwritten", "/planwritten"), ("~/output/plan", "/output/mst110cr_plan"), ("~/output/joint_plan", "/output/zx200_joint_plan"),],
+                  remappings=[("planwritten", "/planwritten"), 
+                              ("~/output/plan", "/output/mst110cr_plan"), 
+                              ("~/output/joint_plan", "/output/zx200_joint_plan"),
+                  ],
                   ),
             Node(
                   package="tms_db_manager", 
