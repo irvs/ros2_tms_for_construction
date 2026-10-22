@@ -4,6 +4,7 @@ uint8 control_type            # 0:position, 1:velocity, 2:effort
 float64[] goal_position       # ★到達判定の目標（control_typeに関わらず必須）
 float64[] velocity            # control_type==1 のとき使用（指令値）
 float64[] effort              # control_type==2 のとき使用（指令値）
+bool blade_hold               # true:指令値を送信し続ける, false:指令値の送信停止
 ---
 # Result
 bool success

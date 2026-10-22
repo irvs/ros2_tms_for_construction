@@ -2,27 +2,15 @@
 <root main_tree_to_execute="BehaviorTree">
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
-        <Sequence>
-            <Action ID="MongoValueWriter" input_value="&quot;2725960300000&quot;" mongo_param_name="CURRENT_SECTION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr"/>
-            <Action ID="MongoValueWriter" input_value="up" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr"/>
-            <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr" model_name="mst110cr" subtask_name="st_cruise" subtask_parameters="start_status:2725960300000" terminate_condition="2725960300007"/>
-            <Action ID="MongoValueWriter" input_value="down" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr"/>
-            <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr" model_name="mst110cr" subtask_name="st_cruise" subtask_parameters="start_status:2725960300007" terminate_condition="2725960300000"/>
-            <Action ID="MongoValueWriter" input_value="up" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr"/>
-        </Sequence>
+        <Decorator ID="KeepRunningUntilFlgup" key="end" while_or_dowhile="while">
+            <Sequence>
+                <Action ID="WaitForClick" button_info="navigation_start" window_title="navigation_start"/>
+                <Action ID="LeafNodeExcavator" model_name="zx200" previous_target_record_name="" primitive_name="primitive_excavator_follow_straight" target_record_name="straight_test"/>
+            </Sequence>
+        </Decorator>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="MongoValueReader">
-            <input_port name="mongo_param_name"/>
-            <input_port name="mongo_record_name"/>
-            <input_port name="output_port"/>
-        </Action>
-        <Action ID="MongoValueSearcher">
-            <input_port name="mongo_param_name"/>
-            <input_port name="mongo_value"/>
-            <input_port name="output_port"/>
-        </Action>
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
         </Action>
@@ -38,8 +26,10 @@
         </Action>
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>
+            <input_port name="while_or_dowhile"/>
         </Decorator>
         <Action ID="LeafNodeBulldozer">
+            <inout_port name="blade_hold"/>
             <input_port default="d37pxi_24" name="model_name"/>
             <inout_port name="primitive_name"/>
             <inout_port name="record_name"/>
@@ -66,7 +56,28 @@
             <inout_port name="primitive_name"/>
             <inout_port name="record_name"/>
         </Action>
+        <Action ID="LocalBlackboardCaluculator">
+            <input_port name="calculation_formula"/>
+            <inout_port name="output_key"/>
+        </Action>
+        <Action ID="MongoArrayWriter">
+            <input_port name="input_value"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="operation"/>
+        </Action>
+        <Action ID="MongoValueReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+        </Action>
+        <Action ID="MongoValueSearcher">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_value"/>
+            <input_port name="output_port"/>
+        </Action>
         <Action ID="MongoValueWriter">
+            <input_port name="input_type"/>
             <input_port name="input_value"/>
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
@@ -82,6 +93,9 @@
         <Action ID="WaitForClick">
             <input_port name="button_info"/>
             <input_port name="window_title"/>
+        </Action>
+        <Action ID="WaitTimer">
+            <input_port name="seconds"/>
         </Action>
     </TreeNodesModel>
     <!-- ////////// -->

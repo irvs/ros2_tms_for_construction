@@ -38,11 +38,29 @@ private:
     }
 
     // 3) 文字列を整数に変換
+    // int num = 0;
+    // try {
+    //   num = std::stoi(value_str);
+    // } catch (const std::exception& e) {
+    //   std::cout << "[Counter] failed to convert '" << value_str << "' to int: " << e.what() << "\n";
+    //   return NodeStatus::FAILURE;
+    // }
     int num = 0;
     try {
+      // 前後のダブルクォーテーションを除去
+      if (value_str.size() >= 2 &&
+          value_str.front() == '"' &&
+          value_str.back() == '"')
+      {
+        value_str = value_str.substr(1, value_str.size() - 2);
+      }
+
       num = std::stoi(value_str);
-    } catch (const std::exception& e) {
-      std::cout << "[Counter] failed to convert '" << value_str << "' to int: " << e.what() << "\n";
+    }
+    catch (const std::exception& e) {
+      std::cout << "[Counter] failed to convert '"
+                << value_str << "' to int: "
+                << e.what() << "\n";
       return NodeStatus::FAILURE;
     }
 

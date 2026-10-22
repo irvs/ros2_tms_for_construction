@@ -210,108 +210,47 @@ def launch_setup(context, *args, **kwargs):
         #ic120用
       #   Node(
       #         package='tms_ts_primitive',
-      #         executable='primitive_ic120_follow_waypoints_deg_server',
+      #         executable='primitive_crawlerdump_follow_waypoints',
       #         output='screen',
       #         namespace='ic120_1'),
       #   Node(
       #         package='tms_ts_primitive',
-      #         executable='primitive_ic120_follow_waypoints_server',
+      #         executable='primitive_crawlerdump_navigate_anywhere',
       #         output='screen',
       #         namespace='ic120_1'),
       #   Node(
       #         package='tms_ts_primitive',
-      #         executable='primitive_ic120_navigate_anywhere_deg_server',
+      #         executable='primitive_crawlerdump_navigate_through_poses',
       #         output='screen',
       #         namespace='ic120_1'),
       #   Node(
       #         package='tms_ts_primitive',
-      #         executable='primitive_ic120_navigate_anywhere_server',
-      #         output='screen',
-      #         namespace='ic120_1'),
-
-      #   Node(
-      #         package='tms_ts_primitive',
-      #         executable='primitive_ic120_navigate_through_poses_deg_server',
-      #         output='screen',
-      #         namespace='ic120_1'),
-      #   Node(
-      #         package='tms_ts_primitive',
-      #         executable='primitive_ic120_navigate_through_poses_server',
-      #         output='screen',
-      #         namespace='ic120_1'),
-      #   Node(
-      #         package='tms_ts_primitive',
-      #         executable='primitive_ic120_release_soil_server',
+      #         executable='primitive_crawlerdump_release_soil',
       #         output='screen',
       #         namespace='ic120_1'),
 
       #   Node(
       #         package='tms_ts_primitive',
-      #         executable='primitive_ic120_follow_waypoints_deg_server',
+      #         executable='primitive_crawlerdump_follow_waypoints',
       #         output='screen',
       #         namespace='ic120_2'),
       #   Node(
       #         package='tms_ts_primitive',
-      #         executable='primitive_ic120_follow_waypoints_server',
+      #         executable='primitive_crawlerdump_navigate_anywhere',
       #         output='screen',
       #         namespace='ic120_2'),
       #   Node(
       #         package='tms_ts_primitive',
-      #         executable='primitive_ic120_navigate_anywhere_deg_server',
+      #         executable='primitive_crawlerdump_navigate_through_poses',
       #         output='screen',
       #         namespace='ic120_2'),
       #   Node(
       #         package='tms_ts_primitive',
-      #         executable='primitive_ic120_navigate_anywhere_server',
-      #         output='screen',
-      #         namespace='ic120_2'),
-
-      #   Node(
-      #         package='tms_ts_primitive',
-      #         executable='primitive_ic120_navigate_through_poses_deg_server',
-      #         output='screen',
-      #         namespace='ic120_2'),
-      #   Node(
-      #         package='tms_ts_primitive',
-      #         executable='primitive_ic120_navigate_through_poses_server',
-      #         output='screen',
-      #         namespace='ic120_2'),
-      #   Node(
-      #         package='tms_ts_primitive',
-      #         executable='primitive_ic120_release_soil_server',
+      #         executable='primitive_crawlerdump_release_soil',
       #         output='screen',
       #         namespace='ic120_2'),
         
 
-        # mst2200用
-      #   Node(
-      #         package='tms_ts_primitive', 
-      #         executable='primitive_mst2200_follow_waypoints_deg_server',
-      #         output='screen'),
-      #   Node(
-      #         package='tms_ts_primitive', 
-      #         executable='primitive_mst2200_follow_waypoints_server',
-      #         output='screen'),
-      #   Node(
-      #         package='tms_ts_primitive', 
-      #         executable='primitive_mst2200_navigate_anywhere_deg_server',
-      #         output='screen'),
-      #   Node(
-      #         package='tms_ts_primitive', 
-      #         executable='primitive_mst2200_navigate_anywhere_server',
-      #         output='screen'),
-      #   Node(
-      #         package='tms_ts_primitive', 
-      #         executable='primitive_mst2200_navigate_through_poses_deg_server',
-      #         output='screen'),
-      #   Node(
-      #         package='tms_ts_primitive', 
-      #         executable='primitive_mst2200_navigate_through_poses_server',
-      #         output='screen'),
-      #   Node(
-      #         package='tms_ts_primitive', 
-      #         executable='primitive_mst2200_release_soil_server',
-      #         output='screen'),
 
         # mst110cr用
         Node(
@@ -431,6 +370,31 @@ def launch_setup(context, *args, **kwargs):
               output='screen',
               parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
               namespace='d37pxi_24'),  
+      ####
+        Node(
+              package='tms_ts_primitive', 
+              executable='primitive_bulldozer_blade_control',
+              output='screen',
+              parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+              namespace='d37pxi'),
+        Node(
+              package='tms_ts_primitive', 
+              executable='primitive_bulldozer_follow_waypoints',
+              output='screen',
+              parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+              namespace='d37pxi'),
+        Node(
+              package='tms_ts_primitive', 
+              executable='primitive_bulldozer_navigate_anywhere',
+              output='screen',
+              parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+              namespace='d37pxi'),
+        Node(
+              package='tms_ts_primitive', 
+              executable='primitive_bulldozer_navigate_through_poses',
+              output='screen',
+              parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+              namespace='d37pxi'),  
        
         
         # センシング処�?後�?��?ータをデータベ�?�スに取り込むためのノ�?�ド�?
@@ -484,6 +448,20 @@ def launch_setup(context, *args, **kwargs):
       #         output='screen',
       #         parameters=[{"robot_name": "mst110cr"}]
       #   ),
+
+      #for preview
+        Node(
+              package="tms_ur_construction",
+              executable="tms_ur_plan_reader",
+              output="screen",
+              remappings=[("planwritten", "/planwritten"), ("~/output/plan", "/output/mst110cr_plan"), ("~/output/joint_plan", "/output/zx200_joint_plan"),],
+              ),
+        Node(
+              package="tms_db_manager", 
+              executable="tms_db_reader",
+              output='screen'
+              ),
+
     ])
     
     return nodes

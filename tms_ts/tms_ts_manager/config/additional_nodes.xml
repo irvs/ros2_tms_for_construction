@@ -4,7 +4,8 @@
         <Action ID="LeafNodeBulldozer">
             <input_port name="model_name" default="d37pxi_24"/>
             <inout_port name="record_name"/>
-            <inout_port name="primitive_name"/> 
+            <inout_port name="primitive_name"/>
+            <inout_port name="blade_hold"/> 
         </Action>
         
         
@@ -34,6 +35,13 @@
             <input_port name="output_port"/>
         </Action>
 
+        <Action ID="MongoArrayReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+            <inout_port name="output_type"/>
+        </Action>
+
         <Action ID="MongoValueSearcher">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_value"/>
@@ -44,6 +52,7 @@
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
             <input_port name="input_value"/>
+            <input_port name="input_type"/>
         </Action>
 
         <Action ID="MongoArrayWriter">
@@ -53,6 +62,12 @@
             <input_port name="operation"/>  
         </Action>  
 
+        <Action ID="MongoRouteOrientationUpdater">
+            <input_port name="model_name"/>
+            <input_port name="record_name"/>
+            <inout_port name="read_direction"/> 
+        </Action>  
+
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
         </Action>        
@@ -60,10 +75,19 @@
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>        
             <input_port name="while_or_dowhile"/>
-        </Decorator>     
+        </Decorator>
+
+        <Action ID="SetCurrentTimeToLocalBlackboard">
+            <input_port name="output_key"/>
+        </Action> 
 
         <Action ID="SetLocalBlackboard">
             <input_port name="value"/>
+            <inout_port name="output_key"/>
+        </Action> 
+
+        <Action ID="LocalBlackboardCaluculator">
+            <input_port name="calculation_formula"/>
             <inout_port name="output_key"/>
         </Action>          
 
@@ -71,6 +95,11 @@
             <input_port name="key"/>
             <inout_port name="counter_key"/>
         </Action>      
+
+        <Action ID="ExtractTrailingNumberToBlackboard">
+            <inout_port name="source_key"/>
+            <inout_port name="stored_key"/>
+        </Action>
 
         <Action ID="Counter">
             <input_port name="key"/>
@@ -97,6 +126,11 @@
             <input_port name="machine_record_name"/>
             <input_port name="terminate_condition"/>
             <input_port name="subtask_parameters"/>
+        </Action>
+
+        <Action ID="BulldozerPathCreater">
+            <input_port name="block_data"/>
+            <inout_port name="bull_data"/>
         </Action>
 
 

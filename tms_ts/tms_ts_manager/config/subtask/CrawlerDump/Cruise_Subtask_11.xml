@@ -19,6 +19,7 @@
                             <Action ID="SetLocalBlackboard" output_key="SUBTASK_INITIAL_FLG" value="true"/>
                         </Sequence>
                     </Decorator>
+                    <Action ID="SetLocalBlackboard" output_key="execute_success" value="false"/>
                     <Sequence>
                         <Action ID="SetLocalBlackboard" output_key="sub_flg" value="false"/>
                         <Action ID="SetLocalBlackboard" output_key="sub_up" value="true"/>
@@ -39,6 +40,31 @@
                                                 <Action ID="MongoValueReader" mongo_param_name="related_point_up_main" mongo_record_name="{next_point_main}" output_port="next_next_point_main"/>
                                                 <Action ID="MongoValueReader" mongo_param_name="related_point_up_sub" mongo_record_name="{next_point_main}" output_port="next_next_point_sub"/>
                                             </Sequence>
+                                            <AlwaysSuccess/>
+                                        </IfThenElse>
+                                        <IfThenElse>
+                                            <Action ID="ConditionalExpression" conditional_expression="related_point_sub != &quot;&quot;"/>
+                                            <Decorator ID="KeepRunningUntilFlgup" key="route_search" while_or_dowhile="">
+                                                <Sequence>
+                                                    <Action ID="MongoValueReader" mongo_param_name="related_point_up_main" mongo_record_name="{related_point_main}" output_port="next_point_main"/>
+                                                    <Action ID="MongoValueReader" mongo_param_name="related_point_up_sub" mongo_record_name="{related_point_main}" output_port="next_point_sub"/>
+                                                    <IfThenElse>
+                                                        <Action ID="ConditionalExpression" conditional_expression="next_point_main != &quot;&quot;"/>
+                                                        <Sequence>
+                                                            <Action ID="MongoValueReader" mongo_param_name="related_point_up_main" mongo_record_name="{next_point_main}" output_port="next_next_point_main"/>
+                                                            <Action ID="MongoValueReader" mongo_param_name="related_point_up_sub" mongo_record_name="{next_point_main}" output_port="next_next_point_sub"/>
+                                                        </Sequence>
+                                                        <AlwaysSuccess/>
+                                                    </IfThenElse>
+                                                    <IfThenElse>
+                                                        <Action ID="ConditionalExpression" conditional_expression="next_next_point_sub != &quot;&quot;"/>
+                                                        <Sequence>
+                                                            <SetBlackboard output_key="route_search" value="true"/>
+                                                        </Sequence>
+                                                        <AlwaysSuccess/>
+                                                    </IfThenElse>
+                                                </Sequence>
+                                            </Decorator>
                                             <AlwaysSuccess/>
                                         </IfThenElse>
                                     </Sequence>
@@ -84,6 +110,7 @@
                                         <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_sub}"/>
                                         <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                         <Action ID="MongoValueWriter" input_value="\related_point_sub\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                        <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
                                     </Sequence>
                                     <AlwaysSuccess/>
                                 </IfThenElse>
@@ -113,6 +140,7 @@
                                                     <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                     <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                                     <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                                    <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
                                                 </Sequence>
                                                 <AlwaysSuccess/>
                                             </IfThenElse>
@@ -130,6 +158,7 @@
                                                     <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_sub}"/>
                                                     <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                                     <Action ID="MongoValueWriter" input_value="\related_point_sub\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                                    <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
                                                 </Sequence>
                                                 <AlwaysSuccess/>
                                             </IfThenElse>
@@ -156,6 +185,7 @@
                                                                     <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                                     <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                                                     <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                                                    <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
                                                                 </Sequence>
                                                                 <AlwaysSuccess/>
                                                             </IfThenElse>
@@ -173,6 +203,7 @@
                                                                     <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                                     <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                                                     <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                                                    <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
                                                                 </Sequence>
                                                                 <AlwaysSuccess/>
                                                             </IfThenElse>
@@ -200,6 +231,7 @@
                                                                     <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                                     <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                                                     <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                                                    <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
                                                                 </Sequence>
                                                                 <AlwaysSuccess/>
                                                             </IfThenElse>
@@ -212,8 +244,8 @@
                                                             <Sequence>
                                                                 <Action ID="SetLocalBlackboard" output_key="next_main_flg" value="false"/>
                                                                 <Action ID="SetLocalBlackboard" output_key="next_sub_flg" value="false"/>
-                                                                <Action ID="SetLocalBlackboard" output_key="next_next_main" value="false"/>
-                                                                <Action ID="SetLocalBlackboard" output_key="next_next_sub" value="false"/>
+                                                                <Action ID="SetLocalBlackboard" output_key="next_next_main_flg" value="false"/>
+                                                                <Action ID="SetLocalBlackboard" output_key="next_next_sub_flg" value="false"/>
                                                                 <Action ID="MongoValueSearcher" mongo_param_name="ON_HOLD_SECTION" mongo_value="\related_point_main\" output_port="main_flg"/>
                                                                 <Action ID="MongoValueSearcher" mongo_param_name="ON_HOLD_SECTION,UP_DOWN" mongo_value="=\related_point_sub\,\UP_DOWN\" output_port="sub_up"/>
                                                                 <Action ID="MongoValueSearcher" mongo_param_name="ON_HOLD_SECTION" mongo_value="\next_point_main\" output_port="next_main_flg"/>
@@ -232,6 +264,7 @@
                                                                         <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_main}"/>
                                                                         <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                                                         <Action ID="MongoValueWriter" input_value="\related_point_main\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                                                        <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
                                                                     </Sequence>
                                                                     <AlwaysSuccess/>
                                                                 </IfThenElse>
@@ -246,6 +279,7 @@
                                                                         <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{related_point_sub}"/>
                                                                         <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                                                         <Action ID="MongoValueWriter" input_value="\related_point_sub\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>
+                                                                        <Action ID="SetLocalBlackboard" output_key="execute_success" value="true"/>
                                                                     </Sequence>
                                                                     <AlwaysSuccess/>
                                                                 </IfThenElse>
@@ -265,6 +299,13 @@
                         </IfThenElse>
                     </Sequence>
                     <Sequence>
+                        <IfThenElse>
+                            <Action ID="ConditionalExpression" conditional_expression="execute_success == false"/>
+                            <Action ID="WaitTimer" seconds="1"/>
+                            <AlwaysSuccess/>
+                        </IfThenElse>
+                    </Sequence>
+                    <Sequence>
                         <Action ID="MongoValueReader" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$" output_port="CURRENT_SECTION"/>
                         <IfThenElse>
                             <Action ID="ConditionalExpression" conditional_expression="CURRENT_SECTION == &quot;$terminate_condition$&quot;"/>
@@ -280,11 +321,6 @@
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="MongoValueSearcher">
-            <input_port name="mongo_param_name"/>
-            <input_port name="mongo_value"/>
-            <input_port name="output_port"/>
-        </Action>
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
         </Action>
@@ -340,6 +376,11 @@
             <input_port name="mongo_record_name"/>
             <input_port name="output_port"/>
         </Action>
+        <Action ID="MongoValueSearcher">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_value"/>
+            <input_port name="output_port"/>
+        </Action>
         <Action ID="MongoValueWriter">
             <input_port name="input_value"/>
             <input_port name="mongo_param_name"/>
@@ -356,6 +397,9 @@
         <Action ID="WaitForClick">
             <input_port name="button_info"/>
             <input_port name="window_title"/>
+        </Action>
+        <Action ID="WaitTimer">
+            <input_port name="seconds"/>
         </Action>
     </TreeNodesModel>
     <!-- ////////// -->

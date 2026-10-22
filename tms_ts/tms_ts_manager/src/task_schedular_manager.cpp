@@ -33,15 +33,22 @@
 #include "tms_ts_primitive/common/mongo_value_searcher.hpp"
 #include "tms_ts_primitive/common/mongo_value_writer.hpp"
 #include "tms_ts_primitive/common/mongo_array_writer.hpp"
+#include "tms_ts_primitive/common/mongo_array_reader.hpp"
+#include "tms_ts_primitive/common/mongo_route_orientation_updater.hpp"
 #include "tms_ts_primitive/common/conditional_expression.hpp"
 #include "tms_ts_primitive/common/KeepRunningUntilFlgup.hpp"
 #include "tms_ts_primitive/common/SetLocalBlackboard.hpp"
+#include "tms_ts_primitive/common/SetCurrentTimeToLocalBlackboard.hpp"
+#include "tms_ts_primitive/common/LocalBlackboardCaluculator.hpp"
 #include "tms_ts_primitive/common/SetLocalBlackboardWithCounter.hpp"
+#include "tms_ts_primitive/common/ExtractTrailingNumberToBlackboard.hpp"
 #include "tms_ts_primitive/common/Counter.hpp"
 #include "tms_ts_primitive/common/wait_for_click.hpp"
 #include "tms_ts_primitive/common/wait_timer.hpp"
 #include "tms_ts_primitive/common/leaf_node.hpp"
 #include "tms_ts_primitive/common/wait_for_ur.hpp"
+
+#include "tms_ts_primitive/Bulldozer/bulldozer_path_creater.hpp"
 
 
 using namespace BT;
@@ -168,14 +175,22 @@ public:
     factory.registerNodeType<MongoValueSearcher>("MongoValueSearcher");
     factory.registerNodeType<MongoValueWriter>("MongoValueWriter");
     factory.registerNodeType<MongoArrayWriter>("MongoArrayWriter");
+    factory.registerNodeType<MongoArrayReader>("MongoArrayReader");
+    factory.registerNodeType<MongoRouteOrientationUpdater>("MongoRouteOrientationUpdater");
     factory.registerNodeType<ConditionalExpression>("ConditionalExpression");
     factory.registerNodeType<KeepRunningUntilFlgup>("KeepRunningUntilFlgup");
     factory.registerNodeType<SetLocalBlackboard>("SetLocalBlackboard");
+    factory.registerNodeType<SetCurrentTimeToLocalBlackboard>("SetCurrentTimeToLocalBlackboard");
+    factory.registerNodeType<LocalBlackboardCaluculator>("LocalBlackboardCaluculator");
     factory.registerNodeType<SetLocalBlackboardWithCounter>("SetLocalBlackboardWithCounter");
+    factory.registerNodeType<ExtractTrailingNumberToBlackboard>("ExtractTrailingNumberToBlackboard");
     factory.registerNodeType<Counter>("Counter");
     factory.registerNodeType<WaitForClick>("WaitForClick");
     factory.registerNodeType<WaitTimer>("WaitTimer");
     factory.registerNodeType<LeafNodeCommon>("LeafNodeCommon");
+
+    factory.registerNodeType<BulldozerPathCreater>("BulldozerPathCreater");
+    
 
     // loadBlackboardFromMongoDB("global_blackboard");
   }

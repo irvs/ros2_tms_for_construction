@@ -106,6 +106,16 @@ void PrimitiveBulldozerBladeControl::execute(const std::shared_ptr<ServerGoalHan
   BladeAction::Goal goal_msg{};
   goal_msg.joint_name = joint_name_;
   goal_msg.control_type = 0;
+  auto goal = server_goal_handle->get_goal();
+  // 
+
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Primitive received blade_hold=%s",
+    goal->blade_hold ? "true" : "false");
+  // 
+  bool blade_hold_ = goal->blade_hold;
+  goal_msg.blade_hold = blade_hold_;
 
   const size_t n = joint_name_.size();
   goal_msg.goal_position.resize(n);
@@ -153,6 +163,11 @@ void PrimitiveBulldozerBladeControl::execute(const std::shared_ptr<ServerGoalHan
 
   RCLCPP_INFO(this->get_logger(), "Sending blade goal to tms_rp_set_bulldozer_blade");
   client_future_goal_handle_ = action_client_->async_send_goal(goal_msg, opt);
+
+  RCLCPP_INFO(
+  this->get_logger(),
+  "Sending blade goal: blade_hold=%s",
+  goal_msg.blade_hold ? "true" : "false");
 }
 
 void PrimitiveBulldozerBladeControl::goal_response_callback(const typename ClientGoalHandle::SharedPtr & goal_handle)

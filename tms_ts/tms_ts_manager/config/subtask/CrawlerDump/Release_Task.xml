@@ -3,20 +3,14 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="ExecuteSubtask" machine_record_name="" model_name="d37pxi_24" subtask_name="leveling" subtask_parameters="blade_record_name:target_blade_pose,way_record_name:Bull_path" terminate_condition=""/>
+            <Action ID="ExecuteSubtask" machine_record_name="" model_name="mst110cr" subtask_name="Release_Subtask" subtask_parameters="dump_up_angle:RELEASE_ANGLE_UP,dump_down_angle:RELEASE_ANGLE_DOWN,time:5000" terminate_condition=""/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="MongoValueReader">
-            <input_port name="mongo_param_name"/>
-            <input_port name="mongo_record_name"/>
-            <input_port name="output_port"/>
-        </Action>
-        <Action ID="MongoValueSearcher">
-            <input_port name="mongo_param_name"/>
-            <input_port name="mongo_value"/>
-            <input_port name="output_port"/>
+        <Action ID="BulldozerPathCreater">
+            <input_port name="block_data"/>
+            <inout_port name="bull_data"/>
         </Action>
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
@@ -31,10 +25,16 @@
             <input_port name="subtask_parameters"/>
             <input_port name="terminate_condition"/>
         </Action>
+        <Action ID="ExtractTrailingNumberToBlackboard">
+            <inout_port name="source_key"/>
+            <inout_port name="stored_key"/>
+        </Action>
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>
+            <input_port name="while_or_dowhile"/>
         </Decorator>
         <Action ID="LeafNodeBulldozer">
+            <inout_port name="blade_hold"/>
             <input_port default="d37pxi_24" name="model_name"/>
             <inout_port name="primitive_name"/>
             <inout_port name="record_name"/>
@@ -61,7 +61,34 @@
             <inout_port name="primitive_name"/>
             <inout_port name="record_name"/>
         </Action>
+        <Action ID="LocalBlackboardCaluculator">
+            <input_port name="calculation_formula"/>
+            <inout_port name="output_key"/>
+        </Action>
+        <Action ID="MongoArrayReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+            <inout_port name="output_type"/>
+        </Action>
+        <Action ID="MongoArrayWriter">
+            <input_port name="input_value"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="operation"/>
+        </Action>
+        <Action ID="MongoValueReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+        </Action>
+        <Action ID="MongoValueSearcher">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_value"/>
+            <input_port name="output_port"/>
+        </Action>
         <Action ID="MongoValueWriter">
+            <input_port name="input_type"/>
             <input_port name="input_value"/>
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
@@ -77,6 +104,9 @@
         <Action ID="WaitForClick">
             <input_port name="button_info"/>
             <input_port name="window_title"/>
+        </Action>
+        <Action ID="WaitTimer">
+            <input_port name="seconds"/>
         </Action>
     </TreeNodesModel>
     <!-- ////////// -->

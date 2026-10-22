@@ -341,6 +341,27 @@ NodeStatus LeafNodeBase::tick()
       goal_.read_direction = read_direction.value();
     }
 
+    // ============================================================
+    // blade_hold
+    // ============================================================
+    Optional<bool> blade_hold = getInput<bool>("blade_hold");
+
+    if (blade_hold) {goal_.blade_hold = blade_hold.value();
+
+      RCLCPP_INFO(
+        node_->get_logger(),
+        "[LeafNode] blade_hold=%s",
+        goal_.blade_hold ? "true" : "false");
+    }
+    else {
+      // blade_hold が指定されていない場合は false
+      goal_.blade_hold = false;
+
+      RCLCPP_INFO(
+        node_->get_logger(),
+        "[LeafNode] blade_hold is not provided. Using false.");
+    }
+
     Optional<std::string> record_name = getInput<std::string>("record_name");
     if (!record_name) {
       RCLCPP_ERROR(node_->get_logger(),
