@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libzmq3-dev libboost-dev libncurses5-dev libncursesw5-dev libssl-dev \
         nlohmann-json3-dev rapidjson-dev \
         qtbase5-dev libqt5svg5-dev libdw-dev \
-        # tms_ts_subtask: find_package(glog REQUIRED) (not declared in package.xml)
+        # tms_ts_subtask: find_package(glog REQUIRED)
         libgoogle-glog-dev \
         ros-humble-robot-localization \
         ros-humble-rmw-cyclonedds-cpp \
