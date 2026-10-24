@@ -6,7 +6,8 @@ import math
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import String
+from std_msgs.msg import String, ColorRGBA
+from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker, MarkerArray
 
 from tms_msg_db.srv import TmsdbGetData
@@ -55,10 +56,17 @@ class TmsUrParameterImportPublisher(Node):
             10
         )
 
-        # 建機位置データ
+        # 建機位置データの可視化（WaypointVisualizerと同様にSPHERE_LISTでpublish）
         self.machinery_pub = self.create_publisher(
-            String,
+            Marker,
             "/machinery_position_params",
+            10
+        )
+
+        # 建機位置データの元JSONも必要に応じて利用できるよう別トピックでpublish
+        self.machinery_json_pub = self.create_publisher(
+            String,
+            "/machinery_position_params_json",
             10
         )
 
@@ -354,6 +362,97 @@ class TmsUrParameterImportPublisher(Node):
         )
 
     # ======================================================
+    # Convert machinery positions to a Marker (SPHERE_LIST)
+    # ======================================================
+
+    def create_machinery_marker(self, machinery_records):
+        marker = Marker()
+
+        marker.header.frame_id = "map"
+        marker.header.stamp = self.get_clock().now().to_msg()
+        marker.ns = "machinery_positions"
+        marker.id = 0
+        marker.type = Marker.SPHERE_LIST
+        marker.action = Marker.ADD
+
+        marker.scale.x = 1.0
+        marker.scale.y = 1.0
+        marker.scale.z = 1.0
+
+        marker.color.r = 1.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+        marker.color.a = 1.0
+
+        marker.pose.orientation.w = 1.0
+
+        for record in machinery_records:
+            record_name = record.get("record_name", "")
+            data = record.get("data", {})
+
+            try:
+                # x, y, z が配列なら、各インデックスの座標をすべて使用する。
+                # 数値（スカラー）なら、1点分の座標として扱う。
+                def as_coordinate_list(value, default=None):
+                    if value is None:
+                        return default
+                    if isinstance(value, list):
+                        return value
+                    return [value]
+
+                x_values = as_coordinate_list(data.get("x"))
+                y_values = as_coordinate_list(data.get("y"))
+                z_values = as_coordinate_list(data.get("z", 0.0))
+
+                if not x_values or not y_values:
+                    raise ValueError("x or y is empty/missing")
+
+                # zがない、または配列の要素数が足りない場合は0.0を使用する。
+                # xとyは対応するインデックス同士で組み合わせる。
+                point_count = min(len(x_values), len(y_values))
+
+                if len(x_values) != len(y_values):
+                    self.get_logger().warning(
+                        f"[{record_name}] x/y lengths differ "
+                        f"({len(x_values)}/{len(y_values)}); "
+                        f"using {point_count} paired points."
+                    )
+
+                for i in range(point_count):
+                    x = float(x_values[i])
+                    y = float(y_values[i])
+
+                    if i < len(z_values):
+                        z = float(z_values[i])
+                    else:
+                        z = 0.0
+
+                    
+                    # NaN や Infinity を含む座標は送信しない
+                    if not all(math.isfinite(v) for v in (x, y, z)):
+                        self.get_logger().warning(
+                            f"Skipping non-finite point [{record_name}] "
+                            f"index={i}: x={x}, y={y}, z={z}"
+                        )
+                        continue
+
+                    marker.points.append(Point(x=x, y=y, z=z))
+
+                    point_color = ColorRGBA()
+                    point_color.r = 1.0
+                    point_color.g = 0.0
+                    point_color.b = 0.0
+                    point_color.a = 1.0
+                    marker.colors.append(point_color)
+
+            except (KeyError, IndexError, TypeError, ValueError) as e:
+                self.get_logger().warning(
+                    f"Skipping machinery marker [{record_name}]: {e}"
+                )
+
+        return marker
+
+    # ======================================================
     # Convert block data to MarkerArray
     # ======================================================
 
@@ -527,17 +626,21 @@ class TmsUrParameterImportPublisher(Node):
         self.joint_pub.publish(joint_msg)
 
         # --------------------------------------------------
-        # Machinery position records
+        # Machinery position records: Marker (SPHERE_LIST)
         # --------------------------------------------------
 
-        machinery_msg = String()
+        machinery_marker = self.create_machinery_marker(
+            self.machinery_position_records
+        )
+        self.machinery_pub.publish(machinery_marker)
 
-        machinery_msg.data = json.dumps(
+        # 元の建機位置データもJSONとして別トピックにpublishする。
+        machinery_json_msg = String()
+        machinery_json_msg.data = json.dumps(
             self.machinery_position_records,
             ensure_ascii=False
         )
-
-        self.machinery_pub.publish(machinery_msg)
+        self.machinery_json_pub.publish(machinery_json_msg)
 
         # --------------------------------------------------
         # Block position records: original JSON
@@ -580,6 +683,11 @@ class TmsUrParameterImportPublisher(Node):
         self.get_logger().info(
             f"Published machinery position records: "
             f"{len(self.machinery_position_records)}"
+        )
+
+        self.get_logger().info(
+            f"Published machinery position markers: "
+            f"{len(machinery_marker.points)} points"
         )
 
         self.get_logger().info(
