@@ -51,6 +51,7 @@ setup(
             "tms_ur_construction_next_step_permission = tms_ur_construction.tms_ur_construction_next_step_permission:main",
             "tms_ur_plan_reader = tms_ur_construction.tms_ur_plan_reader:main",
             "tms_ur_if_to_db_writer = tms_ur_construction.tms_ur_if_to_db_writer:main",
+            "tms_ur_parameter_viz = tms_ur_construction.tms_ur_parameter_viz:main",
         ],
     },
 )

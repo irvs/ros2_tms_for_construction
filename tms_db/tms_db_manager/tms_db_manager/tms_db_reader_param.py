@@ -86,20 +86,20 @@ class TmsDbReaderParam(Node):
     
 
     def allocate_tmsdb(self, data: dict) -> Tmsdb:
+        if "type" not in data or "record_name" not in data:
+            self.get_logger().error(
+                f"Invalid MongoDB document: "
+                f"missing type or record_name, keys={list(data.keys())}, "
+                f"data={data}"
+            )
+
         tmsdb = Tmsdb()
-        tmsdb.type = data["type"]
-        tmsdb.name = data["record_name"]
-        pose_data = {
-            "x": data.get("x", []),
-            "y": data.get("y", []),
-            "z": data.get("z", []),
-            "qx": data.get("qx", []),
-            "qy": data.get("qy", []),
-            "qz": data.get("qz", []),
-            "qw": data.get("qw", []),
-            "Release_Count": data.get("Release_Count", []),
-        }
-        tmsdb.msg = json.dumps(pose_data)
+        tmsdb.type = str(data.get("type", ""))
+        tmsdb.name = str(data.get("record_name", ""))
+
+        json_data = self.convert_objectid(data)
+        tmsdb.msg = json.dumps(json_data)
+
         return tmsdb
     
     def convert_objectid(self, obj):
