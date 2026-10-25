@@ -37,6 +37,9 @@ class TmsUrParameterImportPublisher(Node):
         # ブロックの高さ。DBのblock_sizeにzがない場合に使用する。
         self.declare_parameter("block_height", 0.1)
 
+        # データベースの再読み出し周期（秒）
+        self.declare_parameter("refresh_period", 60.0)
+
         self.latest = self.get_parameter(
             "latest"
         ).value
@@ -44,6 +47,13 @@ class TmsUrParameterImportPublisher(Node):
         self.block_height = float(
             self.get_parameter("block_height").value
         )
+
+        self.refresh_period = float(
+            self.get_parameter("refresh_period").value
+        )
+
+        if self.refresh_period <= 0.0:
+            raise ValueError("refresh_period must be greater than 0")
 
         # ==================================================
         # Publishers
@@ -141,6 +151,13 @@ class TmsUrParameterImportPublisher(Node):
         # すべてのデータをpublishしたか
         self.published = False
 
+
+        # 再読み出し処理中か
+        self.refresh_in_progress = False
+
+        # 次回の更新開始時刻
+        self.next_refresh_time = self.get_clock().now()
+
         # ==================================================
         # Timer
         # ==================================================
@@ -192,32 +209,74 @@ class TmsUrParameterImportPublisher(Node):
 
     def process_next_record(self):
 
+        # 問い合わせ中なら次の処理を開始しない
         if self.request_in_progress:
             return
 
-        # 最初にサマリーレコードを取得する。
+        # --------------------------------------------------
+        # 前回の取得が完了している場合、次回の更新時刻を確認
+        # --------------------------------------------------
+
+        if self.published:
+
+            now = self.get_clock().now()
+
+            if now < self.next_refresh_time:
+                return
+
+            self.get_logger().info(
+                "Starting periodic database refresh."
+            )
+
+            self.start_refresh()
+            return
+
+        # --------------------------------------------------
+        # サマリーを取得
+        # --------------------------------------------------
+
         if not self.summary_received:
 
             self.request_record(
                 SUMMARY_RECORD_NAME,
                 "summary"
             )
-
             return
 
-        # 全レコードの取得が終了したらpublishする。
-        if not self.record_queue:
+        # --------------------------------------------------
+        # 各レコードを順番に取得
+        # --------------------------------------------------
 
-            if not self.published:
-                self.publish_all()
+        if self.record_queue:
 
+            record_name, category = self.record_queue.pop(0)
+
+            self.request_record(
+                record_name,
+                category
+            )
             return
 
-        record_name, category = self.record_queue.pop(0)
+        # --------------------------------------------------
+        # 全レコードの取得が完了したらpublish
+        # --------------------------------------------------
 
-        self.request_record(
-            record_name,
-            category
+        self.publish_all()
+
+        self.published = True
+        self.refresh_in_progress = False
+
+        # 今回の完了時刻から次回の更新時刻を設定
+        self.next_refresh_time = (
+            self.get_clock().now()
+            + rclpy.duration.Duration(
+                seconds=self.refresh_period
+            )
+        )
+
+        self.get_logger().info(
+            f"Database refresh completed. "
+            f"Next refresh in {self.refresh_period:.1f} sec."
         )
 
     # ======================================================
@@ -754,6 +813,31 @@ class TmsUrParameterImportPublisher(Node):
                 continue
 
         return marker_array
+
+    def start_refresh(self):
+
+        # 新しい読み出し処理を開始
+        self.summary_received = False
+        self.published = False
+        self.refresh_in_progress = True
+
+        self.record_queue.clear()
+
+        # 古いデータが新しいデータに混ざらないように初期化
+        self.joint_angle_records.clear()
+        self.machinery_position_records.clear()
+        self.block_position_records.clear()
+
+        self.joint_angle_param_names.clear()
+        self.machinery_position_param_names.clear()
+        self.block_position_param_names.clear()
+
+        self.get_logger().info(
+            "Cleared cached records. Reloading summary."
+        )
+
+        # 次のタイマー処理でサマリー取得を開始する
+
 
     # ======================================================
     # Publish all lists
