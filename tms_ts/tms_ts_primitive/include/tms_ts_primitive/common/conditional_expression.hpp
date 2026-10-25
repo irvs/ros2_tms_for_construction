@@ -77,14 +77,18 @@ private:
         std::string out;
         size_t pos = 0;
         while (pos < expr.size()) {
-            if (expr[pos] == '"') {
+            if (expr[pos] == '"' || expr[pos] == '\'') {
+                // String literal: 'abc' (convenient inside XML attributes) or "abc".
+                // Normalize to double quotes for the string comparison in step 2.
+                const char quote = expr[pos];
                 size_t end = pos + 1;
-                while (end < expr.size() && expr[end] != '"') {
+                while (end < expr.size() && expr[end] != quote) {
                     end++;
                 }
-                if (end < expr.size()) end++; // closing "
-                out.append(expr.substr(pos, end - pos));
-                pos = end;
+                out += '"';
+                out.append(expr.substr(pos + 1, end - pos - 1));
+                out += '"';
+                pos = (end < expr.size()) ? end + 1 : end; // skip closing quote
                 continue;
             } else if (!std::isalpha(static_cast<unsigned char>(expr[pos])) && expr[pos] != '_') {
                 out += expr[pos++];
@@ -104,6 +108,9 @@ private:
                                 sub = anyv->cast<bool>() ? "true" : "false";
                             } else if (anyv->type() == typeid(int)) {
                                 sub = std::to_string(anyv->cast<int>());
+                            } else if (anyv->type() == typeid(int64_t)) {
+                                // MongoValueReader stores BSON int64 as int64_t
+                                sub = std::to_string(anyv->cast<int64_t>());
                             } else if (anyv->type() == typeid(double)) {
                                 sub = std::to_string(anyv->cast<double>());
                             }
