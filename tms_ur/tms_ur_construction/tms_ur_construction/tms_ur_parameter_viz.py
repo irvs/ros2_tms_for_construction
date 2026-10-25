@@ -459,17 +459,12 @@ class TmsUrParameterImportPublisher(Node):
     def create_block_marker_array(self, block_records):
 
         marker_array = MarkerArray()
-
         stamp = self.get_clock().now().to_msg()
 
         for index, record in enumerate(block_records):
 
             record_name = record["record_name"]
             data = record["data"]
-
-            # --------------------------------------------------
-            # Check required fields
-            # --------------------------------------------------
 
             required_fields = (
                 "block_center",
@@ -478,14 +473,10 @@ class TmsUrParameterImportPublisher(Node):
             )
 
             if not all(field in data for field in required_fields):
-
                 self.get_logger().warning(
-                    f"Skipping Marker conversion for "
-                    f"[{record_name}]: "
-                    f"block_center, block_size, or "
-                    f"block_vector is missing."
+                    f"Skipping Marker conversion for [{record_name}]: "
+                    "block_center, block_size, or block_vector is missing."
                 )
-
                 continue
 
             try:
@@ -493,98 +484,259 @@ class TmsUrParameterImportPublisher(Node):
                 size = data["block_size"]
                 vector = data["block_vector"]
 
+                # block_centerがリストなら先頭要素を使用する
+                if isinstance(center, list):
+                    if not center:
+                        raise ValueError(
+                            "block_center is an empty list"
+                        )
+                    center = center[0]
+
+                if not isinstance(center, dict):
+                    raise ValueError(
+                        "block_center must be a dict or a list of dicts"
+                    )
+
                 center_x = float(center["x"])
                 center_y = float(center["y"])
                 center_z = float(center["z"])
 
                 size_x = float(size["x"])
                 size_y = float(size["y"])
-
-                vector_x = float(vector["x"])
-                vector_y = float(vector["y"])
-
-                # DBに高さがあればそれを使う。
-                # なければblock_heightパラメータを使う。
                 size_z = float(
                     size.get("z", self.block_height)
                 )
 
+                vector_x = float(vector["x"])
+                vector_y = float(vector["y"])
+
                 if size_x <= 0.0 or size_y <= 0.0 or size_z <= 0.0:
-                    self.get_logger().warning(
-                        f"Skipping Marker for [{record_name}]: "
-                        f"block dimensions must be positive."
+                    raise ValueError(
+                        "block dimensions must be positive"
                     )
-                    continue
 
-                # block_vectorの方向からyawを計算する。
-                yaw = math.atan2(vector_y, vector_x)
+                # block_vectorを正規化する
+                vector_length = math.hypot(vector_x, vector_y)
 
-                # ==================================================
-                # Block cube marker
-                # ==================================================
+                if vector_length == 0.0:
+                    raise ValueError(
+                        "block_vector must not be zero"
+                    )
 
-                marker = Marker()
+                # block_vectorをX方向として使用する
+                axis_x = vector_x
+                axis_y = vector_y
 
-                marker.header.frame_id = "map"
-                marker.header.stamp = stamp
+                # block_vectorに直交する水平面上のY方向
+                axis_y_perp_x = -vector_y
+                axis_y_perp_y = vector_x
 
-                marker.ns = "block_position"
-                marker.id = index * 2
+                # block_centerを底面の角として扱う
+                # 底面の4頂点
+                p0 = (center_x, center_y, center_z)
 
-                marker.type = Marker.CUBE
-                marker.action = Marker.ADD
+                p1 = (
+                    center_x + axis_x * size_x,
+                    center_y + axis_y * size_x,
+                    center_z
+                )
 
-                # 中心位置
-                marker.pose.position.x = center_x
-                marker.pose.position.y = center_y
-                marker.pose.position.z = center_z
+                p2 = (
+                    center_x + axis_y_perp_x * size_y,
+                    center_y + axis_y_perp_y * size_y,
+                    center_z
+                )
 
-                # yawからクォータニオンを設定する。
-                marker.pose.orientation.x = 0.0
-                marker.pose.orientation.y = 0.0
-                marker.pose.orientation.z = math.sin(yaw / 2.0)
-                marker.pose.orientation.w = math.cos(yaw / 2.0)
+                p3 = (
+                    center_x + axis_x * size_x
+                    + axis_y_perp_x * size_y,
+                    center_y + axis_y * size_x
+                    + axis_y_perp_y * size_y,
+                    center_z
+                )
 
-                # ブロックサイズ
-                marker.scale.x = size_x
-                marker.scale.y = size_y
-                marker.scale.z = size_z
+                # 通常のブロックは従来どおりCUBEで描画
+                # excavation_loading_paramsは傾斜形状で描画
+                is_excavation = (
+                    record_name == "excavation_loading_params"
+                    or "block_angle" in data
+                )
 
-                # 表示色
-                marker.color.r = 0.2
-                marker.color.g = 0.7
-                marker.color.b = 0.3
-                marker.color.a = 0.8
+                if is_excavation:
+                    block_angle = float(data["block_angle"])
 
-                marker_array.markers.append(marker)
+                    # 0 < block_angle <= 180度の範囲を想定
+                    if not (0.0 < block_angle <= math.pi):
+                        raise ValueError(
+                            "block_angle must be in (0, pi]"
+                        )
 
-                # ==================================================
-                # Block name text marker
-                # ==================================================
+                    # block_angleが90度の場合はずれを0とする
+                    if math.isclose(
+                        block_angle,
+                        math.pi / 2.0,
+                        abs_tol=1e-6
+                    ):
+                        offset = 0.0
+                    else:
+                        tan_angle = math.tan(block_angle)
 
+                        if abs(tan_angle) < 1e-9:
+                            raise ValueError(
+                                "block_angle produces an invalid offset"
+                            )
+
+                        offset = size_z / tan_angle
+
+                    # 上面をblock_vectorの反対方向へずらす
+                    shift_x = -vector_x * offset
+                    shift_y = -vector_y * offset
+
+                    # 上面の4頂点
+                    p4 = (
+                        p0[0] + shift_x,
+                        p0[1] + shift_y,
+                        center_z + size_z
+                    )
+
+                    p5 = (
+                        p1[0] + shift_x,
+                        p1[1] + shift_y,
+                        center_z + size_z
+                    )
+
+                    p6 = (
+                        p2[0] + shift_x,
+                        p2[1] + shift_y,
+                        center_z + size_z
+                    )
+
+                    p7 = (
+                        p3[0] + shift_x,
+                        p3[1] + shift_y,
+                        center_z + size_z
+                    )
+
+                    # TRIANGLE_LISTで6面を構築する
+                    marker = Marker()
+                    marker.header.frame_id = "map"
+                    marker.header.stamp = stamp
+                    marker.ns = "block_position"
+                    marker.id = index * 2
+                    marker.type = Marker.TRIANGLE_LIST
+                    marker.action = Marker.ADD
+
+                    # TRIANGLE_LISTのscaleを設定する
+                    marker.scale.x = 1.0
+                    marker.scale.y = 1.0
+                    marker.scale.z = 1.0
+
+                    marker.pose.orientation.w = 1.0
+
+                    # 頂点座標はmap座標で計算済みなので、
+                    # Markerのpose.positionは原点にする
+                    marker.pose.position.x = 0.0
+                    marker.pose.position.y = 0.0
+                    marker.pose.position.z = 0.0
+
+                    # 各面を2つの三角形で構成
+                    faces = [
+                        # 底面
+                        (p0, p2, p1),
+                        (p1, p2, p3),
+
+                        # 上面
+                        (p4, p5, p6),
+                        (p5, p7, p6),
+
+                        # X方向の側面
+                        (p0, p1, p4),
+                        (p1, p5, p4),
+
+                        (p2, p6, p3),
+                        (p3, p6, p7),
+
+                        # Y方向の側面
+                        (p0, p4, p2),
+                        (p2, p4, p6),
+
+                        (p1, p3, p5),
+                        (p3, p7, p5),
+                    ]
+
+                    for triangle in faces:
+                        for vertex in triangle:
+                            marker.points.append(
+                                Point(
+                                    x=float(vertex[0]),
+                                    y=float(vertex[1]),
+                                    z=float(vertex[2])
+                                )
+                            )
+
+                    marker.color.r = 0.2
+                    marker.color.g = 0.7
+                    marker.color.b = 0.3
+                    marker.color.a = 0.8
+
+                    marker_array.markers.append(marker)
+
+                else:
+                    # 通常のブロックはCUBEを使用
+                    yaw = math.atan2(vector_y, vector_x)
+
+                    marker = Marker()
+                    marker.header.frame_id = "map"
+                    marker.header.stamp = stamp
+                    marker.ns = "block_position"
+                    marker.id = index * 2
+                    marker.type = Marker.CUBE
+                    marker.action = Marker.ADD
+
+                    # 通常ブロックではblock_centerを中心として扱う
+                    marker.pose.position.x = center_x
+                    marker.pose.position.y = center_y
+                    marker.pose.position.z = center_z
+
+                    marker.pose.orientation.x = 0.0
+                    marker.pose.orientation.y = 0.0
+                    marker.pose.orientation.z = math.sin(yaw / 2.0)
+                    marker.pose.orientation.w = math.cos(yaw / 2.0)
+
+                    marker.scale.x = size_x
+                    marker.scale.y = size_y
+                    marker.scale.z = size_z
+
+                    marker.color.r = 0.2
+                    marker.color.g = 0.7
+                    marker.color.b = 0.3
+                    marker.color.a = 0.8
+
+                    marker_array.markers.append(marker)
+
+                # ブロック名を表示するテキストMarker
                 text_marker = Marker()
-
                 text_marker.header.frame_id = "map"
                 text_marker.header.stamp = stamp
-
                 text_marker.ns = "block_position_labels"
                 text_marker.id = index * 2 + 1
-
                 text_marker.type = Marker.TEXT_VIEW_FACING
                 text_marker.action = Marker.ADD
 
-                # ブロックの少し上に名前を表示する。
-                text_marker.pose.position.x = center_x
-                text_marker.pose.position.y = center_y
-                text_marker.pose.position.z = (
-                    center_z + size_z / 2.0 + 0.2
+                # ブロックの中央付近に名前を表示
+                text_marker.pose.position.x = (
+                    center_x
+                    + axis_x * size_x / 2.0
+                    + axis_y_perp_x * size_y / 2.0
                 )
+                text_marker.pose.position.y = (
+                    center_y
+                    + axis_y * size_x / 2.0
+                    + axis_y_perp_y * size_y / 2.0
+                )
+                text_marker.pose.position.z = center_z + size_z + 0.2
 
-                text_marker.pose.orientation.x = 0.0
-                text_marker.pose.orientation.y = 0.0
-                text_marker.pose.orientation.z = 0.0
                 text_marker.pose.orientation.w = 1.0
-
                 text_marker.scale.z = 0.3
 
                 text_marker.color.r = 1.0
@@ -593,15 +745,12 @@ class TmsUrParameterImportPublisher(Node):
                 text_marker.color.a = 1.0
 
                 text_marker.text = record_name
-
                 marker_array.markers.append(text_marker)
 
             except (KeyError, TypeError, ValueError) as e:
-
                 self.get_logger().error(
                     f"Invalid block data [{record_name}]: {e}"
                 )
-
                 continue
 
         return marker_array
