@@ -457,6 +457,11 @@ def launch_setup(context, *args, **kwargs):
               remappings=[("planwritten", "/planwritten"), ("~/output/plan", "/output/mst110cr_plan"), ("~/output/joint_plan", "/output/zx200_joint_plan"),],
               ),
         Node(
+              package="tms_ur_construction",
+              executable="tms_ur_parameter_viz",
+              output="screen",
+          ),
+        Node(
               package="tms_db_manager", 
               executable="tms_db_reader",
               output='screen'

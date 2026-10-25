@@ -167,9 +167,9 @@ class TmsUrParameterImportPublisher(Node):
             self.process_next_record
         )
 
-        self.get_logger().info(
-            "Parameter import publisher started."
-        )
+        # self.get_logger().info(
+        #     "Parameter import publisher started."
+        # )
 
     # ======================================================
     # Request DB record
@@ -189,9 +189,9 @@ class TmsUrParameterImportPublisher(Node):
 
         self.request_in_progress = True
 
-        self.get_logger().info(
-            f"Requesting [{category}]: {record_name}"
-        )
+        # self.get_logger().info(
+        #     f"Requesting [{category}]: {record_name}"
+        # )
 
         future = self.cli.call_async(req)
 
@@ -360,24 +360,24 @@ class TmsUrParameterImportPublisher(Node):
 
             self.summary_received = True
 
-            self.get_logger().info(
-                f"Joint angle records: "
-                f"{len(self.joint_angle_param_names)}"
-            )
+            # self.get_logger().info(
+            #     f"Joint angle records: "
+            #     f"{len(self.joint_angle_param_names)}"
+            # )
 
-            self.get_logger().info(
-                f"Machinery position records: "
-                f"{len(self.machinery_position_param_names)}"
-            )
+            # self.get_logger().info(
+            #     f"Machinery position records: "
+            #     f"{len(self.machinery_position_param_names)}"
+            # )
 
-            self.get_logger().info(
-                f"Block position records: "
-                f"{len(self.block_position_param_names)}"
-            )
+            # self.get_logger().info(
+            #     f"Block position records: "
+            #     f"{len(self.block_position_param_names)}"
+            # )
 
-            self.get_logger().info(
-                f"Total records: {len(self.record_queue)}"
-            )
+            # self.get_logger().info(
+            #     f"Total records: {len(self.record_queue)}"
+            # )
 
             return
 
@@ -416,9 +416,9 @@ class TmsUrParameterImportPublisher(Node):
                 "data": data
             })
 
-        self.get_logger().info(
-            f"Received [{category}]: {record_name}"
-        )
+        # self.get_logger().info(
+        #     f"Received [{category}]: {record_name}"
+        # )
 
     # ======================================================
     # Convert machinery positions to a Marker (SPHERE_LIST)
@@ -832,9 +832,9 @@ class TmsUrParameterImportPublisher(Node):
         self.machinery_position_param_names.clear()
         self.block_position_param_names.clear()
 
-        self.get_logger().info(
-            "Cleared cached records. Reloading summary."
-        )
+        # self.get_logger().info(
+        #     "Cleared cached records. Reloading summary."
+        # )
 
         # 次のタイマー処理でサマリー取得を開始する
 
@@ -904,42 +904,42 @@ class TmsUrParameterImportPublisher(Node):
 
         self.published = True
 
-        self.get_logger().info(
-            "========================================"
-        )
+        # self.get_logger().info(
+        #     "========================================"
+        # )
 
-        self.get_logger().info(
-            f"Published joint angle records: "
-            f"{len(self.joint_angle_records)}"
-        )
+        # self.get_logger().info(
+        #     f"Published joint angle records: "
+        #     f"{len(self.joint_angle_records)}"
+        # )
 
-        self.get_logger().info(
-            f"Published machinery position records: "
-            f"{len(self.machinery_position_records)}"
-        )
+        # self.get_logger().info(
+        #     f"Published machinery position records: "
+        #     f"{len(self.machinery_position_records)}"
+        # )
 
-        self.get_logger().info(
-            f"Published machinery position markers: "
-            f"{len(machinery_marker.points)} points"
-        )
+        # self.get_logger().info(
+        #     f"Published machinery position markers: "
+        #     f"{len(machinery_marker.points)} points"
+        # )
 
-        self.get_logger().info(
-            f"Published block JSON records: "
-            f"{len(self.block_position_records)}"
-        )
+        # self.get_logger().info(
+        #     f"Published block JSON records: "
+        #     f"{len(self.block_position_records)}"
+        # )
 
-        self.get_logger().info(
-            f"Published block markers: "
-            f"{len(marker_array.markers)}"
-        )
+        # self.get_logger().info(
+        #     f"Published block markers: "
+        #     f"{len(marker_array.markers)}"
+        # )
 
-        self.get_logger().info(
-            "All parameter lists published."
-        )
+        # self.get_logger().info(
+        #     "All parameter lists published."
+        # )
 
-        self.get_logger().info(
-            "========================================"
-        )
+        # self.get_logger().info(
+        #     "========================================"
+        # )
 
 
 def main(args=None):
