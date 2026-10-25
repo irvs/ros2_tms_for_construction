@@ -15,9 +15,9 @@ void ExcavatorPoseConverter::convertToXYZQuaternion(const double x, const double
   result_pose.y = y;
   result_pose.z = z;
 
-  // theta_wは水平面からの角度として与えられているので、高さに依存しない
-  // 座標系の変換のみを考慮（必要に応じて符号調整）
-  double pitch = theta_w + M_PI / 4.0;  // 水平面からの角度をそのまま使用
+  // theta_wはバケット底面の水平面に対する傾き（刃先が下がる向きが正）
+  // フレームのx軸は底面に対して kBucketFrameOffset だけずれているので、その分を加える
+  double pitch = theta_w + kBucketFrameOffset;
 
   // 姿勢の計算
   double roll = 0.0;         // ロール角は0と仮定
