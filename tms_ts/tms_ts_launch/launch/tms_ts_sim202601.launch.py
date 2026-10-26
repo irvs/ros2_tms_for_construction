@@ -449,6 +449,48 @@ def launch_setup(context, *args, **kwargs):
       #         parameters=[{"robot_name": "mst110cr"}]
       #   ),
 
+
+        Node(
+              package="tms_ur_construction",
+              executable="tms_ur_parameter_viz",
+              output="screen",
+              ),
+
+      #for odom
+        Node(
+              package="tms_sp_machine",
+              executable="tms_sp_machine_odom.py",
+              output="screen",
+              remappings=[
+                    ("~/input/odom", "/mst110cr/odometry/global"),
+              ],
+              parameters=[
+                    {
+                    "machine_name": "mst110cr",
+                    },
+              ],
+              ),
+
+        Node(
+              package="tms_sp_machine",
+              executable="tms_sp_machine_odom.py",
+              output="screen",
+              remappings=[
+                    ("~/input/odom", "/mst2200vdr/odometry/global"),
+              ],
+              parameters=[
+                    {
+                    "machine_name": "mst2200vdr",
+                    },
+              ],
+              ),
+        Node(
+              package='tms_db_manager',
+              executable='tms_db_writer',
+              output='screen',
+              ),
+
+
       #for preview
         Node(
               package="tms_ur_construction",
@@ -457,16 +499,10 @@ def launch_setup(context, *args, **kwargs):
               remappings=[("planwritten", "/planwritten"), ("~/output/plan", "/output/mst110cr_plan"), ("~/output/joint_plan", "/output/zx200_joint_plan"),],
               ),
         Node(
-              package="tms_ur_construction",
-              executable="tms_ur_parameter_viz",
-              output="screen",
-          ),
-        Node(
               package="tms_db_manager", 
               executable="tms_db_reader",
               output='screen'
               ),
-
     ])
     
     return nodes
