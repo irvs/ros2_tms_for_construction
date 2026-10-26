@@ -19,7 +19,7 @@ DATA_ID = 3012
 DATA_TYPE = "parameter"
 
 SUMMARY_RECORD_NAME = (
-    "parameter_import_summary_20261023T013934824101"
+    "parameter_import_summary_20261026T053954625771"
 )
 
 
@@ -95,6 +95,20 @@ class TmsUrParameterImportPublisher(Node):
             10
         )
 
+        # GeoFenceの境界線
+        self.geo_fence_pub = self.create_publisher(
+            Marker,
+            "/geo_fence_params",
+            10
+        )
+
+        # GeoFenceの元データ
+        self.geo_fence_json_pub = self.create_publisher(
+            String,
+            "/geo_fence_params_json",
+            10
+        )
+
         # ==================================================
         # Database client
         # ==================================================
@@ -147,6 +161,8 @@ class TmsUrParameterImportPublisher(Node):
         # ブロック位置データ
         # DBから取得した元のJSONデータをそのまま保存する。
         self.block_position_records = []
+        # GeoFenceデータ
+        self.geo_fence_records = []
 
         # すべてのデータをpublishしたか
         self.published = False
@@ -357,6 +373,11 @@ class TmsUrParameterImportPublisher(Node):
                 self.record_queue.append(
                     (name, "block_position")
                 )
+            
+            # GeoFenceを追加
+            self.record_queue.append(
+                ("geo_fence", "geo_fence")
+            )
 
             self.summary_received = True
 
@@ -415,6 +436,13 @@ class TmsUrParameterImportPublisher(Node):
                 "record_name": record_name,
                 "data": data
             })
+
+        elif category == "geo_fence":
+
+            self.geo_fence_records.append({
+                "record_name": record_name,
+                "data": data
+    })
 
         # self.get_logger().info(
         #     f"Received [{category}]: {record_name}"
@@ -814,6 +842,62 @@ class TmsUrParameterImportPublisher(Node):
 
         return marker_array
 
+    def create_geo_fence_marker(self, geo_fence_records):
+
+        marker = Marker()
+
+        marker.header.frame_id = "map"
+        marker.header.stamp = self.get_clock().now().to_msg()
+
+        marker.ns = "geo_fence"
+        marker.id = 0
+        marker.type = Marker.LINE_STRIP
+        marker.action = Marker.ADD
+
+        # 線の太さ
+        marker.scale.x = 0.2
+
+        # 線の色：黄色
+        marker.color.r = 1.0
+        marker.color.g = 1.0
+        marker.color.b = 0.0
+        marker.color.a = 1.0
+
+        marker.pose.orientation.w = 1.0
+
+        for record in geo_fence_records:
+
+            data = record.get("data", {})
+            record_name = record.get("record_name", "")
+
+            try:
+                coordinates = data["coordinates"]
+
+                # GeoJSON形式に合わせて、座標配列を処理する。
+                # 今回のデータでは coordinates[0] が境界線の座標列。
+                if not coordinates or not coordinates[0]:
+                    raise ValueError("coordinates is empty")
+
+                points = coordinates[0]
+
+                for point in points:
+                    marker.points.append(
+                        Point(
+                            x=float(point["x"]),
+                            y=float(point["y"]),
+                            z=float(point.get("z", 0.0))
+                        )
+                    )
+
+            except (KeyError, TypeError, ValueError, IndexError) as e:
+
+                self.get_logger().error(
+                    f"Invalid GeoFence data [{record_name}]: {e}"
+                )
+
+        return marker
+
+
     def start_refresh(self):
 
         # 新しい読み出し処理を開始
@@ -827,6 +911,7 @@ class TmsUrParameterImportPublisher(Node):
         self.joint_angle_records.clear()
         self.machinery_position_records.clear()
         self.block_position_records.clear()
+        self.geo_fence_records.clear()
 
         self.joint_angle_param_names.clear()
         self.machinery_position_param_names.clear()
@@ -897,6 +982,43 @@ class TmsUrParameterImportPublisher(Node):
         )
 
         self.block_pub.publish(marker_array)
+
+        # --------------------------------------------------
+        # GeoFence: JSON
+        # --------------------------------------------------
+
+        geo_fence_json_msg = String()
+
+        geo_fence_json_msg.data = json.dumps(
+            self.geo_fence_records,
+            ensure_ascii=False
+        )
+
+        self.geo_fence_json_pub.publish(
+            geo_fence_json_msg
+        )
+
+        # --------------------------------------------------
+        # GeoFence: Marker
+        # --------------------------------------------------
+
+        geo_fence_marker = self.create_geo_fence_marker(
+            self.geo_fence_records
+        )
+
+        self.geo_fence_pub.publish(
+            geo_fence_marker
+        )
+
+        # self.get_logger().info(
+        #     f"Published GeoFence records: "
+        #     f"{len(self.geo_fence_records)}"
+        # )
+
+        # self.get_logger().info(
+        #     f"Published GeoFence points: "
+        #     f"{len(geo_fence_marker.points)}"
+        # )
 
         # --------------------------------------------------
         # Complete
