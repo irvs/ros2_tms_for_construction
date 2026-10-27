@@ -19,7 +19,7 @@ DATA_ID = 3012
 DATA_TYPE = "parameter"
 
 SUMMARY_RECORD_NAME = (
-    "parameter_import_summary_20261026T053954625771"
+    "parameter_import_summary_20261027T145257835055"
 )
 
 
@@ -109,6 +109,20 @@ class TmsUrParameterImportPublisher(Node):
             10
         )
 
+        # 接続線の可視化用
+        self.machinery_connection_pub = self.create_publisher(
+            Marker,
+            "/machinery_connection_params",
+            10
+        )
+
+        # 接続関係のJSONデータ用
+        self.machinery_connection_json_pub = self.create_publisher(
+            String,
+            "/machinery_connection_params_json",
+            10
+        )
+
         # ==================================================
         # Database client
         # ==================================================
@@ -132,6 +146,7 @@ class TmsUrParameterImportPublisher(Node):
         self.joint_angle_param_names = []
         self.machinery_position_param_names = []
         self.block_position_param_names = []
+        self.machinery_connection_records = []
 
         # ==================================================
         # Record queue
@@ -379,6 +394,15 @@ class TmsUrParameterImportPublisher(Node):
                 ("geo_fence", "geo_fence")
             )
 
+            connection_names = data.get(
+                "machinery_connection_param_names", []
+            )
+
+            for record_name in connection_names:
+                self.record_queue.append(
+                    (record_name, "machinery_connection")
+                )
+
             self.summary_received = True
 
             # self.get_logger().info(
@@ -442,7 +466,14 @@ class TmsUrParameterImportPublisher(Node):
             self.geo_fence_records.append({
                 "record_name": record_name,
                 "data": data
-    })
+            })
+
+        elif category == "machinery_connection":
+
+            self.machinery_connection_records.append({
+                "record_name": record_name,
+                "data": data
+            })
 
         # self.get_logger().info(
         #     f"Received [{category}]: {record_name}"
@@ -897,6 +928,98 @@ class TmsUrParameterImportPublisher(Node):
 
         return marker
 
+    def create_machinery_connection_marker(self, records):
+        marker = Marker()
+
+        marker.header.frame_id = "map"
+        marker.header.stamp = self.get_clock().now().to_msg()
+
+        marker.ns = "machinery_connections"
+        marker.id = 0
+        marker.type = Marker.LINE_LIST
+        marker.action = Marker.ADD
+
+        # 線の太さ
+        marker.scale.x = 0.15
+
+        # 黄色
+        # オレンジレッド（機械位置の赤色と区別しやすい色）
+        marker.color.r = 1.0
+        marker.color.g = 0.25
+        marker.color.b = 0.0
+        marker.color.a = 1.0
+
+        # ノードID -> 座標
+        node_positions = {}
+
+        for record in records:
+            data = record.get("data", {})
+
+            node_id = data.get("node_id")
+            position = data.get("position")
+
+            if node_id is None or not isinstance(position, dict):
+                continue
+
+            try:
+                node_positions[str(node_id)] = Point(
+                    x=float(position["x"]),
+                    y=float(position["y"]),
+                    z=float(position.get("z", 0.0))
+                )
+            except (KeyError, TypeError, ValueError):
+                self.get_logger().warning(
+                    f"Invalid node position: {node_id}"
+                )
+
+        # 同じ接続を重複して描画しないための集合
+        drawn_edges = set()
+
+        for record in records:
+            data = record.get("data", {})
+
+            source_id = data.get("node_id")
+            connect_nodes = data.get("connect_node", [])
+
+            if source_id is None or not isinstance(connect_nodes, list):
+                continue
+
+            source_id = str(source_id)
+
+            if source_id not in node_positions:
+                continue
+
+            for target_id in connect_nodes:
+                target_id = str(target_id)
+
+                if target_id not in node_positions:
+                    self.get_logger().warning(
+                        f"Connection target not found: "
+                        f"{source_id} -> {target_id}"
+                    )
+                    continue
+
+                if source_id == target_id:
+                    continue
+
+                # A -> B と B -> A は同じ線として扱う
+                edge = tuple(sorted((source_id, target_id)))
+
+                if edge in drawn_edges:
+                    continue
+
+                drawn_edges.add(edge)
+
+                # LINE_LISTでは、2点ずつ追加すると1本の線になる
+                marker.points.append(
+                    node_positions[source_id]
+                )
+                marker.points.append(
+                    node_positions[target_id]
+                )
+
+        return marker
+
 
     def start_refresh(self):
 
@@ -916,6 +1039,7 @@ class TmsUrParameterImportPublisher(Node):
         self.joint_angle_param_names.clear()
         self.machinery_position_param_names.clear()
         self.block_position_param_names.clear()
+        self.machinery_connection_records.clear()
 
         # self.get_logger().info(
         #     "Cleared cached records. Reloading summary."
@@ -1009,6 +1133,37 @@ class TmsUrParameterImportPublisher(Node):
         self.geo_fence_pub.publish(
             geo_fence_marker
         )
+
+        # ------------------------------------------
+        # Machinery connection visualization
+        # ------------------------------------------
+        connection_marker = self.create_machinery_connection_marker(
+            self.machinery_connection_records
+        )
+
+        # MarkerとしてPublish
+        self.machinery_connection_pub.publish(connection_marker)
+
+        # StringとしてJSONをPublish
+        connection_json_msg = String()
+        connection_json_msg.data = json.dumps(
+            self.machinery_connection_records,
+            ensure_ascii=False
+        )
+
+        self.machinery_connection_json_pub.publish(
+            connection_json_msg
+        )
+
+        # self.get_logger().info(
+        #     f"Published machinery connections: "
+        #     f"{len(connection_marker.points) // 2}"
+        # )
+
+        # self.get_logger().info(
+        #     f"Published machinery connection JSON records: "
+        #     f"{len(self.machinery_connection_records)}"
+        # )
 
         # self.get_logger().info(
         #     f"Published GeoFence records: "
