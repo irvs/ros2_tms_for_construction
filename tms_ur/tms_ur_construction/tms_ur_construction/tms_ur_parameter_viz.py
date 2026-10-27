@@ -38,7 +38,7 @@ class TmsUrParameterImportPublisher(Node):
         self.declare_parameter("block_height", 0.1)
 
         # データベースの再読み出し周期（秒）
-        self.declare_parameter("refresh_period", 60.0)
+        self.declare_parameter("refresh_period", 30.0)
 
         self.latest = self.get_parameter(
             "latest"

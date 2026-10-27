@@ -476,6 +476,20 @@ def launch_setup(context, *args, **kwargs):
               executable="tms_sp_machine_odom.py",
               output="screen",
               remappings=[
+                    ("~/input/odom", "/mst110cr_2/odometry/global"),
+              ],
+              parameters=[
+                    {
+                    "machine_name": "mst110cr_2",
+                    },
+              ],
+              ),
+
+        Node(
+              package="tms_sp_machine",
+              executable="tms_sp_machine_odom.py",
+              output="screen",
+              remappings=[
                     ("~/input/odom", "/mst2200vdr/odometry/global"),
               ],
               parameters=[
