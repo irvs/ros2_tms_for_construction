@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence name="MainSequence">
+            <Action ID="LeafNodeCrawlerDump" model_name="mst110cr" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="initial_move_pose"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="mst110cr" primitive_name="primitive_crawlerdump_release_soil" read_direction="" record_name="initial_pose_vessel"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="mst110cr" primitive_name="primitive_crawlerdump_navigate_anywhere" read_direction="" record_name="initial_position"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="mst110cr" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="initial_pose"/>
+            <Action ID="MongoValueWriter" input_value="true" mongo_param_name="initialize_flg_mst110cr" mongo_record_name="initialize_flgs"/>
+            <Action ID="SetLocalBlackboard" output_key="dependencies_ready_3_1" value="false"/>
+            <Sequence>
+                <Action ID="MongoArrayWriter" input_value="" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr" operation="reset"/>
+                <Action ID="MongoArrayWriter" input_value="&quot;route_8308088ba3bcdb9d_1345163867&quot;" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr" operation="add"/>
+                <Action ID="MongoValueWriter" input_value="&quot;route_8308088ba3bcdb9d_1345163867&quot;" mongo_param_name="CURRENT_SECTION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr"/>
+                <Action ID="MongoValueWriter" input_value="up" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr"/>
+            </Sequence>
+            <Decorator ID="KeepRunningUntilFlgup" key="dependencies_ready_3_1">
+                <Sequence name="DependencyCheckSequence">
+                    <Action ID="MongoValueReader" mongo_param_name="initialize_flg_mst110cr" mongo_record_name="initialize_flgs" output_port="{dependency_3_1_0}"/>
+                    <IfThenElse name="DependencyCondition">
+                        <Action ID="ConditionalExpression" conditional_expression="dependency_3_1_0 == true"/>
+                        <Action ID="SetLocalBlackboard" output_key="dependencies_ready_3_1" value="true"/>
+                        <AlwaysSuccess/>
+                    </IfThenElse>
+                </Sequence>
+            </Decorator>
+            <Decorator ID="KeepRunningUntilFlgup" key="TERMINATE_FLG" while_or_dowhile="while">
+                <Sequence>
+                    <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr" model_name="mst110cr" subtask_name="subtask_dump_excavation_loading" subtask_parameters="excavator_record_name:SAMPLE_BLACKBOARD_zx200,swing_angle_for_loading:SWING_ANGLE_LOAD,swing_angle_for_runing:SWING_ANGLE_FRONT" terminate_condition=""/>
+                    <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr" model_name="mst110cr" subtask_name="subtask_dump_cruise_2" subtask_parameters="start_status:route_8308088ba3bcdb9d_1345163867" terminate_condition="route_8308088ba3bcdb9d_1016656299"/>
+                    <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr" model_name="mst110cr" subtask_name="subtask_dump_release_with_bull_3" subtask_parameters="BullRecord:SAMPLE_BLACKBOARD_d37pxi,dump_up_angle:RELEASE_ANGLE_UP,dump_down_angle:RELEASE_ANGLE_DOWN,swing_before_release:SWING_ANGLE_BACK,swing_after_release:SWING_ANGLE_FRONT,time:5000,stop_point:dump_node_0" terminate_condition=""/>
+                    <Action ID="MongoValueWriter" input_type="" input_value="down" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr"/>
+                    <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr" model_name="mst110cr" subtask_name="subtask_dump_cruise_2" subtask_parameters="start_status:route_8308088ba3bcdb9d_1016656299" terminate_condition="route_8308088ba3bcdb9d_1345163867"/>
+                    <Action ID="MongoValueWriter" input_type="" input_value="up" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr"/>
+                </Sequence>
+            </Decorator>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="BulldozerPathCreater">
+            <input_port name="block_data"/>
+            <inout_port name="bull_data"/>
+        </Action>
+        <Action ID="ConditionalExpression">
+            <input_port name="conditional_expression"/>
+        </Action>
+        <Action ID="Counter">
+            <input_port name="key"/>
+        </Action>
+        <Action ID="ExecuteSubtask">
+            <input_port name="machine_record_name"/>
+            <input_port name="model_name"/>
+            <input_port name="subtask_name"/>
+            <input_port name="subtask_parameters"/>
+            <input_port name="terminate_condition"/>
+        </Action>
+        <Action ID="ExtractTrailingNumberToBlackboard">
+            <inout_port name="source_key"/>
+            <inout_port name="stored_key"/>
+        </Action>
+        <Decorator ID="KeepRunningUntilFlgup">
+            <input_port name="key"/>
+        </Decorator>
+        <Action ID="LeafNodeBulldozer">
+            <inout_port name="blade_hold"/>
+            <input_port default="d37pxi_24" name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="record_name"/>
+        </Action>
+        <Action ID="LeafNodeCommon">
+            <input_port name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="record_name"/>
+        </Action>
+        <Action ID="LeafNodeCrawlerDump">
+            <input_port name="model_name"/>
+            <input_port name="primitive_name"/>
+            <input_port name="read_direction"/>
+            <input_port name="record_name"/>
+        </Action>
+        <Action ID="LeafNodeExcavator">
+            <input_port default="zx200" name="model_name"/>
+            <inout_port name="previous_target_record_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="target_record_name"/>
+        </Action>
+        <Action ID="LeafNodeExcavatorAssist">
+            <input_port default="zx200" name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="record_name"/>
+        </Action>
+        <Action ID="LocalBlackboardCaluculator">
+            <input_port name="calculation_formula"/>
+            <inout_port name="output_key"/>
+        </Action>
+        <Action ID="MongoArrayReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
+            <inout_port name="output_type"/>
+        </Action>
+        <Action ID="MongoArrayWriter">
+            <input_port name="input_value"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="operation"/>
+        </Action>
+        <Action ID="MongoRouteOrientationUpdater">
+            <input_port name="model_name"/>
+            <inout_port name="read_direction"/>
+            <input_port name="record_name"/>
+        </Action>
+        <Action ID="MongoValueReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <output_port name="output_port"/>
+        </Action>
+        <Action ID="MongoValueSearcher">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_value"/>
+            <input_port name="output_port"/>
+        </Action>
+        <Action ID="MongoValueWriter">
+            <input_port name="input_value"/>
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+        </Action>
+        <Action ID="SetCurrentTimeToLocalBlackboard">
+            <input_port name="output_key"/>
+        </Action>
+        <Action ID="SetLocalBlackboard">
+            <input_port name="output_key"/>
+            <input_port name="value"/>
+        </Action>
+        <Action ID="SetLocalBlackboardWithCounter">
+            <inout_port name="counter_key"/>
+            <input_port name="key"/>
+        </Action>
+        <Action ID="WaitForClick">
+            <input_port name="button_info"/>
+            <input_port name="window_title"/>
+        </Action>
+        <Action ID="WaitTimer">
+            <input_port name="seconds"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
