@@ -3,19 +3,19 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="LeafNodeExcavator" model_name="$model_name$" previous_target_record_name="" primitive_name="primitive_excavator_change_pose_plan" target_record_name="$excavate1$"/>
-            <Action ID="LeafNodeExcavator" model_name="$model_name$" previous_target_record_name="$excavate1$" primitive_name="primitive_excavator_change_pose_plan" target_record_name="$excavate2$"/>
-            <Action ID="LeafNodeExcavator" model_name="$model_name$" previous_target_record_name="$excavate2$" primitive_name="primitive_excavator_change_pose_plan" target_record_name="$excavate3$"/>
-            <Action ID="LeafNodeExcavator" model_name="$model_name$" previous_target_record_name="" primitive_name="primitive_excavator_change_pose_execute_from_plan" target_record_name="$excavate1$,$excavate2$,$excavate3$"/>
+            <RetryUntilSuccessful num_attempts="-1">
+                <Sequence>
+                    <Action ID="LeafNodeExcavator" model_name="$model_name$" previous_target_record_name="" primitive_name="primitive_excavator_change_pose_plan" target_record_name="$excavate1$"/>
+                    <Action ID="LeafNodeExcavator" model_name="$model_name$" previous_target_record_name="$excavate1$" primitive_name="primitive_excavator_change_pose_plan" target_record_name="$excavate2$"/>
+                    <Action ID="LeafNodeExcavator" model_name="$model_name$" previous_target_record_name="$excavate2$" primitive_name="primitive_excavator_change_pose_plan" target_record_name="$excavate3$"/>
+                    <Action ID="LeafNodeExcavator" model_name="$model_name$" previous_target_record_name="$excavate3$" primitive_name="primitive_excavator_change_pose_plan" target_record_name="$excavate4$"/>
+                </Sequence>
+            </RetryUntilSuccessful>
+            <Action ID="LeafNodeExcavator" model_name="$model_name$" previous_target_record_name="" primitive_name="primitive_excavator_change_pose_execute_from_plan" target_record_name="$excavate1$,$excavate2$,$excavate3$,$excavate4$"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="MongoValueReader">
-            <input_port name="mongo_param_name"/>
-            <input_port name="mongo_record_name"/>
-            <input_port name="output_port"/>
-        </Action>
         <Action ID="ConditionalExpression">
             <input_port name="conditional_expression"/>
         </Action>
@@ -53,6 +53,11 @@
             <input_port default="zx200" name="model_name"/>
             <inout_port name="primitive_name"/>
             <inout_port name="record_name"/>
+        </Action>
+        <Action ID="MongoValueReader">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_record_name"/>
+            <input_port name="output_port"/>
         </Action>
         <Action ID="MongoValueWriter">
             <input_port name="input_value"/>

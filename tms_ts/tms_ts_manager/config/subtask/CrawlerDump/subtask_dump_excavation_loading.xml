@@ -32,7 +32,7 @@
             <Action ID="MongoValueWriter" input_type="string" input_value="$machine_record_name$" mongo_param_name="LOADING_DUMP" mongo_record_name="$excavator_record_name$"/>
             <!-- 積込位置へ移動する：行き先はブロック管理が書いた loading_position -->
             <Action ID="MongoValueReader" mongo_param_name="loading_position" mongo_record_name="$excavator_record_name$" output_port="loading_position"/>
-            <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="" record_name="{loading_position}"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_navigate_anywhere" read_direction="" record_name="{loading_position}"/>
             <!-- 荷台を掘削機に向ける -->
             <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="$swing_angle_for_loading$"/>
             <!-- 着いたことを知らせる -->

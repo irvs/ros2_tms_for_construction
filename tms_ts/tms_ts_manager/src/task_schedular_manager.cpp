@@ -243,13 +243,14 @@ public:
 
     // 共通処理
     std::string updated_sequence =replace_whole_execute_subtask_tags(task_sequence_);
-    tree_ = factory.createTreeFromText(updated_sequence, bb_);
 
-
-    BT::PublisherZMQ publisher_zmq(tree_, 100, zmq_server_port, zmq_publisher_port);
     try
     {
-      rclcpp::Rate rate(1);////
+      // 生成に失敗してもプロセスを落とさず、タスクの失敗として扱う
+      tree_ = factory.createTreeFromText(updated_sequence, bb_);
+      BT::PublisherZMQ publisher_zmq(tree_, 100, zmq_server_port, zmq_publisher_port);
+
+      rclcpp::Rate rate(10);////
       while (rclcpp::ok() && status_ == NodeStatus::RUNNING)
       {
           status_ = tree_.tickRoot();
@@ -263,7 +264,7 @@ public:
     }
     catch (const std::exception& e)
     {
-      RCLCPP_ERROR(get_logger(), "Failed to cretae tree: %s", e.what());
+      RCLCPP_ERROR(get_logger(), "Failed to create or execute tree: %s", e.what());
       status_ = NodeStatus::FAILURE;
     }
 
@@ -429,7 +430,7 @@ public:
   }
 
 
-  std::string replace_whole_execute_subtask_tags(const std::string& xml) {
+  std::string replace_whole_execute_subtask_tags(const std::string& xml, int depth = 0) {
     std::string modified = xml;
 
     // タグ全体にマッチ：<Action ID="ExecuteSubtask" ... />
@@ -440,6 +441,21 @@ public:
     while (std::regex_search(searchStart, modified.cend(), match, action_regex)) {
         std::string original_tag = match.str();
         std::string new_tag = process_whole_tag(original_tag);
+
+        // 展開したサブタスクの中の ExecuteSubtask も展開する（サブタスクの入れ子）
+        if (new_tag != original_tag)
+        {
+          if (depth < MAX_SUBTASK_DEPTH)
+          {
+            new_tag = replace_whole_execute_subtask_tags(new_tag, depth + 1);
+          }
+          else
+          {
+            RCLCPP_ERROR(this->get_logger(),
+              "Subtask nesting exceeds %d levels. Nested ExecuteSubtask is not expanded: %s",
+              MAX_SUBTASK_DEPTH, original_tag.c_str());
+          }
+        }
 
         // 文字列全体から該当位置を探して置換
         size_t pos = modified.find(original_tag, searchStart - modified.cbegin());
@@ -524,6 +540,7 @@ private:
   std::string task_sequence_;
   NodeStatus status_ = NodeStatus::RUNNING;
   std::shared_ptr<TaskSearcher> task_searcher_;  // ← 追加
+  static constexpr int MAX_SUBTASK_DEPTH = 10;  // サブタスクの入れ子の上限（自分自身を呼ぶ定義での無限展開を防ぐ）
 };
 
 class ForceQuietNode : public rclcpp::Node

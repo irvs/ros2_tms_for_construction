@@ -1,3 +1,6 @@
+import os
+from glob import glob
+
 from setuptools import setup
 
 package_name = 'tms_sp_sensing'
@@ -10,6 +13,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -47,6 +51,8 @@ setup(
             "tms_sp_release_locations = tms_sp_sensing.tms_sp_release_locations:main",
             "tms_sp_dump_swing_angle = tms_sp_sensing.tms_sp_dump_swing_angle:main",
             "tms_sp_loadsense = tms_sp_sensing.tms_sp_loadsense:main",
+            "tms_sp_block_manager = tms_sp_sensing.tms_sp_block_manager:main",
+            "tms_sp_sensor_bridge = tms_sp_sensing.tms_sp_sensor_bridge:main",
         ],
     },
 )

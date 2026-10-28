@@ -1,0 +1,67 @@
+# tms_sp_sensor_bridge の設定：掘削積込（excavation_loading）
+# 設計: excavation_loading_design.md（4 章のトピックの一覧、5.2）
+#
+# topic_to_db : トピックの data を、record_name の field へそのまま書き込む
+#   timeout_sec / timeout_value : その時間トピックが届かなければ timeout_value を書く（建機を待たせる側の値）。
+#                                 定期的に出されるトピックにだけ設定する。
+# db_to_topic : record_name の field の値を、トピックの data としてそのまま出す（reliable + transient_local）
+#
+# 掘削目標（/zx200/end_effector → target_excavate_pose_1 / target_gather_pose_1 / _2）は、既存の tms_sp_zx200_end_effector が書く。
+
+mongodb:
+  ip: 127.0.0.1
+  port: 27017
+  database: rostmsdb
+
+poll_period_sec: 0.1
+
+topic_to_db:
+  - topic: /excavation_loading/sensing_arrival_flg
+    type: std_msgs/msg/Bool
+    record_name: SAMPLE_BLACKBOARD_zx200
+    field: SENSING_ARRIVAL_FLG
+    timeout_sec: 3.0
+    timeout_value: false
+  - topic: /excavation_loading/sensing_block_done_flg
+    type: std_msgs/msg/Bool
+    record_name: SAMPLE_BLACKBOARD_zx200
+    field: SENSING_BLOCK_DONE_FLG
+    timeout_sec: 3.0
+    timeout_value: false
+  - topic: /excavation_loading/sensing_few_remaining_flg
+    type: std_msgs/msg/Bool
+    record_name: SAMPLE_BLACKBOARD_zx200
+    field: SENSING_FEW_REMAINING_FLG
+    timeout_sec: 3.0
+    timeout_value: false
+  - topic: /excavation_loading/sensing_gather_done_flg
+    type: std_msgs/msg/Bool
+    record_name: SAMPLE_BLACKBOARD_zx200
+    field: SENSING_GATHER_DONE_FLG
+    timeout_sec: 3.0
+    timeout_value: false
+  - topic: /excavation_loading/sensing_planner_index
+    type: std_msgs/msg/Int32
+    record_name: SAMPLE_BLACKBOARD_zx200
+    field: SENSING_PLANNER_INDEX
+  - topic: /excavation_loading/sensing_planner_mode
+    type: std_msgs/msg/String
+    record_name: SAMPLE_BLACKBOARD_zx200
+    field: SENSING_PLANNER_MODE
+
+db_to_topic:
+  - record_name: SAMPLE_BLACKBOARD_zx200
+    field: current_block_index
+    topic: /excavation_loading/current_block_index
+    type: std_msgs/msg/Int32
+    republish_sec: 1.0
+  - record_name: SAMPLE_BLACKBOARD_zx200
+    field: EXCAVATION_MODE
+    topic: /excavation_loading/excavation_mode
+    type: std_msgs/msg/String
+    republish_sec: 1.0
+  - record_name: SAMPLE_BLACKBOARD_zx200
+    field: LOADING_DUMP          # 積込に来るダンプのレコード名（release_pose が位置合わせのモデルを選ぶのに使う）
+    topic: /excavation_loading/loading_dump
+    type: std_msgs/msg/String
+    republish_sec: 1.0
