@@ -18,10 +18,6 @@ NODE_NAME = "tms_ur_parameter_import_publisher"
 DATA_ID = 3012
 DATA_TYPE = "parameter"
 
-SUMMARY_RECORD_NAME = (
-    "parameter_import_summary_20261027T145257835055"
-)
-
 
 class TmsUrParameterImportPublisher(Node):
 
@@ -238,18 +234,17 @@ class TmsUrParameterImportPublisher(Node):
     # Process records sequentially
     # ======================================================
 
+
     def process_next_record(self):
 
-        # 問い合わせ中なら次の処理を開始しない
+        # DBリクエスト中は次の処理を開始しない
         if self.request_in_progress:
             return
 
         # --------------------------------------------------
         # 前回の取得が完了している場合、次回の更新時刻を確認
         # --------------------------------------------------
-
         if self.published:
-
             now = self.get_clock().now()
 
             if now < self.next_refresh_time:
@@ -260,16 +255,13 @@ class TmsUrParameterImportPublisher(Node):
             )
 
             self.start_refresh()
-            return
 
         # --------------------------------------------------
-        # サマリーを取得
+        # サマリーを取得していない場合
         # --------------------------------------------------
-
         if not self.summary_received:
-
             self.request_record(
-                SUMMARY_RECORD_NAME,
+                "__LATEST_PARAMETER_IMPORT_SUMMARY__",
                 "summary"
             )
             return
@@ -277,9 +269,7 @@ class TmsUrParameterImportPublisher(Node):
         # --------------------------------------------------
         # 各レコードを順番に取得
         # --------------------------------------------------
-
         if self.record_queue:
-
             record_name, category = self.record_queue.pop(0)
 
             self.request_record(
@@ -291,24 +281,31 @@ class TmsUrParameterImportPublisher(Node):
         # --------------------------------------------------
         # 全レコードの取得が完了したらpublish
         # --------------------------------------------------
+        if not self.published:
+            self.publish_all()
 
-        self.publish_all()
+            self.published = True
+            self.refresh_in_progress = False
 
-        self.published = True
-        self.refresh_in_progress = False
-
-        # 今回の完了時刻から次回の更新時刻を設定
-        self.next_refresh_time = (
-            self.get_clock().now()
-            + rclpy.duration.Duration(
-                seconds=self.refresh_period
+            self.next_refresh_time = (
+                self.get_clock().now()
+                + rclpy.duration.Duration(
+                    seconds=self.refresh_period
+                )
             )
-        )
 
-        self.get_logger().info(
-            f"Database refresh completed. "
-            f"Next refresh in {self.refresh_period:.1f} sec."
-        )
+            self.get_logger().info(
+                f"Database refresh completed. "
+                f"Joint angle records: "
+                f"{len(self.joint_angle_records)}, "
+                f"Machinery position records: "
+                f"{len(self.machinery_position_records)}, "
+                f"Block position records: "
+                f"{len(self.block_position_records)}, "
+                f"Block markers: "
+                f"{len(self.create_block_marker_array(self.block_position_records).markers)}"
+            )
+
 
     # ======================================================
     # DB response

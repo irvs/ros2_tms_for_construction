@@ -65,24 +65,69 @@ class TmsDbReaderParam(Node):
             response.tmsdbs.append(self.allocate_flg_tmsdb(data_result))
             return response        
 
-    def get_latest_data(self, request, collection: pymongo.collection.Collection):
-        if request.name != "":
-            latest_data = collection.find_one({"record_name": request.name})
+
+    def get_latest_data(
+        self,
+        request,
+        collection: pymongo.collection.Collection
+    ):
+        # 最新のパラメータインポートサマリーを取得する
+        # request.name に専用キーワードを指定した場合に実行
+        if request.name == "__LATEST_PARAMETER_IMPORT_SUMMARY__":
+            latest_data = collection.find_one(
+                {
+                    "record_name": {
+                        "$regex": r"^parameter_import_summary_"
+                    }
+                },
+                sort=[("record_name", pymongo.DESCENDING)]
+            )
+
             if latest_data is None:
-                self.get_logger().warn(f"No data found for {request.name} in {request.type}.")
+                self.get_logger().warn(
+                    "No parameter import summary found."
+                )
+            else:
+                self.get_logger().info(
+                    f"Latest parameter import summary: "
+                    f"{latest_data.get('record_name', '')}"
+                )
+
             return latest_data
 
+        # 通常の単一レコード取得
+        if request.name != "":
+            latest_data = collection.find_one(
+                {"record_name": request.name}
+            )
+
+            if latest_data is None:
+                self.get_logger().warn(
+                    f"No data found for {request.name} in {request.type}."
+                )
+
+            return latest_data
+
+        # 複数レコード取得
         elif len(request.recordnames) > 0:
             waypointlist = []
+
             for name in request.recordnames:
-                data = collection.find_one({"record_name": name})
+                data = collection.find_one(
+                    {"record_name": name}
+                )
+
                 if data:
                     waypointlist.append(data)
                 else:
-                    self.get_logger().warn(f"No data found for {name} in {request.type}.")
+                    self.get_logger().warn(
+                        f"No data found for {name} in {request.type}."
+                    )
+
             return waypointlist
 
         return None
+
     
 
     def allocate_tmsdb(self, data: dict) -> Tmsdb:
