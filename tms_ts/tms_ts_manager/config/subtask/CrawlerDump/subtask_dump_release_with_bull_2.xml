@@ -7,12 +7,12 @@
             <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_navigate_anywhere" read_direction="" record_name="dumps_entry_point_leveling_area"/>
             <Decorator ID="KeepRunningUntilFlgup" key="SUBTASK_TERMINAL_FLG" while_or_dowhile="while">
                 <Sequence>
-                    <Action ID="MongoValueReader" mongo_param_name="entering_permission_flg" mongo_record_name="$machine_record_name$" output_port="entering_permission_flg"/>
+                    <Action ID="MongoValueReader" mongo_param_name="entering_permission_flg" mongo_record_name="$BullRecord$" output_port="entering_permission_flg"/>
                     <IfThenElse>
                         <Action ID="ConditionalExpression" conditional_expression="entering_permission_flg == true"/>
                         <Sequence>
                             <Sequence>
-                                <Action ID="MongoValueReader" mongo_param_name="LATEST_RELEACED_BLOCK" mongo_record_name="$machine_record_name$" output_port="LATEST_RELEACED_BLOCK"/>
+                                <Action ID="MongoValueReader" mongo_param_name="LATEST_RELEACED_BLOCK" mongo_record_name="$BullRecord$" output_port="LATEST_RELEACED_BLOCK"/>
                                 <Sequence>
                                     <Action ID="SetLocalBlackboard" output_key="dump_waypoint" value="$stop_point$"/>
                                     <Action ID="ExtractTrailingNumberToBlackboard" source_key="LATEST_RELEACED_BLOCK" stored_key="releace_block_num"/>
@@ -34,8 +34,17 @@
                                 <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="down" record_name="{dump_waypoint}"/>
                             </Sequence>
                             <Sequence>
-                                <Action ID="MongoArrayWriter" input_value="{LATEST_RELEACED_BLOCK}" mongo_param_name="RELEACED_BLOCK" mongo_record_name="$machine_record_name$" operation="add"/>
-                                <Action ID="MongoValueWriter" input_type="string" input_value="{LATEST_RELEACED_BLOCK}" mongo_param_name="LATEST_RELEACED_BLOCK" mongo_record_name="$machine_record_name$"/>
+                                <Action ID="MongoValueReader" mongo_param_name="latest_allocated_block" mongo_record_name="$BullRecord$" output_port="latest_allocated_block"/>
+                                <Action ID="ExtractTrailingNumberToBlackboard" source_key="latest_allocated_block" stored_key="latest_allocated_block_num"/>
+                                <Action ID="Counter" key="latest_allocated_block_num"/>
+                                <Action ID="SetLocalBlackboardWithCounter" counter_key="latest_allocated_block_num" key="latest_allocated_block"/>
+                                <Action ID="MongoValueWriter" input_type="" input_value="{latest_allocated_block}" mongo_param_name="latest_allocated_block" mongo_record_name="$BullRecord$"/>
+                                <Action ID="MongoValueReader" mongo_param_name="soil_volume" mongo_record_name="{latest_allocated_block}" output_port="desiredsoilvolume"/>
+                                <Action ID="MongoValueWriter" input_type="double" input_value="\desiredsoilvolume\" mongo_param_name="TargetSoilVolume" mongo_record_name="$machine_record_name$"/>
+                            </Sequence>
+                            <Sequence>
+                                <Action ID="MongoArrayWriter" input_value="{LATEST_RELEACED_BLOCK}" mongo_param_name="RELEACED_BLOCK" mongo_record_name="$BullRecord$" operation="add"/>
+                                <Action ID="MongoValueWriter" input_type="string" input_value="{LATEST_RELEACED_BLOCK}" mongo_param_name="LATEST_RELEACED_BLOCK" mongo_record_name="$BullRecord$"/>
                                 <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_navigate_anywhere" read_direction="" record_name="dumps_entry_point_leveling_area"/>
                                 <Action ID="SetLocalBlackboard" output_key="SUBTASK_TERMINAL_FLG" value="true"/>
                             </Sequence>
