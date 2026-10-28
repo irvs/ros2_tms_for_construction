@@ -172,6 +172,80 @@ public:
                     auto msg_element = doc["msg"];
 
                     if (msg_element &&
+                        msg_element.type() == bsoncxx::type::k_document)
+                    {
+                        auto msg = msg_element.get_document().view();
+
+                        auto pose_element = msg["pose"];
+
+                        if (pose_element &&
+                            pose_element.type() == bsoncxx::type::k_document)
+                        {
+                            auto pose = pose_element.get_document().view();
+
+                            // poseからpositionとorientationを読み出す関数
+                            auto read_pose_fields =
+                                [&](bsoncxx::document::view pose_doc) -> bool
+                            {
+                                auto position_element = pose_doc["position"];
+                                auto orientation_element = pose_doc["orientation"];
+
+                                if (!position_element ||
+                                    !orientation_element ||
+                                    position_element.type() !=
+                                        bsoncxx::type::k_document ||
+                                    orientation_element.type() !=
+                                        bsoncxx::type::k_document)
+                                {
+                                    return false;
+                                }
+
+                                auto position =
+                                    position_element.get_document().view();
+
+                                auto orientation =
+                                    orientation_element.get_document().view();
+
+                                // 位置とクォータニオンの全要素を取得
+                                return
+                                    read_double(position, "x", current_x) &&
+                                    read_double(position, "y", current_y) &&
+                                    read_double(position, "z", current_z) &&
+                                    read_double(orientation, "x", current_qx) &&
+                                    read_double(orientation, "y", current_qy) &&
+                                    read_double(orientation, "z", current_qz) &&
+                                    read_double(orientation, "w", current_qw);
+                            };
+
+                            // ------------------------------------------
+                            // パターンA:
+                            // msg.pose.position
+                            // ------------------------------------------
+                            current_pose_available = read_pose_fields(pose);
+
+                            // ------------------------------------------
+                            // パターンB:
+                            // msg.pose.pose.position
+                            // ------------------------------------------
+                            if (!current_pose_available)
+                            {
+                                auto nested_pose_element = pose["pose"];
+
+                                if (nested_pose_element &&
+                                    nested_pose_element.type() ==
+                                        bsoncxx::type::k_document)
+                                {
+                                    auto nested_pose =
+                                        nested_pose_element.get_document().view();
+
+                                    current_pose_available =
+                                        read_pose_fields(nested_pose);
+                                }
+                            }
+                        }
+                    }
+
+                    if (msg_element &&
                         msg_element.type() ==
                             bsoncxx::type::k_document)
                     {
