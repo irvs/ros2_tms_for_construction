@@ -87,19 +87,25 @@ class TmsDbReaderParam(Node):
 
     def allocate_tmsdb(self, data: dict) -> Tmsdb:
         tmsdb = Tmsdb()
-        tmsdb.type = data["type"]
-        tmsdb.name = data["record_name"]
-        pose_data = {
-            "x": data.get("x", []),
-            "y": data.get("y", []),
-            "z": data.get("z", []),
-            "qx": data.get("qx", []),
-            "qy": data.get("qy", []),
-            "qz": data.get("qz", []),
-            "qw": data.get("qw", []),
-            "Release_Count": data.get("Release_Count", []),
-        }
-        tmsdb.msg = json.dumps(pose_data)
+
+        # record_nameは必要
+        record_name = data.get("record_name")
+        if record_name is None or record_name == "":
+            self.get_logger().error(
+                f"Invalid MongoDB document: missing record_name, "
+                f"keys={list(data.keys())}"
+            )
+            tmsdb.name = ""
+        else:
+            tmsdb.name = str(record_name)
+
+        # typeがないドキュメントも読み出せるようにする
+        tmsdb.type = str(data.get("type", ""))
+
+        # MongoDBドキュメント全体をJSONに変換
+        json_data = self.convert_objectid(data)
+        tmsdb.msg = json.dumps(json_data)
+
         return tmsdb
     
     def convert_objectid(self, obj):

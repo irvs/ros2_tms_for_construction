@@ -3,7 +3,7 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_d37pxi" model_name="d37pxi" subtask_name="leveling_subtask_with_dump" subtask_parameters="block_point:block_0,stop_point:bulldozer_node_0" terminate_condition="block_9"/>
+            <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_d37pxi" model_name="d37pxi" subtask_name="subtask_bulldozer_leveling_with_dump_2" subtask_parameters="block_point:block_0,stop_point:bulldozer_node_0" terminate_condition="block_6"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
