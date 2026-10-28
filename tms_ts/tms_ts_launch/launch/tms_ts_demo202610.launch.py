@@ -375,7 +375,7 @@ def launch_setup(context, *args, **kwargs):
               executable="tms_sp_machine_posest.py",
               output="screen",
               remappings=[
-                    ("~/input/odom", "/mst2200vd/robot/pose"),
+                    ("~/input/pose", "/mst2200vd/robot/pose"),
               ],
               parameters=[
                     {

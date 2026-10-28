@@ -29,12 +29,12 @@ from tms_msg_db.msg import Tmsdb
 import tms_db_manager.tms_db_util as db_util
 
 
-NODE_NAME = "tms_sp_machine_odom"
+NODE_NAME = "tms_sp_machine_posest"
 DATA_ID = 3012  # 2012
 DATA_TYPE = "machine_pose"
 
 
-class TmsSpMachineOdom(Node):
+class TmsSpMachinePosest(Node):
     """Convert PoseStamped msg to Tmsdb msg and send it to tms_db_writer."""
 
     def __init__(self):
@@ -61,7 +61,7 @@ class TmsSpMachineOdom(Node):
 
         self.publisher_ = self.create_publisher(Tmsdb, "tms_db_data", 10)
         self.subscription = self.create_subscription(
-            PoseStamped, "~/input/odom", self.send_odom_to_db_writer, 10
+            PoseStamped, "~/input/pose", self.send_pose_to_db_writer, 10
         )
 
         self.tf_buffer = Buffer()
@@ -75,7 +75,7 @@ class TmsSpMachineOdom(Node):
 
         self.is_received = False
 
-    def send_odom_to_db_writer(self, msg: PoseStamped) -> None:
+    def send_pose_to_db_writer(self, msg: PoseStamped) -> None:
         """
         Send PoseStamped data to tms_db_writer at the specified period.
         """
@@ -180,11 +180,11 @@ class TmsSpMachineOdom(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    tms_sp_machine_odom = TmsSpMachineOdom()
+    tms_sp_machine_posest = TmsSpMachinePosest()
 
-    rclpy.spin(tms_sp_machine_odom)
+    rclpy.spin(tms_sp_machine_posest)
 
-    tms_sp_machine_odom.destroy_node()
+    tms_sp_machine_posest.destroy_node()
     rclpy.shutdown()
 
 
