@@ -2,14 +2,15 @@
 <root main_tree_to_execute="BehaviorTree">
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
-        <Sequence name="MainSequence">
-            <Action ID="LeafNodeBulldozer" model_name="d37pxi" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="initial_position"/>
+        <Sequence>
+            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="initialize_flg_d37pxi" mongo_record_name="initialize_flgs"/>
+            <Action ID="LeafNodeBulldozer" model_name="d37pxi" primitive_name="primitive_bulldozer_follow_waypoints" record_name="initial_position"/>
             <Action ID="MongoValueWriter" input_value="true" mongo_param_name="initialize_flg_d37pxi" mongo_record_name="initialize_flgs"/>
             <Action ID="SetLocalBlackboard" output_key="dependencies_ready_1_1" value="false"/>
             <Decorator ID="KeepRunningUntilFlgup" key="dependencies_ready_1_1">
-                <Sequence name="DependencyCheckSequence">
-                    <Action ID="MongoValueReader" mongo_param_name="initialize_flg_d37pxi" mongo_record_name="initialize_flgs" output_port="{dependency_1_1_0}"/>
-                    <IfThenElse name="DependencyCondition">
+                <Sequence>
+                    <Action ID="MongoValueReader" mongo_param_name="initialize_flg_d37pxi" mongo_record_name="initialize_flgs" output_port="dependency_1_1_0"/>
+                    <IfThenElse>
                         <Action ID="ConditionalExpression" conditional_expression="dependency_1_1_0 == true"/>
                         <Action ID="SetLocalBlackboard" output_key="dependencies_ready_1_1" value="true"/>
                         <AlwaysSuccess/>
@@ -42,7 +43,7 @@
         <Action ID="MongoValueReader">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
-            <output_port name="output_port"/>
+            <input_port name="output_port"/>
         </Action>
         <Action ID="MongoValueWriter">
             <input_port name="input_value"/>
