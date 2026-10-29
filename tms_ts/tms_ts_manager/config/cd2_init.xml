@@ -6,7 +6,7 @@
             <Action ID="MongoValueWriter" input_type="" input_value="false" mongo_param_name="initialize_flg_mst2200vd" mongo_record_name="initialize_flgs"/>
             <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="initial_move_pose"/>
             <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" primitive_name="primitive_crawlerdump_release_soil" read_direction="" record_name="initial_pose_vessel"/>
-            <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" primitive_name="primitive_bulldozer_navigate_anywhere_node" read_direction="" record_name="initial_position"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" primitive_name="primitive_crawlerdump_navigate_anywhere" read_direction="" record_name="initial_position"/>
             <Action ID="LeafNodeCrawlerDump" model_name="mst2200vd" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="initial_pose"/>
             <Action ID="MongoValueWriter" input_type="" input_value="true" mongo_param_name="initialize_flg_mst2200vd" mongo_record_name="initialize_flgs"/>
             <Action ID="SetLocalBlackboard" output_key="dependencies_ready_4_1" value="false"/>
