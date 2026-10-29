@@ -5,7 +5,8 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 
 #include "rclcpp/rclcpp.hpp"
-#include <thread>
+#include <memory>
+#include <mutex>
 #include <algorithm>
 #include <cctype>
 #include <sstream>
@@ -26,16 +27,8 @@ class ConditionalExpression : public SyncActionNode
 {
 public:
     ConditionalExpression(const std::string& name, const NodeConfiguration& config)
-      : SyncActionNode(name, config)
+      : SyncActionNode(name, config), node_(getSharedNode())
     {
-        node_ = rclcpp::Node::make_shared("conditional_expression");
-        spin_thread_ = std::thread([this](){ rclcpp::spin(node_); });
-    }
-
-    ~ConditionalExpression()
-    {
-        rclcpp::shutdown();
-        if (spin_thread_.joinable()) spin_thread_.join();
     }
 
     static PortsList providedPorts()
@@ -60,7 +53,20 @@ public:
 
 private:
     rclcpp::Node::SharedPtr node_;
-    std::thread spin_thread_;
+
+    // ログ出力用のノードを全インスタンスで1つ共有する（インスタンスごとに作るとノード数が膨れるため）
+    static rclcpp::Node::SharedPtr getSharedNode()
+    {
+        static std::mutex mtx;
+        static std::weak_ptr<rclcpp::Node> shared;
+        std::lock_guard<std::mutex> lock(mtx);
+        auto node = shared.lock();
+        if (!node) {
+            node = rclcpp::Node::make_shared("conditional_expression");
+            shared = node;
+        }
+        return node;
+    }
 
     bool evaluateCondition(std::string expr, bool& result)
     {

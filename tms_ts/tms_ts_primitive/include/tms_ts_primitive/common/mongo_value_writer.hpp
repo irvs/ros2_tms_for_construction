@@ -46,18 +46,6 @@ public:
     MongoValueWriter(const std::string& name, const NodeConfiguration& config)
         : SyncActionNode(name, config), pool_(mongocxx::uri{})
     {
-        node_ = rclcpp::Node::make_shared("value_writer_mongo");
-        spin_thread_ = std::thread([this](){rclcpp::spin(node_);});
-    }
-
-
-    ~MongoValueWriter()
-    {
-        if (spin_thread_.joinable())
-        {
-            rclcpp::shutdown();
-            spin_thread_.join();
-        }
     }
 
 
@@ -856,10 +844,6 @@ public:
 
 
 private:
-
-    rclcpp::Node::SharedPtr node_;
-
-    std::thread spin_thread_;
 
     mongocxx::pool pool_;
 };

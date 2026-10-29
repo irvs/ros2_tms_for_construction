@@ -45,25 +45,6 @@ public:
         : SyncActionNode(name, config),
           pool_(mongocxx::uri{})
     {
-        node_ =
-            rclcpp::Node::make_shared("mongo_array_reader");
-
-        spin_thread_ =
-            std::thread([this]()
-            {
-                rclcpp::spin(node_);
-            });
-    }
-
-
-    ~MongoArrayReader()
-    {
-        rclcpp::shutdown();
-
-        if (spin_thread_.joinable())
-        {
-            spin_thread_.join();
-        }
     }
 
 
@@ -618,10 +599,6 @@ public:
 
 
 private:
-
-    rclcpp::Node::SharedPtr node_;
-
-    std::thread spin_thread_;
 
     mongocxx::pool pool_;
 };

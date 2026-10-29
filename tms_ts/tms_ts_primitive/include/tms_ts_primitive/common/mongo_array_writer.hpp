@@ -30,16 +30,6 @@ public:
         : SyncActionNode(name, config),
           pool_(mongocxx::uri{})
     {
-        node_ = rclcpp::Node::make_shared("mongo_array_writer");
-        spin_thread_ = std::thread([this](){ rclcpp::spin(node_); });
-    }
-
-    ~MongoArrayWriter()
-    {
-        rclcpp::shutdown();
-
-        if(spin_thread_.joinable())
-            spin_thread_.join();
     }
 
     static PortsList providedPorts()
@@ -222,10 +212,6 @@ public:
     }
 
 private:
-
-    rclcpp::Node::SharedPtr node_;
-
-    std::thread spin_thread_;
 
     mongocxx::pool pool_;
 };
