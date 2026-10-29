@@ -584,16 +584,20 @@ public:
                 route_filter.view(),
                 update_doc.view());
 
-            if (!update_result ||
-                update_result->modified_count() == 0)
-            {
+            if (!update_result) {
                 std::cerr
                     << "[MongoRouteOrientationUpdater] "
-                    << "Route not found or update failed."
+                    << "Route update failed: no document matched the filter."
                     << std::endl;
 
                 return NodeStatus::FAILURE;
             }
+
+            std::cout
+                << "[MongoRouteOrientationUpdater] "
+                << "Route matched successfully. Modified documents: "
+                << update_result->modified_count()
+                << std::endl;
 
             // --------------------------------------------------
             // 7. Log results
