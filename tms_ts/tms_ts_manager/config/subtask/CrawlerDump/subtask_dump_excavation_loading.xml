@@ -1,22 +1,8 @@
 <?xml version="1.0"?>
-<!--
-  掘削積込（excavation_loading）サブタスク：ダンプ側
-  設計: excavation_loading_design.md（6.4）
-
-  離合の最終地点から始まり、積込位置へ移動して積込を受け、出発できる状態で終わる。前後に移動（離合）サブタスクが実行される前提。
-
-  サブタスクのパラメータ
-    $model_name$               : ダンプのモデル名（mst2200vdr / mst110cr）
-    $machine_record_name$      : ダンプ自身のレコード（SAMPLE_BLACKBOARD_mst2200vdr など）。LOADING_DUMP に書く
-    $excavator_record_name$    : バックホウ側の実行管理用のレコード（SAMPLE_BLACKBOARD_zx200）
-    $swing_angle_for_loading$  : 荷台を掘削機に向ける旋回角のレコード
-    $swing_angle_for_runing$   : 走行用の旋回角のレコード（既存のサブタスクと同じ名前）
--->
 <root main_tree_to_execute="BehaviorTree">
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <!-- 前のダンプへの出発の合図が消えていることを確かめる（前のダンプが出発し、掘削機がそれを確認した） -->
             <Action ID="SetLocalBlackboard" output_key="wait_done" value="false"/>
             <Decorator ID="KeepRunningUntilFlgup" key="wait_done" while_or_dowhile="while">
                 <Sequence>
@@ -28,16 +14,12 @@
                     </IfThenElse>
                 </Sequence>
             </Decorator>
-            <!-- 積込位置へ向かうことを知らせる：自分のレコード名を書く（掘削機はここで先掘りに移れる） -->
+            <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="$excavator_record_name$"/>
             <Action ID="MongoValueWriter" input_type="string" input_value="$machine_record_name$" mongo_param_name="LOADING_DUMP" mongo_record_name="$excavator_record_name$"/>
-            <!-- 積込位置へ移動する：行き先はブロック管理が書いた loading_position -->
             <Action ID="MongoValueReader" mongo_param_name="loading_position" mongo_record_name="$excavator_record_name$" output_port="loading_position"/>
-            <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_navigate_anywhere" read_direction="" record_name="{loading_position}"/>
-            <!-- 荷台を掘削機に向ける -->
+            <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="" record_name="{loading_position}"/>
             <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="$swing_angle_for_loading$"/>
-            <!-- 着いたことを知らせる -->
             <Action ID="MongoValueWriter" input_type="bool" input_value="true" mongo_param_name="ARRIVAL_FLG" mongo_record_name="$excavator_record_name$"/>
-            <!-- 出発判定：掘削機が積込を打ち切るまで待つ -->
             <Action ID="SetLocalBlackboard" output_key="wait_done" value="false"/>
             <Decorator ID="KeepRunningUntilFlgup" key="wait_done" while_or_dowhile="while">
                 <Sequence>
@@ -49,45 +31,120 @@
                     </IfThenElse>
                 </Sequence>
             </Decorator>
-            <!-- 次の移動サブタスクが動き出す前に書く -->
+            <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="$swing_angle_for_runing$"/>
             <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="$excavator_record_name$"/>
             <Action ID="MongoValueWriter" input_type="string" input_value="" mongo_param_name="LOADING_DUMP" mongo_record_name="$excavator_record_name$"/>
-            <!-- 荷台の向きを走行用に戻す -->
-            <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="$swing_angle_for_runing$"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
+        <Action ID="BulldozerPathCreater">
+            <input_port name="block_data"/>
+            <inout_port name="bull_data"/>
+        </Action>
         <Action ID="ConditionalExpression">
-            <input_port name="conditional_expression"/>
+            <input_port name="conditional_expression" type="std::string"/>
+        </Action>
+        <Action ID="Counter">
+            <input_port name="key"/>
+        </Action>
+        <Action ID="ExecuteSubtask">
+            <input_port name="machine_record_name"/>
+            <input_port name="model_name"/>
+            <input_port name="subtask_name"/>
+            <input_port name="subtask_parameters"/>
+            <input_port name="terminate_condition"/>
+        </Action>
+        <Action ID="ExtractTrailingNumberToBlackboard">
+            <inout_port name="source_key"/>
+            <inout_port name="stored_key"/>
         </Action>
         <Decorator ID="KeepRunningUntilFlgup">
-            <input_port name="key"/>
-            <input_port name="while_or_dowhile"/>
+            <input_port name="key" type="std::string"/>
+            <input_port name="while_or_dowhile" type="std::string"/>
         </Decorator>
+        <Action ID="LeafNodeBulldozer">
+            <inout_port name="blade_hold"/>
+            <input_port default="d37pxi_24" name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="record_name"/>
+        </Action>
+        <Action ID="LeafNodeCommon">
+            <input_port name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="record_name"/>
+        </Action>
         <Action ID="LeafNodeCrawlerDump">
             <input_port name="model_name"/>
             <inout_port name="primitive_name"/>
             <inout_port name="read_direction"/>
             <inout_port name="record_name"/>
         </Action>
-        <Action ID="MongoValueReader">
+        <Action ID="LeafNodeExcavator">
+            <input_port name="model_name" type="std::string"/>
+            <input_port name="previous_target_record_name" type="std::string"/>
+            <input_port name="primitive_name" type="std::string"/>
+            <input_port name="target_record_name" type="std::string"/>
+        </Action>
+        <Action ID="LeafNodeExcavatorAssist">
+            <input_port default="zx200" name="model_name"/>
+            <inout_port name="primitive_name"/>
+            <inout_port name="record_name"/>
+        </Action>
+        <Action ID="LocalBlackboardCaluculator">
+            <input_port name="calculation_formula"/>
+            <inout_port name="output_key"/>
+        </Action>
+        <Action ID="MongoArrayReader">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
             <input_port name="output_port"/>
+            <inout_port name="output_type"/>
         </Action>
-        <Action ID="MongoValueWriter">
-            <input_port name="input_type"/>
+        <Action ID="MongoArrayWriter">
             <input_port name="input_value"/>
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
+            <input_port name="operation"/>
+        </Action>
+        <Action ID="MongoRouteOrientationUpdater">
+            <input_port name="model_name"/>
+            <inout_port name="read_direction"/>
+            <input_port name="record_name"/>
+        </Action>
+        <Action ID="MongoValueReader">
+            <input_port name="mongo_param_name" type="std::string"/>
+            <input_port name="mongo_record_name" type="std::string"/>
+            <input_port name="output_port" type="std::string"/>
+        </Action>
+        <Action ID="MongoValueSearcher">
+            <input_port name="mongo_param_name"/>
+            <input_port name="mongo_value"/>
+            <input_port name="output_port"/>
+        </Action>
+        <Action ID="MongoValueWriter">
+            <input_port name="input_type" type="std::string"/>
+            <input_port name="input_value" type="std::string"/>
+            <input_port name="mongo_param_name" type="std::string"/>
+            <input_port name="mongo_record_name" type="std::string"/>
+        </Action>
+        <Action ID="SetCurrentTimeToLocalBlackboard">
+            <input_port name="output_key"/>
         </Action>
         <Action ID="SetLocalBlackboard">
-            <inout_port name="output_key"/>
-            <input_port name="value"/>
+            <inout_port name="output_key" type="void"/>
+            <input_port name="value" type="std::string"/>
+        </Action>
+        <Action ID="SetLocalBlackboardWithCounter">
+            <inout_port name="counter_key"/>
+            <input_port name="key"/>
+        </Action>
+        <Action ID="WaitForClick">
+            <input_port name="button_info"/>
+            <input_port name="window_title"/>
         </Action>
         <Action ID="WaitTimer">
-            <input_port name="seconds"/>
+            <input_port name="seconds" type="double">Wait time [s]</input_port>
         </Action>
     </TreeNodesModel>
     <!-- ////////// -->

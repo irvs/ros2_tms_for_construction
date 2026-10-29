@@ -22,6 +22,8 @@
             <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="NEXT_POINT_FLG" mongo_record_name="$machine_record_name$"/>
             <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="GATHER_REQUIRED_FLG" mongo_record_name="$machine_record_name$"/>
             <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="LOADING_COMPLETE_FLG" mongo_record_name="$machine_record_name$"/>
+            <!-- 前回の実行が途中で止まった場合に残った到着の合図を消す（LOADING_DUMP は、単体で実行したダンプが先に書く場合があるので消さない） -->
+            <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="$machine_record_name$"/>
             <Action ID="MongoValueWriter" input_type="string" input_value="excavate" mongo_param_name="EXCAVATION_MODE" mongo_record_name="$machine_record_name$"/>
             <Action ID="MongoValueWriter" input_type="int" input_value="-1" mongo_param_name="current_block_index" mongo_record_name="$machine_record_name$"/>
             <!-- RequestNextBlock：ブロック管理が 0 に進め、行き先を書く -->
