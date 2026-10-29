@@ -6,7 +6,7 @@
             <Action ID="MongoValueWriter" input_type="" input_value="false" mongo_param_name="initialize_flg_mst110cr" mongo_record_name="initialize_flgs"/>
             <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="initial_move_pose"/>
             <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" primitive_name="primitive_crawlerdump_release_soil" read_direction="" record_name="initial_pose_vessel"/>
-            <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="" record_name="initial_position"/>
+            <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" primitive_name="primitive_bulldozer_navigate_anywhere_node" read_direction="" record_name="initial_position"/>
             <Action ID="LeafNodeCrawlerDump" model_name="mst110cr_2" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="initial_pose"/>
             <Action ID="MongoValueWriter" input_type="" input_value="true" mongo_param_name="initialize_flg_mst110cr" mongo_record_name="initialize_flgs"/>
             <Action ID="SetLocalBlackboard" output_key="dependencies_ready_3_1" value="false"/>
@@ -28,7 +28,7 @@
             </Decorator>
             <Decorator ID="KeepRunningUntilFlgup" key="TERMINATE_FLG" while_or_dowhile="while">
                 <Sequence name="TransportAndDumpSequence">
-                    <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr" model_name="mst110cr_2" subtask_name="subtask_dump_excavation_loading" subtask_parameters="excavator_record_name:SAMPLE_BLACKBOARD_zx200,swing_angle_for_loading:SWING_ANGLE_LOAD,swing_angle_for_runing:SWING_ANGLE_FRONT" terminate_condition=""/>
+                    <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr" model_name="mst110cr_2" subtask_name="subtask_dump_excavation_loading" subtask_parameters="excavator_record_name:SAMPLE_BLACKBOARD_zx200,swing_angle_for_loading:loading_pose_vessel,swing_angle_for_runing:SWING_ANGLE_FRONT" terminate_condition=""/>
                     <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr" model_name="mst110cr_2" subtask_name="subtask_dump_cruise_2" subtask_parameters="start_status:route_8308088ba3bcdb9d_1345163867" terminate_condition="route_8308088ba3bcdb9d_1016656299"/>
                     <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr" model_name="mst110cr_2" subtask_name="subtask_dump_release_with_bull_2" subtask_parameters="BullRecord:SAMPLE_BLACKBOARD_d37pxi,dump_up_angle:RELEASE_ANGLE_UP,dump_down_angle:RELEASE_ANGLE_DOWN,swing_before_release:SWING_ANGLE_BACK,swing_after_release:SWING_ANGLE_FRONT,time:5000,stop_point:dump_node_0" terminate_condition=""/>
                     <Action ID="MongoValueWriter" input_type="" input_value="down" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr"/>
@@ -52,7 +52,6 @@
         </Action>
         <Decorator ID="KeepRunningUntilFlgup">
             <input_port name="key"/>
-            <input_port name="while_or_dowhile"/>
         </Decorator>
         <Action ID="LeafNodeCrawlerDump">
             <input_port name="model_name"/>
@@ -69,10 +68,9 @@
         <Action ID="MongoValueReader">
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
-            <output_port name="output_port"/>
+            <input_port name="output_port"/>
         </Action>
         <Action ID="MongoValueWriter">
-            <input_port name="input_type"/>
             <input_port name="input_value"/>
             <input_port name="mongo_param_name"/>
             <input_port name="mongo_record_name"/>
