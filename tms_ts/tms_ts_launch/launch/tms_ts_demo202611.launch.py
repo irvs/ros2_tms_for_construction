@@ -19,9 +19,46 @@
 
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
+import ast
+
+
+def launch_setup(context, *args, **kwargs):
+      # task_ids を int の配列に変換 ('[44, 45]' / '44' のどちらも受け付ける)
+      task_ids = ast.literal_eval(LaunchConfiguration('task_ids').perform(context))
+      if isinstance(task_ids, int):
+            task_ids = [task_ids]
+      task_ids = [int(task_id) for task_id in task_ids]
+
+      use_sim_time = LaunchConfiguration('use_sim_time')
+      zmq_server_port_base = int(LaunchConfiguration('zmq_server_port_base').perform(context))
+      zmq_publisher_port_base = int(LaunchConfiguration('zmq_publisher_port_base').perform(context))
+
+      nodes = []
+      # task_id ごとに task_schedular_manager を起動 (ZMQ のポートは task ごとに 10 ずつずらす)
+      for i, task_id in enumerate(task_ids):
+            nodes.append(
+                  Node(
+                        package='tms_ts_manager',
+                        executable='task_schedular_manager',
+                        output='screen',
+                        parameters=[{'use_sim_time': use_sim_time,
+                                     'task_id': task_id,
+                                     'zmq_server_port': zmq_server_port_base + (i * 10),
+                                     'zmq_publisher_port': zmq_publisher_port_base + (i * 10)}]))
+
+      nodes.append(
+            Node(
+                  package='tms_ur_button_input',
+                  executable='tms_ur_button',
+                  output='screen',
+                  parameters=[{'use_sim_time': use_sim_time,
+                               'task_ids': task_ids}]))
+
+      return nodes
+
 
 def generate_launch_description():
 
@@ -30,9 +67,21 @@ def generate_launch_description():
         default_value='false',
         description='Use simulation (Gazebo) clock if true')
 
-      declare_task_id_arg = DeclareLaunchArgument(
-        'task_id',
-        default_value='44')
+      # 実行するタスクの ID の配列。複数指定するとタスクを複数立てる (例: task_ids:='[44, 45]')
+      declare_task_ids_arg = DeclareLaunchArgument(
+        'task_ids',
+        default_value='[44]')
+
+      # 複数台の PC で動かすときの ZMQ のポート (task_id ごとに 10 ずつ増やす)
+      declare_zmq_server_port_base_arg = DeclareLaunchArgument(
+        'zmq_server_port_base',
+        default_value='1666',
+        description='Base port number for ZMQ server (will be incremented for each task_id)')
+
+      declare_zmq_publisher_port_base_arg = DeclareLaunchArgument(
+        'zmq_publisher_port_base',
+        default_value='1777',
+        description='Base port number for ZMQ publisher (will be incremented for each task_id)')
 
       # mst2200vd の ROS のネームスペース (primitive のアクション名、TF、load_volume に使う)。
       # DB のレコード名は SAMPLE_BLACKBOARD_mst2200vd (掘削積込の中では mst2200vd に統一)
@@ -52,21 +101,14 @@ def generate_launch_description():
       return LaunchDescription([
 
             declare_use_sim_time_arg,
-            declare_task_id_arg,
+            declare_task_ids_arg,
+            declare_zmq_server_port_base_arg,
+            declare_zmq_publisher_port_base_arg,
             declare_mst2200vd_ns_arg,
             declare_launch_sp_arg,
 
-            Node(
-                  package='tms_ts_manager',
-                  executable='task_schedular_manager',
-                  parameters = [{'use_sim_time': use_sim_time}],
-                  output='screen'),
-            Node(
-                  package='tms_ur_button_input',
-                  executable='tms_ur_button',
-                  output='screen',
-                  parameters=[{"use_sim_time": use_sim_time,
-                               "task_id": LaunchConfiguration('task_id')}]), # You must define task_id that you want to execute.
+            # task_schedular_manager (task_id ごと)と tms_ur_button
+            OpaqueFunction(function=launch_setup),
 
 
             # primitives
@@ -253,7 +295,7 @@ def generate_launch_description():
 
             # 掘削積込の情報管理 (tms_sp)
 
-            # 掘削・放土・かき集めの刃先位置を/zx200/end_effectoトピックで受け取ってDBに書き込むノード (/zx200/end_effector -> target_*_pose)
+            # 掘削・放土・かき集めの刃先位置を/zx200/end_effectorトピックで受け取ってDBに書き込むノード (/zx200/end_effector -> target_*_pose)
             Node(
                   package='tms_sp_sensing',
                   executable='tms_sp_zx200_end_effector',
@@ -319,6 +361,44 @@ def generate_launch_description():
                   executable="tms_db_reader_param",
                   parameters = [{'use_sim_time': use_sim_time}],
                   output='screen'
+                  ),
+            
+            #for odom
+            Node(
+                  package="tms_ur_construction",
+                  executable="tms_ur_parameter_viz",
+                  output="screen",
+                  ),
+            Node(
+                  package="tms_sp_machine",
+                  executable="tms_sp_machine_odom.py",
+                  output="screen",
+                  remappings=[
+                        ("~/input/odom", "/mst110cr_2/odometry/global"),
+                  ],
+                  parameters=[
+                        {
+                        "machine_name": "mst110cr_2",
+                        },
+                  ],
+                  ),
+            Node(
+                  package="tms_sp_machine",
+                  executable="tms_sp_machine_posest.py",
+                  output="screen",
+                  remappings=[
+                        ("~/input/pose", "/mst2200vd/robot/pose"),
+                  ],
+                  parameters=[
+                        {
+                        "machine_name": "mst2200vd",
+                        },
+                  ],
+                  ),
+            Node(
+                  package='tms_db_manager',
+                  executable='tms_db_writer',
+                  output='screen',
                   ),
 
             #for preview
