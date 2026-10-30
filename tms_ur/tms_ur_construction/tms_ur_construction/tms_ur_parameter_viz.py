@@ -93,7 +93,7 @@ class TmsUrParameterImportPublisher(Node):
 
         # GeoFenceの境界線
         self.geo_fence_pub = self.create_publisher(
-            Marker,
+            MarkerArray,
             "/geo_fence_params",
             10
         )
@@ -387,9 +387,16 @@ class TmsUrParameterImportPublisher(Node):
                 )
             
             # GeoFenceを追加
-            self.record_queue.append(
-                ("geo_fence", "geo_fence")
+            self.geo_fence_param_names = data.get(
+                "geo_fence_param_names", []
             )
+
+            # 複数のGeoFenceを追加
+            for name in self.geo_fence_param_names:
+                self.record_queue.append(
+                    (name, "geo_fence")
+                )
+
 
             connection_names = data.get(
                 "machinery_connection_param_names", []
@@ -870,30 +877,12 @@ class TmsUrParameterImportPublisher(Node):
 
         return marker_array
 
-    def create_geo_fence_marker(self, geo_fence_records):
+    def create_geo_fence_marker_array(self, geo_fence_records):
 
-        marker = Marker()
+        marker_array = MarkerArray()
+        stamp = self.get_clock().now().to_msg()
 
-        marker.header.frame_id = "map"
-        marker.header.stamp = self.get_clock().now().to_msg()
-
-        marker.ns = "geo_fence"
-        marker.id = 0
-        marker.type = Marker.LINE_STRIP
-        marker.action = Marker.ADD
-
-        # 線の太さ
-        marker.scale.x = 0.2
-
-        # 線の色：黄色
-        marker.color.r = 1.0
-        marker.color.g = 1.0
-        marker.color.b = 0.0
-        marker.color.a = 1.0
-
-        marker.pose.orientation.w = 1.0
-
-        for record in geo_fence_records:
+        for index, record in enumerate(geo_fence_records):
 
             data = record.get("data", {})
             record_name = record.get("record_name", "")
@@ -901,12 +890,27 @@ class TmsUrParameterImportPublisher(Node):
             try:
                 coordinates = data["coordinates"]
 
-                # GeoJSON形式に合わせて、座標配列を処理する。
-                # 今回のデータでは coordinates[0] が境界線の座標列。
                 if not coordinates or not coordinates[0]:
                     raise ValueError("coordinates is empty")
 
                 points = coordinates[0]
+
+                marker = Marker()
+                marker.header.frame_id = "map"
+                marker.header.stamp = stamp
+                marker.ns = "geo_fence"
+                marker.id = index
+                marker.type = Marker.LINE_STRIP
+                marker.action = Marker.ADD
+
+                marker.scale.x = 0.2
+
+                marker.color.r = 1.0
+                marker.color.g = 1.0
+                marker.color.b = 0.0
+                marker.color.a = 1.0
+
+                marker.pose.orientation.w = 1.0
 
                 for point in points:
                     marker.points.append(
@@ -917,13 +921,14 @@ class TmsUrParameterImportPublisher(Node):
                         )
                     )
 
-            except (KeyError, TypeError, ValueError, IndexError) as e:
+                marker_array.markers.append(marker)
 
+            except (KeyError, TypeError, ValueError, IndexError) as e:
                 self.get_logger().error(
                     f"Invalid GeoFence data [{record_name}]: {e}"
                 )
 
-        return marker
+        return marker_array
 
     def create_machinery_connection_marker(self, records):
         marker = Marker()
@@ -1123,12 +1128,12 @@ class TmsUrParameterImportPublisher(Node):
         # GeoFence: Marker
         # --------------------------------------------------
 
-        geo_fence_marker = self.create_geo_fence_marker(
+        geo_fence_marker_array = self.create_geo_fence_marker_array(
             self.geo_fence_records
         )
 
         self.geo_fence_pub.publish(
-            geo_fence_marker
+            geo_fence_marker_array
         )
 
         # ------------------------------------------
