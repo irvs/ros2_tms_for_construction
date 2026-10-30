@@ -142,6 +142,34 @@ bool scale_trajectory_time(moveit_msgs::msg::RobotTrajectory& traj, double time_
   return true;
 }
 
+// 軌道の繋ぎ目に設ける停止時間のデフォルト値[s]
+constexpr double kDefaultDwellTime = 0.5;
+
+// 当該軌道の前に設ける停止時間をDBから取得する（存在しない/不正な場合はデフォルト）
+double get_dwell_time_from_db(const std::map<std::string, std::string>& param_from_db)
+{
+  double dwell_time = get_scale_from_db_json(param_from_db, "dwell_time", "dwell_time", kDefaultDwellTime);
+  if (!std::isfinite(dwell_time) || dwell_time < 0.0) {
+    return kDefaultDwellTime;
+  }
+  return dwell_time;
+}
+
+// 直前の軌道の最終点で静止する停止区間を追加する
+void append_dwell_point(moveit_msgs::msg::RobotTrajectory& traj, rclcpp::Duration& accumulated_time, double dwell_time)
+{
+  if (dwell_time <= 0.0 || traj.joint_trajectory.points.empty()) return;
+
+  auto dwell_point = traj.joint_trajectory.points.back();
+  std::fill(dwell_point.velocities.begin(), dwell_point.velocities.end(), 0.0);
+  std::fill(dwell_point.accelerations.begin(), dwell_point.accelerations.end(), 0.0);
+  dwell_point.effort.clear();
+
+  accumulated_time = accumulated_time + rclcpp::Duration::from_seconds(dwell_time);
+  dwell_point.time_from_start = accumulated_time;
+  traj.joint_trajectory.points.push_back(dwell_point);
+}
+
 }
 
 PrimitiveExcavatorChangePoseExecuteFromPlan::PrimitiveExcavatorChangePoseExecuteFromPlan() : PrimitiveNodeBase("primitive_excavator_change_pose_execute_from_plan_retime_node")
@@ -393,6 +421,7 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
 
   // 各record_nameからplanを取得してRobotTrajectory配列に変換
   std::vector<moveit_msgs::msg::RobotTrajectory> loaded_plans;
+  std::vector<double> dwell_times;  // loaded_plans[i]の前に設ける停止時間
   try {
     for (size_t record_idx = 0; record_idx < params_local.size(); ++record_idx) {
       const auto& param_from_db = params_local[record_idx];
@@ -569,8 +598,9 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
       }
       
       loaded_plans.push_back(robot_trajectory);
-      RCLCPP_INFO(this->get_logger(), "Loaded plan from record %zu with %zu joint trajectory points (time scaled)", 
-                  record_idx, robot_trajectory.joint_trajectory.points.size());
+      dwell_times.push_back(get_dwell_time_from_db(param_from_db));
+      RCLCPP_INFO(this->get_logger(), "Loaded plan from record %zu with %zu joint trajectory points (time scaled), dwell_time=%.3f sec",
+                  record_idx, robot_trajectory.joint_trajectory.points.size(), dwell_times.back());
     }
     
     if (loaded_plans.empty()) {
@@ -615,6 +645,11 @@ void PrimitiveExcavatorChangePoseExecuteFromPlan::execute(const std::shared_ptr<
                   combined_trajectory.joint_trajectory.points.size(),
                   duration_sec);
     } else {
+      // 繋ぎ目に停止区間を挿入（当該軌道のレコードに設定された停止時間を使用）
+      append_dwell_point(combined_trajectory, accumulated_time, dwell_times[i]);
+      RCLCPP_INFO(this->get_logger(), "Inserted dwell of %.3f sec before trajectory %zu/%zu",
+                  dwell_times[i], i+1, loaded_plans.size());
+
       // 2番目以降は時間をオフセットして追加
       // 最初のポイント（前のtrajectoryの最後と重複）はスキップ
       for (size_t j = 1; j < current_traj.joint_trajectory.points.size(); ++j) {
