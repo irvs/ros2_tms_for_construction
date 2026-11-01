@@ -4,7 +4,7 @@
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
             <Action ID="MongoValueWriter" input_value="false" mongo_param_name="initialize_flg_d37pxi" mongo_record_name="initialize_flgs"/>
-            <Action ID="LeafNodeBulldozer" model_name="d37pxi" primitive_name="primitive_bulldozer_follow_waypoints" record_name="initial_position"/>
+            <Action ID="LeafNodeBulldozer" model_name="d37pxi" primitive_name="bulldozer_navigate_anywhere" record_name="initial_position"/>
             <Action ID="MongoValueWriter" input_value="true" mongo_param_name="initialize_flg_d37pxi" mongo_record_name="initialize_flgs"/>
             <Action ID="SetLocalBlackboard" output_key="dependencies_ready_1_1" value="false"/>
             <Decorator ID="KeepRunningUntilFlgup" key="dependencies_ready_1_1">
