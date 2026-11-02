@@ -143,7 +143,9 @@ def launch_setup(context, *args, **kwargs):
                 parameters=[{
                     "task_id": task_id,
                     "zmq_server_port": zmq_server_port,
-                    "zmq_publisher_port": zmq_publisher_port
+                    "zmq_publisher_port": zmq_publisher_port,
+                    'heartbeat_topic': '/tms_heartbeat',
+                    'heartbeat_rate': 10.0,
                 }],
                 arguments=['--ros-args', '--log-level', 'ERROR']  # WARNINGを非表示
             )

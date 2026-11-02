@@ -16,6 +16,7 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 #include "tms_msg_db/srv/tmsdb_get_task.hpp"
+#include "std_msgs/msg/empty.hpp"
 
 // MongoDB関連のインクルード
 #include <bsoncxx/json.hpp>
@@ -543,6 +544,58 @@ private:
   static constexpr int MAX_SUBTASK_DEPTH = 10;  // サブタスクの入れ子の上限（自分自身を呼ぶ定義での無限展開を防ぐ）
 };
 
+class HeartbeatPublisher : public rclcpp::Node
+{
+public:
+    HeartbeatPublisher()
+        : Node("heartbeat_publisher")
+    {
+        this->declare_parameter<std::string>(
+            "heartbeat_topic", "/robot_connection");
+
+        this->declare_parameter<double>(
+            "heartbeat_rate", 1.0);
+
+        std::string topic =
+            this->get_parameter("heartbeat_topic").as_string();
+
+        double rate =
+            this->get_parameter("heartbeat_rate").as_double();
+
+        if (rate <= 0.0) {
+            RCLCPP_ERROR(
+                this->get_logger(),
+                "heartbeat_rate must be greater than 0.0");
+            throw std::invalid_argument("Invalid heartbeat_rate");
+        }
+
+        publisher_ =
+            this->create_publisher<std_msgs::msg::Empty>(
+                topic, 10);
+
+        auto period = std::chrono::duration<double>(1.0 / rate);
+
+        timer_ = this->create_wall_timer(
+            std::chrono::duration_cast<std::chrono::nanoseconds>(period),
+            std::bind(&HeartbeatPublisher::publish_heartbeat, this));
+
+        RCLCPP_INFO(
+            this->get_logger(),
+            "Heartbeat publisher started: topic=%s, rate=%.2f Hz",
+            topic.c_str(), rate);
+    }
+
+private:
+    rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr publisher_;
+    rclcpp::TimerBase::SharedPtr timer_;
+
+    void publish_heartbeat()
+    {
+        std_msgs::msg::Empty msg;
+        publisher_->publish(msg);
+    }
+};
+
 class ForceQuietNode : public rclcpp::Node
 {
 public:
@@ -584,6 +637,9 @@ int main(int argc, char** argv)
 
   auto force_quiet_node = std::make_shared<ForceQuietNode>();
   exec.add_node(force_quiet_node);
+
+  auto heartbeat_publisher = std::make_shared<HeartbeatPublisher>();
+  exec.add_node(heartbeat_publisher);
 
   exec.spin();
   rclcpp::shutdown();
