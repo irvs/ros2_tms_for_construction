@@ -119,6 +119,9 @@ cd ~/ros2-tms-for-construction_ws && colcon build --packages-select groot
 #Install nlohmann-json library
 sudo apt install -y nlohmann-json3-dev
 
+#Install rapidjson library
+sudo apt install -y rapidjson-dev
+
 #Setup OPERA
 mkdir -p \
   "$WS_SRC/opera/common" \
@@ -151,7 +154,7 @@ git clone https://github.com/pwri-opera/mst110cr_ros2.git "$WS_SRC/opera/mst110c
 git clone https://github.com/pwri-opera/d37pxi_ros2.git "$WS_SRC/opera/d37pxi/d37pxi_ros2"
 
 # Install packages for opera_tools
-git clone https://github.com/pwri-opera/opera_tools.git "$WS_SRC/opera/opera_tools"
+git clone -b humble-devel https://github.com/pwri-opera/opera_tools.git "$WS_SRC/opera/opera_tools"
 
 # Setup Moveit! and Nav2
 # install MoveIt!
