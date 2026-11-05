@@ -133,6 +133,9 @@ mkdir -p \
   "$WS_SRC/opera/opera_tools"
 
 # Install tms_if_for_opera
+git clone -b feature/primitive https://github.com/irvs/tms_if_for_opera.git "$WS_SRC/tms_if_for_opera"
+
+# Install packages for com3
 git clone https://github.com/pwri-opera/com3_ros.git "$WS_SRC/opera/common/com3_ros"
 
 # Install the package for OperaSim-PhysX
