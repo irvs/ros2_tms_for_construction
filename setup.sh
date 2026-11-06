@@ -157,7 +157,8 @@ git clone https://github.com/pwri-opera/mst110cr_ros2.git "$WS_SRC/opera/mst110c
 git clone https://github.com/pwri-opera/d37pxi_ros2.git "$WS_SRC/opera/d37pxi/d37pxi_ros2"
 
 # Install packages for opera_tools
-git clone -b humble-devel https://github.com/pwri-opera/opera_tools.git "$WS_SRC/opera/opera_tools"
+# git clone -b humble-devel https://github.com/pwri-opera/opera_tools.git "$WS_SRC/opera/opera_tools"
+git clone -b main https://github.com/kasahara-san/opera_tools "$WS_SRC/opera/opera_tools"
 
 # Setup Moveit! and Nav2
 # install MoveIt!
