@@ -35,6 +35,7 @@ setup(
         'console_scripts': [
             'tms_sd_terrain_static = tms_sd_terrain.tms_sd_terrain_static:main',
             'tms_sd_terrain_dynamic = tms_sd_terrain.tms_sd_terrain_dynamic:main',
+            'tms_sd_terrain_dynamic_marker = tms_sd_terrain.tms_sd_terrain_dynamic_marker:main',
         ],
     },
 )

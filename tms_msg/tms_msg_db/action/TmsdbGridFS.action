@@ -6,7 +6,9 @@ bool   latest_only
 bool   result
 string msg
 sensor_msgs/PointCloud2 pointcloud2
+visualization_msgs/Marker marker
 ---
 bool   result
 string msg
 sensor_msgs/PointCloud2 pointcloud2
+visualization_msgs/Marker marker

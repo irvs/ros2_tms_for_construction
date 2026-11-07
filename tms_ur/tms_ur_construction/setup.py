@@ -40,6 +40,7 @@ setup(
             "tms_ur_db_writer = tms_ur_construction.tms_ur_db_writer:main",
             "tms_ur_construction_terrain_static = tms_ur_construction.tms_ur_construction_terrain_static:main",
             "tms_ur_construction_terrain_dynamic = tms_ur_construction.tms_ur_construction_terrain_dynamic:main",
+            "tms_ur_construction_terrain_dynamic_marker = tms_ur_construction.tms_ur_construction_terrain_dynamic_marker:main",
             "tms_ur_construction_terrain_mesh = tms_ur_construction.tms_ur_construction_terrain_mesh:main",
             "tms_ur_construction_terrain_heightmap = tms_ur_construction.tms_ur_construction_terrain_heightmap:main",
             "tms_ur_construction_terrain = tms_ur_construction.tms_ur_construction_terrain:main",

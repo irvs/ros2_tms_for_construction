@@ -21,6 +21,10 @@ from rclpy.node import Node
 import tms_db_manager.tms_db_util as db_util
 from tms_msg_db.msg import TmsdbGridFS
 
+import json
+
+from rosidl_runtime_py.convert import message_to_ordereddict
+
 
 class TmsDbWriterGridFS(Node):
     """Write file data to MongoDB."""
@@ -63,8 +67,10 @@ class TmsDbWriterGridFS(Node):
             self.save_static_terrain_dem(msg)
         elif msg.type == 'dynamic':
             self.save_dynamic_terrain(msg)
+        elif msg.type == 'dynamic_marker':
+            self.save_dynamic_terrain_marker(msg)
         else:
-            self.get_logger().info("Please set a terrain type 'static' or 'dynamic'")
+            self.get_logger().info("Please set a valid terrain type")
 
     def save_static_terrain(self, msg: TmsdbGridFS):
         """
@@ -142,6 +148,40 @@ class TmsDbWriterGridFS(Node):
             row_step=msg.pointcloud2.row_step,
             fields=[repr(field) for field in msg.pointcloud2.fields],
             is_dense=msg.pointcloud2.is_dense,
+        )
+
+    def save_dynamic_terrain_marker(self, msg: TmsdbGridFS) -> None:
+        """
+        Save dynamic terrain Marker data using GridFS.
+
+        Parameters
+        ----------
+        msg : TmsdbGridFS
+            An instance of a ROS2 custom message.
+        """
+
+        # Convert Marker message to dictionary
+        marker_dict = message_to_ordereddict(msg.marker)
+
+        # Convert dictionary to JSON
+        marker_json = json.dumps(marker_dict)
+
+        # Save JSON data to GridFS
+        self.fs.put(
+            marker_json.encode('utf-8'),
+            filename=f"terrain_marker_{msg.id}.json",
+            time=msg.time,
+            type=msg.type,
+            id=msg.id,
+            frame_id=msg.marker.header.frame_id,
+            marker_ns=msg.marker.ns,
+            marker_id=msg.marker.id,
+            marker_type=msg.marker.type,
+            marker_action=msg.marker.action
+        )
+
+        self.get_logger().info(
+            f"Saved dynamic terrain Marker to GridFS: id={msg.id}"
         )
 
 
