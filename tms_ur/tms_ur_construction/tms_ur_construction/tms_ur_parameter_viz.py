@@ -143,6 +143,7 @@ class TmsUrParameterImportPublisher(Node):
         self.machinery_position_param_names = []
         self.block_position_param_names = []
         self.machinery_connection_records = []
+        self.geo_fence_param_names = []
 
         # ==================================================
         # Record queue
@@ -637,7 +638,7 @@ class TmsUrParameterImportPublisher(Node):
                         "block dimensions must be positive"
                     )
 
-                # block_vectorを正規化する
+                # block_vectorを正規化
                 vector_length = math.hypot(vector_x, vector_y)
 
                 if vector_length == 0.0:
@@ -645,61 +646,67 @@ class TmsUrParameterImportPublisher(Node):
                         "block_vector must not be zero"
                     )
 
-                # block_vectorをX方向として使用する
-                axis_x = vector_x
-                axis_y = vector_y
+                axis_x = vector_x / vector_length
+                axis_y = vector_y / vector_length
 
-                # block_vectorに直交する水平面上のY方向
-                axis_y_perp_x = -vector_y
-                axis_y_perp_y = vector_x
+                # block_vectorに直交する方向
+                axis_y_perp_x = -axis_y
+                axis_y_perp_y = axis_x
 
-                # block_centerを底面の角として扱う
-                # 底面の4頂点
-                p0 = (center_x, center_y, center_z)
+                # block_angleの有無で描画方法を切り替える
+                is_excavation = "block_angle" in data
 
-                p1 = (
-                    center_x + axis_x * size_x,
-                    center_y + axis_y * size_x,
-                    center_z
-                )
-
-                p2 = (
-                    center_x + axis_y_perp_x * size_y,
-                    center_y + axis_y_perp_y * size_y,
-                    center_z
-                )
-
-                p3 = (
-                    center_x + axis_x * size_x
-                    + axis_y_perp_x * size_y,
-                    center_y + axis_y * size_x
-                    + axis_y_perp_y * size_y,
-                    center_z
-                )
-
-                # 通常のブロックは従来どおりCUBEで描画
-                # excavation_loading_paramsは傾斜形状で描画
-                is_excavation = (
-                    record_name == "excavation_loading_params"
-                    or "block_angle" in data
-                )
-
+                # ==================================================
+                # 傾斜ブロック
+                # ==================================================
                 if is_excavation:
+
                     block_angle = float(data["block_angle"])
 
-                    # 0 < block_angle <= 180度の範囲を想定
                     if not (0.0 < block_angle <= math.pi):
                         raise ValueError(
                             "block_angle must be in (0, pi]"
                         )
 
-                    # block_angleが90度の場合はずれを0とする
+                    # block_centerは外側を向く辺の中央
+                    half_y = size_y / 2.0
+
+                    # 底面の辺の両端
+                    p0 = (
+                        center_x - axis_y_perp_x * half_y,
+                        center_y - axis_y_perp_y * half_y,
+                        center_z
+                    )
+
+                    p1 = (
+                        center_x + axis_y_perp_x * half_y,
+                        center_y + axis_y_perp_y * half_y,
+                        center_z
+                    )
+
+                    # block_vectorと反対方向にsize_x分広げる
+                    p2 = (
+                        p0[0] - axis_x * size_x,
+                        p0[1] - axis_y * size_x,
+                        center_z
+                    )
+
+                    p3 = (
+                        p1[0] - axis_x * size_x,
+                        p1[1] - axis_y * size_x,
+                        center_z
+                    )
+
+                    # ----------------------------------------------
+                    # 上面のずれを計算
+                    # ----------------------------------------------
                     if math.isclose(
                         block_angle,
                         math.pi / 2.0,
                         abs_tol=1e-6
                     ):
                         offset = 0.0
+
                     else:
                         tan_angle = math.tan(block_angle)
 
@@ -711,10 +718,9 @@ class TmsUrParameterImportPublisher(Node):
                         offset = size_z / tan_angle
 
                     # 上面をblock_vectorの反対方向へずらす
-                    shift_x = -vector_x * offset
-                    shift_y = -vector_y * offset
+                    shift_x = -axis_x * offset
+                    shift_y = -axis_y * offset
 
-                    # 上面の4頂点
                     p4 = (
                         p0[0] + shift_x,
                         p0[1] + shift_y,
@@ -739,8 +745,11 @@ class TmsUrParameterImportPublisher(Node):
                         center_z + size_z
                     )
 
-                    # TRIANGLE_LISTで6面を構築する
+                    # ----------------------------------------------
+                    # TRIANGLE_LIST Markerを作成
+                    # ----------------------------------------------
                     marker = Marker()
+
                     marker.header.frame_id = "map"
                     marker.header.stamp = stamp
                     marker.ns = "block_position"
@@ -748,20 +757,18 @@ class TmsUrParameterImportPublisher(Node):
                     marker.type = Marker.TRIANGLE_LIST
                     marker.action = Marker.ADD
 
-                    # TRIANGLE_LISTのscaleを設定する
                     marker.scale.x = 1.0
                     marker.scale.y = 1.0
                     marker.scale.z = 1.0
 
                     marker.pose.orientation.w = 1.0
 
-                    # 頂点座標はmap座標で計算済みなので、
-                    # Markerのpose.positionは原点にする
+                    # 頂点座標はmap座標で計算済み
                     marker.pose.position.x = 0.0
                     marker.pose.position.y = 0.0
                     marker.pose.position.z = 0.0
 
-                    # 各面を2つの三角形で構成
+                    # 6面をそれぞれ2つの三角形で構成
                     faces = [
                         # 底面
                         (p0, p2, p1),
@@ -771,14 +778,13 @@ class TmsUrParameterImportPublisher(Node):
                         (p4, p5, p6),
                         (p5, p7, p6),
 
-                        # X方向の側面
+                        # 側面
                         (p0, p1, p4),
                         (p1, p5, p4),
 
                         (p2, p6, p3),
                         (p3, p6, p7),
 
-                        # Y方向の側面
                         (p0, p4, p2),
                         (p2, p4, p6),
 
@@ -803,11 +809,25 @@ class TmsUrParameterImportPublisher(Node):
 
                     marker_array.markers.append(marker)
 
+                # ==================================================
+                # 通常ブロック
+                # ==================================================
                 else:
-                    # 通常のブロックはCUBEを使用
-                    yaw = math.atan2(vector_y, vector_x)
+
+                    yaw = math.atan2(axis_y, axis_x)
+
+                    # block_centerは外側を向く辺の中央
+                    # block_vector方向にsize_x / 2移動して中心を求める
+                    block_center_x = (
+                        center_x + axis_x * size_x / 2.0
+                    )
+
+                    block_center_y = (
+                        center_y + axis_y * size_x / 2.0
+                    )
 
                     marker = Marker()
+
                     marker.header.frame_id = "map"
                     marker.header.stamp = stamp
                     marker.ns = "block_position"
@@ -815,9 +835,8 @@ class TmsUrParameterImportPublisher(Node):
                     marker.type = Marker.CUBE
                     marker.action = Marker.ADD
 
-                    # 通常ブロックではblock_centerを中心として扱う
-                    marker.pose.position.x = center_x
-                    marker.pose.position.y = center_y
+                    marker.pose.position.x = block_center_x
+                    marker.pose.position.y = block_center_y
                     marker.pose.position.z = center_z
 
                     marker.pose.orientation.x = 0.0
@@ -836,8 +855,11 @@ class TmsUrParameterImportPublisher(Node):
 
                     marker_array.markers.append(marker)
 
-                # ブロック名を表示するテキストMarker
+                # ==================================================
+                # ブロック名のテキストMarker
+                # ==================================================
                 text_marker = Marker()
+
                 text_marker.header.frame_id = "map"
                 text_marker.header.stamp = stamp
                 text_marker.ns = "block_position_labels"
@@ -845,17 +867,21 @@ class TmsUrParameterImportPublisher(Node):
                 text_marker.type = Marker.TEXT_VIEW_FACING
                 text_marker.action = Marker.ADD
 
-                # ブロックの中央付近に名前を表示
-                text_marker.pose.position.x = (
-                    center_x
-                    + axis_x * size_x / 2.0
-                    + axis_y_perp_x * size_y / 2.0
-                )
-                text_marker.pose.position.y = (
-                    center_y
-                    + axis_y * size_x / 2.0
-                    + axis_y_perp_y * size_y / 2.0
-                )
+                if is_excavation:
+                    # 傾斜ブロックの中央付近
+                    text_marker.pose.position.x = (
+                        center_x - axis_x * size_x / 2.0
+                    )
+
+                    text_marker.pose.position.y = (
+                        center_y - axis_y * size_x / 2.0
+                    )
+
+                else:
+                    # 通常ブロックの中心
+                    text_marker.pose.position.x = block_center_x
+                    text_marker.pose.position.y = block_center_y
+
                 text_marker.pose.position.z = center_z + size_z + 0.2
 
                 text_marker.pose.orientation.w = 1.0
@@ -867,6 +893,7 @@ class TmsUrParameterImportPublisher(Node):
                 text_marker.color.a = 1.0
 
                 text_marker.text = record_name
+
                 marker_array.markers.append(text_marker)
 
             except (KeyError, TypeError, ValueError) as e:
@@ -876,6 +903,7 @@ class TmsUrParameterImportPublisher(Node):
                 continue
 
         return marker_array
+
 
     def create_geo_fence_marker_array(self, geo_fence_records):
 
@@ -1037,6 +1065,7 @@ class TmsUrParameterImportPublisher(Node):
         self.machinery_position_records.clear()
         self.block_position_records.clear()
         self.geo_fence_records.clear()
+        self.geo_fence_param_names.clear()
 
         self.joint_angle_param_names.clear()
         self.machinery_position_param_names.clear()

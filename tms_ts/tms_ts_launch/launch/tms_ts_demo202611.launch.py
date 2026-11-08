@@ -47,7 +47,10 @@ def launch_setup(context, *args, **kwargs):
                         parameters=[{'use_sim_time': use_sim_time,
                                      'task_id': task_id,
                                      'zmq_server_port': zmq_server_port_base + (i * 10),
-                                     'zmq_publisher_port': zmq_publisher_port_base + (i * 10)}]))
+                                     'zmq_publisher_port': zmq_publisher_port_base + (i * 10),
+                                     'heartbeat_topic': '/tms_heartbeat',
+                                     'heartbeat_rate': 10.0,
+                                     }]))
 
       nodes.append(
             Node(
