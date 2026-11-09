@@ -368,11 +368,6 @@ def generate_launch_description():
             
             #for odom
             Node(
-                  package="tms_ur_construction",
-                  executable="tms_ur_parameter_viz",
-                  output="screen",
-                  ),
-            Node(
                   package="tms_sp_machine",
                   executable="tms_sp_machine_odom.py",
                   output="screen",
@@ -397,11 +392,6 @@ def generate_launch_description():
                         "machine_name": "mst2200vd",
                         },
                   ],
-                  ),
-            Node(
-                  package='tms_db_manager',
-                  executable='tms_db_writer',
-                  output='screen',
                   ),
 
             #for preview
