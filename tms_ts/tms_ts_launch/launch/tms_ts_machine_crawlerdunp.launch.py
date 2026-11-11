@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# 2026年11月 実機実験：掘削積込 (excavation_loading)
-#   バックホウ zx200 1台と、交互に来るクローラダンプ 2台 (mst110cr, mst2200vd)。
-#   建機制御用 PC (MongoDB・BT)で起動する。excavate_pose / release_pose は LiDAR 用 PC で別に起動する。
-#   設計: excavation_loading_design.md
-
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
@@ -46,8 +41,8 @@ def launch_setup(context, *args, **kwargs):
     for task_id in task_ids:
 
         # task_idからポート番号を決定
-        zmq_server_port = 1662 + task_id
-        zmq_publisher_port = 1773 + task_id
+        zmq_server_port = 1665 + task_id
+        zmq_publisher_port = 1776 + task_id
 
         nodes.append(
             Node(
@@ -93,17 +88,6 @@ def generate_launch_description():
         'task_ids',
         default_value='[44]')
 
-      # 複数台の PC で動かすときの ZMQ のポート (task_id ごとに 10 ずつ増やす)
-      declare_zmq_server_port_base_arg = DeclareLaunchArgument(
-        'zmq_server_port_base',
-        default_value='1666',
-        description='Base port number for ZMQ server (will be incremented for each task_id)')
-
-      declare_zmq_publisher_port_base_arg = DeclareLaunchArgument(
-        'zmq_publisher_port_base',
-        default_value='1777',
-        description='Base port number for ZMQ publisher (will be incremented for each task_id)')
-
       # robot_name の ROS のネームスペース (primitive のアクション名、TF、load_volume に使う)。
       # DB のレコード名は SAMPLE_BLACKBOARD_robot_name (掘削積込の中では robot_name に統一)
       declare_robot_name_arg = DeclareLaunchArgument(
@@ -123,8 +107,6 @@ def generate_launch_description():
 
             declare_use_sim_time_arg,
             declare_task_ids_arg,
-            declare_zmq_server_port_base_arg,
-            declare_zmq_publisher_port_base_arg,
             declare_robot_name_arg,
             declare_launch_sp_arg,
 

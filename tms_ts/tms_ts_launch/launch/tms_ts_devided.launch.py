@@ -12,18 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# 2026年11月 実機実験：掘削積込 (excavation_loading)
-#   バックホウ zx200 1台と、交互に来るクローラダンプ 2台 (mst110cr, mst2200vd)。
-#   建機制御用 PC (MongoDB・BT)で起動する。excavate_pose / release_pose は LiDAR 用 PC で別に起動する。
-#   設計: excavation_loading_design.md
-
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 import ast
-
 
 
 def generate_launch_description():
