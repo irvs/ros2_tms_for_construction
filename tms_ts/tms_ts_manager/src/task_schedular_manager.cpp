@@ -9,6 +9,12 @@
 #include <rapidjson/writer.h>
 #include <regex>
 
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
+#include <set>
+#include <sstream>
+
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "std_msgs/msg/bool.hpp"
@@ -17,6 +23,9 @@
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 #include "tms_msg_db/srv/tmsdb_get_task.hpp"
 #include "std_msgs/msg/empty.hpp"
+
+#include "behaviortree_cpp_v3/decorator_node.h"
+
 
 // MongoDB関連のインクルード
 #include <bsoncxx/json.hpp>
@@ -50,6 +59,9 @@
 #include "tms_ts_primitive/common/wait_for_ur.hpp"
 
 #include "tms_ts_primitive/Bulldozer/bulldozer_path_creater.hpp"
+#include "tms_ts_primitive/common/manual_retry.hpp"
+#include "tms_ts_primitive/common/retry_manager.hpp"
+
 
 
 using namespace BT;
@@ -57,7 +69,15 @@ using namespace std::chrono_literals;
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-bool cancelRequested = false;
+std::atomic_bool cancelRequested{false};
+
+// 全BT共通の緊急停止フラグ
+std::atomic_bool emergencyStop{false};
+// BT識別IDの自動生成
+std::atomic_uint64_t btCounter{0};
+
+std::mutex retryMutex;
+std::set<std::string> retryRequests;
 
 
 
@@ -164,9 +184,15 @@ public:
     this->declare_parameter("task_id", -1);
     this->declare_parameter("zmq_server_port", 1666);
     this->declare_parameter("zmq_publisher_port", 1777);
+
+    task_callback_group_ =this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+
+    rclcpp::SubscriptionOptions task_options;
+    task_options.callback_group = task_callback_group_;
+
+    subscription_ =this->create_subscription<std_msgs::msg::String>(
+        "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1), task_options);
     
-    subscription_ = this->create_subscription<std_msgs::msg::String>(
-        "/task_sequence", 10, std::bind(&ExecTaskSequence::topic_callback, this, std::placeholders::_1));
     
     factory.registerNodeType<LeafNodeExcavator>("LeafNodeExcavator");
     factory.registerNodeType<LeafNodeExcavatorAssist>("LeafNodeExcavatorAssist");
@@ -191,13 +217,54 @@ public:
     factory.registerNodeType<LeafNodeCommon>("LeafNodeCommon");
 
     factory.registerNodeType<BulldozerPathCreater>("BulldozerPathCreater");
-    
 
-    // loadBlackboardFromMongoDB("global_blackboard");
-  }
+    factory.registerNodeType<ManualRetry>("ManualRetry");
+
+
+    // 再実行用コールバックグループ
+    retry_callback_group_ =
+        this->create_callback_group(
+            rclcpp::CallbackGroupType::Reentrant);
+
+    rclcpp::SubscriptionOptions retry_options;
+    retry_options.callback_group = retry_callback_group_;
+
+    retry_subscription_ =
+        this->create_subscription<std_msgs::msg::String>(
+            "/retry_task",
+            10,
+            [this](const std_msgs::msg::String::SharedPtr msg)
+            {
+                bool result =
+                    RetryManager::instance().requestRetry(msg->data);
+
+                if (result)
+                {
+                    RCLCPP_INFO(
+                        this->get_logger(),
+                        "Manual retry accepted: %s",
+                        msg->data.c_str());
+                }
+                else
+                {
+                    RCLCPP_WARN(
+                        this->get_logger(),
+                        "Retry rejected. BT is not waiting: %s",
+                        msg->data.c_str());
+                }
+            },
+            retry_options);
+        
+
+        // loadBlackboardFromMongoDB("global_blackboard");
+    }
+
 
   void topic_callback(const std_msgs::msg::String::SharedPtr msg)
   {
+    // 前回タスクの状態を初期化
+    cancelRequested.store(false);
+
     status_ = NodeStatus::RUNNING;
     
     std::string task_name = this->get_parameter("task_name").as_string();
@@ -245,23 +312,74 @@ public:
     // 共通処理
     std::string updated_sequence =replace_whole_execute_subtask_tags(task_sequence_);
 
+    // BTごとに固有IDを発行
+    bt_id_ = "BT_" + std::to_string(++btCounter);
+
+    // RetryManagerに登録
+    RetryManager::instance().registerBT(bt_id_);
+
+    // BlackboardにBT IDを設定
+    bb_->set("bt_id", bt_id_);
+
     try
     {
       // 生成に失敗してもプロセスを落とさず、タスクの失敗として扱う
       tree_ = factory.createTreeFromText(updated_sequence, bb_);
       BT::PublisherZMQ publisher_zmq(tree_, 100, zmq_server_port, zmq_publisher_port);
 
-      rclcpp::Rate rate(10);////
-      while (rclcpp::ok() && status_ == NodeStatus::RUNNING)
-      {
-          status_ = tree_.tickRoot();
-          if (cancelRequested)
-          {
-              tree_.rootNode()->halt();
-              status_ = NodeStatus::FAILURE;
-          }
-          rate.sleep();////
-      }
+    rclcpp::Rate rate(10);
+
+    status_ = NodeStatus::RUNNING;
+
+    while (rclcpp::ok() &&
+        status_ == NodeStatus::RUNNING)
+    {
+        // // 全BT共通の緊急停止
+        // if (emergencyStop.load())
+        // {
+        //     RCLCPP_ERROR(
+        //         this->get_logger(),
+        //         "Emergency stop: %s",
+        //         bt_id_.c_str());
+
+        //     tree_.rootNode()->halt();
+
+        //     status_ = NodeStatus::FAILURE;
+        //     break;
+        // }
+
+        // // 自分のBTに対する再実行要求を確認
+        // bool retry_requested = false;
+
+        // {
+        //     std::lock_guard<std::mutex> lock(retryMutex);
+
+        //     auto it = retryRequests.find(bt_id_);
+
+        //     if (it != retryRequests.end())
+        //     {
+        //         retryRequests.erase(it);
+        //         retry_requested = true;
+        //     }
+        // }
+
+        // if (retry_requested)
+        // {
+        //     RCLCPP_WARN(
+        //         this->get_logger(),
+        //         "Retry requested for BT: %s",
+        //         bt_id_.c_str());
+
+        //     tree_.rootNode()->halt();
+
+        //     status_ = NodeStatus::FAILURE;
+        //     break;
+        // }
+
+        status_ = tree_.tickRoot();
+
+        rate.sleep();
+    }
     }
     catch (const std::exception& e)
     {
@@ -283,7 +401,7 @@ public:
         break;
     }
 
-    subscription_.reset();
+    // subscription_.reset();
   }
 
 
@@ -542,6 +660,12 @@ private:
   NodeStatus status_ = NodeStatus::RUNNING;
   std::shared_ptr<TaskSearcher> task_searcher_;  // ← 追加
   static constexpr int MAX_SUBTASK_DEPTH = 10;  // サブタスクの入れ子の上限（自分自身を呼ぶ定義での無限展開を防ぐ）
+
+  rclcpp::CallbackGroup::SharedPtr retry_callback_group_;
+  rclcpp::CallbackGroup::SharedPtr task_callback_group_;
+
+  std::string bt_id_;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr retry_subscription_;
 };
 
 class HeartbeatPublisher : public rclcpp::Node
@@ -599,23 +723,50 @@ private:
 class ForceQuietNode : public rclcpp::Node
 {
 public:
-  ForceQuietNode() : Node("force_quiet_node")
-  {
-    shutdown_subscription = this->create_subscription<std_msgs::msg::Bool>(
-        "/emergency_signal", 10, std::bind(&ForceQuietNode::callback, this, std::placeholders::_1));
-  }
-
-  void callback(const std_msgs::msg::Bool& msg)
-  {
-    if (msg.data == true)
+    ForceQuietNode()
+        : Node("force_quiet_node")
     {
-      cancelRequested = true;
-      shutdown_subscription.reset();
+        shutdown_subscription =
+            this->create_subscription<std_msgs::msg::Bool>(
+                "/emergency_signal",
+                10,
+                std::bind(
+                    &ForceQuietNode::callback,
+                    this,
+                    std::placeholders::_1));
+
+        reset_subscription =
+            this->create_subscription<std_msgs::msg::Empty>(
+                "/reset_emergency",
+                10,
+                [this](const std_msgs::msg::Empty::SharedPtr msg)
+                {
+                    emergencyStop.store(false);
+
+                    RCLCPP_WARN(
+                        this->get_logger(),
+                        "Emergency stop reset.");
+                });
     }
-  }
+
+    void callback(const std_msgs::msg::Bool& msg)
+    {
+        if (msg.data)
+        {
+            emergencyStop.store(true);
+
+            RCLCPP_ERROR(
+                this->get_logger(),
+                "GLOBAL EMERGENCY STOP!");
+        }
+    }
 
 private:
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr shutdown_subscription;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr
+        shutdown_subscription;
+
+    rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr
+        reset_subscription;
 };
 
 

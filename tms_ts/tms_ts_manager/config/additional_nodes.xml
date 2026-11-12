@@ -77,6 +77,10 @@
             <input_port name="while_or_dowhile"/>
         </Decorator>
 
+        <Decorator ID="ManualRetry">
+            <input_port name="bt_id"/>
+        </Decorator>
+
         <Action ID="SetCurrentTimeToLocalBlackboard">
             <input_port name="output_key"/>
         </Action> 
