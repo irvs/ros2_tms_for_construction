@@ -177,7 +177,7 @@
                                                             <Action ID="MongoValueSearcher" mongo_param_name="ON_HOLD_SECTION,UP_DOWN" mongo_value="=\related_point_main\,\UP_DOWN\" output_port="same_direction"/>
                                                             <Action ID="MongoValueSearcher" mongo_param_name="ON_HOLD_SECTION" mongo_value="\related_point_sub\" output_port="sub_flg"/>
                                                             <IfThenElse>
-                                                                <Action ID="ConditionalExpression" conditional_expression="main_flg == true and same_direction == false and sub_flg == false and  and decided_next_section == &quot;not_decided&quot;"/>
+                                                                <Action ID="ConditionalExpression" conditional_expression="main_flg == true and same_direction == false and sub_flg == false and decided_next_section == &quot;not_decided&quot;"/>
                                                                 <Sequence>
                                                                     <Action ID="MongoArrayWriter" input_value="\related_point_sub\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
                                                                     <Action ID="SetLocalBlackboard" output_key="decided_next_section" value="{related_point_sub}"/>
@@ -247,7 +247,7 @@
                                                                 <Action ID="MongoValueSearcher" mongo_param_name="ON_HOLD_SECTION,UP_DOWN" mongo_value="=\related_point_main\,\UP_DOWN\" output_port="main_up"/>
                                                                 <Action ID="MongoValueSearcher" mongo_param_name="ON_HOLD_SECTION" mongo_value="\related_point_sub\" output_port="sub_flg"/>
                                                                 <IfThenElse>
-                                                                    <Action ID="ConditionalExpression" conditional_expression="sub_flg==false and main_up == false and  and decided_next_section == &quot;not_decided&quot;"/>
+                                                                    <Action ID="ConditionalExpression" conditional_expression="sub_flg==false and main_up == false and decided_next_section == &quot;not_decided&quot;"/>
                                                                     <Sequence>
                                                                         <Action ID="MongoArrayWriter" input_value="\related_point_sub\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="add"/>
                                                                         <Action ID="SetLocalBlackboard" output_key="decided_next_section" value="{related_point_sub}"/>
