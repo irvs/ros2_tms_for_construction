@@ -28,11 +28,57 @@ public:
     };
   }
 
+  // Blackboardの変数を文字列に展開する関数
+  std::string replaceBlackboardVariables(
+      const std::string& input)
+  {
+    std::string result = input;
+    size_t start = 0;
+
+    while ((start = result.find('{', start))
+           != std::string::npos)
+    {
+      size_t end = result.find('}', start);
+
+      if (end == std::string::npos)
+        break;
+
+      // {変数名} から変数名を取得
+      std::string key =
+          result.substr(start + 1, end - start - 1);
+
+      std::string value;
+
+      // Blackboardから値を取得
+      if (config().blackboard->get(key, value))
+      {
+        // {変数名} をBlackboardの値に置換
+        result.replace(
+            start,
+            end - start + 1,
+            value);
+
+        start += value.length();
+      }
+      else
+      {
+        // Blackboardに存在しない場合はそのまま残す
+        start = end + 1;
+      }
+    }
+
+    return result;
+  }
+
   NodeStatus tick() override
   {
     std::string text, title;
     getInput("window_title", title);
-    getInput("button_info",  text);
+    getInput("button_info", text);
+
+    // Blackboardの変数を展開
+    text = replaceBlackboardVariables(text);
+    title = replaceBlackboardVariables(title);
 
     // Pango マークアップで大きい文字に
     std::string markup = "<span size='x-large'>" + text + "</span>";
