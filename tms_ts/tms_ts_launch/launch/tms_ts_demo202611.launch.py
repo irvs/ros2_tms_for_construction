@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # 2026年11月 実機実験：掘削積込 (excavation_loading)
-#   バックホウ zx200 1台と、交互に来るクローラダンプ 2台 (mst110cr, mst2200vd)。
+#   バックホウ zx200 1台と、交互に来るクローラダンプ 2台 (mst110cr, mst2200vdr)。
 #   建機制御用 PC (MongoDB・BT)で起動する。excavate_pose / release_pose は LiDAR 用 PC で別に起動する。
 #   設計: excavation_loading_design.md
 
@@ -86,11 +86,11 @@ def generate_launch_description():
         default_value='1777',
         description='Base port number for ZMQ publisher (will be incremented for each task_id)')
 
-      # mst2200vd の ROS のネームスペース (primitive のアクション名、TF、load_volume に使う)。
-      # DB のレコード名は SAMPLE_BLACKBOARD_mst2200vd (掘削積込の中では mst2200vd に統一)
-      declare_mst2200vd_ns_arg = DeclareLaunchArgument(
-        'mst2200vd_ns',
-        default_value='mst2200vd')
+      # mst2200vdr の ROS のネームスペース (primitive のアクション名、TF、load_volume に使う)。
+      # DB のレコード名は SAMPLE_BLACKBOARD_mst2200vdr (掘削積込の中では mst2200vdr に統一)
+      declare_mst2200vdr_ns_arg = DeclareLaunchArgument(
+        'mst2200vdr_ns',
+        default_value='mst2200vdr')
 
       # 掘削積込の情報管理ノード (tms_sp)を起動するか
       declare_launch_sp_arg = DeclareLaunchArgument(
@@ -98,7 +98,7 @@ def generate_launch_description():
         default_value='true')
 
       use_sim_time = LaunchConfiguration('use_sim_time')
-      mst2200vd_ns = LaunchConfiguration('mst2200vd_ns')
+      mst2200vdr_ns = LaunchConfiguration('mst2200vdr_ns')
       launch_sp = IfCondition(LaunchConfiguration('launch_sp'))
 
       return LaunchDescription([
@@ -107,7 +107,7 @@ def generate_launch_description():
             declare_task_ids_arg,
             declare_zmq_server_port_base_arg,
             declare_zmq_publisher_port_base_arg,
-            declare_mst2200vd_ns_arg,
+            declare_mst2200vdr_ns_arg,
             declare_launch_sp_arg,
 
             # task_schedular_manager (task_id ごと)と tms_ur_button
@@ -126,7 +126,7 @@ def generate_launch_description():
                   executable='wait_for_ur',
                   output='screen',
                   parameters = [{'use_sim_time': use_sim_time}],
-                  namespace=mst2200vd_ns),
+                  namespace=mst2200vdr_ns),
             Node(
                   package='tms_ts_primitive',
                   executable='wait_for_ur',
@@ -225,49 +225,49 @@ def generate_launch_description():
                   remappings=[('planwritten', '/planwritten')]
                   ),
 
-            #MST2200VD
+            #mst2200vdr
             Node(
                   package='tms_ts_primitive',
                   executable='primitive_crawlerdump_follow_path',
                   output='screen',
                   parameters = [{'use_sim_time': use_sim_time}],
-                  namespace=mst2200vd_ns),
+                  namespace=mst2200vdr_ns),
             Node(
                   package='tms_ts_primitive',
                   executable='primitive_crawlerdump_follow_waypoints',
                   output='screen',
                   parameters = [{'use_sim_time': use_sim_time}],
-                  namespace=mst2200vd_ns),
+                  namespace=mst2200vdr_ns),
             Node(
                   package='tms_ts_primitive',
                   executable='primitive_crawlerdump_navigate_anywhere',
                   output='screen',
                   parameters = [{'use_sim_time': use_sim_time}],
-                  namespace=mst2200vd_ns),
+                  namespace=mst2200vdr_ns),
             Node(
                   package='tms_ts_primitive',
                   executable='primitive_crawlerdump_navigate_through_poses',
                   output='screen',
                   parameters = [{'use_sim_time': use_sim_time}],
-                  namespace=mst2200vd_ns),
+                  namespace=mst2200vdr_ns),
             Node(
                   package='tms_ts_primitive',
                   executable='primitive_crawlerdump_release_soil',
                   output='screen',
                   parameters = [{'use_sim_time': use_sim_time}],
-                  namespace=mst2200vd_ns),
+                  namespace=mst2200vdr_ns),
             Node(
                   package = 'tms_ts_primitive',
                   executable='primitive_crawlerdump_swing',
                   output='screen',
                   parameters = [{'use_sim_time': use_sim_time}],
-                  namespace=mst2200vd_ns),
+                  namespace=mst2200vdr_ns),
             Node(
                   package = 'tms_ts_primitive',
                   executable='primitive_crawlerdump_swing_align_to_heading',
                   output='screen',
                   parameters = [{'use_sim_time': use_sim_time}],
-                  namespace=mst2200vd_ns),
+                  namespace=mst2200vdr_ns),
 
             #D37PXI
             Node(
@@ -332,10 +332,10 @@ def generate_launch_description():
             Node(
                   package='tms_sp_sensing',
                   executable='tms_sp_loadsense',
-                  name='tms_sp_loadsense_mst2200vd',
+                  name='tms_sp_loadsense_mst2200vdr',
                   parameters = [{'use_sim_time': use_sim_time,
-                                 'machine_name': mst2200vd_ns,
-                                 'record_name': 'SAMPLE_BLACKBOARD_mst2200vd'}],
+                                 'machine_name': mst2200vdr_ns,
+                                 'record_name': 'SAMPLE_BLACKBOARD_mst2200vdr'}],
                   output='screen',
                   condition=launch_sp),
             # 積込中のダンプ (LOADING_DUMP)の荷台を掘削機に向ける旋回角 -> loading_pose_vessel
@@ -385,11 +385,11 @@ def generate_launch_description():
                   executable="tms_sp_machine_posest.py",
                   output="screen",
                   remappings=[
-                        ("~/input/pose", "/mst2200vd/robot/pose"),
+                        ("~/input/pose", "/mst2200vdr/robot/pose"),
                   ],
                   parameters=[
                         {
-                        "machine_name": "mst2200vd",
+                        "machine_name": "mst2200vdr",
                         },
                   ],
                   ),
