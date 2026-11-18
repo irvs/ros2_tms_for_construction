@@ -242,31 +242,45 @@ public:
       task_sequence_ = incoming;
     }
 
-    // 共通処理
-    std::string updated_sequence =replace_whole_execute_subtask_tags(task_sequence_);
-
     try
     {
-      // 生成に失敗してもプロセスを落とさず、タスクの失敗として扱う
-      tree_ = factory.createTreeFromText(updated_sequence, bb_);
-      BT::PublisherZMQ publisher_zmq(tree_, 100, zmq_server_port, zmq_publisher_port);
+        // ① ExecuteSubtaskを展開
+        // DBに存在しないサブタスクがあれば例外発生
+        std::string updated_sequence =
+            replace_whole_execute_subtask_tags(task_sequence_);
 
-      rclcpp::Rate rate(10);////
-      while (rclcpp::ok() && status_ == NodeStatus::RUNNING)
-      {
-          status_ = tree_.tickRoot();
-          if (cancelRequested)
-          {
-              tree_.rootNode()->halt();
-              status_ = NodeStatus::FAILURE;
-          }
-          rate.sleep();////
-      }
+        // ② BTを生成
+        tree_ = factory.createTreeFromText(updated_sequence, bb_);
+
+        // ③ BTの実行
+        BT::PublisherZMQ publisher_zmq(
+            tree_, 100, zmq_server_port, zmq_publisher_port
+        );
+
+        rclcpp::Rate rate(10);
+
+        while (rclcpp::ok() && status_ == NodeStatus::RUNNING)
+        {
+            status_ = tree_.tickRoot();
+
+            if (cancelRequested)
+            {
+                tree_.rootNode()->halt();
+                status_ = NodeStatus::FAILURE;
+            }
+
+            rate.sleep();
+        }
     }
     catch (const std::exception& e)
     {
-      RCLCPP_ERROR(get_logger(), "Failed to create or execute tree: %s", e.what());
-      status_ = NodeStatus::FAILURE;
+        RCLCPP_ERROR(
+            get_logger(),
+            "Failed to create or execute tree: %s",
+            e.what()
+        );
+
+        status_ = NodeStatus::FAILURE;
     }
 
     switch (status_)
@@ -358,7 +372,15 @@ public:
       task_searcher_->search_task(subtask_name);
 
       if (!task_searcher_->is_valid_taskid()) {
-          return "<!-- Task not found -->";
+          RCLCPP_ERROR(
+              this->get_logger(),
+              "Subtask not found in DB: %s",
+              subtask_name.c_str()
+          );
+
+        throw std::runtime_error(
+            "Subtask not found in DB: " + subtask_name
+        );
       }
 
       std::string task_sequence = task_searcher_->get_task_sequence();
