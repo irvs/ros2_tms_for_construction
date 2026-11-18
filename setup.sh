@@ -122,6 +122,9 @@ sudo apt install -y nlohmann-json3-dev
 #Install rapidjson library
 sudo apt install -y rapidjson-dev
 
+#Install libgtk-3-dev library
+sudo apt install -y libgtk-3-dev pkg-config
+
 #Setup OPERA
 mkdir -p \
   "$WS_SRC/opera/common" \

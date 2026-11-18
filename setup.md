@@ -119,6 +119,7 @@ cd ~/ros2-tms-for-construction_ws && colcon build --packages-select groot
 ```
 sudo apt install nlohmann-json3-dev
 sudo apt install rapidjson-dev
+sudo apt install libgtk-3-dev pkg-config
 ```
 
 ### Setup OPERA

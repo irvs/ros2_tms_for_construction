@@ -30,6 +30,8 @@ find_package(mongocxx REQUIRED)
 find_package(tms_ts_primitive REQUIRED)
 find_package(tms_msg_ur REQUIRED)
 find_package(Qt5 COMPONENTS Widgets Core REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTK3 REQUIRED IMPORTED_TARGET gtk+-3.0)
 
 
 set(dependencies_cpp
@@ -63,6 +65,7 @@ target_link_libraries(task_schedular_manager
   Qt5::Core
   mongocxx
   bsoncxx
+  PkgConfig::GTK3
 )
 
 # -- end C++

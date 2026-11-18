@@ -45,6 +45,9 @@ find_package(moveit_ros_planning REQUIRED)
 
 # find_package(traj_recorder_msgs REQUIRED)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTK3 REQUIRED IMPORTED_TARGET gtk+-3.0)
+
 
 add_library(${PROJECT_NAME} SHARED
   src/leaf_node_base.cpp
@@ -63,7 +66,8 @@ target_link_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME} 
 mongocxx
-bsoncxx)
+bsoncxx
+PkgConfig::GTK3)
 
 # Primitive Nodes for Bulldozer 
 add_executable(primitive_bulldozer_blade_control src/Bulldozer/primitive_bulldozer_blade_control.cpp)
@@ -198,6 +202,8 @@ install(
   RUNTIME DESTINATION bin)
 
 ament_export_dependencies(${dependencies_cpp})
+ament_export_dependencies(PkgConfig)
+ament_export_libraries(${PROJECT_NAME})
 ament_export_libraries(${PROJECT_NAME} mongocxx bsoncxx)
 ament_export_targets(${PROJECT_NAME})  
 ament_export_include_directories(include)
