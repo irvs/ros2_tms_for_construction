@@ -276,7 +276,7 @@
                             <Action ID="ConditionalExpression" conditional_expression="decided_next_section != &quot;not_decided&quot;"/>
                             <Sequence>
                                 <Action ID="MongoRouteOrientationUpdater" model_name="$model_name$" read_direction="{UP_DOWN}" record_name="{decided_next_section}"/>
-                                <Action ID="WaitForClick" button_info="{model_name} navigate to {decided_next_section}" window_title="{model_name} navigate to {decided_next_section}"/>
+                                <Action ID="WaitForClick" button_info="{model_name} navigate to next waypoint" window_title="navigate to {decided_next_section}"/>
                                 <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="{UP_DOWN}" record_name="{decided_next_section}"/>
                                 <Action ID="MongoArrayWriter" input_value="\CURRENT_SECTION\" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="$machine_record_name$" operation="remove"/>
                                 <Action ID="MongoValueWriter" input_type="" input_value="\decided_next_section\" mongo_param_name="CURRENT_SECTION" mongo_record_name="$machine_record_name$"/>

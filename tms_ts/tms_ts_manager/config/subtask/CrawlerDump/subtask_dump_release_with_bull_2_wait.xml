@@ -25,7 +25,7 @@
                                 </Sequence>
                             </Sequence>
                             <Sequence>
-                                <Action ID="WaitForClick" button_info="{model_name} navigate to {dump_waypoint}" window_title="{model_name} navigate to {dump_waypoint}"/>
+                                <Action ID="WaitForClick" button_info="{model_name} navigate to dump_waypoint" window_title="navigate to {dump_waypoint}"/>
                                 <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="up" record_name="{dump_waypoint}"/>
                                 <Action ID="WaitForClick" button_info="{model_name} swing manipulation" window_title="{model_name} swing manipulation"/>
                                 <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="$swing_before_release$"/>
@@ -39,7 +39,7 @@
                                 </Delay>
                                 <Action ID="WaitForClick" button_info="{model_name} swing manipulation" window_title="{model_name} swing manipulation"/>
                                 <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="$swing_after_release$"/>
-                                <Action ID="WaitForClick" button_info="{model_name} navigate to {dump_waypoint}" window_title="{model_name} navigate to {dump_waypoint}"/>
+                                <Action ID="WaitForClick" button_info="{model_name} navigate to dump_waypoint" window_title="navigate to {dump_waypoint}"/>
                                 <Action ID="LeafNodeCrawlerDump" model_name="$model_name$" primitive_name="primitive_crawlerdump_follow_waypoints" read_direction="down" record_name="{dump_waypoint}"/>
                             </Sequence>
                             <Sequence>

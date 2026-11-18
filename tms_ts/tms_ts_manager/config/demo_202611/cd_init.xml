@@ -12,8 +12,8 @@
             <Action ID="SetLocalBlackboard" output_key="dependencies_ready_3_1" value="false"/>
             <Sequence name="InitializeSectionSequence">
                 <Action ID="MongoArrayWriter" input_value="" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2" operation="reset"/>
-                <Action ID="MongoArrayWriter" input_value="&quot;route_8308088ba3bcdb9d_1345163867&quot;" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2" operation="add"/>
-                <Action ID="MongoValueWriter" input_type="" input_value="&quot;route_8308088ba3bcdb9d_1345163867&quot;" mongo_param_name="CURRENT_SECTION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
+                <Action ID="MongoArrayWriter" input_value="&quot;route_87c3a2a9789a4efd_598953008&quot;" mongo_param_name="ON_HOLD_SECTION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2" operation="add"/>
+                <Action ID="MongoValueWriter" input_type="" input_value="&quot;route_87c3a2a9789a4efd_598953008&quot;" mongo_param_name="CURRENT_SECTION" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                 <Action ID="MongoValueWriter" input_type="" input_value="up" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
             </Sequence>
             <Decorator ID="KeepRunningUntilFlgup" key="dependencies_ready_3_1" while_or_dowhile="">
@@ -29,10 +29,10 @@
             <Decorator ID="KeepRunningUntilFlgup" key="TERMINATE_FLG" while_or_dowhile="while">
                 <Sequence name="TransportAndDumpSequence">
                     <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr_2" model_name="mst110cr_2" subtask_name="subtask_dump_excavation_loading" subtask_parameters="excavator_record_name:SAMPLE_BLACKBOARD_zx200,swing_angle_for_loading:loading_pose_vessel,swing_angle_for_runing:SWING_ANGLE_FRONT" terminate_condition=""/>
-                    <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr_2" model_name="mst110cr_2" subtask_name="subtask_dump_cruise_2" subtask_parameters="start_status:route_8308088ba3bcdb9d_1345163867" terminate_condition="route_8308088ba3bcdb9d_1016656299"/>
+                    <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr_2" model_name="mst110cr_2" subtask_name="subtask_dump_cruise_2" subtask_parameters="start_status:route_87c3a2a9789a4efd_598953008" terminate_condition="route_87c3a2a9789a4efd_1021437831"/>
                     <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr_2" model_name="mst110cr_2" subtask_name="subtask_dump_release_with_bull_2" subtask_parameters="BullRecord:SAMPLE_BLACKBOARD_d37pxi,dump_up_angle:RELEASE_ANGLE_UP,dump_down_angle:RELEASE_ANGLE_DOWN,swing_before_release:SWING_ANGLE_BACK,swing_after_release:SWING_ANGLE_FRONT,time:5000,stop_point:dump_node_0" terminate_condition=""/>
                     <Action ID="MongoValueWriter" input_type="" input_value="down" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
-                    <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr_2" model_name="mst110cr_2" subtask_name="subtask_dump_cruise_2" subtask_parameters="start_status:route_8308088ba3bcdb9d_1016656299" terminate_condition="route_8308088ba3bcdb9d_1345163867"/>
+                    <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst110cr_2" model_name="mst110cr_2" subtask_name="subtask_dump_cruise_2" subtask_parameters="start_status:route_87c3a2a9789a4efd_1021437831" terminate_condition="route_87c3a2a9789a4efd_598953008"/>
                     <Action ID="MongoValueWriter" input_type="" input_value="up" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst110cr_2"/>
                 </Sequence>
             </Decorator>

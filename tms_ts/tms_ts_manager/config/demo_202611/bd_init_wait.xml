@@ -3,12 +3,13 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <Action ID="MongoValueWriter" input_value="false" mongo_param_name="initialize_flg_d37pxi" mongo_record_name="initialize_flgs"/>
+            <Action ID="MongoValueWriter" input_type="" input_value="false" mongo_param_name="initialize_flg_d37pxi" mongo_record_name="initialize_flgs"/>
             <Action ID="WaitForClick" button_info="d37pxi navigate to initial position" window_title="d37pxi navigate to initial position"/>
-            <Action ID="LeafNodeBulldozer" model_name="d37pxi" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="initial_position"/>
-            <Action ID="MongoValueWriter" input_value="true" mongo_param_name="initialize_flg_d37pxi" mongo_record_name="initialize_flgs"/>
+            <Action ID="LeafNodeBulldozer" blade_hold="" model_name="d37pxi" primitive_name="primitive_bulldozer_navigate_anywhere" record_name="initial_position"/>
+            <Action ID="MongoValueWriter" input_type="" input_value="true" mongo_param_name="initialize_flg_d37pxi" mongo_record_name="initialize_flgs"/>
             <Action ID="SetLocalBlackboard" output_key="dependencies_ready_1_1" value="false"/>
-            <Decorator ID="KeepRunningUntilFlgup" key="dependencies_ready_1_1">
+            <Action ID="SetLocalBlackboard" output_key="model_name" value="d37pxi"/>
+            <Decorator ID="KeepRunningUntilFlgup" key="dependencies_ready_1_1" while_or_dowhile="">
                 <Sequence>
                     <Action ID="MongoValueReader" mongo_param_name="initialize_flg_d37pxi" mongo_record_name="initialize_flgs" output_port="dependency_1_1_0"/>
                     <IfThenElse>
@@ -66,10 +67,10 @@
             <inout_port name="record_name"/>
         </Action>
         <Action ID="LeafNodeExcavator">
-            <input_port default="zx200" name="model_name"/>
-            <inout_port name="previous_target_record_name"/>
-            <inout_port name="primitive_name"/>
-            <inout_port name="target_record_name"/>
+            <input_port name="model_name" type="std::string"/>
+            <input_port name="previous_target_record_name" type="std::string"/>
+            <input_port name="primitive_name" type="std::string"/>
+            <input_port name="target_record_name" type="std::string"/>
         </Action>
         <Action ID="LeafNodeExcavatorAssist">
             <input_port default="zx200" name="model_name"/>
@@ -129,7 +130,7 @@
             <input_port name="window_title"/>
         </Action>
         <Action ID="WaitTimer">
-            <input_port name="seconds"/>
+            <input_port name="seconds" type="double">Wait time [s]</input_port>
         </Action>
     </TreeNodesModel>
     <!-- ////////// -->
