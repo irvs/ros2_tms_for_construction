@@ -66,6 +66,7 @@
             <input_port name="model_name"/>
             <input_port name="record_name"/>
             <inout_port name="read_direction"/> 
+            <inout_port name="goal_direction"/>
         </Action>  
 
         <Action ID="ConditionalExpression">

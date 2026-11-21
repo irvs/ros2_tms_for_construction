@@ -56,7 +56,11 @@ public:
         return {
             InputPort<std::string>("model_name"),
             InputPort<std::string>("record_name"),
-            InputPort<std::string>("read_direction")
+            InputPort<std::string>("read_direction"),
+            InputPort<std::string>(
+                "goal_direction",
+                "auto",
+                "Goal orientation: forward, back, or auto")
         };
     }
 
@@ -65,6 +69,11 @@ public:
         auto model_name = getInput<std::string>("model_name");
         auto record_name = getInput<std::string>("record_name");
         auto read_direction = getInput<std::string>("read_direction");
+        auto goal_direction_input =
+            getInput<std::string>("goal_direction");
+
+        const std::string goal_direction =
+            goal_direction_input ? goal_direction_input.value() : "auto";
 
         if (!model_name || !record_name)
         {
@@ -77,13 +86,13 @@ public:
         }
 
         if (read_direction.value() == "DOWN" || read_direction.value() == "down")
-            {
+        {
             read_direction = "down";
-            }
-            else
-            {
+        }
+        else
+        {
             read_direction = "up";
-            }
+        }
 
         try
         {
@@ -538,6 +547,93 @@ public:
                 qz[current_index] = std::sin(yaw / 2.0);
                 qw[current_index] = std::cos(yaw / 2.0);
             }
+
+            // --------------------------------------------------
+            // 5-1. Set the goal orientation.
+            //
+            // forward: face the route direction (existing behavior)
+            // back:    face opposite to the route direction
+            // auto:    choose the orientation requiring less rotation
+            //          from the current machine orientation.
+            // --------------------------------------------------
+
+            if (goal_direction != "forward" &&
+                goal_direction != "back" &&
+                goal_direction != "auto")
+            {
+                std::cerr
+                    << "[MongoRouteOrientationUpdater] "
+                    << "Invalid goal_direction: " << goal_direction
+                    << ". Use forward, back, or auto."
+                    << std::endl;
+                return NodeStatus::FAILURE;
+            }
+
+            // Route processing direction may be reversed when read_direction=down.
+            const std::size_t goal_index =
+                reverse ? 0 : point_num - 1;
+
+            // The route-derived goal yaw is a planar yaw quaternion.
+            const double forward_goal_yaw =
+                2.0 * std::atan2(qz[goal_index], qw[goal_index]);
+
+            const double back_goal_yaw =
+                forward_goal_yaw + std::acos(-1.0);
+
+            // Extract yaw from the current machine quaternion.
+            const double current_yaw =
+                std::atan2(
+                    2.0 * (current_qw * current_qz +
+                           current_qx * current_qy),
+                    1.0 - 2.0 * (current_qy * current_qy +
+                                 current_qz * current_qz));
+
+            auto angular_distance = [](double from, double to) {
+                return std::fabs(std::atan2(
+                    std::sin(to - from),
+                    std::cos(to - from)));
+            };
+
+            double selected_goal_yaw = forward_goal_yaw;
+
+            if (goal_direction == "back")
+            {
+                selected_goal_yaw = back_goal_yaw;
+            }
+            else if (goal_direction == "auto")
+            {
+                const double forward_rotation =
+                    angular_distance(current_yaw, forward_goal_yaw);
+                const double back_rotation =
+                    angular_distance(current_yaw, back_goal_yaw);
+
+                selected_goal_yaw =
+                    (back_rotation < forward_rotation)
+                        ? back_goal_yaw
+                        : forward_goal_yaw;
+
+                std::cout
+                    << "[MongoRouteOrientationUpdater] auto goal direction: "
+                    << (back_rotation < forward_rotation ? "back" : "forward")
+                    << " (forward rotation=" << forward_rotation
+                    << " rad, back rotation=" << back_rotation
+                    << " rad)"
+                    << std::endl;
+            }
+
+            // Only overwrite the final route point orientation.
+            qx[goal_index] = 0.0;
+            qy[goal_index] = 0.0;
+            qz[goal_index] = std::sin(selected_goal_yaw / 2.0);
+            qw[goal_index] = std::cos(selected_goal_yaw / 2.0);
+
+            std::cout
+                << "[MongoRouteOrientationUpdater] goal_direction="
+                << goal_direction
+                << ", goal_index=" << goal_index
+                << ", goal_yaw=" << selected_goal_yaw
+                << " rad"
+                << std::endl;
 
             // --------------------------------------------------
             // 6. Update only quaternion arrays in MongoDB
