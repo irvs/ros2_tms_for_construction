@@ -170,6 +170,12 @@ def generate_launch_description():
                   output='screen',
                   parameters = [{'use_sim_time': use_sim_time}],
                   namespace = 'zx200'),
+            Node(
+                  package='tms_ts_primitive',
+                  executable='primitive_excavator_follow_straight',
+                  output='screen',
+                  parameters = [{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+                  namespace = 'zx200'),
 
             #MST110CR
             Node(
