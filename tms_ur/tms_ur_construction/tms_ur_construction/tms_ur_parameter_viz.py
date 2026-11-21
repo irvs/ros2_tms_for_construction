@@ -910,7 +910,9 @@ class TmsUrParameterImportPublisher(Node):
         marker_array = MarkerArray()
         stamp = self.get_clock().now().to_msg()
 
-        for index, record in enumerate(geo_fence_records):
+        marker_id = 0
+
+        for record in geo_fence_records:
 
             data = record.get("data", {})
             record_name = record.get("record_name", "")
@@ -918,45 +920,92 @@ class TmsUrParameterImportPublisher(Node):
             try:
                 coordinates = data["coordinates"]
 
-                if not coordinates or not coordinates[0]:
-                    raise ValueError("coordinates is empty")
+                if not isinstance(coordinates, list) or not coordinates:
+                    raise ValueError("coordinates is empty or invalid")
 
-                points = coordinates[0]
+                # ==========================================
+                # coordinates内の各配列を独立した境界線として扱う
+                # ==========================================
+                for ring_index, points in enumerate(coordinates):
 
-                marker = Marker()
-                marker.header.frame_id = "map"
-                marker.header.stamp = stamp
-                marker.ns = "geo_fence"
-                marker.id = index
-                marker.type = Marker.LINE_STRIP
-                marker.action = Marker.ADD
-
-                marker.scale.x = 0.2
-
-                marker.color.r = 1.0
-                marker.color.g = 1.0
-                marker.color.b = 0.0
-                marker.color.a = 1.0
-
-                marker.pose.orientation.w = 1.0
-
-                for point in points:
-                    marker.points.append(
-                        Point(
-                            x=float(point["x"]),
-                            y=float(point["y"]),
-                            z=float(point.get("z", 0.0))
+                    if not isinstance(points, list) or not points:
+                        self.get_logger().warning(
+                            f"Skipping empty GeoFence ring "
+                            f"[{record_name}], ring={ring_index}"
                         )
+                        continue
+
+                    marker = Marker()
+
+                    marker.header.frame_id = "map"
+                    marker.header.stamp = stamp
+
+                    marker.ns = "geo_fence"
+                    marker.id = marker_id
+
+                    marker.type = Marker.LINE_STRIP
+                    marker.action = Marker.ADD
+
+                    # 線の太さ
+                    marker.scale.x = 0.2
+
+                    # 黄色
+                    marker.color.r = 1.0
+                    marker.color.g = 1.0
+                    marker.color.b = 0.0
+                    marker.color.a = 1.0
+
+                    marker.pose.orientation.w = 1.0
+
+                    # --------------------------------------
+                    # 各リングの座標を追加
+                    # --------------------------------------
+                    for point in points:
+
+                        if not isinstance(point, dict):
+                            raise ValueError(
+                                f"Invalid point format: {point}"
+                            )
+
+                        x = float(point["x"])
+                        y = float(point["y"])
+                        z = float(point.get("z", 0.0))
+
+                        if not all(
+                            math.isfinite(v) for v in (x, y, z)
+                        ):
+                            raise ValueError(
+                                f"Non-finite coordinate: {point}"
+                            )
+
+                        marker.points.append(
+                            Point(
+                                x=x,
+                                y=y,
+                                z=z
+                            )
+                        )
+
+                    marker_array.markers.append(marker)
+
+                    self.get_logger().debug(
+                        f"Created GeoFence marker: "
+                        f"{record_name}, ring={ring_index}, "
+                        f"points={len(marker.points)}"
                     )
 
-                marker_array.markers.append(marker)
+                    marker_id += 1
 
-            except (KeyError, TypeError, ValueError, IndexError) as e:
+            except (KeyError, TypeError, ValueError) as e:
+
                 self.get_logger().error(
                     f"Invalid GeoFence data [{record_name}]: {e}"
                 )
 
+                continue
+
         return marker_array
+
 
     def create_machinery_connection_marker(self, records):
         marker = Marker()
