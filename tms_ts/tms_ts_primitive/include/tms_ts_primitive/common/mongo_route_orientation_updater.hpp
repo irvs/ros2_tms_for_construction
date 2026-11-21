@@ -487,6 +487,19 @@ public:
                 return NodeStatus::FAILURE;
             }
 
+            if (goal_direction != "forward" &&
+                goal_direction != "back" &&
+                goal_direction != "auto")
+            {
+                std::cerr
+                    << "[MongoRouteOrientationUpdater] "
+                    << "Invalid goal_direction: " << goal_direction
+                    << ". Use forward, back, or auto."
+                    << std::endl;
+                return NodeStatus::FAILURE;
+            }
+
+
             // --------------------------------------------------
             // 5. Calculate quaternion arrays
             // --------------------------------------------------
@@ -540,7 +553,13 @@ public:
                     continue;
                 }
 
-                const double yaw = std::atan2(dy, dx);
+                double yaw = std::atan2(dy, dx);
+
+                // backの場合は進行方向と反対を向く
+                if (goal_direction == "back")
+                {
+                    yaw += M_PI;
+                }
 
                 qx[current_index] = 0.0;
                 qy[current_index] = 0.0;
@@ -550,89 +569,68 @@ public:
 
             // --------------------------------------------------
             // 5-1. Set the goal orientation.
-            //
-            // forward: face the route direction (existing behavior)
-            // back:    face opposite to the route direction
-            // auto:    choose the orientation requiring less rotation
-            //          from the current machine orientation.
             // --------------------------------------------------
 
-            if (goal_direction != "forward" &&
-                goal_direction != "back" &&
-                goal_direction != "auto")
-            {
-                std::cerr
-                    << "[MongoRouteOrientationUpdater] "
-                    << "Invalid goal_direction: " << goal_direction
-                    << ". Use forward, back, or auto."
-                    << std::endl;
-                return NodeStatus::FAILURE;
-            }
-
-            // Route processing direction may be reversed when read_direction=down.
             const std::size_t goal_index =
                 reverse ? 0 : point_num - 1;
 
-            // The route-derived goal yaw is a planar yaw quaternion.
-            const double forward_goal_yaw =
-                2.0 * std::atan2(qz[goal_index], qw[goal_index]);
-
-            const double back_goal_yaw =
-                forward_goal_yaw + std::acos(-1.0);
-
-            // Extract yaw from the current machine quaternion.
-            const double current_yaw =
-                std::atan2(
-                    2.0 * (current_qw * current_qz +
-                           current_qx * current_qy),
-                    1.0 - 2.0 * (current_qy * current_qy +
-                                 current_qz * current_qz));
-
-            auto angular_distance = [](double from, double to) {
-                return std::fabs(std::atan2(
-                    std::sin(to - from),
-                    std::cos(to - from)));
-            };
-
-            double selected_goal_yaw = forward_goal_yaw;
-
-            if (goal_direction == "back")
+            // autoの場合のみ、ゴール地点の向きを選択する。
+            // forward / back はWaypoint計算時に設定済み。
+            if (goal_direction == "auto")
             {
-                selected_goal_yaw = back_goal_yaw;
-            }
-            else if (goal_direction == "auto")
-            {
+                // 現在の経路方向（forward）のゴール角度
+                const double forward_goal_yaw =
+                    2.0 * std::atan2(
+                        qz[goal_index],
+                        qw[goal_index]);
+
+                // 後ろ向きのゴール角度
+                const double back_goal_yaw =
+                    forward_goal_yaw + std::acos(-1.0);
+
+                // 現在の機体yaw
+                const double current_yaw =
+                    std::atan2(
+                        2.0 * (current_qw * current_qz +
+                            current_qx * current_qy),
+                        1.0 - 2.0 * (current_qy * current_qy +
+                                    current_qz * current_qz));
+
+                // 角度差を[-PI, PI]に正規化して比較
+                auto angular_distance = [](double from, double to)
+                {
+                    return std::fabs(std::atan2(
+                        std::sin(to - from),
+                        std::cos(to - from)));
+                };
+
                 const double forward_rotation =
                     angular_distance(current_yaw, forward_goal_yaw);
+
                 const double back_rotation =
                     angular_distance(current_yaw, back_goal_yaw);
 
-                selected_goal_yaw =
+                // 回転量が小さい方を選択
+                const double selected_goal_yaw =
                     (back_rotation < forward_rotation)
                         ? back_goal_yaw
                         : forward_goal_yaw;
 
+                qx[goal_index] = 0.0;
+                qy[goal_index] = 0.0;
+                qz[goal_index] = std::sin(selected_goal_yaw / 2.0);
+                qw[goal_index] = std::cos(selected_goal_yaw / 2.0);
+
                 std::cout
                     << "[MongoRouteOrientationUpdater] auto goal direction: "
                     << (back_rotation < forward_rotation ? "back" : "forward")
-                    << " (forward rotation=" << forward_rotation
-                    << " rad, back rotation=" << back_rotation
-                    << " rad)"
                     << std::endl;
             }
 
-            // Only overwrite the final route point orientation.
-            qx[goal_index] = 0.0;
-            qy[goal_index] = 0.0;
-            qz[goal_index] = std::sin(selected_goal_yaw / 2.0);
-            qw[goal_index] = std::cos(selected_goal_yaw / 2.0);
-
             std::cout
-                << "[MongoRouteOrientationUpdater] goal_direction="
-                << goal_direction
+                << "[MongoRouteOrientationUpdater] "
+                << "goal_direction=" << goal_direction
                 << ", goal_index=" << goal_index
-                << ", goal_yaw=" << selected_goal_yaw
-                << " rad"
                 << std::endl;
 
             // --------------------------------------------------
