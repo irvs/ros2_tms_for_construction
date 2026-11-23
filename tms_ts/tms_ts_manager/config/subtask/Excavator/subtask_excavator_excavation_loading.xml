@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <!--
-  掘削積込（excavation_loading）サブタスク：バックホウ側
+  掘削積込（excavation_loading）サブタスク：バックホウ側（かき集めなし）
+  かき集めありの版（subtask_excavator_excavation_loading_with_gather.xml）から、かき集めの処理を除いたもの。
+  EXCAVATION_MODE は常に excavate。ブロックを移るときに掘り残した土は、次のブロックに寄せずにそのまま残る。
   設計: excavation_loading_design.md（6.1, 6.2）
 
   サブタスクのパラメータ
@@ -9,9 +11,11 @@
     $excavate1$ - $excavate4$ : 掘削動作の姿勢のレコード（subtask_excavator_excavate_combined に渡す）
     $release1$ - $release3$   : 放土動作の姿勢のレコード（subtask_excavator_release_combined に渡す）
 
-  掘削・放土・かき集めは、軌道を連結する combined 版のサブタスクを ExecuteSubtask で呼ぶ（tms_ts_manager はサブタスクの入れ子を展開できる）。
-  かき集めの姿勢のレコードは target_gather_pose_1（始点）と target_gather_pose_2（終点。cartesian_path で水平に引く）に固定。
+  掘削・放土は、軌道を連結する combined 版のサブタスクを ExecuteSubtask で呼ぶ（tms_ts_manager はサブタスクの入れ子を展開できる）。
   待ち処理は RetryUntilSuccessful(-1) ではなく、KeepRunningUntilFlgup + WaitTimer で 1 回ごとに RUNNING を返す形にしている。
+  到着判定（SENSING_ARRIVAL_FLG）は風などで不安定なので、到着を待つのは今のダンプへの 1 杯目だけにする（ローカルの first_load で区別する）。
+  2 杯目以降は subtask_excavator_excavate_release_combined で掘削から放土までを 1 本の軌道で行う。
+  ダンプは LOADING_COMPLETE_FLG を見るまで出発しないので、2 杯目以降はダンプが積込位置にいることが保証されている。
 -->
 <root main_tree_to_execute="BehaviorTree">
     <!-- ////////// -->
@@ -20,12 +24,15 @@
             <!-- ===== 初期化：ループに入る前に 1 回だけ ===== -->
             <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="TASK_END_FLG" mongo_record_name="$machine_record_name$"/>
             <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="NEXT_POINT_FLG" mongo_record_name="$machine_record_name$"/>
+            <!-- かき集めは行わない。かき集めあり版を前に実行したときの値が残らないように false にしておく -->
             <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="GATHER_REQUIRED_FLG" mongo_record_name="$machine_record_name$"/>
             <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="LOADING_COMPLETE_FLG" mongo_record_name="$machine_record_name$"/>
             <!-- 前回の実行が途中で止まった場合に残った到着の合図を消す（LOADING_DUMP は、単体で実行したダンプが先に書く場合があるので消さない） -->
             <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="ARRIVAL_FLG" mongo_record_name="$machine_record_name$"/>
             <Action ID="MongoValueWriter" input_type="string" input_value="excavate" mongo_param_name="EXCAVATION_MODE" mongo_record_name="$machine_record_name$"/>
             <Action ID="MongoValueWriter" input_type="int" input_value="-1" mongo_param_name="current_block_index" mongo_record_name="$machine_record_name$"/>
+            <!-- 次の積込は、ダンプへの 1 杯目として到着を待つ -->
+            <Action ID="SetLocalBlackboard" output_key="first_load" value="true"/>
             <!-- RequestNextBlock：ブロック管理が 0 に進め、行き先を書く -->
             <Action ID="MongoValueWriter" input_type="bool" input_value="true" mongo_param_name="NEXT_BLOCK_FLG" mongo_record_name="$machine_record_name$"/>
             <Action ID="SetLocalBlackboard" output_key="wait_done" value="false"/>
@@ -48,52 +55,6 @@
                     <Action ID="MongoValueReader" mongo_param_name="NEXT_POINT_FLG" mongo_record_name="$machine_record_name$" output_port="NEXT_POINT_FLG"/>
                     <Decorator ID="KeepRunningUntilFlgup" key="NEXT_POINT_FLG" while_or_dowhile="while">
                         <Sequence>
-                            <!-- [0] かき集め：残っていて、ダンプがまだ向かってきていないときだけ。ダンプが向かってきたら（LOADING_DUMP が空でなくなったら）1 回の動作の後で中断して先掘りに移る -->
-                            <Action ID="MongoValueReader" mongo_param_name="GATHER_REQUIRED_FLG" mongo_record_name="$machine_record_name$" output_port="GATHER_REQUIRED_FLG"/>
-                            <Action ID="MongoValueReader" mongo_param_name="LOADING_DUMP" mongo_record_name="$machine_record_name$" output_port="LOADING_DUMP"/>
-                            <IfThenElse>
-                                <Action ID="ConditionalExpression" conditional_expression="GATHER_REQUIRED_FLG == true and LOADING_DUMP == ''"/>
-                                <Sequence>
-                                    <Action ID="MongoValueWriter" input_type="string" input_value="gather" mongo_param_name="EXCAVATION_MODE" mongo_record_name="$machine_record_name$"/>
-                                    <!-- WaitTarget：LiDAR 側がモードとブロック番号を反映するまで待つ -->
-                                    <Action ID="SetLocalBlackboard" output_key="wait_done" value="false"/>
-                                    <Decorator ID="KeepRunningUntilFlgup" key="wait_done" while_or_dowhile="while">
-                                        <Sequence>
-                                            <Action ID="MongoValueReader" mongo_param_name="SENSING_PLANNER_INDEX" mongo_record_name="$machine_record_name$" output_port="SENSING_PLANNER_INDEX"/>
-                                            <Action ID="MongoValueReader" mongo_param_name="SENSING_PLANNER_MODE" mongo_record_name="$machine_record_name$" output_port="SENSING_PLANNER_MODE"/>
-                                            <Action ID="MongoValueReader" mongo_param_name="current_block_index" mongo_record_name="$machine_record_name$" output_port="current_block_index"/>
-                                            <Action ID="MongoValueReader" mongo_param_name="EXCAVATION_MODE" mongo_record_name="$machine_record_name$" output_port="EXCAVATION_MODE"/>
-                                            <IfThenElse>
-                                                <Action ID="ConditionalExpression" conditional_expression="SENSING_PLANNER_INDEX == current_block_index and SENSING_PLANNER_MODE == EXCAVATION_MODE"/>
-                                                <Action ID="SetLocalBlackboard" output_key="wait_done" value="true"/>
-                                                <Action ID="WaitTimer" seconds="0.1"/>
-                                            </IfThenElse>
-                                        </Sequence>
-                                    </Decorator>
-                                    <!-- かき集めループ：完了するか、ダンプが向かってきたら抜ける -->
-                                    <Action ID="SetLocalBlackboard" output_key="gather_stop" value="false"/>
-                                    <Decorator ID="KeepRunningUntilFlgup" key="gather_stop" while_or_dowhile="while">
-                                        <Sequence>
-                                            <Action ID="MongoValueReader" mongo_param_name="SENSING_GATHER_DONE_FLG" mongo_record_name="$machine_record_name$" output_port="SENSING_GATHER_DONE_FLG"/>
-                                            <Action ID="MongoValueReader" mongo_param_name="LOADING_DUMP" mongo_record_name="$machine_record_name$" output_port="LOADING_DUMP"/>
-                                            <IfThenElse>
-                                                <Action ID="ConditionalExpression" conditional_expression="SENSING_GATHER_DONE_FLG == true"/>
-                                                <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="GATHER_REQUIRED_FLG" mongo_record_name="$machine_record_name$"/>
-                                                <AlwaysSuccess/>
-                                            </IfThenElse>
-                                            <IfThenElse>
-                                                <Action ID="ConditionalExpression" conditional_expression="SENSING_GATHER_DONE_FLG == true or LOADING_DUMP != ''"/>
-                                                <Action ID="SetLocalBlackboard" output_key="gather_stop" value="true"/>
-                                                <!-- 1 回のかき集め動作：始点（target_gather_pose_1）から終点（target_gather_pose_2）へ。終点は cartesian_path で水平に引く -->
-                                                <Action ID="ExecuteSubtask" machine_record_name="$machine_record_name$" model_name="$model_name$" subtask_name="subtask_excavator_gather_combined" subtask_parameters="gather1:target_gather_pose_1,gather2:target_gather_pose_2" terminate_condition=""/>
-                                            </IfThenElse>
-                                        </Sequence>
-                                    </Decorator>
-                                    <Action ID="MongoValueWriter" input_type="string" input_value="excavate" mongo_param_name="EXCAVATION_MODE" mongo_record_name="$machine_record_name$"/>
-                                </Sequence>
-                                <AlwaysSuccess/>
-                            </IfThenElse>
-
                             <!-- [1] WaitTarget：LiDAR 側がモードとブロック番号を反映するまで待つ -->
                             <Action ID="SetLocalBlackboard" output_key="wait_done" value="false"/>
                             <Decorator ID="KeepRunningUntilFlgup" key="wait_done" while_or_dowhile="while">
@@ -113,25 +74,32 @@
                             <Action ID="MongoValueReader" mongo_param_name="SENSING_BLOCK_DONE_FLG" mongo_record_name="$machine_record_name$" output_port="SENSING_BLOCK_DONE_FLG"/>
                             <IfThenElse>
                                 <Action ID="ConditionalExpression" conditional_expression="SENSING_BLOCK_DONE_FLG == false"/>
-                                <Sequence>
-                                    <!-- [2] 掘削して土を保持 -->
-                                    <Action ID="ExecuteSubtask" machine_record_name="$machine_record_name$" model_name="$model_name$" subtask_name="subtask_excavator_excavate_combined" subtask_parameters="excavate1:$excavate1$,excavate2:$excavate2$,excavate3:$excavate3$,excavate4:$excavate4$" terminate_condition=""/>
-                                    <!-- [3] ダンプが積込位置に着いて荷台を向けるまで待つ -->
-                                    <Action ID="SetLocalBlackboard" output_key="wait_done" value="false"/>
-                                    <Decorator ID="KeepRunningUntilFlgup" key="wait_done" while_or_dowhile="while">
-                                        <Sequence>
-                                            <Action ID="MongoValueReader" mongo_param_name="ARRIVAL_FLG" mongo_record_name="$machine_record_name$" output_port="ARRIVAL_FLG"/>
-                                            <Action ID="MongoValueReader" mongo_param_name="SENSING_ARRIVAL_FLG" mongo_record_name="$machine_record_name$" output_port="SENSING_ARRIVAL_FLG"/>
-                                            <IfThenElse>
-                                                <Action ID="ConditionalExpression" conditional_expression="ARRIVAL_FLG == true and SENSING_ARRIVAL_FLG == true"/>
-                                                <Action ID="SetLocalBlackboard" output_key="wait_done" value="true"/>
-                                                <Action ID="WaitTimer" seconds="0.1"/>
-                                            </IfThenElse>
-                                        </Sequence>
-                                    </Decorator>
-                                    <!-- [4] 放土して初期姿勢へ -->
-                                    <Action ID="ExecuteSubtask" machine_record_name="$machine_record_name$" model_name="$model_name$" subtask_name="subtask_excavator_release_combined" subtask_parameters="release1:$release1$,release2:$release2$,release3:$release3$" terminate_condition=""/>
-                                </Sequence>
+                                <IfThenElse>
+                                    <Action ID="ConditionalExpression" conditional_expression="first_load == true"/>
+                                    <!-- 今のダンプへの 1 杯目：先掘りした土を保持して、ダンプの到着を待ってから放土する -->
+                                    <Sequence>
+                                        <!-- [2] 掘削して土を保持 -->
+                                        <Action ID="ExecuteSubtask" machine_record_name="$machine_record_name$" model_name="$model_name$" subtask_name="subtask_excavator_excavate_combined" subtask_parameters="excavate1:$excavate1$,excavate2:$excavate2$,excavate3:$excavate3$,excavate4:$excavate4$" terminate_condition=""/>
+                                        <!-- [3] ダンプが積込位置に着いて荷台を向けるまで待つ -->
+                                        <Action ID="SetLocalBlackboard" output_key="wait_done" value="false"/>
+                                        <Decorator ID="KeepRunningUntilFlgup" key="wait_done" while_or_dowhile="while">
+                                            <Sequence>
+                                                <Action ID="MongoValueReader" mongo_param_name="ARRIVAL_FLG" mongo_record_name="$machine_record_name$" output_port="ARRIVAL_FLG"/>
+                                                <Action ID="MongoValueReader" mongo_param_name="SENSING_ARRIVAL_FLG" mongo_record_name="$machine_record_name$" output_port="SENSING_ARRIVAL_FLG"/>
+                                                <IfThenElse>
+                                                    <Action ID="ConditionalExpression" conditional_expression="ARRIVAL_FLG == true and SENSING_ARRIVAL_FLG == true"/>
+                                                    <Action ID="SetLocalBlackboard" output_key="wait_done" value="true"/>
+                                                    <Action ID="WaitTimer" seconds="0.1"/>
+                                                </IfThenElse>
+                                            </Sequence>
+                                        </Decorator>
+                                        <!-- [4] 放土して初期姿勢へ -->
+                                        <Action ID="ExecuteSubtask" machine_record_name="$machine_record_name$" model_name="$model_name$" subtask_name="subtask_excavator_release_combined" subtask_parameters="release1:$release1$,release2:$release2$,release3:$release3$" terminate_condition=""/>
+                                        <Action ID="SetLocalBlackboard" output_key="first_load" value="false"/>
+                                    </Sequence>
+                                    <!-- 2 杯目以降：到着判定を挟まず、掘削から放土までを 1 本の軌道で行う -->
+                                    <Action ID="ExecuteSubtask" machine_record_name="$machine_record_name$" model_name="$model_name$" subtask_name="subtask_excavator_excavate_release_combined" subtask_parameters="excavate1:$excavate1$,excavate2:$excavate2$,excavate3:$excavate3$,excavate4:$excavate4$,release1:$release1$,release2:$release2$,release3:$release3$" terminate_condition=""/>
+                                </IfThenElse>
                                 <!-- ブロックの掘削が終わっている：積む土は無いが、ダンプが着くのを待って [6] で出発させる -->
                                 <Sequence>
                                     <Action ID="SetLocalBlackboard" output_key="wait_done" value="false"/>
@@ -168,11 +136,6 @@
                                                 <!-- 最後のブロックの掘削が終わった -->
                                                 <Action ID="MongoValueWriter" input_type="bool" input_value="true" mongo_param_name="TASK_END_FLG" mongo_record_name="$machine_record_name$"/>
                                                 <Sequence>
-                                                    <IfThenElse>
-                                                        <Action ID="ConditionalExpression" conditional_expression="SENSING_BLOCK_DONE_FLG == true"/>
-                                                        <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="GATHER_REQUIRED_FLG" mongo_record_name="$machine_record_name$"/>
-                                                        <Action ID="MongoValueWriter" input_type="bool" input_value="true" mongo_param_name="GATHER_REQUIRED_FLG" mongo_record_name="$machine_record_name$"/>
-                                                    </IfThenElse>
                                                     <!-- RequestNextBlock：出発の合図より前に、次のダンプの行き先を更新する -->
                                                     <Action ID="MongoValueWriter" input_type="bool" input_value="true" mongo_param_name="NEXT_BLOCK_FLG" mongo_record_name="$machine_record_name$"/>
                                                     <Action ID="SetLocalBlackboard" output_key="wait_done" value="false"/>
@@ -205,6 +168,8 @@
                                         </Sequence>
                                     </Decorator>
                                     <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="LOADING_COMPLETE_FLG" mongo_record_name="$machine_record_name$"/>
+                                    <!-- ダンプが離れたので、次のダンプへの積込は 1 杯目から -->
+                                    <Action ID="SetLocalBlackboard" output_key="first_load" value="true"/>
                                 </Sequence>
                                 <AlwaysSuccess/>
                             </IfThenElse>

@@ -3,7 +3,7 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Sequence>
-            <!-- 掘削積込（バックホウ側）を単体で実行する。実行管理用のレコードは SAMPLE_BLACKBOARD_zx200 -->
+            <!-- 掘削積込（バックホウ側、かき集めなし）を単体で実行する。実行管理用のレコードは SAMPLE_BLACKBOARD_zx200 -->
             <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_zx200" model_name="zx200" subtask_name="subtask_excavator_excavation_loading" subtask_parameters="excavate1:target_excavate_pose_1,excavate2:target_excavate_pose_2,excavate3:target_excavate_pose_3,excavate4:target_excavate_pose_4,release1:target_release_pose_1,release2:target_release_pose_2,release3:target_release_pose_3" terminate_condition=""/>
         </Sequence>
     </BehaviorTree>
