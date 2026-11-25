@@ -184,7 +184,7 @@
                         <Action ID="ConditionalExpression" conditional_expression="TASK_END_FLG == false"/>
                         <Sequence>
                             <Action ID="MongoValueReader" mongo_param_name="excavate_position" mongo_record_name="$machine_record_name$" output_port="excavate_position"/>
-                            <Action ID="LeafNodeExcavator" model_name="$model_name$" previous_target_record_name="" primitive_name="primitive_excavator_follow_waypoints" target_record_name="{excavate_position}"/>
+                            <Action ID="LeafNodeExcavator" model_name="$model_name$" previous_target_record_name="" primitive_name="primitive_excavator_follow_straight" target_record_name="{excavate_position}"/>
                             <Action ID="MongoValueWriter" input_type="bool" input_value="false" mongo_param_name="NEXT_POINT_FLG" mongo_record_name="$machine_record_name$"/>
                         </Sequence>
                         <AlwaysSuccess/>
