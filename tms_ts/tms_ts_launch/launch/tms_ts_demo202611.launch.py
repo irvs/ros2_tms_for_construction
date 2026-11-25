@@ -331,8 +331,8 @@ def generate_launch_description():
                   executable='tms_sp_loadsense',
                   name='tms_sp_loadsense_mst110cr',
                   parameters = [{'use_sim_time': use_sim_time,
-                                 'machine_name': 'mst110cr',
-                                 'record_name': 'SAMPLE_BLACKBOARD_mst110cr'}],
+                                 'machine_name': 'mst110cr_2',
+                                 'record_name': 'SAMPLE_BLACKBOARD_mst110cr_2'}],
                   output='screen',
                   condition=launch_sp),
             Node(
