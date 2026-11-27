@@ -10,8 +10,6 @@
             <Action ID="LeafNodeCrawlerDump" model_name="mst2200vdr" primitive_name="primitive_crawlerdump_release_soil" read_direction="" record_name="initial_pose_vessel"/>
             <Action ID="WaitForClick" button_info="mst2200vdr navigate to initial position" window_title="mst2200vdr navigate to initial position"/>
             <Action ID="LeafNodeCrawlerDump" model_name="mst2200vdr" primitive_name="primitive_crawlerdump_navigate_anywhere" read_direction="" record_name="initial_position"/>
-            <Action ID="WaitForClick" button_info="mst2200vdr initial_swing" window_title="mst2200vdr initial_swing"/>
-            <Action ID="LeafNodeCrawlerDump" model_name="mst2200vdr" primitive_name="primitive_crawlerdump_swing" read_direction="" record_name="initial_pose"/>
             <Action ID="MongoValueWriter" input_type="" input_value="true" mongo_param_name="initialize_flg_mst2200vdr" mongo_record_name="initialize_flgs"/>
             <Action ID="SetLocalBlackboard" output_key="dependencies_ready_4_1" value="false"/>
             <Sequence name="InitializeSectionSequence">
@@ -33,7 +31,7 @@
             </Decorator>
             <Decorator ID="KeepRunningUntilFlgup" key="TERMINATE_FLG" while_or_dowhile="">
                 <Sequence name="TransportAndDumpSequence">
-                    <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst2200vdr" model_name="mst2200vdr" subtask_name="subtask_dump_release_with_bull_3_wait" subtask_parameters="BullRecord:SAMPLE_BLACKBOARD_d37pxi,dump_up_angle:RELEASE_ANGLE_UP,dump_down_angle:RELEASE_ANGLE_DOWN,swing_before_release:SWING_ANGLE_BACK,swing_after_release:SWING_ANGLE_BACK,time:5000,stop_point:dump_node_0" terminate_condition=""/>
+                    <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst2200vdr" model_name="mst2200vdr" subtask_name="subtask_dump_release_with_bull_4_wait" subtask_parameters="BullRecord:SAMPLE_BLACKBOARD_d37pxi,dump_up_angle:RELEASE_ANGLE_UP,dump_down_angle:RELEASE_ANGLE_DOWN,swing_before_release:SWING_ANGLE_BACK,swing_after_release:SWING_ANGLE_BACK,time:5000,stop_point:dump_node_0" terminate_condition=""/>
                     <Action ID="MongoValueWriter" input_type="" input_value="down" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst2200vdr"/>
                     <Action ID="ExecuteSubtask" machine_record_name="SAMPLE_BLACKBOARD_mst2200vdr" model_name="mst2200vdr" subtask_name="subtask_dump_cruise_5_wait" subtask_parameters="start_status:&quot;none&quot;" terminate_condition="route_31975e235f62858c_785755240"/>
                     <Action ID="MongoValueWriter" input_type="" input_value="up" mongo_param_name="UP_DOWN" mongo_record_name="SAMPLE_BLACKBOARD_mst2200vdr"/>
