@@ -19,6 +19,7 @@
 #include <cmath>
 #include <thread>
 #include <map>
+#include <atomic>
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
@@ -92,6 +93,19 @@ public:
     rclcpp::executors::SingleThreadedExecutor callback_group_executor_;
 
     std::shared_ptr<std::shared_future<typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::SharedPtr>> future_goal_handle_;
+
+    // ---- ユーザーによるprimitiveスキップ機能 ----
+    // /tms_ts/skip_primitive (std_msgs/String) に model_name (例: "mst110cr_2") または
+    // "model_name/primitive_name" (例: "mst110cr_2/primitive_crawlerdump_navigate_anywhere") が
+    // 送られると、実行中のprimitiveをcancelしてBTにSUCCESSを返す。
+    static constexpr const char* SKIP_TOPIC_NAME = "/tms_ts/skip_primitive";
+    std::string model_name_;
+    std::atomic<bool> skip_requested_{false};
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr skip_sub_;
+    std::chrono::milliseconds skip_cancel_timeout_ = std::chrono::milliseconds(5000);
+
+    void createSkipSubscription();
+    NodeStatus skip_and_succeed();
 };
 
 #endif

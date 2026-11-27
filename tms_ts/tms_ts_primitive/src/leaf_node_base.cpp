@@ -45,7 +45,98 @@ LeafNodeBase::LeafNodeBase(const std::string& name, const NodeConfiguration& con
   RCLCPP_INFO(node_->get_logger(), "model_name: %s", goal_.model_name.c_str());
   // RCLCPP_INFO(node_->get_logger(), "record_name: %s", goal_.record_name.c_str());
   result_ = rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::WrappedResult();
+  model_name_ = model_name.value();
+  LeafNodeBase::createSkipSubscription();
   LeafNodeBase::createActionClient(primitive_name_);
+}
+
+// ユーザーからのprimitiveスキップ要求を受け取るsubscriptionを作成する関数
+// callback_group_ に登録するため、tick()内の callback_group_executor_ の spin で処理される
+void LeafNodeBase::createSkipSubscription()
+{
+  rclcpp::SubscriptionOptions sub_options;
+  sub_options.callback_group = callback_group_;
+
+  skip_sub_ = node_->create_subscription<std_msgs::msg::String>(
+      SKIP_TOPIC_NAME, rclcpp::QoS(1).reliable(),
+      [this](std_msgs::msg::String::ConstSharedPtr msg) {
+        // "model_name" または "model_name/primitive_name" が一致した場合のみ受け付ける
+        if (msg->data == model_name_ || msg->data == primitive_name_)
+        {
+          if (status() == NodeStatus::RUNNING)
+          {
+            RCLCPP_WARN(node_->get_logger(), "[SKIP] Skip request received for %s", primitive_name_.c_str());
+            skip_requested_ = true;
+          }
+        }
+      },
+      sub_options);
+}
+
+// 実行中のprimitiveをcancelし、BTにはSUCCESSを返す関数
+// halt()と異なり、primitiveがcancelに応答しない場合でも skip_cancel_timeout_ で打ち切ってSUCCESSを返す
+NodeStatus LeafNodeBase::skip_and_succeed()
+{
+  skip_requested_ = false;
+  RCLCPP_WARN(node_->get_logger(), "[SKIP] Cancelling %s and returning SUCCESS to the BT.", primitive_name_.c_str());
+
+  if (goal_handle_)
+  {
+    callback_group_executor_.spin_some();
+    auto goal_status = goal_handle_->get_status();
+
+    if (goal_status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
+        goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING)
+    {
+      auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
+      // use_sim_time の影響を受けないよう steady_clock でタイムアウトを測る
+      const auto deadline = std::chrono::steady_clock::now() + skip_cancel_timeout_;
+      bool cancel_accepted = false;
+      bool finished = false;
+
+      while (rclcpp::ok() && std::chrono::steady_clock::now() < deadline)
+      {
+        if (!cancel_accepted)
+        {
+          auto cancel_result = callback_group_executor_.spin_until_future_complete(future_cancel, std::chrono::milliseconds(100));
+          if (cancel_result != rclcpp::FutureReturnCode::SUCCESS)
+          {
+            continue;
+          }
+          cancel_accepted = true;
+          RCLCPP_INFO(node_->get_logger(), "[SKIP] Cancel request for %s was received by the primitive.", primitive_name_.c_str());
+        }
+        else
+        {
+          callback_group_executor_.spin_once(std::chrono::milliseconds(100));
+        }
+
+        goal_status = goal_handle_->get_status();
+        if (goal_status == action_msgs::msg::GoalStatus::STATUS_CANCELED ||
+            goal_status == action_msgs::msg::GoalStatus::STATUS_ABORTED ||
+            goal_status == action_msgs::msg::GoalStatus::STATUS_SUCCEEDED)
+        {
+          finished = true;
+          break;
+        }
+      }
+
+      if (finished)
+      {
+        RCLCPP_INFO(node_->get_logger(), "[SKIP] %s stopped (goal status: %d).", primitive_name_.c_str(), goal_status);
+      }
+      else
+      {
+        RCLCPP_ERROR(node_->get_logger(),
+                     "[SKIP] %s did not confirm cancellation within %ld ms. Proceeding to the next BT node anyway.",
+                     primitive_name_.c_str(), static_cast<long>(skip_cancel_timeout_.count()));
+      }
+    }
+  }
+
+  goal_handle_.reset();
+  goal_result_available_ = false;
+  return NodeStatus::SUCCESS;
 }
 
 // action clientを新たに作�?�する関数
@@ -76,7 +167,8 @@ void LeafNodeBase::send_new_goal()
 
   send_goal_options.result_callback =
       [this](const typename rclcpp_action::ClientGoalHandle<tms_msg_ts::action::LeafNodeBase>::WrappedResult& result) {
-        if (this->goal_handle_->get_goal_id() == result.goal_id)
+        // スキップ後にcancel結果が遅れて届いた場合、goal_handle_ がnullになっているので確認する
+        if (this->goal_handle_ && this->goal_handle_->get_goal_id() == result.goal_id)
         {
           goal_result_available_ = true;
           result_ = result;
@@ -374,6 +466,11 @@ NodeStatus LeafNodeBase::tick()
     {
       return NodeStatus::FAILURE;
     }
+
+    // このノードが実行されていない間に届いたスキップ要求は無効にする
+    callback_group_executor_.spin_some();
+    skip_requested_ = false;
+
     LeafNodeBase::send_new_goal();
   }
 
@@ -432,6 +529,11 @@ NodeStatus LeafNodeBase::tick()
 
       callback_group_executor_.spin_some();
 
+      // ユーザーからスキップ要求があれば、primitiveをcancelしてSUCCESSを返す
+      if (skip_requested_ && !goal_result_available_)
+      {
+        return skip_and_succeed();
+      }
 
       if (!goal_result_available_)
       {
